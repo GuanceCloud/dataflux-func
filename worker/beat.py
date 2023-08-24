@@ -26,7 +26,7 @@ from worker import LOGGER, REDIS, run_background
 # 定时任务表
 from worker.tasks.example import ExampleSuccess
 from worker.tasks.crontab_starter import CrontabStarter
-from worker.tasks.internal import SyncCacheToDB, AutoClean, AutoBackupDB, ReloadDataMD5Cache
+from worker.tasks.internal import FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache
 
 CRONTAB_MAP = {
     # 示例
@@ -43,8 +43,8 @@ CRONTAB_MAP = {
 
     # 缓存数据刷入数据库
     'sync-cache': {
-        'task'   : SyncCacheToDB,
-        'crontab': CONFIG['_CRONTAB_SYNC_CACHE_TO_DB'],
+        'task'   : FlushDataBuffer,
+        'crontab': CONFIG['_CRONTAB_FLUSH_DATA_BUFFER'],
     },
 
     # 自动清理

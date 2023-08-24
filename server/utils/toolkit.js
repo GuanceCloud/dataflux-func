@@ -2479,3 +2479,10 @@ var childProcessSpawn = toolkit.childProcessSpawn = function(cmd, cmdArgs, cmdOp
     return callback(null, cmdOut);
   });
 };
+
+var range = toolkit.range = function(length) {
+  var a = 'x'.repeat(10).split('').map(function(x, index) {
+    return index;
+  });
+  return a;
+}

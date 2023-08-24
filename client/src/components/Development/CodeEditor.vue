@@ -653,7 +653,7 @@ export default {
         this.countDownTimer = null;
       }
 
-      let leftSeconds = this.$store.getters.SYSTEM_INFO('_FUNC_TASK_DEBUG_TIMEOUT');
+      let leftSeconds = this.$store.getters.SYSTEM_INFO('_FUNC_TASK_TIMEOUT_DEBUGGER');
       updateCountDownTipTitle(leftSeconds);
 
       this.countDownTimer = setInterval(() => {
@@ -868,7 +868,7 @@ export default {
           } else {
             this.T.alert(`${this.$t('Waiting Func response timeout')}
                 <span class="text-main">
-                  <br>${this.$t('There is a {seconds} time limit when calling Funcs in Code Editor', { seconds: this.$tc('seconds', this.$store.getters.SYSTEM_INFO('_FUNC_TASK_DEBUG_TIMEOUT')) })}
+                  <br>${this.$t('There is a {seconds} time limit when calling Funcs in Code Editor', { seconds: this.$tc('seconds', this.$store.getters.SYSTEM_INFO('_FUNC_TASK_TIMEOUT_DEBUGGER')) })}
                   <br>${this.$t('It is not recommended for synchronous calling Funcs that response slowly')}</small>
                 </span>`);
           }

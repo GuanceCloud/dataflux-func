@@ -24,135 +24,120 @@ from worker.tasks.main import CONNECTOR_HELPER_CLASS_MAP, decipher_connector_con
 CONFIG     = yaml_resources.get('CONFIG')
 IMAGE_INFO = yaml_resources.get('IMAGE_INFO')
 
-class SyncCacheToDB(BaseTask):
-    '''
-    同步缓存数据至数据库
-    '''
-    name = 'Internal.SyncCacheToDB'
+class BaseInternalTask(BaseTask):
+    def safe_call(self, func, *args, *kwargs):
+        try:
+            func(*args, **kwargs)
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
 
-    DEFAULT_TASK_INFO_LIMIT_MAP = {
-        'direct'     : CONFIG['_TASK_RECORD_DEFAULT_LIMIT_DIRECT'],
-        'integration': CONFIG['_TASK_RECORD_DEFAULT_LIMIT_INTEGRATION'],
-        'connector'  : CONFIG['_TASK_RECORD_DEFAULT_LIMIT_CONNECTOR'],
-        'authLink'   : CONFIG['_TASK_RECORD_DEFAULT_LIMIT_AUTH_LINK'],
-        'crontab'    : CONFIG['_TASK_RECORD_DEFAULT_LIMIT_CRONTAB'],
-        'batch'      : CONFIG['_TASK_RECORD_DEFAULT_LIMIT_BATCH'],
+class FlushDataBuffer(BaseInternalTask):
+    '''
+    释放缓存数据
+    '''
+    name = 'Internal.FlushDataBuffer'
+
+    TASK_RECORD_LIMIT_BY_ORIGIN_MAP = {
+        'direct'     : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_DIRECT'],
+        'integration': CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_INTEGRATION'],
+        'connector'  : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CONNECTOR'],
+        'authLink'   : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK'],
+        'crontab'    : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB'],
+        'batch'      : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH'],
     }
 
-    def sync_func_call_count(self):
-        data = []
+    def _flush_data_buffer(self, cache_key):
+        cache_res = self.cache_db.run('rpop', cache_key, CONFIG['_TASK_FLUSH_DATA_BUFFER_BULK_COUNT'])
+        if not cache_res:
+            return None
 
+        cache_res = map(lambda x: toolkit.json_loads(x), cache_res)
+        return cache_res
+
+    def flush_task_record(self):
         # 搜集数据
-        cache_key = toolkit.get_cache_key('syncCache', 'funcCallCount')
-        for i in range(CONFIG['_TASK_SYNC_CACHE_BULK_COUNT']):
-            cache_res = self.cache_db.run('rpop', cache_key)
-            if not cache_res:
-                break
-
-            try:
-                cache_res = toolkit.json_loads(cache_res)
-            except Exception as e:
-                for line in traceback.format_exc().splitlines():
-                    self.logger.error(line)
-            else:
-                data.append(cache_res)
-
-        # 归类计算
-        count_map = {}
-        for d in data:
-            func_id   = d['funcId']
-            timestamp = d.get('timestamp')
-
-            # 时间戳按照分钟对齐（减少内部时序数据存储压力）
-            timestamp = int(int(timestamp) / 60) * 60
-
-            pk = '~'.join([func_id, str(timestamp)])
-            if pk not in count_map:
-                count_map[pk] = {
-                    'funcId'   : func_id,
-                    'timestamp': timestamp,
-                    'count'    : 0
-                }
-
-            count_map[pk]['count'] += 1
-
-        # 写入时序数据
-        for pk, c in count_map.items():
-            cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'funcCallCount', 'funcId', c['funcId']]);
-
-            self.cache_db.ts_add(cache_key, c['count'], timestamp=c['timestamp'], mode='addUp')
-
-    def sync_task_info(self):
-        data = []
-
-        # 搜集数据
-        cache_key = toolkit.get_cache_key('syncCache', 'taskInfoBuffer')
-        for i in range(CONFIG['_TASK_SYNC_CACHE_BULK_COUNT']):
-            cache_res = self.cache_db.run('rpop', cache_key)
-            if not cache_res:
-                break
-
-            try:
-                cache_res = toolkit.json_loads(cache_res)
-            except Exception as e:
-                for line in traceback.format_exc().splitlines():
-                    self.logger.error(line)
-            else:
-                data.append(cache_res)
+        cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecord')
+        cache_res = self._flush_data_buffer(cache_key)
+        if not cache_res:
+            return
 
         # 写入本地 DB 数据
-        entity_task_info_limit_map = {}
-        for d in data:
+        for d in cache_res:
+            sql = '''
+                INSERT IGNORE INTO biz_main_task_record
+                SET ?
+            '''
+            sql_params = [ d ]
+            self.db.query(sql, sql_params)
+
+        # 本地 DB 数据回卷
+        sql = '''
+            SELECT
+                seq AS expiredMaxSeq
+            FROM biz_main_task_record
+            ORDER BY
+                seq DESC
+            LIMIT ?, 1
+        '''
+        sql_params = [ CONFIG['_TASK_RECORD_LIMIT_DEFAULT'] ]
+        db_res = self.db.query(sql, sql_params)
+
+        if db_res:
+            expired_max_seq = db_res[0]['expiredMaxSeq']
+            sql = '''
+                DELETE FROM biz_main_task_record
+                WHERE
+                    seq <= ?
+            '''
+            sql_params = [ expired_max_seq ]
+            self.db.query(sql, sql_params)
+
+    def flush_task_record_func(self):
+        # 搜集数据
+        cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordFunc')
+        cache_res = self._flush_data_buffer(cache_key)
+        if not cache_res:
+            return
+
+        # 写入本地 DB 数据
+        origin_limit_map = {}
+        for d in cache_res:
             origin    = d.get('origin')
             origin_id = d.get('originId')
 
             # 统计回卷范围
-            task_info_limit = d.get('taskInfoLimit') or self.DEFAULT_TASK_INFO_LIMIT_MAP.get(origin) or 0
-            entity_task_info_limit_map[origin_id] = task_info_limit
+            limit = d.pop('_taskRecordLimit', None) or self.TASK_RECORD_LIMIT_BY_ORIGIN_MAP.get(origin) or 0
+            origin_limit_map[origin_id] = limit
 
             # 写入数据库
-            if task_info_limit > 0:
-                _data = {
-                    'id'            : d['id'],
-                    'origin'        : d['origin'],
-                    'originId'      : d['originId'],
-                    'rootTaskId'    : d['rootTaskId'],
-                    'funcId'        : d['funcId'],
-                    'execMode'      : d['execMode'],
-                    'status'        : d['status'],
-                    'triggerTimeMs' : d['triggerTimeMs'],
-                    'startTimeMs'   : d['startTimeMs'],
-                    'endTimeMs'     : d['endTimeMs'],
-                    'logMessageTEXT': d.get('logMessageTEXT'),
-                    'einfoTEXT'     : d.get('einfoTEXT'),
-                    'edumpTEXT'     : d.get('edumpTEXT'),
-                }
+            if limit > 0:
                 sql = '''
-                    INSERT IGNORE INTO biz_main_task_info
+                    INSERT IGNORE INTO biz_main_task_record_func
                     SET ?
                 '''
-                sql_params = [ _data ]
+                sql_params = [ d ]
                 self.db.query(sql, sql_params)
 
         # 本地 DB 数据回卷
-        for origin_id, task_info_limit in entity_task_info_limit_map.items():
+        for origin_id, limit in origin_limit_map.items():
             sql = '''
                 SELECT
                     seq AS expiredMaxSeq
-                FROM biz_main_task_info
+                FROM biz_main_task_record_func
                 WHERE
                     originId = ?
                 ORDER BY
                     seq DESC
                 LIMIT ?, 1
             '''
-            sql_params = [ origin_id, task_info_limit ]
+            sql_params = [ origin_id, limit ]
             db_res = self.db.query(sql, sql_params)
 
             if db_res:
                 expired_max_seq = db_res[0]['expiredMaxSeq']
                 sql = '''
-                    DELETE FROM biz_main_task_info
+                    DELETE FROM biz_main_task_record_func
                     WHERE
                             seq      <= ?
                         AND originId =  ?
@@ -160,51 +145,86 @@ class SyncCacheToDB(BaseTask):
                 sql_params = [ expired_max_seq, origin_id ]
                 self.db.query(sql, sql_params)
 
-        # 上传观测云数据
-        upload_enabled = self.system_settings.get('GUANCE_DATA_UPLOAD_ENABLED') or False
-        upload_url     = self.system_settings.get('GUANCE_DATA_UPLOAD_URL')     or None
-        if all([ upload_enabled, upload_url ]):
-            guance_points = []
+    def flush_task_record_guance(self):
+        # 搜集数据
+        cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordGuance')
+        cache_res = self._flush_data_buffer(cache_key)
+        if not cache_res:
+            return
 
-            for d in data:
-                guance_points.append({
-                    'measurement': 'DFF_func_stats',
+        self.upload_guance_data('logging', cache_res)
+
+    def flush_func_call_count(self):
+        # 搜集数据
+        cache_key = toolkit.get_cache_key('dataBuffer', 'funcCallCount')
+        cache_res = self._flush_data_buffer(cache_key)
+        if not cache_res:
+            return
+
+        # 计数表
+        count_map   = {}
+        guance_data = []
+        for d in cache_res:
+            func_id   = d['funcId']
+            timestamp = d['timestamp']
+
+            # 时间戳按照分钟对齐（减少内部时序数据存储压力）
+            aligned_timestamp = int(int(timestamp) / 60) * 60
+
+            pk = f'{func_id}~{aligned_timestamp}
+            if pk not in count_map:
+                count_map[pk] = {
+                    'funcId'   : func_id,
+                    'count'    : 0
+                    'timestamp': aligned_timestamp,
+                }
+
+            count_map[pk]['count'] += 1
+
+            # 生成观测云数据
+            if self.guance_data_upload_url:
+                guance_data.append({
+                    'measurement': 'DFF_func_call',
                     'tags': {
-                        'workspace_uuid': d['funcCallKwargs'].get('workspace_uuid') or '-',
+                        'workspace_uuid': d['workspaceUUID'],
+                        'script_set_id' : d['scriptSetId'],
+                        'script_id'     : d['scriptId'],
+                        'func_id'       : func_id,
                         'origin'        : d['origin'],
-                        'func_id'       : d['funcId'],
+                        'queue'         : d['queue'],
                         'status'        : d['status'],
-                        'queue'         : str(d['queue']),
                     },
                     'fields': {
-                        'wait_cost' : d['startTimeMs'] - d['triggerTimeMs'],
-                        'run_cost'  : d['endTimeMs']   - d['startTimeMs'],
-                        'total_cost': d['endTimeMs']   - d['triggerTimeMs'],
+                        'wait_cost' : d['waitCost'],
+                        'run_cost'  : d['runCost'],
+                        'total_cost': d['totalCost'],
                     },
-                    'timestamp': d['triggerTimeMs'],
+                    'timestamp': d['timestamp'],
                 })
 
-            self.upload_guance_data('metric', guance_points)
+        # 写入内置时序数据
+        if count_map:
+            for pk, c in count_map.items():
+                cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'funcCallCount', 'funcId', c['funcId']])
+                self.cache_db.ts_add(cache_key, c['count'], timestamp=c['timestamp'], mode='addUp')
+
+        # 写入观测云
+        if guance_data:
+            self.upload_guance_data('metric', guance_data)
 
     def run(self, **kwargs):
         # 上锁
         self.lock()
 
-        # 函数调用计数刷入简易时序数据库
-        try:
-            self.sync_func_call_count()
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
+        # 任务记录刷入数据库 / 观测云
+        self.safe_call(self.flush_task_record)
+        self.safe_call(self.flush_task_record_func)
+        self.safe_call(self.flush_task_record_guance)
 
-        # 自动触发配置/批处理任务记录刷入数据库
-        try:
-            self.sync_task_info()
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
+        # 函数调用计数刷入数据库 / 观测云
+        self.safe_call(self.flush_func_call_count)
 
-class AutoClean(BaseTask):
+class AutoClean(BaseInternalTask):
     name = 'Internal.AutoClean'
 
     def _delete_by_seq(self, table, seq, include=True):
@@ -398,49 +418,21 @@ class AutoClean(BaseTask):
         table_limit_map = CONFIG['_DBDATA_TABLE_LIMIT_MAP']
         if table_limit_map:
             for table, limit in table_limit_map.items():
-                try:
-                    self.clear_table_by_limit(table=table, limit=int(limit))
-                except Exception as e:
-                    for line in traceback.format_exc().splitlines():
-                        self.logger.error(line)
+                self.safe_call(self.clear_table_by_limit, table=table, limit=int(limit))
 
         table_expire_map = CONFIG['_DBDATA_TABLE_EXPIRE_MAP']
         if table_expire_map:
             for table, expires in table_expire_map.items():
-                try:
-                    self.clear_table_by_expires(table=table, expires=int(expires))
-                except Exception as e:
-                    for line in traceback.format_exc().splitlines():
-                        self.logger.error(line)
+                self.safe_call(self.clear_table_by_expires, table=table, expires=int(expires))
 
         # 清理临时目录
-        try:
-            self.clear_temp_file(CONFIG['UPLOAD_TEMP_ROOT_FOLDER'])
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
+        self.safe_call(self.clear_temp_file, CONFIG['UPLOAD_TEMP_ROOT_FOLDER'])
+        self.safe_call(self.clear_temp_file, CONFIG['DOWNLOAD_TEMP_ROOT_FOLDER'])
 
-        try:
-            self.clear_temp_file(CONFIG['DOWNLOAD_TEMP_ROOT_FOLDER'])
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
+        # 清理已弃用功能的数据
+        self.safe_call(self.clear_deprecated_data)
 
-        # 清理过时的任务信息
-        # try:
-        #     self.clear_outdated_task_info()
-        # except Exception as e:
-        #     for line in traceback.format_exc().splitlines():
-        #         self.logger.error(line)
-
-        # 清楚已弃用功能的数据
-        try:
-            self.clear_deprecated_data()
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
-
-class AutoBackupDB(BaseTask):
+class AutoBackupDB(BaseInternalTask):
     name = 'Internal.AutoBackupDB'
 
     SQL_STR_TYPE_KEYWORDS = { 'char', 'text', 'blob' }
@@ -650,7 +642,7 @@ class AutoBackupDB(BaseTask):
         # 自动删除旧备份
         self.limit_backups()
 
-class ReloadDataMD5Cache(BaseTask):
+class ReloadDataMD5Cache(BaseInternalTask):
     '''
     数据 MD5 缓存任务
     '''
@@ -723,7 +715,7 @@ class ReloadDataMD5Cache(BaseTask):
         else:
             self.cache_data_md5(data_type, data_id)
 
-class CheckConnector(BaseTask):
+class CheckConnector(BaseInternalTask):
     name = 'Internal.CheckConnector'
 
     default_timeout = 30
@@ -742,7 +734,7 @@ class CheckConnector(BaseTask):
             connector_helper = connector_helper_class(self.logger, config=connector_config)
             connector_helper.check()
 
-class QueryConnector(BaseTask):
+class QueryConnector(BaseInternalTask):
     name = 'Internal.QueryConnector'
 
     default_timeout = 30
@@ -797,7 +789,7 @@ class QueryConnector(BaseTask):
             ret = db_res
         return ret
 
-class AutoRun(BaseTask):
+class AutoRun(BaseInternalTask):
     name = 'Internal.AutoRun'
 
     def get_integrated_on_system_launch_funcs(self):
@@ -841,24 +833,21 @@ class AutoRun(BaseTask):
         funcs = self.db.query(sql)
 
         for f in funcs:
-            timeout = CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT']
+            timeout = CONFIG['_FUNC_TASK_TIMEOUT_DEFAULT']
             if f['timeout']:
                 timeout = int(f['timeout'])
 
             expires = timeout
 
             task_req = {
-                'name': 'Main.FuncRunner',
+                'name': 'Func.Runner',
                 'kwargs': {
-                    'funcId'       : f['id'],
-                    'origin'       : 'integration',
-                    'originId'     : 'autoRun.onScriptPublish',
-                    'taskInfoLimit': CONFIG['_TASK_RECORD_DEFAULT_LIMIT_INTEGRATION'],
+                    'funcId'  : f['id'],
+                    'origin'  : 'integration',
+                    'originId': 'autoRun.onSystemLaunch',
                 },
-                'queue'  : CONFIG['_FUNC_TASK_DEFAULT_QUEUE'],
+                'queue'  : CONFIG['_FUNC_TASK_QUEUE_DEFAULT'],
                 'timeout': timeout,
                 'expires': expires,
             }
             self.cache_db.put_task(task_req)
-
-            func_runner.apply_async(task_id=task_id, kwargs=task_kwargs, queue=queue)

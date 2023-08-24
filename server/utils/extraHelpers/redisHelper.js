@@ -1129,7 +1129,7 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
   taskReq.triggerTime = taskReq.triggerTime || toolkit.getTimestamp(3);
 
   if (toolkit.isNothing(taskReq.queue)) {
-    taskReq.queue = CONFIG._TASK_DEFAULT_QUEUE;
+    taskReq.queue = CONFIG._TASK_QUEUE_DEFAULT;
   }
 
   if (taskReq.onResponse) {
@@ -1137,8 +1137,8 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
     delete taskReq.onResponse;
 
     // Waiting for response
-    var _timeout = taskReq.timeout || CONFIG._TASK_DEFAULT_TIMEOUT;
-    _timeout = Math.min(_timeout, CONFIG._TASK_MAX_WAIT_TIMEOUT);
+    var _timeout = taskReq.timeout || CONFIG._TASK_TIMEOUT_DEFAULT;
+    _timeout = Math.min(_timeout, CONFIG._TASK_RESULT_WAIT_TIMEOUT_MAX);
 
     // 留出响应时间
     _timeout += 10;

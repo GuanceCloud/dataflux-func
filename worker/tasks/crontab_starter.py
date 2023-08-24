@@ -35,11 +35,7 @@ class CrontabStarter(BaseTask):
         if isinstance(func_extra_config, str):
             crontab_config['funcExtraConfig'] = toolkit.json_loads(func_extra_config) or {}
 
-        crontab_config['crontab'] = crontab_config['funcExtraConfig'].get('fixedCrontab') \
-                                    or crontab_config.get('crontab')
-
-        crontab_config['taskRecordLimit'] = crontab_config.get('taskRecordLimit') \
-                                        or CONFIG['_TASK_RECORD_DEFAULT_LIMIT_CRONTAB']
+        crontab_config['crontab'] = crontab_config['funcExtraConfig'].get('fixedCrontab') or crontab_config.get('crontab')
 
         return crontab_config
 
@@ -62,10 +58,8 @@ class CrontabStarter(BaseTask):
         crontab_configs = self.db.query(sql)
 
         for c in crontab_configs:
-            # 补全必要数据
-            c['seq']             = 0
-            c['id']              = 'integration'
-            c['taskRecordLimit'] =  CONFIG['_TASK_RECORD_DEFAULT_LIMIT_INTEGRATION']
+            # 集成 Crontab 使用函数 ID 作为自动触发配置 ID
+            c['id']  = f'integration-{c['funcId']}'
 
         crontab_configs = map(self.prepare_contab_config, crontab_configs)
         crontab_configs = filter(self.filter_crontab_config, crontab_configs)
@@ -112,11 +106,11 @@ class CrontabStarter(BaseTask):
 
     def put_task(self, crontab_config, origin, origin_id, delay=None):
         # 超时时间 / 过期时间
-        timeout = crontab_config['funcExtraConfig'].get('timeout') or CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT']
+        timeout = crontab_config['funcExtraConfig'].get('timeout') or CONFIG['_FUNC_TASK_TIMEOUT_DEFAULT']
         expires = timeout
 
         # 确定执行队列
-        queue = crontab_config['funcExtraConfig'].get('queue') or CONFIG['_FUNC_TASK_DEFAULT_CRONTAB_QUEUE']
+        queue = crontab_config['funcExtraConfig'].get('queue') or CONFIG['_FUNC_TASK_QUEUE_CRONTAB']
 
         # 多次执行
         delay_list = crontab_config['funcExtraConfig'].get('delayedCrontab') or delay or 0
@@ -137,7 +131,7 @@ class CrontabStarter(BaseTask):
 
             # 任务请求
             task_req = {
-                'name': 'Main.FuncRunner',
+                'name': 'Func.Runner',
                 'kwargs': {
                     'funcId'          : crontab_config['funcId'],
                     'funcCallKwargs'  : crontab_config['funcCallKwargs'],
@@ -154,7 +148,7 @@ class CrontabStarter(BaseTask):
                 'delay'          : delay,
                 'timeout'        : timeout,
                 'expires'        : expires,
-                'taskRecordLimit': crontab_config['taskRecordLimit'],
+                'taskRecordLimit': crontab_config.get('taskRecordLimit'),
             }
             self.cache_db.put_task(task_req)
 
@@ -165,9 +159,7 @@ class CrontabStarter(BaseTask):
         ### 集成函数自动触发 ###
         for c in self.get_integration_crontab_configs():
             # 发送任务
-            self.put_task(crontab_config=c,
-                          origin='integration',
-                          origin_id='autoRun.crontab')
+            self.put_task(crontab_config=c, origin='integration', origin_id='autoRun.crontab')
 
         ### 自动触发配置 ###
         next_seq      = 0
@@ -181,10 +173,7 @@ class CrontabStarter(BaseTask):
                     delay = crontab_count % CONFIG['_FUNC_TASK_DISTRIBUTION_RANGE']
 
                 # 发送任务
-                self.put_task(crontab_config=c,
-                              origin='crontab',
-                              origin_id=c['id'],
-                              delay=delay)
+                self.put_task(crontab_config=c, origin='crontab', origin_id=c['id'], delay=delay)
 
                 # 自动触发配置记述
                 crontab_count += 1
@@ -230,6 +219,4 @@ class CrontabManualStarter(CrontabStarter):
         crontab_config = self.get_crontab_config(crontab_config_id)
 
         # 发送任务
-        self.put_task(crontab_config=crontab_config,
-                        origin='crontab',
-                        origin_id=crontab_config['id'])
+        self.put_task(crontab_config=crontab_config, origin='crontab', origin_id=crontab_config['id'])

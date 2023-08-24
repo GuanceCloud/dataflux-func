@@ -168,7 +168,7 @@ function createFuncRunnerTaskReq(locals, options, callback) {
 
     /***** 组装任务请求 *****/
     var taskReq = {
-      name: 'Main.FuncRunner',
+      name: 'Func.Runner',
       kwargs: {
         // 调用函数 / 参数
         funcId        : options.funcId,
@@ -225,11 +225,11 @@ function createFuncRunnerTaskReq(locals, options, callback) {
       // 默认值
       switch(options.origin) {
         case 'batch':
-          taskReq.queue = CONFIG._FUNC_TASK_DEFAULT_CRONTAB_QUEUE;
+          taskReq.queue = CONFIG._FUNC_TASK_QUEUE_CRONTAB;
           break;
 
         default:
-          taskReq.queue = CONFIG._FUNC_TASK_DEFAULT_QUEUE;
+          taskReq.queue = CONFIG._FUNC_TASK_QUEUE_DEFAULT;
           break;
       }
     }
@@ -240,11 +240,11 @@ function createFuncRunnerTaskReq(locals, options, callback) {
       // 调用时指定
       options.timeout = parseInt(options.timeout);
 
-      if (options.timeout < CONFIG._FUNC_TASK_MIN_TIMEOUT) {
-        return callback(new E('EClientBadRequest', 'Invalid options, timeout is too small', { min: CONFIG._FUNC_TASK_MIN_TIMEOUT }));
+      if (options.timeout < CONFIG._FUNC_TASK_TIMEOUT_MIN) {
+        return callback(new E('EClientBadRequest', 'Invalid options, timeout is too small', { min: CONFIG._FUNC_TASK_TIMEOUT_MIN }));
       }
-      if (options.timeout > CONFIG._FUNC_TASK_MAX_TIMEOUT) {
-        return callback(new E('EClientBadRequest', 'Invalid options, timeout is too large', { max: CONFIG._FUNC_TASK_MAX_TIMEOUT }));
+      if (options.timeout > CONFIG._FUNC_TASK_TIMEOUT_MAX) {
+        return callback(new E('EClientBadRequest', 'Invalid options, timeout is too large', { max: CONFIG._FUNC_TASK_TIMEOUT_MAX }));
       }
 
       taskReq.timeout = options.timeout;
@@ -258,11 +258,11 @@ function createFuncRunnerTaskReq(locals, options, callback) {
       switch(options.origin) {
         case 'batch':
           // 批处理有单独的默认执行超时
-          taskReq.timeout = CONFIG._FUNC_TASK_DEFAULT_BATCH_TIMEOUT;
+          taskReq.timeout = CONFIG._FUNC_TASK_TIMEOUT_BATCH;
           break;
 
         default:
-          taskReq.timeout = CONFIG._FUNC_TASK_DEFAULT_TIMEOUT;
+          taskReq.timeout = CONFIG._FUNC_TASK_TIMEOUT_DEFAULT;
           break;
       }
     }
@@ -496,13 +496,13 @@ function callFuncRunner(locals, taskReq, callback) {
 
 function callFuncDebugger(locals, options, callback) {
   var taskReq = {
-    name: 'Main.FuncDebugger',
+    name: 'Func.Debugger',
     kwargs: {
       funcId        : options.funcId         || options.scriptId,
       funcCallKwargs: options.funcCallKwargs || {},
     },
-    queue  : CONFIG._FUNC_TASK_DEFAULT_DEBUG_QUEUE,
-    timeout: CONFIG._FUNC_TASK_DEBUG_TIMEOUT,
+    queue  : CONFIG._FUNC_TASK_QUEUE_DEBUGGER,
+    timeout: CONFIG._FUNC_TASK_TIMEOUT_DEBUGGER,
 
     onResponse(taskResp) {
       // 失败处理
@@ -1510,13 +1510,13 @@ exports.integratedSignIn = function(req, res, next) {
   ], function(err) {
     if (err) return next(err);
 
-    var timeout = CONFIG._FUNC_TASK_DEFAULT_TIMEOUT;
+    var timeout = CONFIG._FUNC_TASK_TIMEOUT_DEFAULT;
     if (func.extraConfigJSON && func.extraConfigJSON.timeout) {
       timeout = parseInt(func.extraConfigJSON.timeout);
     }
 
     var taskReq = {
-      name: 'Main.FuncRunner',
+      name: 'Func.Runner',
       kwargs: {
         funcId        : funcId,
         funcCallKwargs: { username: username, password: password },
@@ -1525,7 +1525,7 @@ exports.integratedSignIn = function(req, res, next) {
       originId       : 'signIn',
       timeout        : timeout,
       expires        : timeout,
-      taskRecordLimit: CONFIG._TASK_RECORD_DEFAULT_LIMIT_INTEGRATION,
+      taskRecordLimit: CONFIG._TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_INTEGRATION,
 
       onResponse(taskResp) {
         switch(taskResp.status) {

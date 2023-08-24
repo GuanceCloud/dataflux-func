@@ -273,7 +273,7 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
           funcCallKwargs: funcCallKwargs || {},
           origin        : 'connector',
           originId      : connector.id,
-          queue         : CONFIG._FUNC_TASK_DEFAULT_WEBSOCKET_HANDLER_QUEUE,
+          queue         : CONFIG._FUNC_TASK_QUEUE_WEBSOCKET_HANDLER,
         }
         mainAPICtrl.createFuncRunnerTaskReq(locals, opt, function(err, _taskReq) {
           if (err) return asyncCallback(err);

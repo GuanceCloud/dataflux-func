@@ -46,7 +46,7 @@ function createMessageHandler(locals, connectorId, handlerFuncId) {
           },
           origin  : 'connector',
           originId: connectorId,
-          queue   : CONFIG._FUNC_TASK_DEFAULT_SUB_HANDLER_QUEUE,
+          queue   : CONFIG._FUNC_TASK_QUEUE_SUB_HANDLER,
         }
         mainAPICtrl.createFuncRunnerTaskReq(locals, opt, function(err, _taskReq) {
           if (err) return asyncCallback(err);
@@ -244,7 +244,7 @@ exports.runListener = function runListener(app) {
       // 查询当前订阅处理工作单元数量
       function(asyncCallback) {
         var cacheKey = toolkit.getWorkerCacheKey('heartbeat', 'workerCountOnQueue', [
-            'workerQueue', CONFIG._FUNC_TASK_DEFAULT_SUB_HANDLER_QUEUE]);
+            'workerQueue', CONFIG._FUNC_TASK_QUEUE_SUB_HANDLER]);
 
         app.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
           if (err) return timesCallback(err);

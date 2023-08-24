@@ -244,7 +244,10 @@ def json_dumps_default(j):
     else:
         return pprint.saferepr(j)
 
-def json_dumps(j, ignore_nothing=False, **kwargs):
+def json_dumps(j, ignore_nothing=False, keep_none=False, **kwargs):
+    if j is None and keep_none:
+        return None
+
     kwargs['allow_nan'] = False
     kwargs['indent'] = kwargs.get('indent') or 0
 

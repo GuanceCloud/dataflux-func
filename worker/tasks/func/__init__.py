@@ -125,7 +125,7 @@ class NotFoundException(DataFluxFuncBaseException):
 class FuncRecursiveCallException(DataFluxFuncBaseException):
     pass
 
-class FuncChainTooLongException(DataFluxFuncBaseException):
+class CallChainTooLongException(DataFluxFuncBaseException):
     pass
 
 class ThreadResultKeyDuplicatedException(DataFluxFuncBaseException):
@@ -1050,9 +1050,9 @@ class FuncBaseTask(BaseTask):
         # 主任务 ID
         self.root_task_id = self.kwargs.get('rootTaskId') or 'ROOT'
 
-        # 函数链
-        self.func_chain = self.kwargs.get('funcChain') or []
-        self.func_chain.append(self.func_id)
+        # 调用链
+        self.call_chain = self.kwargs.get('callChain') or []
+        self.call_chain.append(self.func_id)
 
         # HTTP 请求
         self.http_request = self.kwargs.get('httpRequest') or {}
@@ -1060,7 +1060,8 @@ class FuncBaseTask(BaseTask):
             self.http_request['headers'] = toolkit.IgnoreCaseDict(self.http_request['headers'])
 
         # 缓存函数调用结果
-        self.cache_result = self.kwargs.get('cacheResult') or False
+        self.cache_result     = self.kwargs.get('cacheResult') or False
+        self.cache_result_key = self.kwargs.get('cacheResultKey')
 
         # 脚本 / 脚本环境
         self.script       = None
@@ -1238,8 +1239,8 @@ class FuncBaseTask(BaseTask):
                 e = InvalidAPIOptionException('`timeout` should be an integer or long')
                 raise e
 
-            _min_timeout = CONFIG['_FUNC_TASK_MIN_TIMEOUT']
-            _max_timeout = CONFIG['_FUNC_TASK_MAX_TIMEOUT']
+            _min_timeout = CONFIG['_FUNC_TASK_TIMEOUT_MIN']
+            _max_timeout = CONFIG['_FUNC_TASK_TIMEOUT_MAX']
             if not (_min_timeout <= timeout <= _max_timeout):
                 e = InvalidAPIOptionException(f'`timeout` should be between `{_min_timeout}` and `{_max_timeout}` (seconds)')
                 raise e
@@ -1390,17 +1391,17 @@ class FuncBaseTask(BaseTask):
                 self.logger.error(line)
 
     def _call_func(self, safe_scope, func_id, kwargs=None, save_result=False):
-        func_chain = safe_scope.get('_DFF_FUNC_CHAIN') or []
-        func_chain_info = ' -> '.join(map(lambda x: f'`{x}`', func_chain))
+        call_chain = safe_scope.get('_DFF_FUNC_CHAIN') or []
+        call_chain_info = ' -> '.join(map(lambda x: f'`{x}`', call_chain))
 
         # 检查函数链长度
-        if len(func_chain) >= CONFIG['_FUNC_TASK_MAX_CHAIN_LENGTH']:
-            e = FuncChainTooLongException(func_chain_info)
+        if len(call_chain) >= CONFIG['_FUNC_TASK_CALL_CHAIN_LIMIT']:
+            e = CallChainTooLongException(call_chain_info)
             raise e
 
         # 检查重复调用
-        if func_id in func_chain:
-            e = FuncRecursiveCallException(f'{func_chain_info} -> [{func_id}]')
+        if func_id in call_chain:
+            e = FuncRecursiveCallException(f'{call_chain_info} -> [{func_id}]')
             raise e
 
         # 检查并获取函数信息
@@ -1424,7 +1425,7 @@ class FuncBaseTask(BaseTask):
         if isinstance(func_extra_config, str):
             func_extra_config = toolkit.json_loads(func_extra_config) or {}
 
-        timeout = CONFIG['_FUNC_TASK_DEFAULT_TIMEOUT']
+        timeout = CONFIG['_FUNC_TASK_TIMEOUT_DEFAULT']
         if func_extra_config.get('timeout'):
             timeout = func_extra_config['timeout']
 
@@ -1432,7 +1433,7 @@ class FuncBaseTask(BaseTask):
 
         # 任务请求
         task_req = {
-            'name': 'Main.FuncRunner',
+            'name': 'Func.Runner',
             'kwargs': {
                 'rootTaskId'    : self.task_id,
                 'funcId'        : func_id,
@@ -1440,13 +1441,13 @@ class FuncBaseTask(BaseTask):
                 'origin'        : safe_scope.get('_DFF_ORIGIN'),
                 'originId'      : safe_scope.get('_DFF_ORIGIN_ID'),
                 'crontab'       : safe_scope.get('_DFF_CRONTAB'),
-                'funcChain'     : func_chain,
+                'callChain'     : call_chain,
             },
             'triggerTime'    : safe_scope.get('_DFF_TRIGGER_TIME'),
             'queue'          : safe_scope.get('_DFF_QUEUE'),
             'timeout'        : timeout,
             'expires'        : expires,
-            'taskRecordLimit': CONFIG['_TASK_RECORD_DEFAULT_LIMIT_INTEGRATION'],
+            'taskRecordLimit': self.task_record_limit,
         }
         self.cache_db.put_task(task_req)
 
@@ -1586,7 +1587,7 @@ class FuncBaseTask(BaseTask):
             '_DFF_SCRIPT_ID'      : self.script_id,
             '_DFF_FUNC_ID'        : self.func_id,
             '_DFF_FUNC_NAME'      : self.func_name,
-            '_DFF_FUNC_CHAIN'     : self.func_chain,
+            '_DFF_FUNC_CHAIN'     : self.call_chain,
             '_DFF_ORIGIN'         : self.origin,
             '_DFF_ORIGIN_ID'      : self.origin_id,
             '_DFF_TRIGGER_TIME'   : self.trigger_time,
@@ -1594,7 +1595,6 @@ class FuncBaseTask(BaseTask):
             '_DFF_START_TIME'     : self.start_time,
             '_DFF_START_TIME_MS'  : self.start_time_ms,
             '_DFF_CRONTAB'        : self.kwargs.get('crontab'),
-            '_DFF_CRONTAB_DELAY'  : self.kwargs.get('crontabDelay'),
             '_DFF_QUEUE'          : self.queue,
             '_DFF_HTTP_REQUEST'   : self.http_request,
         }

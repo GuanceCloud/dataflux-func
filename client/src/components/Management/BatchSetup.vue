@@ -118,7 +118,7 @@ recentTaskCount: '{n} 个近期任务'
                     :precision="0"
                     v-model="form.taskRecordLimit"></el-input-number>
                   <span class="task-info-limit-unit">{{ $tc('recentTaskCount', form.taskRecordLimit, { n: '' }) }} </span>
-                  <el-link class="task-info-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_DEFAULT_LIMIT_BATCH')">{{ $t('Restore Default') }}</el-link>
+                  <el-link class="task-info-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH')">{{ $t('Restore Default') }}</el-link>
                 </el-form-item>
 
                 <el-form-item :label="$t('API Auth')" prop="apiAuthId">
@@ -168,7 +168,7 @@ export default {
         switch(this.T.setupPageMode()) {
           case 'add':
             this.T.jsonClear(this.form);
-            this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_DEFAULT_LIMIT_BATCH');
+            this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH');
             this.data = {};
             break;
 
@@ -200,7 +200,7 @@ export default {
         nextForm.apiAuthId = this.data.apia_id;
 
         if (this.T.isNothing(nextForm.taskRecordLimit)) {
-          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_DEFAULT_LIMIT_BATCH')
+          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH')
         }
 
         this.form = nextForm;
@@ -377,7 +377,7 @@ export default {
         funcCallKwargsJSON: null,
         tagsJSON          : [],
         apiAuthId         : null,
-        taskRecordLimit   : this.$store.getters.SYSTEM_INFO('_TASK_RECORD_DEFAULT_LIMIT_BATCH'),
+        taskRecordLimit   : this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH'),
         note              : null,
       },
       formRules: {

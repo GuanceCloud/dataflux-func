@@ -310,14 +310,14 @@ class RedisHelper(object):
     def rpush(self, key, value):
         return self.run('rpush', key, value)
 
-    def lpop(self, key):
-        return self.run('lpop', key)
+    def lpop(self, key, count=1):
+        return self.run('lpop', key, count)
 
     def blpop(self, key):
         return self.run('blpop', key)
 
-    def rpop(self, key):
-        return self.run('rpop', key)
+    def rpop(self, key, count=1):
+        return self.run('rpop', key, count)
 
     def brpop(self, key):
         return self.run('brpop', key)
@@ -506,7 +506,7 @@ class RedisHelper(object):
         task_req['triggerTime'] = task_req.get('triggerTime') or toolkit.get_timestamp(3)
 
         if toolkit.is_none_or_whitespace(task_req.get('queue')):
-            task_req['queue'] = CONFIG['_TASK_DEFAULT_QUEUE']
+            task_req['queue'] = CONFIG['_TASK_QUEUE_DEFAULT']
 
         task_req_dumps = toolkit.json_dumps(task_req)
 

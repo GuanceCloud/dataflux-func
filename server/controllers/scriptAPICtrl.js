@@ -352,7 +352,7 @@ exports.publish = function(req, res, next) {
 
           var funcId = `${id}.${func.name}`;
 
-          var timeout = CONFIG._FUNC_TASK_DEFAULT_TIMEOUT;
+          var timeout = CONFIG._FUNC_TASK_TIMEOUT_DEFAULT;
           if (func.extraConfig.timeout) {
             timeout = parseInt(func.extraConfig.timeout);
           }
@@ -360,16 +360,16 @@ exports.publish = function(req, res, next) {
           var expires = timeout;
 
           var taskReq = {
-            name: 'Main.FuncRunner',
+            name: 'Func.Runner',
             kwargs: {
               funcId  : funcId,
               origin  : 'integration',
               originId: 'autoRun.onScriptPublish',
             },
-            queue          : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
+            queue          : CONFIG._FUNC_TASK_QUEUE_DEFAULT,
             timeout        : timeout,
             expires        : expires,
-            taskRecordLimit: CONFIG._TASK_RECORD_DEFAULT_LIMIT_INTEGRATION,
+            taskRecordLimit: CONFIG._TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_INTEGRATION,
           }
           res.locals.cacheDB.putTask(taskReq);
         });

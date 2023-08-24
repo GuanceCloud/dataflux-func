@@ -28,11 +28,11 @@ from worker import LOGGER, REDIS, LISTINGING_QUEUES, run_background
 from worker.tasks import TaskTimeoutException
 
 # 任务表
-from worker.tasks.example            import ExampleSuccess, ExampleFailure, ExampleTimeout
-from worker.tasks.crontab_starter    import CrontabStarter, CrontabManualStarter
-from worker.tasks.main.func_debugger import FuncDebugger
-from worker.tasks.main.func_runner   import FuncRunner
-from worker.tasks.internal           import SyncCacheToDB, AutoClean, AutoBackupDB, ReloadDataMD5Cache, CheckConnector, QueryConnector, AutoRun
+from worker.tasks.example         import ExampleSuccess, ExampleFailure, ExampleTimeout
+from worker.tasks.crontab_starter import CrontabStarter, CrontabManualStarter
+from worker.tasks..debugger       import FuncDebugger
+from worker.tasks..runner         import FuncRunner
+from worker.tasks.internal        import FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache, CheckConnector, QueryConnector, AutoRun
 
 TASK_CLS_MAP = {
     # 示例任务
@@ -49,7 +49,7 @@ TASK_CLS_MAP = {
     FuncRunner.name          : FuncRunner,
 
     # 内部任务
-    SyncCacheToDB.name       : SyncCacheToDB,
+    FlushDataBuffer.name     : FlushDataBuffer,
     AutoClean.name           : AutoClean,
     AutoBackupDB.name        : AutoBackupDB,
     ReloadDataMD5Cache.name  : ReloadDataMD5Cache,
@@ -104,4 +104,4 @@ if __name__ == '__main__':
     # 启动后台
     run_background(func=consume,
                    pool_size=CONFIG['_WORKER_CONCURRENCY'],
-                   max_tasks=CONFIG['_WORKER_MAX_TASKS_PER_CHILD'])
+                   max_tasks=CONFIG['_WORKER_PROCESS_CONSUME_LIMIT'])

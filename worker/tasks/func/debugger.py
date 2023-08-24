@@ -20,7 +20,7 @@ from worker.tasks.main import FuncBaseTask, BaseFuncResponse, FuncResponse, NotF
 CONFIG = yaml_resources.get('CONFIG')
 
 class FuncDebugger(FuncBaseTask):
-    name = 'Main.FuncDebugger'
+    name = 'Func.Debugger'
 
     def __init__(self, *args, **kwargs):
         # 跟踪内存使用

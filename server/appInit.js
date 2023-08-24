@@ -231,7 +231,8 @@ exports.afterAppCreated = function(app, server) {
         });
       },
       function(asyncCallback) {
-        async.eachLimit(CONFIG._MONITOR_WORKER_QUEUE_LIST, 5, function(queue, eachCallback) {
+        var queues = toolkit.range(CONFIG._WORKER_QUEUE_COUNT);
+        async.eachLimit(queues, 5, function(queue, eachCallback) {
           var workerQueue = toolkit.getWorkerQueue(queue);
           app.locals.cacheDB.llen(workerQueue, function(err, cacheRes) {
             if (err) return eachCallback(err);

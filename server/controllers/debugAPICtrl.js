@@ -133,7 +133,8 @@ exports.testAPIBehavior = function(req, res, next) {
 };
 
 exports.clearWorkerQueues = function(req, res, next) {
-  async.eachLimit(CONFIG._MONITOR_WORKER_QUEUE_LIST, 5, function(queue, eachCallback) {
+  var queues = toolkit.range(CONFIG._WORKER_QUEUE_COUNT);
+  async.eachLimit(queues, 5, function(queue, eachCallback) {
     var workerQueue = toolkit.getWorkerQueue(queue);
     res.locals.cacheDB.ltrim(workerQueue, 1, 0, eachCallback);
 

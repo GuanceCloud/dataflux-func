@@ -124,7 +124,7 @@ recentTaskCount: '{n} 个近期任务'
                     :precision="0"
                     v-model="form.taskRecordLimit"></el-input-number>
                   <span class="task-info-limit-unit">{{ $tc('recentTaskCount', form.taskRecordLimit, { n: '' }) }} </span>
-                  <el-link class="task-info-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_DEFAULT_LIMIT_AUTH_LINK')">{{ $t('Restore Default') }}</el-link>
+                  <el-link class="task-info-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK')">{{ $t('Restore Default') }}</el-link>
                 </el-form-item>
 
                 <el-form-item :label="$t('API Auth')" prop="apiAuthId">
@@ -205,7 +205,7 @@ export default {
             this.T.jsonClear(this.form);
             this.form.throttlingJSON  = {};
             this.form.showInDoc       = false;
-            this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_DEFAULT_LIMIT_AUTH_LINK');
+            this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK');
             this.data = {};
             break;
 
@@ -238,7 +238,7 @@ export default {
         nextForm.throttlingJSON     = nextForm.throttlingJSON || {};
 
         if (this.T.isNothing(nextForm.taskRecordLimit)) {
-          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_DEFAULT_LIMIT_AUTH_LINK')
+          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK')
         }
 
         this.form = nextForm;
@@ -440,7 +440,7 @@ export default {
         expireTime        : null,
         throttlingJSON    : {},
         showInDoc         : false,
-        taskRecordLimit   : this.$store.getters.SYSTEM_INFO('_TASK_RECORD_DEFAULT_LIMIT_AUTH_LINK'),
+        taskRecordLimit   : this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK'),
         note              : null,
       },
 
