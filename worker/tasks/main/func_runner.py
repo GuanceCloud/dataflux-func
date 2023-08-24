@@ -190,7 +190,7 @@ class FuncRunner(FuncBaseTask):
                         self.logger.error(line)
 
                 try:
-                    return_value['json_dumps'] = toolkit.json_dumps(func_resp.data)
+                    return_value['jsonDumps'] = toolkit.json_dumps(func_resp.data)
                 except Exception as e:
                     for line in traceback.format_exc().splitlines():
                         self.logger.error(line)

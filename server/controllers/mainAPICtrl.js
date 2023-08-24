@@ -55,7 +55,7 @@ var BATCH_LRU     = new LRU(FUNC_CACHE_OPT);
 var API_AUTH_LRU  = new LRU(FUNC_CACHE_OPT);
 
  // LRU + Redis
-var FUNC_RESULT_LRU = new LRU({
+var FUNC_RESULT_CACHE_LRU = new LRU({
   max   : CONFIG._LRU_FUNC_RESULT_CACHE_LIMIT,
   maxAge: CONFIG._LRU_FUNC_RESULT_CACHE_MAX_AGE * 1000,
 });
@@ -396,7 +396,7 @@ function createFuncRunnerTaskReqForAPIAuth(locals, req, options, callback) {
 
 function _getFuncCallResultCache(locals, cacheKey, callback) {
   // 1. 从本地缓存中获取
-  var lruRes = FUNC_RESULT_LRU.get(cacheKey);
+  var lruRes = FUNC_RESULT_CACHE_LRU.get(cacheKey);
   if (lruRes) {
     return callback(null, lruRes);
   }
@@ -409,7 +409,7 @@ function _getFuncCallResultCache(locals, cacheKey, callback) {
       cacheRes = JSON.parse(cacheRes);
     }
 
-    FUNC_RESULT_LRU.set(lruKey, cacheRes);
+    FUNC_RESULT_CACHE_LRU.set(lruKey, cacheRes);
     return callback(err, cacheRes);
   });
 };
@@ -596,12 +596,12 @@ function _doAPIResponse(res, taskReq, taskResp, callback) {
       }
 
       // 根据 returnType 响应
-      if (returnType === 'raw') {
-        return res.locals.sendRaw(returnValue[returnType] || null, responseControl.contentType);
-
-      } else {
+      if (returnType === 'ALL') {
         var ret = toolkit.initRet(taskResp);
         return res.locals.sendJSON(ret);
+
+      } else {
+        return res.locals.sendRaw(returnValue[returnType] || null, responseControl.contentType);
       }
     }
   }
@@ -1393,13 +1393,6 @@ exports.callFuncDraft = function(req, res, next) {
     var ret = toolkit.initRet(taskResp);
     res.locals.sendJSON(ret);
   });
-};
-
-exports.getFuncResult = function(req, res, next) {
-  var taskId     = req.query.taskId;
-  var returnType = req.query.returnType || 'raw';
-
-  // TODO 单独获取函数返回值
 };
 
 exports.getFuncList = function(req, res, next) {

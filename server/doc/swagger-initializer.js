@@ -1,6 +1,5 @@
 window.onload = function() {
   var vuexData = JSON.parse(localStorage.getItem('vuex')) || {};
-  console.log(vuexData)
   var apiDocPath = `/api?lang=${vuexData.uiLocale || 'zh-CN'}`;
 
   //<editor-fold desc="Changeable Configuration Block">

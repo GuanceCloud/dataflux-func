@@ -60,11 +60,6 @@ routeLoader.load(ROUTE.mainAPI.callFuncDraft, [
   mainAPICtrl.callFuncDraft,
 ]);
 
-// 获取函数结果
-routeLoader.load(ROUTE.mainAPI.getFuncResult, [
-  mainAPICtrl.getFuncResult,
-]);
-
 // 获取函数文档（JSON文档）
 routeLoader.load(ROUTE.mainAPI.getFuncList, [
   mainAPICtrl.getFuncList,
