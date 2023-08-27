@@ -633,7 +633,7 @@ exports.deploy = function(req, res, next) {
 
 function reloadDataMD5Cache(locals, callback) {
   var taskReq = {
-    name  : 'Sys.ReloadDataMD5Cache',
+    name  : 'Internal.ReloadDataMD5Cache',
     kwargs: { all: true },
   }
   locals.cacheDB.putTask(taskReq, callback);

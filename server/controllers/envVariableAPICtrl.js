@@ -129,7 +129,7 @@ exports.delete = function(req, res, next) {
 
 function reloadDataMD5Cache(locals, envVariableId, callback) {
   var taskReq = {
-    name  : 'Sys.ReloadDataMD5Cache',
+    name  : 'Internal.ReloadDataMD5Cache',
     kwargs: { type: 'envVariable', id: envVariableId },
   }
   locals.cacheDB.putTask(taskReq, callback);

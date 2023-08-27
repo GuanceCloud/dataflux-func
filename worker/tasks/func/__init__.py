@@ -11,7 +11,6 @@ import time
 import importlib
 import functools
 from concurrent.futures import ThreadPoolExecutor
-from collections import OrderedDict
 
 # 3rd-party Modules
 import six
@@ -1082,7 +1081,7 @@ class FuncBaseTask(BaseTask):
 
         f_argspec = None
         f_args    = None
-        f_kwargs  = OrderedDict()
+        f_kwargs  = {}
         if six.PY3:
             f_argspec = inspect.getfullargspec(F)
         else:

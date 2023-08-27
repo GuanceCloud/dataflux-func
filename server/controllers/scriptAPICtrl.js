@@ -380,7 +380,7 @@ exports.publish = function(req, res, next) {
 
 function reloadDataMD5Cache(locals, scriptId, callback) {
   var taskReq = {
-    name  : 'Sys.ReloadDataMD5Cache',
+    name  : 'Internal.ReloadDataMD5Cache',
     kwargs: { type: 'script', id: scriptId },
   }
   locals.cacheDB.putTask(taskReq, callback);

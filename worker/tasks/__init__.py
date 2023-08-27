@@ -4,6 +4,7 @@
 import traceback
 
 # 3rd-party Modules
+import arrow
 
 # Project Modules
 from worker.utils import toolkit, yaml_resources
@@ -19,7 +20,7 @@ SYSTEM_SETTING_LOCAL_CACHE = toolkit.LocalCache(expires=15)
 GUANCE_DATA_STATUS_DEFAULT = 'info'
 GUANCE_DATA_STATUS_MAP = {
     'failure': 'critical',
-    'timeout': 'error'
+    'timeout': 'error',
     'skip'   : 'warning',
     'waiting': 'info',
     'pending': 'info',
@@ -246,25 +247,28 @@ class BaseTask(object):
 
     def create_task_record_guance_data(self, task_resp):
         data = {
-            'measurement': 'DFF_task_record',
+            'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD'],
             'tags': {
-                'id'    : self.task_id,
-                'name'  : self.name,
-                'queue' : str(self.queue),
-                'status': self.status,
+                'id'         : self.task_id,
+                'name'       : self.name,
+                'queue'      : str(self.queue),
+                'task_status': self.status,
             },
             'fields': {
-                'kwargs'       : toolkit.json_dumps(self.kwargs),
-                'trigger_time' : self.trigger_time_iso,
-                'start_time'   : self.start_time_iso,
-                'end_time'     : self.end_time_iso,
-                'delay'        : self.delay,
-                'timeout'      : self.timeout,
-                'expires'      : self.expires,
-                'ignore_result': self.ignore_result,
-                'result'       : toolkit.json_dumps(self.result, keep_none=True),
-                'error'        : self.error,
-                'error_stack'  : self.error_stack,
+                'kwargs'          : toolkit.json_dumps(self.kwargs),
+                'delay'           : self.delay,
+                'timeout'         : self.timeout,
+                'expires'         : self.expires,
+                'ignore_result'   : self.ignore_result,
+                'result'          : toolkit.json_dumps(self.result, keep_none = True),
+                'error'           : self.error,
+                'error_stack'     : self.error_stack,
+                'trigger_time_iso': self.trigger_time_iso,
+                'start_time_iso'  : self.start_time_iso,
+                'end_time_iso'    : self.end_time_iso,
+                'wait_cost'       : self.start_time_ms - self.trigger_time_ms,
+                'run_cost'        : self.end_time_ms   - self.start_time_ms,
+                'total_cost'      : self.end_time_ms   - self.trigger_time_ms,
             }
         }
         return data
@@ -276,13 +280,14 @@ class BaseTask(object):
             cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecord')
             self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
 
-        data = self.create_task_record_guance_data(task_resp)
-        if data:
-            cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordGuance')
-            self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
+        if self.guance_data_upload_url:
+            data = self.create_task_record_guance_data(task_resp)
+            if data:
+                cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordGuance')
+                self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
 
     def upload_guance_data(self, category, data):
-        if not self.guance_data_upload_url
+        if not self.guance_data_upload_url:
             return
 
         if not data:
@@ -293,21 +298,21 @@ class BaseTask(object):
         self.logger.debug(f'[UPLOAD GUANCE DATA]: {len(data)} {category} point(s)')
 
         for p in data:
-            # 替换 tags.status 值
-            if 'status' in p['tags']:
-                try:
-                    p['tags']['status'] = GUANCE_DATA_STATUS_MAP[p['tags']['status']]
-                except Exception as e:
-                    p['tags']['status'] = GUANCE_DATA_STATUS_DEFAULT
-
             # 添加 tags.site_name
             site_name = self.system_settings.get('GUANCE_DATA_SITE_NAME')
             if site_name:
                 p['tags']['site_name'] = site_name
 
+            # 根据 task_status 增补适用于观测云的 status 值
+            if 'task_status' in p['tags']:
+                try:
+                    p['tags']['status'] = GUANCE_DATA_STATUS_MAP[p['tags']['task_status']]
+                except Exception as e:
+                    p['tags']['status'] = GUANCE_DATA_STATUS_DEFAULT
+
         # 上报数据
         try:
-            dataway = DataWay(url=upload_url)
+            dataway = DataWay(url=self.guance_data_upload_url)
             status_code, resp_data = dataway.post_line_protocol(path=f'/v1/write/{category}', points=data)
             if status_code > 200:
                 self.logger.error(resp_data)
@@ -419,10 +424,6 @@ class BaseTask(object):
 
             # 任务记录
             self.buff_task_record(task_resp)
-
-            # 上报观测云
-            if self.guance_data_upload_url:
-                self.buff_guance_data(task_resp)
 
             # 发送结果通知
             if not self.ignore_result:

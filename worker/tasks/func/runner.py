@@ -6,7 +6,6 @@
 '''
 
 # Built-in Modules
-import time
 import pprint
 import traceback
 
@@ -14,7 +13,7 @@ import traceback
 
 # Project Modules
 from worker.utils import toolkit, yaml_resources
-from worker.tasks.main import FuncBaseTask, BaseFuncResponse, FuncResponse, FuncResponseLargeData, NotFoundException
+from worker.tasks.func import FuncBaseTask, BaseFuncResponse, FuncResponse, FuncResponseLargeData, NotFoundException
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -37,7 +36,12 @@ class FuncRunner(FuncBaseTask):
 
     @property
     def full_log_messages(self):
-        log_messages = script_scope['DFF'].log_messages or None
+        if self.script_scope is None:
+            return None
+
+        log_messages = self.script_scope['DFF'].log_messages
+        if not log_messages:
+            return None
 
         data = []
         if log_messages:
@@ -51,7 +55,12 @@ class FuncRunner(FuncBaseTask):
 
     @property
     def reduced_log_messages(self):
-        log_messages = script_scope['DFF'].log_messages or None
+        if self.script_scope is None:
+            return None
+
+        log_messages = self.script_scope['DFF'].log_messages
+        if not log_messages:
+            return None
 
         data = []
         for line in log_messages:
@@ -78,11 +87,12 @@ class FuncRunner(FuncBaseTask):
 
     def create_task_record_guance_data(self, task_resp):
         data = {
-            'measurement': 'DFF_task_record_func',
+            'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD_FUNC'],
             'tags': {
                 'id'            : self.task_id,
+                'name'          : self.name,
                 'queue'         : str(self.queue),
-                'status'        : self.status,
+                'task_status'   : self.status,
                 'workspace_uuid': self.func_call_kwargs.get('workspace_uuid'),
                 'root_task_id'  : self.root_task_id,
                 'script_set_id' : self.script_set_id,
@@ -92,24 +102,23 @@ class FuncRunner(FuncBaseTask):
                 'originId'      : self.origin_id,
             },
             'fields': {
-                'func_call_kwargs'   : toolkit.json_dumps(self.func_call_kwargs),
-                'crontab'            : self.kwargs.get('crontab'),
-                'call_chain'         : toolkit.json_dumps(self.call_chain, keep_none=True),
-                'return_value'       : toolkit.json_dumps(self.return_value, keep_none=True)
-                'response_control'   : toolkit.json_dumps(self.response_control, keep_none=True),
-                'trigger_time'       : self.trigger_time_iso,
-                'start_time'         : self.start_time_iso,
-                'end_time'           : self.end_time_iso,
-                'delay'              : self.delay,
-                'timeout'            : self.timeout,
-                'expires'            : self.expires,
-                'ignore_result'      : self.ignore_result,
-                'error'              : self.error,
-                'error_stack'        : self.error_stack,
-                'message'            : self.full_log_messages,
-                'wait_cost'          : self.start_time_ms - self.trigger_time_ms,
-                'run_cost'           : self.end_time_ms   - self.start_time_ms,
-                'total_cost'         : self.end_time_ms   - self.trigger_time_ms,
+                'func_call_kwargs': toolkit.json_dumps(self.func_call_kwargs),
+                'crontab'         : self.kwargs.get('crontab'),
+                'call_chain'      : toolkit.json_dumps(self.call_chain, keep_none=True),
+                'return_value'    : toolkit.json_dumps(self.return_value, keep_none=True),
+                'delay'           : self.delay,
+                'timeout'         : self.timeout,
+                'expires'         : self.expires,
+                'ignore_result'   : self.ignore_result,
+                'error'           : self.error,
+                'error_stack'     : self.error_stack,
+                'message'         : self.full_log_messages,
+                'trigger_time_iso': self.trigger_time_iso,
+                'start_time_iso'  : self.start_time_iso,
+                'end_time_iso'    : self.end_time_iso,
+                'wait_cost'       : self.start_time_ms - self.trigger_time_ms,
+                'run_cost'        : self.end_time_ms   - self.start_time_ms,
+                'total_cost'      : self.end_time_ms   - self.trigger_time_ms,
             }
         }
         return data

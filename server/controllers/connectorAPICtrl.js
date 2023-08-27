@@ -535,7 +535,7 @@ exports.listSubInfo = function(req, res, next) {
 
 function reloadDataMD5Cache(locals, connectorId, callback) {
   var taskReq = {
-    name  : 'Sys.ReloadDataMD5Cache',
+    name  : 'Internal.ReloadDataMD5Cache',
     kwargs: { type: 'connector', id: connectorId },
   }
   locals.cacheDB.putTask(taskReq, callback);

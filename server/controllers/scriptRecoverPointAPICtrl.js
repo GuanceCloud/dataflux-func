@@ -32,7 +32,7 @@ exports.recover = function(req, res, next) {
     // 发送更新脚本代码 MD5 缓存任务
     function(asyncCallback) {
       var taskReq = {
-        name  : 'Sys.ReloadDataMD5Cache',
+        name  : 'Internal.ReloadDataMD5Cache',
         kwargs: { all: true },
       }
       res.locals.cacheDB.putTask(taskReq, asyncCallback);

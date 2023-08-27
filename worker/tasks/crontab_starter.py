@@ -59,7 +59,7 @@ class CrontabStarter(BaseTask):
 
         for c in crontab_configs:
             # 集成 Crontab 使用函数 ID 作为自动触发配置 ID
-            c['id']  = f'integration-{c['funcId']}'
+            c['id']  = f"integration-{c['funcId']}"
 
         crontab_configs = map(self.prepare_contab_config, crontab_configs)
         crontab_configs = filter(self.filter_crontab_config, crontab_configs)

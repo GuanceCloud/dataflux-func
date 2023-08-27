@@ -30,8 +30,8 @@ from worker.tasks import TaskTimeoutException
 # 任务表
 from worker.tasks.example         import ExampleSuccess, ExampleFailure, ExampleTimeout
 from worker.tasks.crontab_starter import CrontabStarter, CrontabManualStarter
-from worker.tasks..debugger       import FuncDebugger
-from worker.tasks..runner         import FuncRunner
+from worker.tasks.func.debugger   import FuncDebugger
+from worker.tasks.func.runner     import FuncRunner
 from worker.tasks.internal        import FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache, CheckConnector, QueryConnector, AutoRun
 
 TASK_CLS_MAP = {

@@ -296,7 +296,10 @@ def no_none_or_whitespace(o):
     return dict([(k,v) for k, v in o.items() if not is_none_or_whitespace(v)])
 
 def get_timestamp(ndigits=0):
-    return round(time.time(), ndigits)
+    if ndigits == 0:
+        return int(time.time())
+    else:
+        return round(time.time(), ndigits)
 
 def get_timestamp_ms():
     return int(time.time() * 1000)

@@ -15,7 +15,7 @@ import tracemalloc
 # Project Modules
 from worker.utils import toolkit, yaml_resources
 from worker.tasks import TaskTimeoutException
-from worker.tasks.main import FuncBaseTask, BaseFuncResponse, FuncResponse, NotFoundException
+from worker.tasks.func import FuncBaseTask, BaseFuncResponse, FuncResponse, NotFoundException
 
 CONFIG = yaml_resources.get('CONFIG')
 

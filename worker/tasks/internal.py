@@ -19,13 +19,13 @@ import arrow
 from worker.utils import toolkit, yaml_resources
 from worker.utils.extra_helpers import HexStr, format_sql_v2 as format_sql
 from worker.tasks import BaseTask
-from worker.tasks.main import CONNECTOR_HELPER_CLASS_MAP, decipher_connector_config_fields
+from worker.tasks.func import CONNECTOR_HELPER_CLASS_MAP, decipher_connector_config_fields
 
 CONFIG     = yaml_resources.get('CONFIG')
 IMAGE_INFO = yaml_resources.get('IMAGE_INFO')
 
 class BaseInternalTask(BaseTask):
-    def safe_call(self, func, *args, *kwargs):
+    def safe_call(self, func, *args, **kwargs):
         try:
             func(*args, **kwargs)
         except Exception as e:
@@ -48,12 +48,16 @@ class FlushDataBuffer(BaseInternalTask):
     }
 
     def _flush_data_buffer(self, cache_key):
-        cache_res = self.cache_db.run('rpop', cache_key, CONFIG['_TASK_FLUSH_DATA_BUFFER_BULK_COUNT'])
-        if not cache_res:
-            return None
+        data = []
+        for i in range(CONFIG['_TASK_FLUSH_DATA_BUFFER_BULK_COUNT']):
+            cache_res = self.cache_db.run('rpop', cache_key)
+            if not cache_res:
+                break
 
-        cache_res = map(lambda x: toolkit.json_loads(x), cache_res)
-        return cache_res
+            data.append(cache_res)
+
+        data = list(map(lambda x: toolkit.json_loads(x), data))
+        return data
 
     def flush_task_record(self):
         # 搜集数据
@@ -171,11 +175,11 @@ class FlushDataBuffer(BaseInternalTask):
             # 时间戳按照分钟对齐（减少内部时序数据存储压力）
             aligned_timestamp = int(int(timestamp) / 60) * 60
 
-            pk = f'{func_id}~{aligned_timestamp}
+            pk = f'{func_id}~{aligned_timestamp}'
             if pk not in count_map:
                 count_map[pk] = {
                     'funcId'   : func_id,
-                    'count'    : 0
+                    'count'    : 0,
                     'timestamp': aligned_timestamp,
                 }
 
@@ -184,7 +188,7 @@ class FlushDataBuffer(BaseInternalTask):
             # 生成观测云数据
             if self.guance_data_upload_url:
                 guance_data.append({
-                    'measurement': 'DFF_func_call',
+                    'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_FUNC_CALL'],
                     'tags': {
                         'workspace_uuid': d['workspaceUUID'],
                         'script_set_id' : d['scriptSetId'],
@@ -192,7 +196,7 @@ class FlushDataBuffer(BaseInternalTask):
                         'func_id'       : func_id,
                         'origin'        : d['origin'],
                         'queue'         : d['queue'],
-                        'status'        : d['status'],
+                        'task_status'   : d['status'],
                     },
                     'fields': {
                         'wait_cost' : d['waitCost'],
@@ -667,7 +671,7 @@ class ReloadDataMD5Cache(BaseInternalTask):
         meta = self.META.get(data_type)
 
         sql = '''
-            SELECT `id`, ? AS `md5` FROM ??
+            SELECT `id`, ?? AS `md5` FROM ??
             '''
         sql_params = [ meta['md5Field'], meta['table'] ]
 

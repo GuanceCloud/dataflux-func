@@ -156,10 +156,11 @@ class RedisHelper(object):
                 elif isinstance(key, dict):
                     key = ', '.join(key.keys())
 
-            kwargs_dump = ''
-            if kwargs:
-                kwargs_dump = 'kwargs=' + toolkit.json_dumps(kwargs)
-            self.logger.debug('[REDIS] Run `{} {}` {}'.format(command.upper(), key, kwargs_dump))
+            dumps = ' '.join([
+                ' '.join([ str(x) for x in command_args[1:]]),
+                ' '.join([ f'{k}={v}' for k, v in kwargs.items()])
+            ]).strip()
+            self.logger.debug(f'[REDIS] Run `{command.upper()} {key} {dumps}`'.strip())
 
         return getattr(self.client, command)(*command_args, **kwargs)
 
