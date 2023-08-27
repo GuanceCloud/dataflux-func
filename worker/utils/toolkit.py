@@ -783,10 +783,7 @@ def is_valid_crontab(crontab):
     crontab = to_croniter_style(crontab)
     return croniter.is_valid(crontab)
 
-def is_match_crontab(crontab, t, tz=None):
+def is_match_crontab(crontab, t, tz):
     crontab = to_croniter_style(crontab)
-
-    tz = tz or 'Asia/Shanghai'
     at = arrow.get(t).to(tz)
-
     return croniter.match(crontab, at.datetime)

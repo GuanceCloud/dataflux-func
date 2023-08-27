@@ -70,10 +70,10 @@ CRONTAB_MAP = {
 class TickTimeoutException(Exception):
     pass
 
-def get_matched_crontab_task_instances(t, tz=None):
+def get_matched_crontab_task_instances(t):
     result = []
     for item in CRONTAB_MAP.values():
-        if toolkit.is_match_crontab(item['crontab'], t, tz):
+        if toolkit.is_match_crontab(item['crontab'], t, tz=CONFIG['TIMEZONE']):
             task_inst = item['task'](kwargs=item.get('kwargs'), trigger_time=t)
             result.append(task_inst)
 
@@ -95,7 +95,7 @@ def tick():
     REDIS.incr(toolkit.get_cache_key('beat', 'tick'))
 
     # 分发配置了 Crontab 的任务
-    task_instances = get_matched_crontab_task_instances(tick_time, tz=CONFIG['TIMEZONE'])
+    task_instances = get_matched_crontab_task_instances(tick_time)
     for task_inst in task_instances:
         # 创建任务请求
         task_req = task_inst.create_task_request()

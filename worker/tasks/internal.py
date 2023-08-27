@@ -477,7 +477,6 @@ class AutoBackupDB(BaseInternalTask):
         table_dumps_parts.append(db_res[0]['Create Table'] + ';')
 
         # 限制数据量的表不备份数据
-
         if table in CONFIG['_DBDATA_TABLE_LIMIT_MAP'] \
             or table in CONFIG['_DBDATA_TABLE_EXPIRE_MAP']:
             return table_dumps_parts
@@ -581,7 +580,7 @@ class AutoBackupDB(BaseInternalTask):
         os.makedirs(backup_dir, exist_ok=True)
 
         # 准备备份
-        now      = arrow.get().to('Asia/Shanghai')
+        now      = arrow.get().to(CONFIG['TIMEZONE'])
         date_str = now.format('YYYYMMDD-HHmmss')
 
         # 生成待压缩文件

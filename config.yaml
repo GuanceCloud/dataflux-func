@@ -330,6 +330,9 @@ _RECENT_FUNC_RUNNING_COUNT_EXPIRES  : 604800
 _RECENT_FUNC_RUNNING_STATUS_EXPIRES : 604800
 _RECENT_FUNC_RUNNING_STATUS_LIMIT   : 50
 
+# 文件上传过期时间
+_UPLOAD_FILE_EXPIRES: 3600
+
 # 数据量限制
 _DBDATA_TABLE_LIMIT_MAP:
   biz_main_operation_record         : 50000
@@ -343,13 +346,10 @@ _DBDATA_TABLE_EXPIRE_MAP:
   biz_main_task_record     : 7776000
   biz_main_task_record_func: 7776000
 
-# 文件上传过期时间
-_UPLOAD_FILE_EXPIRES: 3600
-
 # 日志 / 缓存表
 _DBDATA_LOG_CACHE_TABLE_LIST:
-  - biz_main_task_info
-  - biz_main_operation_record
+  - biz_main_task_record
+  - biz_main_task_record_func
 
 # 数据库自动备份
 _DB_AUTO_BACKUP_PREFIX: dataflux-func-sqldump-
