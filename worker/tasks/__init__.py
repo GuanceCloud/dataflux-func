@@ -2,6 +2,7 @@
 
 # Built-in Modules
 import traceback
+import pprint
 
 # 3rd-party Modules
 import arrow
@@ -73,10 +74,10 @@ class BaseTask(object):
         self.start_time   = None
         self.end_time     = None
 
-        self.result      = None
-        self.error       = None
-        self.error_stack = None
-        self.status      = 'waiting'
+        self.result    = None
+        self.exception = None
+        self.traceback = None
+        self.status    = 'waiting'
 
         # 默认配置
         self.delay             = 0
@@ -206,6 +207,20 @@ class BaseTask(object):
         if guance_data_upload_enabled and guance_data_upload_url:
             return guance_data_upload_url
 
+    @property
+    def exception_type(self):
+        if not self.exception:
+            return None
+
+        return self.exception.__class__.__name__
+
+    @property
+    def exception_text(self):
+        if not self.exception:
+            return None
+
+        return pprint.saferepr(self.exception)
+
     def lock(self, max_age=None):
         max_age = int(max_age or 30)
 
@@ -240,8 +255,9 @@ class BaseTask(object):
             'ignoreResult'  : self.ignore_result,
             'resultJSON'    : toolkit.json_dumps(self.result, keep_none=True),
             'status'        : self.status,
-            'errorTEXT'     : self.error,
-            'errorStackTEXT': self.error_stack,
+            'exceptionType' : self.exception_type,
+            'exceptionTEXT' : self.exception_text,
+            'tracebackTEXT' : self.traceback,
         }
         return data
 
@@ -261,8 +277,9 @@ class BaseTask(object):
                 'expires'         : self.expires,
                 'ignore_result'   : self.ignore_result,
                 'result'          : toolkit.json_dumps(self.result, keep_none = True),
-                'error'           : self.error,
-                'error_stack'     : self.error_stack,
+                'exception_type'  : self.exception_type,
+                'exception'       : self.exception_text,
+                'traceback'       : self.traceback,
                 'trigger_time_iso': self.trigger_time_iso,
                 'start_time_iso'  : self.start_time_iso,
                 'end_time_iso'    : self.end_time_iso,
@@ -374,18 +391,18 @@ class BaseTask(object):
         except TaskInLockedException as e:
             # 任务重复运行错误，警告即可
             self.status = 'skip'
-            self.error  = e
-            self.logger.warning(self.error)
+            self.exception  = e
+            self.logger.warning(self.exception)
 
         except TaskTimeoutException as e:
             # 任务超时
             self.status = 'timeout'
 
             # 可替换错误信息、堆栈信息
-            self.error       = self.error       or e
-            self.error_stack = self.error_stack or traceback.format_exc()
+            self.exception = self.exception or e
+            self.traceback = self.traceback or traceback.format_exc()
 
-            for line in self.error_stack.splitlines():
+            for line in self.traceback.splitlines():
                 self.logger.error(line)
 
         except Exception as e:
@@ -393,10 +410,10 @@ class BaseTask(object):
             self.status = 'failure'
 
             # 可替换错误信息、堆栈信息
-            self.error       = self.error       or e
-            self.error_stack = self.error_stack or traceback.format_exc()
+            self.exception = self.exception or e
+            self.traceback = self.traceback or traceback.format_exc()
 
-            for line in self.error_stack.splitlines():
+            for line in self.traceback.splitlines():
                 self.logger.error(line)
 
         else:
@@ -415,11 +432,11 @@ class BaseTask(object):
                 'startTime'  : self.start_time,
                 'endTime'    : self.end_time,
 
-                'result'    : self.result if not self.ignore_result else 'IGNORED',
-                'status'    : self.status,
-                'error'     : None if self.error is None else str(self.error),
-                'errorClass': None if self.error is None else self.error.__class__.__name__,
-                'errorStack': self.error_stack,
+                'result'       : self.result if not self.ignore_result else 'IGNORED',
+                'status'       : self.status,
+                'exception'    : self.exception_text,
+                'exceptionType': self.exception_type,
+                'traceback'    : self.traceback,
             }
 
             # 任务记录

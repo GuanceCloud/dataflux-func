@@ -158,8 +158,8 @@ Using Crontab Config, you can have functions executed at regular intervals: 使�
 
           <el-table-column align="right" width="350">
             <template slot-scope="scope">
-              <el-link @click="common.goToTaskInfo({ origin: 'crontab', originId: scope.row.id }, { hlDataId: scope.row.id })" :disabled="!scope.row.taskInfoCount">
-                {{ $t('Recent') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
+              <el-link @click="common.goToTaskRecord({ origin: 'crontab', originId: scope.row.id }, { hlDataId: scope.row.id })" :disabled="!scope.row.taskRecordCount">
+                {{ $t('Recent') }} <code v-if="scope.row.taskRecordCount">({{ T.numberLimit(scope.row.taskRecordCount) }})</code>
               </el-link>
               <el-link @click="runTask(scope.row)" :disabled="!scope.row.func_id">
                 {{ $t('Run') }}
@@ -202,7 +202,7 @@ export default {
     async loadData() {
       // 默认过滤条件
       let _listQuery = this.dataFilter = this.T.createListQuery({
-        _withTaskInfo: true,
+        _withTaskRecord: true,
       });
       if (this.T.isNothing(this.$route.query)) {
         _listQuery.origin = 'user';

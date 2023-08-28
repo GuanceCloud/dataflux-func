@@ -436,15 +436,15 @@ function callFuncRunner(locals, taskReq, callback) {
             case 'failure':
               // 失败
               return asyncCallback(new E('EFuncFailed', 'Func task failed', {
-                error     : taskResp.error,
-                errorStack: taskResp.errorStack,
+                exception: taskResp.exception,
+                traceback: taskResp.traceback,
               }));
 
             case 'timeout':
               // 超时
               return asyncCallback(new E('EFuncTimeout', 'Func task timeout', {
-                error     : taskResp.error,
-                errorStack: taskResp.errorStack,
+                exception: taskResp.exception,
+                traceback: taskResp.traceback,
               }));
 
             case 'success':
@@ -1535,16 +1535,16 @@ exports.integratedSignIn = function(req, res, next) {
 
           case 'failure':
             // 失败
-            return next(new E('EFuncFailed.SignInFuncRaisedException', taskResp.error, {
-              error     : taskResp.error,
-              errorStack: taskResp.errorStack,
+            return next(new E('EFuncFailed.SignInFuncRaisedException', taskResp.exception, {
+              exception: taskResp.exception,
+              traceback: taskResp.traceback,
             }));
 
           case 'timeout':
             // 超时
             return next(new E('EFuncFailed.SignInFuncTimeout', 'Sign-in function timeout', {
-              error     : taskResp.error,
-              errorStack: taskResp.errorStack,
+              exception: taskResp.exception,
+              traceback: taskResp.traceback,
             }));
         }
 

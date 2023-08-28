@@ -149,7 +149,7 @@ class DFFWraper(object):
     def __init__(self, inject_funcs=None):
         self.api_func_set = set()
         self.api_funcs    = []
-        self.log_messages = []
+        self.print_logs   = []
 
         self.inject_funcs = inject_funcs
 
@@ -1158,7 +1158,7 @@ class FuncBaseTask(BaseTask):
 
                     module_scope = self.create_safe_scope(import_script_id)
                     if parent_scope:
-                        module_scope['DFF'].log_messages = parent_scope['DFF'].log_messages
+                        module_scope['DFF'].print_logs = parent_scope['DFF'].print_logs
 
                         for k, v in parent_scope.items():
                             if k.startswith('_DFF_'):
@@ -1369,7 +1369,7 @@ class FuncBaseTask(BaseTask):
         self.__prev_log_time = now
 
         line = f'[{message_time}] [+{delta}ms] {message}'
-        safe_scope['DFF'].log_messages.append(line)
+        safe_scope['DFF'].print_logs.append(line)
 
     def _print(self, safe_scope, *args, **kwargs):
         if safe_scope.get('_DFF_DEBUG'):
@@ -1731,11 +1731,11 @@ class FuncBaseTask(BaseTask):
 
         return func_resp
 
-    def get_error_stack(self, only_in_script=True):
+    def get_traceback(self, only_in_script=True):
         try:
             exc_type, exc_obj, tb = sys.exc_info()
 
-            header         = 'Traceback (most recent call last *in User Script*): '
+            header         = 'Traceback (most recent call last *in User Script*):'
             exception_info = ''.join(traceback.format_exception_only(exc_type, exc_obj)).strip()
             stack = []
 
@@ -1807,4 +1807,8 @@ class FuncBaseTask(BaseTask):
             exc_type = exc_obj = tb = None
 
     def clean_up(self):
+        pass
+
+    def buff_task_record(self, *args, **kwargs):
+        # 函数任务进行一般任务记录
         pass

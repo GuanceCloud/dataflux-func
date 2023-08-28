@@ -179,7 +179,8 @@ function startApplication() {
   require('./routers/batchAPIRouter');
   require('./routers/apiAuthAPIRouter');
 
-  require('./routers/taskInfoAPIRouter');
+  require('./routers/taskRecordAPIRouter');
+  require('./routers/taskRecordFuncAPIRouter');
 
   require('./routers/operationRecordAPIRouter');
 

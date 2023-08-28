@@ -258,7 +258,12 @@ function getOpenAPISpec(route) {
             deprecated : !!paramOpt.$isDeprecated,
             required   : !!(paramType.in === 'path' || paramOpt.$isRequired || paramOpt.$required),
           }
-          apiSpec.parameters.push(paramSpec);
+
+          if (toolkit.startsWith(k, '_')) {
+            apiSpec.parameters.unshift(paramSpec);
+          } else {
+            apiSpec.parameters.push(paramSpec);
+          }
         }
       });
 

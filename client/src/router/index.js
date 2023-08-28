@@ -215,14 +215,14 @@ const routes = [
       },
 
       {
-        path: 'task-info-list',
-        name: 'task-info-list',
-        component: () => import('../components/Management/TaskInfoList.vue'),
+        path: 'task-record-list',
+        name: 'task-record-list',
+        component: () => import('../components/Management/TaskRecordList.vue'),
       },
       {
-        path: 'task-info-related-list/:id',
-        name: 'task-info-related-list',
-        component: () => import('../components/Management/TaskInfoList.vue'),
+        path: 'sub-task-record-list/:id',
+        name: 'sub-task-record-list',
+        component: () => import('../components/Management/TaskRecordList.vue'),
       },
 
       {

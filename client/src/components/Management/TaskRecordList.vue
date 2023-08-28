@@ -10,40 +10,45 @@ connector  : Connector
 Exec Mode   : 执行模式
 Trigger Time: 触发时间
 Start Time  : 启动时间
+End Time    : 结束时间
 Task        : 任务
 Func ID     : 函数 ID
 Func Name   : 函数名
 Func Title  : 函数标题
 Main Task   : 主任务
 Sub Task    : 子任务
+Delay       : 延迟执行
+Queue       : 所属队列
 Wait Cost   : 排队耗时
 Run Cost    : 执行耗时
 Log Lines   : 日志行数
 Task Type   : 任务类型
 Task Status : 任务状态
 
-Log         : 日志
-Exception   : 异常
-No log      : 无日志
-No exception: 无异常
+Print Log   : Print 日志
+Traceback   : 调用堆栈
+No Print Log: 无 Print 日志
+No Exception: 未发生异常
 
-Recent Task Info : 近期任务信息
-Related Task Info: 相关任务信息
+Recent Task Record        : 近期任务记录
+Related Task Record       : 相关任务记录
 Only main tasks are listed: 在本页面只展示主任务
 
 success: 成功
 failure: 失败
+timeout: 执行超时
+skip   : 跳过执行
 
 Main Task Only: 仅主任务
 Show Detail   : 显示详情
 Related Tasks : 相关任务
 
-Task Info cleared: 任务信息已清空
+Task Record cleared: 任务记录已清空
 
-Are you sure you want to clear the Task Info?: 是否确认清空任务信息？
+Are you sure you want to clear the Task Record?: 是否确认清空任务记录？
 
-No Recent Task Info: 尚无任何近期任务信息
-All recent Task Info will be collected and shown here: 所有近期任务信息会被搜集，并展示在此
+No Recent Task Record: 尚无任何近期任务记录
+All recent Task Record will be collected and shown here: 所有近期任务会被记录，并展示在此
 
 Origin   : 来源
 Origin ID: 来源 ID
@@ -63,20 +68,22 @@ connector  : 连接器
       <el-header height="60px">
         <div class="list-page-header">
           <span>
-            {{ isMainTaskInfoList ? $t('Recent Task Info') : $t('Related Task Info') }}
+            {{ isRootTaskRecordList ? $t('Recent Task Record') : $t('Related Task Record') }}
             <small class="text-info">
               &#12288;
-              <span class="task-info-query" v-if="dataFilter.origin">
+              <span class="task-record-query" v-if="dataFilter.origin">
                 {{ $t('Origin')}}
                 <code class="text-main">{{ $t(dataFilter.origin) }}</code>
               </span>
-              <span class="task-info-query" v-if="dataFilter.originId">
+              <span class="task-record-query" v-if="dataFilter.originId">
                 {{ $t('Origin ID')}}
                 <code class="text-main">{{ dataFilter.originId }}</code>
+                <CopyButton :content="dataFilter.originId" />
               </span>
-              <span class="task-info-query" v-if="dataFilter.funcId">
+              <span class="task-record-query" v-if="dataFilter.funcId">
                 {{ $t('Func ID')}}
                 <code class="text-main">{{ dataFilter.funcId }}</code>
+                <CopyButton :content="dataFilter.funcId" />
               </span>
             </small>
           </span>
@@ -85,7 +92,7 @@ connector  : 连接器
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
             <el-tooltip :content="$t('Only main tasks are listed')" placement="bottom" :enterable="false" v-if="hasTaskType">
-              <el-checkbox v-if="isMainTaskInfoList"
+              <el-checkbox v-if="isRootTaskRecordList"
                 :border="true"
                 size="small"
                 v-model="dataFilter.rootTaskId"
@@ -101,10 +108,10 @@ connector  : 连接器
       <el-main class="common-table-container">
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered()"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
-          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Recent Task Info') }}</h1>
+          <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Recent Task Record') }}</h1>
 
           <p class="no-data-tip">
-            {{ $t('All recent Task Info will be collected and shown here') }}
+            {{ $t('All recent Task Record will be collected and shown here') }}
           </p>
         </div>
         <el-table v-else
@@ -178,10 +185,10 @@ connector  : 连接器
 
           <el-table-column width="240" align="right">
             <template slot-scope="scope">
-              <template v-if="isMainTaskInfoList">
+              <template v-if="isRootTaskRecordList">
                 <el-button v-if="scope.row.subTaskCount > 0 || scope.row.rootTaskId !== 'ROOT'"
                   type="text"
-                  @click="openSubTaskInfo(scope.row)"
+                  @click="openSubTaskRecord(scope.row)"
                   >{{ $t('Related Tasks') }}</el-button>
               </template>
 
@@ -203,7 +210,7 @@ connector  : 连接器
 import LongTextDialog from '@/components/LongTextDialog'
 
 export default {
-  name: 'TaskInfoList',
+  name: 'TaskRecordList',
   components: {
     LongTextDialog,
   },
@@ -223,7 +230,7 @@ export default {
   methods: {
     async loadData() {
       let _listQuery = this.dataFilter = this.T.createListQuery();
-      let apiRes = await this.T.callAPI_get('/api/v1/task-info/do/list', {
+      let apiRes = await this.T.callAPI_get('/api/v1/task-records/func/do/list', {
         query: _listQuery,
       });
       if (!apiRes || !apiRes.ok) return;
@@ -242,8 +249,8 @@ export default {
 
         // 日志长度
         d.logLines = 0
-        if (d.logMessageTEXT) {
-          d.logLines = d.logMessageTEXT.split('\n').length;
+        if (d.printLogsTEXT) {
+          d.logLines = d.printLogsTEXT.split('\n').length;
         }
 
         // 排队等待时间
@@ -278,7 +285,7 @@ export default {
 
       this.$store.commit('updateLoadStatus', true);
     },
-    openSubTaskInfo(d) {
+    openSubTaskRecord(d) {
       let nextRouteQuery = this.T.packRouteQuery();
       nextRouteQuery.filter = this.T.createPageFilter({
         rootTaskId: d.rootTaskId === 'ROOT' ? d.id : d.rootTaskId,
@@ -288,7 +295,7 @@ export default {
       this.$store.commit('updateTableList_scrollY');
 
       this.$router.push({
-        name  : 'task-info-related-list',
+        name  : 'sub-task-record-list',
         params: { id: this.$route.params.id },
         query : nextRouteQuery,
       });
@@ -301,10 +308,14 @@ export default {
       contentLines.push(`${this.$t('Func ID')}: ${this.$t(d.funcId)}`);
       contentLines.push(`${this.$t('Func Name')}: ${this.$t(d.func_name)}`);
       contentLines.push(`${this.$t('Func Title')}: ${this.$t(d.func_title)}`);
+      contentLines.push(`${this.$t('Queue')}: #${d.queue}`);
 
       contentLines.push('');
       contentLines.push(`${this.$t('Trigger Time')}: ${this.T.getDateTimeString(d.triggerTimeMs)} ${this.$t('(')}${this.T.fromNow(d.triggerTimeMs)}${this.$t(')')}`);
       contentLines.push(`${this.$t('Start Time')}: ${this.T.getDateTimeString(d.startTimeMs)} ${this.$t('(')}${this.T.fromNow(d.startTimeMs)}${this.$t(')')}`);
+      contentLines.push(`${this.$t('End Time')}: ${this.T.getDateTimeString(d.endTimeMs)} ${this.$t('(')}${this.T.fromNow(d.endTimeMs)}${this.$t(')')}`);
+      contentLines.push(`${this.$t('Delay')}: ${d.delay} ${this.$t('s')}`);
+
       if (d.waitCostMs > 2000) {
         contentLines.push(`${this.$t('Wait Cost')}: ${d.waitCostMs} ${this.$t('ms')}`);
       } else {
@@ -315,19 +326,19 @@ export default {
       contentLines.push(`${this.$t('Task Status')}: ${this.$t(d.status)}`);
 
       contentLines.push('');
-      contentLines.push(`===== ${this.$t('Log')} =====`);
-      if (d.logMessageTEXT) {
-        contentLines.push(d.logMessageTEXT);
+      contentLines.push(`===== ${this.$t('Print Log')} =====`);
+      if (d.printLogsTEXT) {
+        contentLines.push(d.printLogsTEXT);
       } else {
-        contentLines.push(this.$t('No log'));
+        contentLines.push(this.$t('No Print Log'));
       }
 
       contentLines.push('');
-      contentLines.push(`===== ${this.$t('Exception')} =====`);
-      if (d.einfoTEXT) {
-        contentLines.push(d.einfoTEXT);
+      contentLines.push(`===== ${this.$t('Traceback')} =====`);
+      if (d.tracebackTEXT) {
+        contentLines.push(d.tracebackTEXT);
       } else {
-        contentLines.push(this.$t('No exception'))
+        contentLines.push(this.$t('No Exception'))
       }
 
       let contentTEXT = contentLines.join('\n');
@@ -338,8 +349,8 @@ export default {
     },
   },
   computed: {
-    isMainTaskInfoList() {
-      return this.$route.name === 'task-info-list';
+    isRootTaskRecordList() {
+      return this.$route.name === 'task-record-list';
     },
   },
   props: {
@@ -364,12 +375,12 @@ export default {
 </script>
 
 <style scoped>
-.task-info-query + .task-info-query:before {
+.task-record-query + .task-record-query:before {
   content: "|";
   position: relative;
   left: -6px;
 }
-.task-info-query + .task-info-query {
+.task-record-query + .task-record-query {
   margin-left: 10px;
 }
 .func-title {

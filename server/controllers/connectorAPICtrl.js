@@ -179,15 +179,15 @@ function _checkConfig(locals, type, config, skipTest, callback) {
         case 'failure':
           // 失败
           return callback(new E('EClientBadRequest.ConnectingToConnectorFailed', 'Connecting to Connector failed', {
-            error     : taskResp.error,
-            errorStack: taskResp.errorStack,
+            exception: taskResp.exception,
+            traceback: taskResp.traceback,
           }));
 
         case 'timeout':
           // 超时
           return callback(new E('EClientBadRequest.ConnectingToConnectorFailed', 'Connecting to Connector timeout', {
-            error     : taskResp.error,
-            errorStack: taskResp.errorStack,
+            exception: taskResp.exception,
+            traceback: taskResp.traceback,
           }));
       }
 
@@ -437,15 +437,15 @@ exports.query = function(req, res, next) {
             case 'failure':
               // 失败
               return asyncCallback(new E('EClientBadRequest.QueryFailed', 'Query failed', {
-                error     : taskResp.error,
-                errorStack: taskResp.errorStack,
+                exception: taskResp.exception,
+                traceback: taskResp.traceback,
               }));
 
             case 'timeout':
               // 超时
               return asyncCallback(new E('EClientBadRequest.QueryTimeout', 'Query timeout', {
-                error     : taskResp.error,
-                errorStack: taskResp.errorStack,
+                exception: taskResp.exception,
+                traceback: taskResp.traceback,
               }));
           }
 

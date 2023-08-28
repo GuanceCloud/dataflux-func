@@ -4,8 +4,8 @@
 var ROUTE       = require('../utils/yamlResources').get('ROUTE');
 var routeLoader = require('../utils/routeLoader');
 
-var taskInfoAPICtrl = require('../controllers/taskInfoAPICtrl');
+var taskRecordAPICtrl = require('../controllers/taskRecordAPICtrl');
 
-routeLoader.load(ROUTE.taskInfoAPI.list, [
-  taskInfoAPICtrl.list,
+routeLoader.load(ROUTE.taskRecordAPI.list, [
+  taskRecordAPICtrl.list,
 ]);

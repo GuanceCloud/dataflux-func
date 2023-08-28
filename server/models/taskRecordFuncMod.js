@@ -14,9 +14,9 @@ var modelHelper = require('../utils/modelHelper');
 
 /* Init */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
-  displayName: 'task info',
-  entityName : 'taskInfo',
-  tableName  : 'biz_main_task_info',
+  displayName: 'task record func',
+  entityName : 'taskRecordFunc',
+  tableName  : 'biz_main_task_record_func',
   alias      : 'task',
 
   objectFields: {
@@ -56,7 +56,7 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('  ,func.integration     AS func_integration');
   sql.append('  ,func.tagsJSON        AS func_tagsJSON');
 
-  sql.append('FROM biz_main_task_info AS task');
+  sql.append('FROM biz_main_task_record_func AS task');
 
   sql.append('LEFT JOIN biz_main_func AS func');
   sql.append('  ON func.id = task.funcId');
@@ -83,7 +83,7 @@ EntityModel.prototype.appendSubTaskCount = function(data, callback) {
   sql.append('  sub.rootTaskId,');
   sql.append('  COUNT(sub.seq) AS subTaskCount');
   sql.append('FROM');
-  sql.append('  biz_main_task_info AS sub');
+  sql.append('  biz_main_task_record_func AS sub');
   sql.append('WHERE');
   sql.append('  sub.rootTaskId IN (?)');
   sql.append('GROUP BY');
@@ -111,7 +111,7 @@ EntityModel.prototype.appendSubTaskCount = function(data, callback) {
   });
 };
 
-EntityModel.prototype.appendTaskInfo = function(data, callback) {
+EntityModel.prototype.appendTaskRecord = function(data, callback) {
   if (toolkit.isNothing(data)) return callback(null, data);
 
   var originIds = toolkit.arrayElementValues(data, 'id');
@@ -119,17 +119,17 @@ EntityModel.prototype.appendTaskInfo = function(data, callback) {
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
   sql.append('   b.*');
-  sql.append('  ,a.startTimeMs AS lastStartTime');
-  sql.append('  ,a.status      AS lastStatus');
-  sql.append('  ,a.edumpTEXT   AS lastEdumpTEXT');
-  sql.append('FROM biz_main_task_info AS a');
+  sql.append('  ,a.startTimeMs   AS lastStartTimeMs');
+  sql.append('  ,a.status        AS lastStatus');
+  sql.append('  ,a.exceptionTEXT AS lastExceptionTEXT');
+  sql.append('FROM biz_main_task_record_func AS a');
   sql.append('JOIN (SELECT');
   sql.append('         originId');
   sql.append('        ,MAX(seq)  AS seq');
-  sql.append('        ,COUNT(*)  AS taskInfoCount');
+  sql.append('        ,COUNT(*)  AS taskRecordCount');
   sql.append("        ,COUNT(IF(status = 'success', 1, NULL)) AS recentSuccessCount");
   sql.append("        ,COUNT(IF(status = 'failure', 1, NULL)) AS recentFailureCount");
-  sql.append('      FROM biz_main_task_info');
+  sql.append('      FROM biz_main_task_record_func');
   sql.append('      WHERE');
   sql.append('        originId IN (?)');
   sql.append('      GROUP BY');
@@ -143,27 +143,27 @@ EntityModel.prototype.appendTaskInfo = function(data, callback) {
     if (err) return callback(err);
 
     // 整理成map
-    var taskInfoMap = {};
+    var taskRecordMap = {};
     dbRes.forEach(function(d) {
       if (!d.originId) return;
 
-      // lastRanTime 转 ISO8601
-      if (d.lastRanTime) {
-        d.lastRanTime = moment(d.lastRanTime).toISOString();
+      // lastStartTimeMs 转 ISO8601
+      if (d.lastStartTimeMs) {
+        d.lastStartTimeMs = moment(d.lastStartTimeMs).toISOString();
       }
 
-      taskInfoMap[d.originId] = d;
+      taskRecordMap[d.originId] = d;
     });
 
     // 填入数据
     data.forEach(function(x) {
-      var taskInfo = taskInfoMap[x.id] || {};
-      x.taskInfoCount      = taskInfo.taskInfoCount || 0
-      x.lastStartTime      = taskInfo.lastStartTime || null;
-      x.lastStatus         = taskInfo.lastStatus    || null;
-      x.lastEdumpTEXT      = taskInfo.lastEdumpTEXT || null;
-      x.recentSuccessCount = taskInfo.recentSuccessCount || 0;
-      x.recentFailureCount = taskInfo.recentFailureCount || 0;
+      var taskRecord = taskRecordMap[x.id] || {};
+      x.taskRecordCount    = taskRecord.taskRecordCount    || 0
+      x.lastStartTimeMs    = taskRecord.lastStartTimeMs    || null;
+      x.lastStatus         = taskRecord.lastStatus         || null;
+      x.lastExceptionTEXT      = taskRecord.lastExceptionTEXT      || null;
+      x.recentSuccessCount = taskRecord.recentSuccessCount || 0;
+      x.recentFailureCount = taskRecord.recentFailureCount || 0;
     });
 
     return callback(null, data);

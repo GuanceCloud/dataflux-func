@@ -12,9 +12,9 @@ var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 var urlFor      = require('../utils/routeLoader').urlFor;
 
-var funcMod     = require('../models/funcMod');
-var authLinkMod = require('../models/authLinkMod');
-var taskInfoMod = require('../models/taskInfoMod');
+var funcMod           = require('../models/funcMod');
+var authLinkMod       = require('../models/authLinkMod');
+var taskRecordFuncMod = require('../models/taskRecordFuncMod');
 
 /* Init */
 
@@ -28,7 +28,7 @@ exports.list = function(req, res, next) {
   var authLinkPageInfo = null;
 
   var authLinkModel = authLinkMod.createModel(res.locals);
-  var taskInfoModel = taskInfoMod.createModel(res.locals);
+  var taskRecordFuncModel = taskRecordFuncMod.createModel(res.locals);
 
   async.series([
     function(asyncCallback) {
@@ -39,8 +39,8 @@ exports.list = function(req, res, next) {
         authLinks        = dbRes;
         authLinkPageInfo = pageInfo;
 
-        if (opt.extra && opt.extra.withTaskInfo) {
-          return taskInfoModel.appendTaskInfo(authLinks, asyncCallback);
+        if (opt.extra && opt.extra.withTaskRecord) {
+          return taskRecordFuncModel.appendTaskRecord(authLinks, asyncCallback);
         } else {
           return asyncCallback();
         }

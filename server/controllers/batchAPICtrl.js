@@ -12,9 +12,9 @@ var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 var urlFor      = require('../utils/routeLoader').urlFor;
 
-var funcMod     = require('../models/funcMod');
-var batchMod    = require('../models/batchMod');
-var taskInfoMod = require('../models/taskInfoMod');
+var funcMod           = require('../models/funcMod');
+var batchMod          = require('../models/batchMod');
+var taskRecordFuncMod = require('../models/taskRecordFuncMod');
 
 /* Init */
 
@@ -28,7 +28,7 @@ exports.list = function(req, res, next) {
   var batchPageInfo = null;
 
   var batchModel    = batchMod.createModel(res.locals);
-  var taskInfoModel = taskInfoMod.createModel(res.locals);
+  var taskRecordFuncModel = taskRecordFuncMod.createModel(res.locals);
 
   async.series([
     function(asyncCallback) {
@@ -39,8 +39,8 @@ exports.list = function(req, res, next) {
         batches       = dbRes;
         batchPageInfo = pageInfo;
 
-        if (opt.extra && opt.extra.withTaskInfo) {
-          return taskInfoModel.appendTaskInfo(batches, asyncCallback);
+        if (opt.extra && opt.extra.withTaskRecord) {
+          return taskRecordFuncModel.appendTaskRecord(batches, asyncCallback);
         } else {
           return asyncCallback();
         }

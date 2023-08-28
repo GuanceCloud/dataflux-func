@@ -70,11 +70,11 @@ Are you sure you want to delete the Script?<br><strong class="text-bad">{label}<
 Are you sure you want to run the Crontab Config manually?: 是否确认手动执行此自动触发配置？
 Crontab Config Task sent: 自动触发配置任务已发送
 
-Show Auth Links       : 显示授权链接列表
-Show Crontab Configs  : 显示自动触发配置列表
-Show Batches          : 显示批处理列表
-Go to Recent Task Info: 前往最近任务信息
-Go to Script Market   : 前往脚本市场
+Show Auth Links         : 显示授权链接列表
+Show Crontab Configs    : 显示自动触发配置列表
+Show Batches            : 显示批处理列表
+Go to Recent Task Record: 前往最近任务记录
+Go to Script Market     : 前往脚本市场
 
 Some Script Sets are hidden: 一些脚本集已隐藏
 In most cases, the Script Sets installed from the official Script Market do not need to be viewed or accessed directly by the user, so they are not shown in this list.: 在大多数情况下，从官方脚本市场安装的脚本集并不需要用户直接查看或操作，因此没有在此列表中展示。
@@ -275,9 +275,9 @@ In most cases, the Script Sets installed from the official Script Market do not 
 
               <!-- 关联直接函数调用 -->
               <el-link v-if="data.type === 'func'"
-                @click="common.goToTaskInfo({ funcId: data.id })">
+                @click="common.goToTaskRecord({ funcId: data.id })">
                 <i class="fa fa-fw fa-info-circle"></i>
-                {{ $t('Go to Recent Task Info') }}
+                {{ $t('Go to Recent Task Record') }}
               </el-link>
 
               <!-- 前往脚本市场 -->
@@ -1250,7 +1250,7 @@ export default {
       let apiRes  = null;
       let listOpt = {
         query: {
-          _withTaskInfo: true,
+          _withTaskRecord: true,
           origin       : 'user',
           funcId       : data.id,
           pageSize     : 100,

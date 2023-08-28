@@ -35,99 +35,50 @@ class FuncRunner(FuncBaseTask):
         return self.result['responseControl']
 
     @property
-    def full_log_messages(self):
+    def full_print_logs(self):
         if self.script_scope is None:
             return None
 
-        log_messages = self.script_scope['DFF'].log_messages
-        if not log_messages:
+        print_logs = self.script_scope['DFF'].print_logs
+        if not print_logs and not self.traceback:
             return None
 
         data = []
-        if log_messages:
-            data.append('\n'.join(log_messages))
+        if print_logs:
+            data.append('\n'.join(print_logs))
 
-        if self.error_stack:
-            data.append(' Stack '.center(30, '-'))
-            data.append(self.error_stack)
+        if self.traceback:
+            data.append(' Traceback '.center(30, '-'))
+            data.append(self.traceback)
 
         return '\n'.join(data)
 
     @property
-    def reduced_log_messages(self):
+    def reduced_print_logs(self):
         if self.script_scope is None:
             return None
 
-        log_messages = self.script_scope['DFF'].log_messages
-        if not log_messages:
+        print_logs = self.script_scope['DFF'].print_logs
+        if not print_logs:
             return None
 
         data = []
-        for line in log_messages:
-            data.append(toolkit.limit_text(line, CONFIG['_TASK_INFO_LOG_MESSAGE_LINE_LIMIT'], show_length=True))
+        for line in print_logs:
+            data.append(toolkit.limit_text(line, CONFIG['_TASK_RECORD_PRINT_LOG_LINE_LIMIT'], show_length=True))
 
         data = '\n'.join(data).strip()
 
         data_length = len(data)
-        if data_length > CONFIG['_TASK_INFO_LOG_MESSAGE_TOTAL_LIMIT_HEAD'] + CONFIG['_TASK_INFO_LOG_MESSAGE_TOTAL_LIMIT_TAIL']:
-            reduce_tip = f"!!! Content too long, only FIRST {CONFIG['_TASK_INFO_LOG_MESSAGE_TOTAL_LIMIT_HEAD']} chars and LAST {CONFIG['_TASK_INFO_LOG_MESSAGE_TOTAL_LIMIT_TAIL']} are saved !!!"
-            skip_tip   = f"<skipped {data_length - CONFIG['_TASK_INFO_LOG_MESSAGE_TOTAL_LIMIT_HEAD'] - CONFIG['_TASK_INFO_LOG_MESSAGE_TOTAL_LIMIT_TAIL']} chars>"
-            first_part = data[:CONFIG['_TASK_INFO_LOG_MESSAGE_TOTAL_LIMIT_HEAD']] + '...'
-            last_part  = '...' + data[-CONFIG['_TASK_INFO_LOG_MESSAGE_TOTAL_LIMIT_TAIL']:]
+        if data_length > CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD'] + CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']:
+            reduce_tip = f"!!! Content too long, only FIRST {CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD']} chars and LAST {CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']} are saved !!!"
+            skip_tip   = f"<skipped {data_length - CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD'] - CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']} chars>"
+            first_part = data[:CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD']] + '...'
+            last_part  = '...' + data[-CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']:]
             data = '\n\n'.join([ reduce_tip, first_part, skip_tip, last_part ])
 
-        if self.error_stack:
-            data = '\n'.join([
-                data,
-                ' Stack '.center(30, '-'),
-                self.error_stack,
-            ])
-
         return data
 
-    def create_task_record_guance_data(self, task_resp):
-        data = {
-            'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD_FUNC'],
-            'tags': {
-                'id'            : self.task_id,
-                'name'          : self.name,
-                'queue'         : str(self.queue),
-                'task_status'   : self.status,
-                'workspace_uuid': self.func_call_kwargs.get('workspace_uuid'),
-                'root_task_id'  : self.root_task_id,
-                'script_set_id' : self.script_set_id,
-                'script_id'     : self.script_id,
-                'funcId'        : self.func_id,
-                'origin'        : self.origin,
-                'originId'      : self.origin_id,
-            },
-            'fields': {
-                'func_call_kwargs': toolkit.json_dumps(self.func_call_kwargs),
-                'crontab'         : self.kwargs.get('crontab'),
-                'call_chain'      : toolkit.json_dumps(self.call_chain, keep_none=True),
-                'return_value'    : toolkit.json_dumps(self.return_value, keep_none=True),
-                'delay'           : self.delay,
-                'timeout'         : self.timeout,
-                'expires'         : self.expires,
-                'ignore_result'   : self.ignore_result,
-                'error'           : self.error,
-                'error_stack'     : self.error_stack,
-                'message'         : self.full_log_messages,
-                'trigger_time_iso': self.trigger_time_iso,
-                'start_time_iso'  : self.start_time_iso,
-                'end_time_iso'    : self.end_time_iso,
-                'wait_cost'       : self.start_time_ms - self.trigger_time_ms,
-                'run_cost'        : self.end_time_ms   - self.start_time_ms,
-                'total_cost'      : self.end_time_ms   - self.trigger_time_ms,
-            }
-        }
-        return data
-
-    def buff_task_record(self, task_resp):
-        # 为了提高处理性能，此处仅写入 Redis 队列，不直接写入数据库
-        super().buff_task_record(task_resp)
-
-        # 任务记录（函数）
+    def _buff_task_record_func(self, task_resp):
         data = {
             '_taskRecordLimit': self.task_record_limit,
 
@@ -150,31 +101,92 @@ class FuncRunner(FuncBaseTask):
             'expires'            : self.expires,
             'ignoreResult'       : self.ignore_result,
             'status'             : self.status,
-            'errorTEXT'          : self.error,
-            'errorStackTEXT'     : self.error_stack,
-            'logMessageTEXT'     : self.reduced_log_messages,
+            'exceptionType'      : self.exception_type,
+            'exceptionTEXT'      : self.exception_text,
+            'tracebackTEXT'      : self.traceback,
+            'printLogsTEXT'      : self.reduced_print_logs,
             'returnValueJSON'    : toolkit.json_dumps(self.return_value, keep_none=True),
             'responseControlJSON': toolkit.json_dumps(self.response_control, keep_none=True),
         }
         cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordFunc')
         self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
 
-        # 函数调用计数
+    def _buff_func_call_count(self, task_resp):
         data = {
-            'scriptSetId'  : self.script_set_id,
-            'scriptId'     : self.script_id,
-            'funcId'       : self.func_id,
-            'origin'       : self.origin,
-            'queue'        : str(self.queue),
-            'status'       : self.status,
-            'timestamp'    : self.trigger_time,
-            'waitCost'     : self.start_time_ms - self.trigger_time_ms,
-            'runCost'      : self.end_time_ms   - self.start_time_ms,
-            'totalCost'    : self.end_time_ms   - self.trigger_time_ms,
-            'workspaceUUID': self.func_call_kwargs.get('workspace_uuid'),
+            'scriptSetId': self.script_set_id,
+            'scriptId'   : self.script_id,
+            'funcId'     : self.func_id,
+            'origin'     : self.origin,
+            'queue'      : str(self.queue),
+            'status'     : self.status,
+            'timestamp'  : self.trigger_time,
+            'waitCost'   : self.start_time_ms - self.trigger_time_ms,
+            'runCost'    : self.end_time_ms   - self.start_time_ms,
+            'totalCost'  : self.end_time_ms   - self.trigger_time_ms,
+
+            'workspaceUUID': toolkit.json_find_safe(self.func_call_kwargs, 'workspace_uuid'),
         }
         cache_key = toolkit.get_cache_key('dataBuffer', 'funcCallCount')
         self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
+
+    def _buff_guance_data(self, task_resp):
+        if not self.guance_data_upload_url:
+            return
+
+        data = {
+            'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD_FUNC'],
+            'tags': {
+                'id'           : self.task_id,
+                'name'         : self.name,
+                'queue'        : str(self.queue),
+                'task_status'  : self.status,
+                'root_task_id' : self.root_task_id,
+                'script_set_id': self.script_set_id,
+                'script_id'    : self.script_id,
+                'funcId'       : self.func_id,
+                'origin'       : self.origin,
+                'originId'     : self.origin_id,
+
+                # 观测云监控器特殊字段
+                'workspace_uuid'       : toolkit.json_find_safe(self.func_call_kwargs, 'workspace_uuid'),
+                'df_monitor_id'        : toolkit.json_find_safe(self.func_call_kwargs, 'monitor_opt.id'),
+                'df_monitor_checker_id': toolkit.json_find_safe(self.func_call_kwargs, 'checker_opt.id'),
+            },
+            'fields': {
+                'message': self.full_print_logs,
+
+                'func_call_kwargs': toolkit.json_dumps(self.func_call_kwargs),
+                'crontab'         : self.kwargs.get('crontab'),
+                'call_chain'      : toolkit.json_dumps(self.call_chain, keep_none=True),
+                'return_value'    : toolkit.json_dumps(self.return_value, keep_none=True),
+                'delay'           : self.delay,
+                'timeout'         : self.timeout,
+                'expires'         : self.expires,
+                'ignore_result'   : self.ignore_result,
+                'exception_type'  : self.exception_type,
+                'exception'       : self.exception_text,
+                'trigger_time_iso': self.trigger_time_iso,
+                'start_time_iso'  : self.start_time_iso,
+                'end_time_iso'    : self.end_time_iso,
+                'wait_cost'       : self.start_time_ms - self.trigger_time_ms,
+                'run_cost'        : self.end_time_ms   - self.start_time_ms,
+                'total_cost'      : self.end_time_ms   - self.trigger_time_ms,
+            }
+        }
+        cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordGuance')
+        self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
+
+    def buff_task_record(self, task_resp):
+        # 为了提高处理性能，此处仅写入 Redis 队列，不直接写入数据库
+
+        # 任务记录（函数）
+        self._buff_task_record_func(task_resp)
+
+        # 函数调用计数
+        self._buff_func_call_count(task_resp)
+
+        # 观测云任务记录
+        self._buff_guance_data(task_resp)
 
     def response(self, task_resp):
         super().response(task_resp)
@@ -211,7 +223,7 @@ class FuncRunner(FuncBaseTask):
 
         except Exception as e:
             # 替换默认错误堆栈
-            self.error_stack = self.get_error_stack()
+            self.traceback = self.get_traceback()
 
             raise
 

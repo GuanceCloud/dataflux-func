@@ -75,7 +75,7 @@ Peak Memory Allocated                                                           
 It took too much time for running (more than 3s), may not be suitable for synchronous calling scenario: 耗时较长（大于 3 秒），可能不适合需要响应速度较高的场景
 'Logs by print(...)'                                                                   : print(...) 日志
 'Return Value (pprint.saferepr)'                                                       : 返回值（pprint.saferepr）
-Stack                                                                                  : 错误堆栈
+Stack                                                                                  : 调用堆栈
 
 Publish Failed                                                                                                                     : 发布失败
 Script Error                                                                                                                       : 脚本错误
@@ -561,7 +561,7 @@ export default {
 
       // 清除所有高亮
       this.updateHighlightLineConfig('selectedFuncLine', null);
-      this.updateHighlightLineConfig('errorLine', null);
+      this.updateHighlightLineConfig('exceptionLine', null);
 
       if (!await this.T.confirm(this.$t('Are you sure you want to publish the Script?'))) return;
 
@@ -609,7 +609,7 @@ export default {
 
       if (!await this.T.confirm(this.$t('Are you sure you want to reset the Script?'))) return;
 
-      this.updateHighlightLineConfig('errorLine', null);
+      this.updateHighlightLineConfig('exceptionLine', null);
 
       await this.loadData({codeField: 'code'});
 
@@ -621,7 +621,7 @@ export default {
 
       // 清除所有高亮
       this.updateHighlightLineConfig('selectedFuncLine', null);
-      this.updateHighlightLineConfig('errorLine', null);
+      this.updateHighlightLineConfig('exceptionLine', null);
 
       // 保存
       if (this.isEditable) {
@@ -718,7 +718,7 @@ export default {
     },
     clearHighlight() {
       this.updateHighlightLineConfig('selectedFuncLine', null);
-      this.updateHighlightLineConfig('errorLine', null);
+      this.updateHighlightLineConfig('exceptionLine', null);
     },
     clearScriptOutput() {
       this.scriptOutput = [];
@@ -736,14 +736,14 @@ export default {
       let status          = result.status;          // 任务结果
       let peakMemroyUsage = result.peakMemroyUsage; // 内存分配峰值
       let cost            = result.cost;            // 执行耗时
-      let logMessages     = result.logMessage;      // 日志输出
+      let printLogs       = result.printLogs;       // print 日志
       let returnValue     = result.returnValue;     // 函数返回值
-      let error           = result.error;           // 错误信息
-      let errorClass      = result.errorClass;      // 错误类
-      let errorStack      = result.errorStack;      // 错误堆栈
+      let exception       = result.exception;           // 异常
+      let exceptionType   = result.exceptionType;      // 异常类型
+      let traceback       = result.traceback;      // 调用堆栈
 
-      // 日志输出添加格式
-      logMessages = logMessages.map(l => {
+      // print 日志添加格式
+      printLogs = printLogs.map(l => {
         // 由于日志开头格式固定，此处直接使用字符串处理，而不用正则
         let lineParts = l.split(' ');
         let timeTag     = `<span class="text-main">${lineParts[0]} ${lineParts[1]}</span>`
@@ -752,7 +752,7 @@ export default {
 
         return [timeTag, timeDiffTag, logContent].join(' ');
       });
-      logMessages = logMessages.join('\n') || null;
+      printLogs = printLogs.join('\n') || null;
 
       let output = {
         seq            : this.funcCallSeq,
@@ -760,9 +760,9 @@ export default {
         name           : name,
         peakMemroyUsage: peakMemroyUsage,
         cost           : cost,
-        logMessages    : logMessages,
+        printLogs      : printLogs,
         returnValue    : returnValue,
-        errorStack     : errorStack,
+        traceback      : traceback,
       };
       this.scriptOutput.push(output);
 
@@ -783,21 +783,21 @@ export default {
         setImmediate(() => {
           // 提取错误行号
           let _re = new RegExp(`^\\s*File "${this.scriptId}", line (\\d+)(, in (\\w+))?$`, 'gm');
-          let _m  = [...errorStack.matchAll(_re)];
-          let errorLine = parseInt(_m.pop()[1]) - 1;
+          let _m  = [...traceback.matchAll(_re)];
+          let exceptionLine = parseInt(_m.pop()[1]) - 1;
 
           // 高亮错误行
-          this.updateHighlightLineConfig('errorLine', {
-            line            : errorLine,
+          this.updateHighlightLineConfig('exceptionLine', {
+            line            : exceptionLine,
             scroll          : 1,
             marginType      : 'prev',
             textClass       : 'highlight-text',
-            backgroundClass : 'error-line-background highlight-code-line-blink',
+            backgroundClass : 'exception-line-background highlight-code-line-blink',
             lineWidgetConfig: {
-              type     : 'errorLine',
-              innerHTML: `<span class="error-info">
+              type     : 'exceptionLine',
+              innerHTML: `<span class="exception-info">
                             <i class="fa fa-fw fa-times-circle"></i>
-                            <span>${errorClass}</span>
+                            <span>${exceptionType}</span>
                           </span> `,
             },
           });
@@ -939,9 +939,9 @@ export default {
 
         let div = null;
         switch(config.type) {
-          case 'errorLine':
+          case 'exceptionLine':
             div = document.createElement('div');
-            div.classList.add('error-line-text');
+            div.classList.add('exception-line-text');
             div.classList.add('highlight-text');
 
             const editorStyle = this.$store.getters.codeMirrorSettings.style;
@@ -1100,9 +1100,9 @@ export default {
         }
         let title = `<span class="code-editor-output-info">${titleLabel} <code>${o.name}</code></span>`;
 
-        // 日志输出
+        // print 日志
         // 【已经经过预处理，此处已经是纯文本，无需进一步处理】
-        let logMessages = o.logMessages;
+        let printLogs = o.printLogs;
 
         // 执行内存消耗
         let peakMemoryUsageInfo = '';
@@ -1130,25 +1130,25 @@ export default {
           returnValueInfo = `<span class="code-editor-output-info">${this.$t('Return Value (pprint.saferepr)')}${this.$t(':')}</span> <code>${returnValue}</code>`;
         }
 
-        // 错误堆栈
+        // 调用堆栈
         // 【已经经过预处理，此处已经是纯文本，无需进一步处理】
-        let errorStackTitle = null;
-        let errorStack = o.errorStack;
-        if (errorStack) {
-          errorStackTitle = `<span class="code-editor-output-info">${this.$t('Stack')}${this.$t(':')}</span>`
+        let tracebackTitle = null;
+        let traceback = o.traceback;
+        if (traceback) {
+          tracebackTitle = `<span class="code-editor-output-info">${this.$t('Stack')}${this.$t(':')}</span>`
 
           // HTML 转义、添加样式
-          errorStack = errorStack
+          traceback = traceback
           .split('\n')
           .map(line => {
-            return `<code class="code-editor-output-error-stack">${htmlEscaper.escape(line)}</code>`;
+            return `<code class="code-editor-output-traceback">${htmlEscaper.escape(line)}</code>`;
           })
           .join('\n');
         }
 
         let section = [ divider, title ]
-        if (logMessages) {
-          section.push('', logMessages);
+        if (printLogs) {
+          section.push('', printLogs);
         }
         if (costInfo || peakMemoryUsageInfo) {
           section.push('');
@@ -1158,8 +1158,8 @@ export default {
         if (returnValueInfo) {
           section.push('', returnValueInfo);
         }
-        if (errorStackTitle) {
-          section.push('', errorStackTitle,  errorStack);
+        if (tracebackTitle) {
+          section.push('', tracebackTitle,  traceback);
         }
 
         // 过滤空白内容
@@ -1317,7 +1317,7 @@ export default {
   async beforeRouteLeave(to, from, next) {
     // 清除所有高亮
     this.updateHighlightLineConfig('selectedFuncLine', null);
-    this.updateHighlightLineConfig('errorLine', null);
+    this.updateHighlightLineConfig('exceptionLine', null);
 
     if (!this.isEditable) {
       return next();
@@ -1406,7 +1406,7 @@ export default {
 .CodeMirror .highlight-text {
   text-shadow: 1px 1px 3px #b3b3b3;
 }
-.CodeMirror .error-info {
+.CodeMirror .exception-info {
   max-width: 15vw;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1423,14 +1423,14 @@ export default {
   background-image: linear-gradient(to right, rgba(255,255,224,1) 0, rgba(255,255,224,0) 75%);
   border-right: none;
 }
-.CodeMirror .error-line-background {
+.CodeMirror .exception-line-background {
   border: 2px solid;
   border-image: linear-gradient(to left, rgb(255,0,0,1) 0, rgb(255,0,0,0) 75%) 1 1;
   background-image: linear-gradient(to left, rgba(255,214,220,1) 0, rgba(255,214,220,0) 75%);
   border-left: none;
 }
 
-.CodeMirror .error-line-text {
+.CodeMirror .exception-line-text {
   position: absolute;
   color: red;
   right: 0;
@@ -1479,7 +1479,7 @@ pre .code-editor-output-info {
 pre .code-editor-output-seq {
   font-size:large
 }
-pre .code-editor-output-error-stack {
+pre .code-editor-output-traceback {
   color: red;
 }
 

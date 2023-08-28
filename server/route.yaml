@@ -3299,7 +3299,7 @@ authLinkAPI:
       - func.description
       - func.tagsJSON
     query:
-      _withTaskInfo:
+      _withTaskRecord:
         $desc: 是否附带任务信息
         $type: boolean
       id:
@@ -3876,7 +3876,7 @@ crontabConfigAPI:
       - func.description
       - func.tagsJSON
     query:
-      _withTaskInfo:
+      _withTaskRecord:
         $desc: 是否附带任务信息
         $type: boolean
       id:
@@ -4339,7 +4339,7 @@ batchAPI:
       - func.description
       - func.tagsJSON
     query:
-      _withTaskInfo:
+      _withTaskRecord:
         $desc: 是否附带任务信息
         $type: boolean
       id:
@@ -4746,17 +4746,17 @@ batchAPI:
         $searchType: jsonArrayHasAll
         $searchKey : func.tagsJSON
 
-# 任务信息
-taskInfoAPI:
-  $tag     : Task Info
-  $tag_zhCN: 任务信息
+# 任务记录
+taskRecordAPI:
+  $tag     : Task Record
+  $tag_zhCN: 任务记录
 
   list:
     showInDoc    : true
-    name         : List task info
-    name_zhCN    : 列出任务信息
+    name         : List task record
+    name_zhCN    : 列出任务记录
     method       : get
-    url          : /api/v1/task-info/do/list
+    url          : /api/v1/task-records/do/list
     response     : json
     requireSignIn: true
     privilege    : general_r
@@ -4764,12 +4764,10 @@ taskInfoAPI:
     fieldSelecting: true
     fuzzySearch:
       - task.id
-      - task.origin
-      - task.originId
-      - task.rootTaskId
-      - task.funcId
-      - task.logMessageTEXT
-      - task.einfoTEXT
+      - task.name
+      - task.exceptionType
+      - task.exceptionTEXT
+      - task.tracebackTEXT
       - task.status
     query:
       id:
@@ -4777,32 +4775,105 @@ taskInfoAPI:
         $type      : string
         $searchType: eq
         $searchKey : task.id
-      origin:
-        $desc      : 根据来源过滤
+      name:
+        $desc      : 按名称过滤
         $type      : string
         $searchType: eq
-        $searchKey : task.origin
-      originId:
-        $desc      : 根据来源 ID 过滤
+        $searchKey : task.name
+      queue:
+        $desc      : 按队列过滤
         $type      : string
         $searchType: eq
-        $searchKey : task.originId
-      rootTaskId:
-        $desc      : 根据主任务 ID 过滤
-        $type      : string
-        $searchType: eq
-        $searchKey : task.rootTaskId
-      funcId:
-        $desc      : 按函数 ID 过滤
-        $type      : string
-        $searchType: eq
-        $searchKey : task.funcId
+        $searchKey : task.queue
       status:
         $desc: 按状态过滤
         $type: enum
         $in:
           - success
           - failure
+          - timeout
+          - skip
+        $searchType: eq
+        $searchKey : task.status
+
+taskRecordFuncAPI:
+  $tag     : Task Record (Func)
+  $tag_zhCN: 任务记录（函数）
+
+  list:
+    showInDoc    : true
+    name         : List task record (func)
+    name_zhCN    : 列出任务记录
+    method       : get
+    url          : /api/v1/task-records/func/do/list
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    paging       : simple
+    fieldSelecting: true
+    fuzzySearch:
+      - task.id
+      - task.rootTaskId
+      - task.scriptSetId
+      - task.scriptId
+      - task.funcId
+      - task.origin
+      - task.originId
+      - task.exceptionType
+      - task.exceptionTEXT
+      - task.tracebackTEXT
+      - task.printLogsTEXT
+      - task.returnValueJSON
+      - task.status
+    query:
+      id:
+        $desc      : 按任务 ID 过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : task.id
+      rootTaskId:
+        $desc      : 按主任务 ID 过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : task.rootTaskId
+      scriptSetId:
+        $desc      : 按脚本集 ID 过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : task.scriptSetId
+      scriptId:
+        $desc      : 按脚本 ID 过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : task.scriptId
+      funcId:
+        $desc      : 按函数 ID 过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : task.funcId
+      origin:
+        $desc      : 按来源过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : task.origin
+      originId:
+        $desc      : 按来源 ID 过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : task.originId
+      queue:
+        $desc      : 按队列过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : task.queue
+      status:
+        $desc: 按状态过滤
+        $type: enum
+        $in:
+          - success
+          - failure
+          - timeout
+          - skip
         $searchType: eq
         $searchKey : task.status
 

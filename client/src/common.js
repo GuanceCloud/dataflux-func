@@ -341,7 +341,7 @@ export function goToPIPTools(requirements, opt) {
   }
 }
 
-export function goToTaskInfo(query, options) {
+export function goToTaskRecord(query, options) {
   options = options || {};
 
   let nextRouteQuery = T.packRouteQuery();
@@ -353,7 +353,7 @@ export function goToTaskInfo(query, options) {
   }
 
   router.push({
-    name  : 'task-info-list',
+    name  : 'task-record-list',
     query : nextRouteQuery,
   });
 }

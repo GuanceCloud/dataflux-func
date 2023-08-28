@@ -15,7 +15,7 @@ Setup Auth Link: 配置授权链接
 Customize ID: 定制 ID
 Func        : 执行函数
 Arguments   : 参数指定
-Task Info   : 任务信息
+Task Record : 任务记录
 Keep        : 保留
 Tags        : 标签
 Add Tag     : 添加标签
@@ -115,16 +115,16 @@ recentTaskCount: '{n} 个近期任务'
                     @click="openAddTagInput">{{ $t('Add Tag') }}</el-button>
                 </el-form-item>
 
-                <el-form-item :label="$t('Task Info')">
-                  <span class="task-info-limit-prefix">{{ $t('Keep') }} </span>
-                  <el-input-number class="task-info-limit-input"
+                <el-form-item :label="$t('Task Record')">
+                  <span class="task-record-limit-prefix">{{ $t('Keep') }} </span>
+                  <el-input-number class="task-record-limit-input"
                     :min="$store.getters.SYSTEM_INFO('_TASK_RECORD_LIMIT_MIN')"
                     :max="$store.getters.SYSTEM_INFO('_TASK_RECORD_LIMIT_MAX')"
                     :step="10"
                     :precision="0"
                     v-model="form.taskRecordLimit"></el-input-number>
-                  <span class="task-info-limit-unit">{{ $tc('recentTaskCount', form.taskRecordLimit, { n: '' }) }} </span>
-                  <el-link class="task-info-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK')">{{ $t('Restore Default') }}</el-link>
+                  <span class="task-record-limit-unit">{{ $tc('recentTaskCount', form.taskRecordLimit, { n: '' }) }} </span>
+                  <el-link class="task-record-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK')">{{ $t('Restore Default') }}</el-link>
                 </el-form-item>
 
                 <el-form-item :label="$t('API Auth')" prop="apiAuthId">
@@ -513,22 +513,22 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.task-info-limit-input {
+.task-record-limit-input {
   width: 180px;
 }
-.task-info-limit-prefix {
+.task-record-limit-prefix {
   color: grey;
   padding-right: 10px;
 }
-.task-info-limit-unit {
+.task-record-limit-unit {
   color: grey;
   padding-left: 10px;
 }
-.task-info-limit-unit > span {
+.task-record-limit-unit > span {
   width: 35px;
   display: inline-block;
 }
-.task-info-limit-clear {
+.task-record-limit-clear {
   float: right
 }
 .throttling-input {

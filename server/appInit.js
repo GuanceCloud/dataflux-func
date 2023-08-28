@@ -144,7 +144,7 @@ exports.afterAppCreated = function(app, server) {
     var currentCPUUsage    = process.cpuUsage(startCPUUsage);
     var currentMemoryUsage = process.memoryUsage();
 
-    var cpuPercent = (currentCPUUsage.user + currentCPUUsage.system) * 100 / (CONFIG._MONITOR_SYS_STATS_CHECK_INTERVAL * 1000 * 1000);
+    var cpuPercent = (currentCPUUsage.user + currentCPUUsage.system) * 100 / (CONFIG._MONITOR_REPORT_INTERVAL * 1000 * 1000);
     cpuPercent = parseFloat(cpuPercent.toFixed(2));
 
     // Update `startCPUUsage` for next tick.
@@ -275,7 +275,7 @@ exports.afterAppCreated = function(app, server) {
   };
 
   // Start interval
-  setInterval(recordSystemMetrics, CONFIG._MONITOR_SYS_STATS_CHECK_INTERVAL * 1000);
+  setInterval(recordSystemMetrics, CONFIG._MONITOR_REPORT_INTERVAL * 1000);
   recordSystemMetrics();
 
   var path = require('path');
