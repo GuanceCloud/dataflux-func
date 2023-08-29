@@ -138,8 +138,10 @@ class CrontabStarter(BaseTask):
                     'origin'          : origin,
                     'originId'        : origin_id,
                     'crontab'         : crontab_config['crontab'],
+                    'crontabDelay'    : delay,
                     'crontabLockKey'  : crontab_lock_key,
                     'crontabLockValue': crontab_lock_value,
+                    'crontabExecMode' : crontab_config.get('execMode') or 'crontab',
                 },
 
                 'triggerTime': self.trigger_time,
@@ -173,7 +175,10 @@ class CrontabStarter(BaseTask):
                     delay = crontab_count % CONFIG['_FUNC_TASK_DISTRIBUTION_RANGE']
 
                 # 发送任务
-                self.put_task(crontab_config=c, origin='crontab', origin_id=c['id'], delay=delay)
+                self.put_task(crontab_config=c,
+                              origin='crontab',
+                              origin_id=c['id'],
+                              delay=delay)
 
                 # 自动触发配置记述
                 crontab_count += 1
@@ -209,6 +214,7 @@ class CrontabManualStarter(CrontabStarter):
             return None
 
         crontab_config = self.prepare_contab_config(crontab_configs[0])
+        crontab_config['execMode'] = 'manual'
         return crontab_config
 
     def run(self, **kwargs):
@@ -219,4 +225,7 @@ class CrontabManualStarter(CrontabStarter):
         crontab_config = self.get_crontab_config(crontab_config_id)
 
         # 发送任务
-        self.put_task(crontab_config=crontab_config, origin='crontab', origin_id=crontab_config['id'])
+        self.put_task(crontab_config=crontab_config,
+                      origin='crontab',
+                      origin_id=crontab_config['id'],
+                      is_manual=True)
