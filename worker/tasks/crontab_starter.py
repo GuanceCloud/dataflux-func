@@ -27,13 +27,13 @@ class CrontabStarter(BaseTask):
         return toolkit.is_match_crontab(crontab, self.trigger_time, timezone)
 
     def prepare_contab_config(self, crontab_config):
-        func_call_kwargs = crontab_config.get('funcCallKwargsJSON') or {}
-        if isinstance(func_call_kwargs, str):
-            crontab_config['funcCallKwargs'] = toolkit.json_loads(func_call_kwargs) or {}
+        crontab_config['funcCallKwargs'] = crontab_config.get('funcCallKwargsJSON') or {}
+        if isinstance(crontab_config['funcCallKwargs'], str):
+            crontab_config['funcCallKwargs'] = toolkit.json_loads(crontab_config['funcCallKwargs']) or {}
 
-        func_extra_config = crontab_config.get('funcExtraConfigJSON') or {}
-        if isinstance(func_extra_config, str):
-            crontab_config['funcExtraConfig'] = toolkit.json_loads(func_extra_config) or {}
+        crontab_config['funcExtraConfig'] = crontab_config.get('funcExtraConfigJSON') or {}
+        if isinstance(crontab_config['funcExtraConfig'], str):
+            crontab_config['funcExtraConfig'] = toolkit.json_loads(crontab_config['funcExtraConfig']) or {}
 
         crontab_config['crontab'] = crontab_config['funcExtraConfig'].get('fixedCrontab') or crontab_config.get('crontab')
 
