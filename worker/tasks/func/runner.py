@@ -143,9 +143,9 @@ class FuncRunner(FuncBaseTask):
                 'root_task_id' : self.root_task_id,
                 'script_set_id': self.script_set_id,
                 'script_id'    : self.script_id,
-                'funcId'       : self.func_id,
+                'func_id'      : self.func_id,
                 'origin'       : self.origin,
-                'originId'     : self.origin_id,
+                'origin_id'    : self.origin_id,
 
                 # 观测云监控器特殊字段
                 'workspace_uuid'       : toolkit.json_find_safe(self.func_call_kwargs, 'workspace_uuid'),
