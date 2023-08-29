@@ -86,6 +86,12 @@ def tick():
     1. 获取已注册的，当前时间满足 Crontab 表达式的任务
     2. 到达执行时间的延迟任务进入工作队列
     '''
+    # 计算等待时长
+    interval = 60
+    wait_time = interval - toolkit.get_timestamp() % interval
+    time.sleep(wait_time)
+
+    # 触发时间
     tick_time = toolkit.get_timestamp()
 
     # 默认限制执行时长
@@ -122,11 +128,6 @@ def tick():
             cache_res = REDIS.zpop_below_lpush(src_cache_key, dest_cache_key, tick_time)
             if not cache_res:
                 break
-
-    # 计算距离下一轮时长
-    interval = 60
-    wait_time = interval - tick_time % interval
-    time.sleep(wait_time)
 
 def handle_sigalarm(self, signum, frame):
     e = TickTimeoutException(f'Tick Timeout')
