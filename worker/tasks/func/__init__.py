@@ -1711,7 +1711,8 @@ class FuncBaseTask(BaseTask):
         # 加载入口脚本
         self.logger.info(f'[ENTRY SCRIPT] `{self.script_id}`')
 
-        script_script_scope = self.create_safe_scope(self.script_id, debug=True)
+        debug = use_code_draft
+        script_script_scope = self.create_safe_scope(self.script_id, debug=debug)
         self.script_scope   = self.safe_exec(self.script['codeObj'], globals=script_script_scope)
 
         # 执行脚本
