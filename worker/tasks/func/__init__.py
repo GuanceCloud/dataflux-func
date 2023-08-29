@@ -1256,7 +1256,7 @@ class FuncBaseTask(BaseTask):
 
         # 指定队列
         if queue is not None:
-            available_queues = list(range(CONFIG['_WORKER_QUEUE_COUNT'])))
+            available_queues = list(range(CONFIG['_WORKER_QUEUE_COUNT']))
             if queue not in available_queues:
                 e = InvalidAPIOptionException(f'`queue` should be one of {toolkit.json_dumps(available_queues)}')
                 raise e
