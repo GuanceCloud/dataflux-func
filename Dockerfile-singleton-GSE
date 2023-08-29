@@ -7,6 +7,7 @@ MAINTAINER Yiling Zhou <zyl@jiagouyun.com>
 ARG TARGETARCH
 
 ENV TARGETARCH ${TARGETARCH}
+ENV PYTHONPATH="$PYTHONPATH:/usr/src/app"
 
 # 构建项目
 #   由于 buildx 在 qemu-arm64 下执行 npm run build 速度太慢
