@@ -121,7 +121,7 @@ class BaseTask(object):
         if self.trigger_time is None:
             return None
         else:
-            return self.trigger_time * 1000
+            return int(self.trigger_time * 1000)
 
     @property
     def trigger_time_iso(self):
@@ -135,7 +135,7 @@ class BaseTask(object):
         if self.start_time is None:
             return None
         else:
-            return self.start_time * 1000
+            return int(self.start_time * 1000)
 
     @property
     def start_time_iso(self):
@@ -149,7 +149,7 @@ class BaseTask(object):
         if self.end_time is None:
             return None
         else:
-            return self.end_time * 1000
+            return int(self.end_time * 1000)
 
     @property
     def end_time_iso(self):
@@ -286,7 +286,8 @@ class BaseTask(object):
                 'wait_cost'       : self.start_time_ms - self.trigger_time_ms,
                 'run_cost'        : self.end_time_ms   - self.start_time_ms,
                 'total_cost'      : self.end_time_ms   - self.trigger_time_ms,
-            }
+            },
+            'timestamp': int(self.trigger_time),
         }
         return data
 

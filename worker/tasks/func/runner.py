@@ -119,7 +119,7 @@ class FuncRunner(FuncBaseTask):
             'origin'     : self.origin,
             'queue'      : str(self.queue),
             'status'     : self.status,
-            'timestamp'  : self.trigger_time,
+            'timestamp'  : int(self.trigger_time),
             'waitCost'   : self.start_time_ms - self.trigger_time_ms,
             'runCost'    : self.end_time_ms   - self.start_time_ms,
             'totalCost'  : self.end_time_ms   - self.trigger_time_ms,
@@ -171,7 +171,8 @@ class FuncRunner(FuncBaseTask):
                 'wait_cost'       : self.start_time_ms - self.trigger_time_ms,
                 'run_cost'        : self.end_time_ms   - self.start_time_ms,
                 'total_cost'      : self.end_time_ms   - self.trigger_time_ms,
-            }
+            },
+            'timestamp': int(self.trigger_time),
         }
         cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordGuance')
         self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
