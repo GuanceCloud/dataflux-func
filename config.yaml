@@ -39,15 +39,12 @@ SECRET: 'your_secret'
 #   NONE   : 不输出
 LOG_LEVEL: WARNING
 
-# 输出 Server 任务发送日志
-LOG_FUNC_CALL_OPTIONS: false
-
 # 日志文件输出地址
 # 必须使用绝对路径
 LOG_FILE_PATH: '/data/logs/dataflux-func.log'
 
-# 日志时间时区
-LOG_TIMEZONE: 'Asia/Shanghai'
+# 时区
+TIMEZONE: 'Asia/Shanghai'
 
 # 日志输出格式
 # 可选：
@@ -106,9 +103,6 @@ REDIS_AUTH_TYPE: default # 可选 aliyun
 REDIS_TS_MAX_AGE     : 3600   # 1小时
 REDIS_TS_MAX_PERIOD  : 259200 # 3天
 REDIS_TS_MIN_INTERVAL: 60     # 时间戳最小间隔（秒）
-
-# Worker 配置
-WORKER_QUEUE_ALIAS_MAP: cpu=9
 
 # 是否禁用集成登录
 DISABLE_INTEGRATED_SIGNIN: false
@@ -251,7 +245,7 @@ _WEB_AK_ID_HEADER                   : X-Dff-Ak-Id
 _WEB_AK_TIMESTAMP_HEADER            : X-Dff-Ak-Timestamp
 _WEB_AK_NONCE_HEADER                : X-Dff-Ak-Nonce
 _WEB_AK_SIGN_HEADER                 : X-Dff-Ak-Sign
-_WEB_AK_TIMESTAMP_MAX_DIFF          : 900
+_WEB_AK_TIMESTAMP_DIFF_LIMIT        : 900
 _WEB_AK_NONCE_TTL                   : 86400
 _WEB_PULL_LOG_TRACE_ID              : TRACE-PULLLOGS
 _WEB_SERVER_VERSION_HEADER          : X-Dff-Version
@@ -265,133 +259,122 @@ _SUB_RECENT_CONSUME_EXPIRE: 604800
 _WEB_LOCALHOST_AUTH_TOKEN_HEADER: X-Localhost-Auth-Token
 _WEB_LOCALHOST_AUTH_TOKEN_PATH  : /data/localhost-auth-token
 
-# Worker模块一般作为常量的配置
-_WORKER_QUEUE_COUNT        : 10
-_WORKER_DEFAULT_QUEUE      : '0'
-_WORKER_CONCURRENCY        : 5
-_WORKER_PREFETCH_MULTIPLIER: 10
-_WORKER_MAX_TASKS_PER_CHILD: 3000
-_WORKER_RESULT_EXPIRES     : 3600
+# Worker 模块一般作为常量的配置
+_WORKER_CONCURRENCY          : 5
+_WORKER_QUEUE_COUNT          : 10
+_WORKER_PROCESS_CONSUME_LIMIT: 3000
 
 # 监控模块一般作为常量的配置
-_MONITOR_WORKER_HEARTBEAT_INTERVAL: 30
-_MONITOR_SYS_STATS_CHECK_INTERVAL : 300
-_MONITOR_WORKER_QUEUE_LIST        : 0,1,2,3,4,5,6,7,8,9
-_MONITOR_MATCHED_ROUTE_EXPIRES    : 86400
-_MONITOR_SLOW_API_COUNT_EXPIRES   : 604800
+_MONITOR_REPORT_INTERVAL                    : 30
+_MONITOR_MATCHED_ROUTE_EXPIRES              : 86400
+_MONITOR_SLOW_API_COUNT_EXPIRES             : 604800
+_MONITOR_GUANCE_MEASUREMENT_FUNC_CALL       : DFF_func_call
+_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD     : DFF_task_record
+_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD_FUNC: DFF_task_record_func
 
 # 任务模块一般作为常量的配置
-_SYNC_CACHE_BULK_COUNT: 10000
+_TASK_QUEUE_DEFAULT               : 0
+_TASK_EXPIRES_DEFAULT             : 3600
+_TASK_TIMEOUT_DEFAULT             : 5
+_TASK_RESULT_WAIT_TIMEOUT_MAX     : 180
+_TASK_FLUSH_DATA_BUFFER_BULK_COUNT: 5000
 
 # 任务记录数量限制
-_TASK_INFO_MIN_LIMIT                : 0
-_TASK_INFO_MAX_LIMIT                : 10000
-_TASK_INFO_DEFAULT_LIMIT_DIRECT     : 5000
-_TASK_INFO_DEFAULT_LIMIT_INTEGRATION: 5000
-_TASK_INFO_DEFAULT_LIMIT_CONNECTOR  : 5000
-_TASK_INFO_DEFAULT_LIMIT_AUTH_LINK  : 100
-_TASK_INFO_DEFAULT_LIMIT_CRONTAB    : 500
-_TASK_INFO_DEFAULT_LIMIT_BATCH      : 100
+_TASK_RECORD_LIMIT_MIN    : 0
+_TASK_RECORD_LIMIT_MAX    : 10000
+_TASK_RECORD_LIMIT_DEFAULT: 1000
 
-# 任务记录日志限制
-_TASK_INFO_LOG_MESSAGE_LINE_LIMIT        : 5120
-_TASK_INFO_LOG_MESSAGE_TOTAL_LIMIT_HEAD  : 10240
-_TASK_INFO_LOG_MESSAGE_TOTAL_LIMIT_TAIL  : 40960
+_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_DIRECT     : 1000
+_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_INTEGRATION: 1000
+_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CONNECTOR  : 1000
+_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK  : 100
+_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB    : 500
+_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH      : 100
+
+# 任务记录 print 日志限制
+_TASK_RECORD_PRINT_LOG_LINE_LIMIT      : 5120
+_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD: 10240
+_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL: 40960
 
 # 自动执行任务频率
-_CRONTAB_STARTER                    : '* * * * *'
-_CRONTAB_SYNC_CACHE                 : '* * * * *'
-_CRONTAB_AUTO_CLEAN                 : '* * * * *'
-_CRONTAB_AUTO_BACKUP_DB             : '0 * * * *'
-_CRONTAB_RESET_WORKER_QUEUE_PRESSURE: '* * * * *'
-_CRONTAB_RELOAD_DATA_MD5_CACHE      : '* * * * *'
+_CRONTAB_STARTER              : '* * * * *'
+_CRONTAB_FLUSH_DATA_BUFFER    : '*/30 * * * * *'
+_CRONTAB_AUTO_CLEAN           : '* * * * *'
+_CRONTAB_AUTO_BACKUP_DB       : '0 * * * *'
+_CRONTAB_RELOAD_DATA_MD5_CACHE: '* * * * *'
 
 # 函数任务模块一般作为常量的配置
 _FUNC_ARGUMENT_PLACEHOLDER_LIST: INPUT_BY_CALLER,FROM_PARAMETER
 
-_FUNC_TASK_DEFAULT_QUEUE                        : '1'
-_FUNC_TASK_DEFAULT_WEBSOCKET_HANDLER_QUEUE      : '5'
-_FUNC_TASK_DEFAULT_SUB_HANDLER_QUEUE            : '6'
-_FUNC_TASK_DEFAULT_DEBUG_QUEUE                  : '7'
-_FUNC_TASK_DEFAULT_CRONTAB_QUEUE                : '8'
-_FUNC_TASK_DEFAULT_ASYNC_QUEUE                  : '9'
-_FUNC_TASK_DEBUG_TIMEOUT                        : 45
-_FUNC_TASK_DEFAULT_TIMEOUT                      : 30
-_FUNC_TASK_MIN_TIMEOUT                          : 1
-_FUNC_TASK_MAX_TIMEOUT                          : 3600
-_FUNC_TASK_DEFAULT_API_TIMEOUT                  : 10
-_FUNC_TASK_MIN_API_TIMEOUT                      : 1
-_FUNC_TASK_MAX_API_TIMEOUT                      : 180
-_FUNC_TASK_TIMEOUT_TO_EXPIRE_SCALE              : 24
-_FUNC_TASK_EXTRA_TIMEOUT_TO_KILL                : 5
-_FUNC_TASK_DEFAULT_BATCH_TIMEOUT                : 3600
-_FUNC_TASK_DEFAULT_BATCH_TIMEOUT_TO_EXPIRE_SCALE: 24
-_FUNC_TASK_THREAD_POOL_SIZE                     : 5
-_FUNC_TASK_MAX_CHAIN_LENGTH                     : 5
-_FUNC_TASK_DISTRIBUTION_RANGE                   : 0
+_FUNC_TASK_QUEUE_DEFAULT          : 1
+_FUNC_TASK_QUEUE_WEBSOCKET_HANDLER: 5
+_FUNC_TASK_QUEUE_SUB_HANDLER      : 6
+_FUNC_TASK_QUEUE_DEBUGGER         : 7
+_FUNC_TASK_QUEUE_CRONTAB          : 8
 
-_WORKER_LIMIT_FUNC_PRESSURE_BASE           : 500
-_WORKER_LIMIT_FUNC_PRESSURE_EXPIRES        : 3600
-_WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE   : 300000
-_WORKER_LIMIT_WORKER_QUEUE_PRESSURE_EXPIRES: 3600
+_FUNC_TASK_TIMEOUT_MIN     : 1
+_FUNC_TASK_TIMEOUT_MAX     : 3600
+_FUNC_TASK_TIMEOUT_DEFAULT : 30
+_FUNC_TASK_TIMEOUT_BATCH   : 3600
+_FUNC_TASK_TIMEOUT_DEBUGGER: 60
 
-# 最近函数运行信息配置
-_RECENT_FUNC_RUNNING_COUNT_EXPIRES  : 604800
-_RECENT_FUNC_RUNNING_STATUS_EXPIRES : 604800
-_RECENT_FUNC_RUNNING_STATUS_LIMIT   : 50
+_FUNC_TASK_THREAD_POOL_SIZE  : 5
+_FUNC_TASK_CALL_CHAIN_LIMIT  : 5
+_FUNC_TASK_DISTRIBUTION_RANGE: 0
+
+# TODO 最近函数运行信息配置
+_RECENT_FUNC_RUNNING_COUNT_EXPIRES: 604800
+
+# 文件上传过期时间
+_UPLOAD_FILE_EXPIRES: 3600
 
 # 数据量限制
 _DBDATA_TABLE_LIMIT_MAP:
-  biz_main_task_result_dataflux_func: 10000
   biz_main_operation_record         : 50000
+  biz_main_script_publish_history   : 5000
   biz_main_script_recover_point     : 1000
   biz_main_script_set_export_history: 1000
   biz_main_script_set_import_history: 1000
-  biz_main_script_publish_history   : 1000
-_DBDATA_TABLE_EXPIRE_MAP:
-  biz_main_task_info: 7776000
 
-# 文件上传
-_UPLOAD_FILE_EXPIRES: 3600
+# 数据保存时长限制
+_DBDATA_TABLE_EXPIRE_MAP:
+  biz_main_task_record     : 7776000
+  biz_main_task_record_func: 7776000
 
 # 日志 / 缓存表
 _DBDATA_LOG_CACHE_TABLE_LIST:
-  - biz_main_script_log
-  - biz_main_script_failure
-  - biz_main_task_result_dataflux_func
-  - biz_main_crontab_task_info
-  - biz_main_batch_task_info
-  - biz_main_task_info
-  - biz_main_operation_record
+  - biz_main_task_record
+  - biz_main_task_record_func
 
 # 数据库自动备份
 _DB_AUTO_BACKUP_PREFIX: dataflux-func-sqldump-
 
 # 过时的数据
 _DEPRECATED_TABLE_LIST:
+  - wat_main_task_result_example
   - biz_main_script_log
   - biz_main_script_failure
-  - biz_main_batch_task_info
   - biz_main_crontab_task_info
-_DEPRECATED_CACHE_KEY_LIST:
-  - topic: syncCache
-    name : scriptFailure
-  - topic: syncCache
-    name : scriptLog
-  - topic: syncCache
-    name : taskInfo
+  - biz_main_batch_task_info
+  - biz_main_task_result_dataflux_func
+  - biz_main_task_info
+  - biz_rel_func_running_info
+
+_DEPRECATED_CACHE_KEY_LIST: null
+
 _DEPRECATED_CACHE_KEY_PATTERN_LIST:
   - topic: syncCache
-    name : taskInfo
-    tags : [ 'originId', '*' ]
+    name : '*'
+    tags : [ '*' ]
 
-# 其他（内部控制）
+# 其他内部控制
 _NODE_UV_THREADPOOL_SIZE      : 8
-_LRU_FUNC_CACHE_MAX           : 1000
-_LRU_FUNC_CACHE_MAX_AGE       : 15
-_LRU_FUNC_RESULT_CACHE_MAX    : 2000
+_LRU_FUNC_CACHE_LIMIT         : 1000
+_LRU_FUNC_CACHE_MAX_AGE       : 5
+_LRU_FUNC_RESULT_CACHE_LIMIT  : 2000
 _LRU_FUNC_RESULT_CACHE_MAX_AGE: 5
 _HTTP_AUTH_NONCE_MAX_AGE      : 300
+
 
 # 是否禁用配置步骤
 _DISABLE_SETUP: false
@@ -401,8 +384,6 @@ _DISABLE_PRE_RUN_SCRIPTS: false
 _DISABLE_INIT_SCRIPTS: false
 # 是否禁用数据库自动备份
 _DISABLE_DB_AUTO_BACKUP: false
-# 是否禁用工作单元限制压力
-_DISABLE_WORKER_LIMIT_PRESSURE: false
 # 是否禁用启动运行任务
 _DISABLE_STARTUP_TASKS: false
 

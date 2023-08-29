@@ -13,10 +13,10 @@ var moment  = require('moment-timezone');
 /* Project Modules */
 var CONFIG  = require('./yamlResources').get('CONFIG');
 var toolkit = require('./toolkit');
-var g       = require('./g');
 
-/* Configure */
-var HOSTNAME = os.hostname();
+/* Init */
+var RUN_UP_TIME = toolkit.getTimestamp();
+var HOSTNAME    = os.hostname();
 
 var LOG_LEVELS = exports.LOG_LEVELS = {
   levels: {
@@ -292,7 +292,7 @@ LoggerHelper.prototype._log = function() {
 
   var nowMs    = Date.now();
   var now      = parseInt(nowMs / 1000);
-  var nowStr   = moment(nowMs).tz(CONFIG.LOG_TIMEZONE).format('YYYY-MM-DD HH:mm:ss');
+  var nowStr   = moment(nowMs).tz(CONFIG.TIMEZONE).format('YYYY-MM-DD HH:mm:ss');
   var nowShort = nowStr.slice(5);
 
   var reqTimeMs = this.locals.requestTime
@@ -312,7 +312,7 @@ LoggerHelper.prototype._log = function() {
       appName           : CONFIG.APP_NAME,
       subAppName        : 'Server',
       subAppNameShort   : 'SVR',
-      upTime            : now - g.runUpTime,
+      upTime            : now - RUN_UP_TIME,
       level             : level,
       levelShort        : level[0],
       timestamp         : now,

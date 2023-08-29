@@ -12,14 +12,14 @@ from worker.utils.extra_helpers.guance_openapi import GuanceOpenAPI
 from worker.utils.extra_helpers.dataway import DataWay
 
 def get_config(c):
-    return toolkit.no_none_or_white_space({
+    return toolkit.no_none_or_whitespace({
         'url'       : c.get('guanceOpenAPIURL'),
         'api_key_id': c.get('guanceAPIKeyId'),
         'api_key'   : c.get('guanceAPIKey'),
     })
 
 def get_config_dataway(c):
-    return toolkit.no_none_or_white_space({
+    return toolkit.no_none_or_whitespace({
         'url'    : c.get('guanceOpenWayURL'),
         'token'  : c.get('token'),
         'rp'     : c.get('rp'),

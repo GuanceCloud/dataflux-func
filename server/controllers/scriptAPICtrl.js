@@ -6,18 +6,19 @@
 var async = require('async');
 
 /* Project Modules */
-var E            = require('../utils/serverError');
-var CONFIG       = require('../utils/yamlResources').get('CONFIG');
-var toolkit      = require('../utils/toolkit');
-var modelHelper  = require('../utils/modelHelper');
-var celeryHelper = require('../utils/extraHelpers/celeryHelper');
+var E           = require('../utils/serverError');
+var CONFIG      = require('../utils/yamlResources').get('CONFIG');
+var toolkit     = require('../utils/toolkit');
+var modelHelper = require('../utils/modelHelper');
 
 var scriptSetMod            = require('../models/scriptSetMod');
 var scriptMod               = require('../models/scriptMod');
 var funcMod                 = require('../models/funcMod');
 var scriptPublishHistoryMod = require('../models/scriptPublishHistoryMod');
 
-/* Configure */
+var mainAPICtrl = require('./mainAPICtrl');
+
+/* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = scriptMod.createCRUDHandler();
@@ -230,8 +231,7 @@ exports.delete = function(req, res, next) {
     });
     res.locals.sendJSON(ret);
 
-    var celery = celeryHelper.createHelper(res.locals.logger);
-    reloadDataMD5Cache(celery, id);
+    reloadDataMD5Cache(res.locals, id);
   });
 };
 
@@ -239,8 +239,6 @@ exports.publish = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data || {};
   var wait = req.body.wait; // 等待发布结束
-
-  var celery = celeryHelper.createHelper(res.locals.logger);
 
   var scriptModel               = scriptMod.createModel(res.locals);
   var scriptSetModel            = scriptSetMod.createModel(res.locals);
@@ -251,7 +249,7 @@ exports.publish = function(req, res, next) {
   var scriptSet = null;
 
   var nextScriptPublishVersion = null;
-  var nextExportedAPIFuncs     = [];
+  var nextAPIFuncs             = [];
 
   var transScope = modelHelper.createTransScope(res.locals.db);
   async.series([
@@ -289,10 +287,13 @@ exports.publish = function(req, res, next) {
     },
     // 发送脚本代码预检查任务
     function(asyncCallback) {
-      sendPreCheckTask(celery, id, function(err, exportedAPIFuncs) {
+      var opt = {
+        scriptId: id
+      }
+      mainAPICtrl.callFuncDebugger(res.locals, opt, function(err, taskResp) {
         if (err) return asyncCallback(err);
 
-        nextExportedAPIFuncs = exportedAPIFuncs;
+        nextAPIFuncs = taskResp.result.apiFuncs;
 
         return asyncCallback();
       })
@@ -310,7 +311,7 @@ exports.publish = function(req, res, next) {
     },
     // 更新函数
     function(asyncCallback) {
-      funcModel.update(script.id, nextExportedAPIFuncs, asyncCallback);
+      funcModel.update(script.id, nextAPIFuncs, asyncCallback);
     },
     // 创建发布版本历史
     function(asyncCallback) {
@@ -326,134 +327,63 @@ exports.publish = function(req, res, next) {
     transScope.end(err, function(scopeErr) {
       if (scopeErr) return next(scopeErr);
 
-      function doResponse() {
-        var ret = toolkit.initRet({
-          id              : id,
-          publishVersion  : nextScriptPublishVersion,
-          exportedAPIFuncs: nextExportedAPIFuncs,
-        });
-        res.locals.sendJSON(ret);
-      }
-
-      if (!wait) doResponse(); // 不等待发布结束
+      // 响应
+      var ret = toolkit.initRet({
+        id            : id,
+        publishVersion: nextScriptPublishVersion,
+        apiFuncs      : nextAPIFuncs,
+      });
+      res.locals.sendJSON(ret);
 
       // 发布成功后
       // 1. 重新加载脚本代码 MD5 缓存
       // 2. 运行发布后自动运行的函数
-      reloadDataMD5Cache(celery, id, function(err) {
-        if (wait) doResponse(); // 等待发布结束
+      reloadDataMD5Cache(res.locals, id, function(err) {
         if (err) return;
 
-        nextExportedAPIFuncs.forEach(function(func) {
+        nextAPIFuncs.forEach(function(func) {
           if (func.integration !== 'autoRun') return;
 
-          try {
-            if (!func.extraConfig.integrationConfig.onPublish) return;
-          } catch(err) {
-            return;
+          var onScriptPublish = false;
+          try { onScriptPublish = onScriptPublish || func.extraConfig.integrationConfig.onScriptPublish } catch(err) { }
+          try { onScriptPublish = onScriptPublish || func.extraConfig.integrationConfig.onPublish       } catch(err) { }
+
+          if (!onScriptPublish) return;
+
+          var funcId = `${id}.${func.name}`;
+
+          var timeout = CONFIG._FUNC_TASK_TIMEOUT_DEFAULT;
+          if (func.extraConfig.timeout) {
+            timeout = parseInt(func.extraConfig.timeout);
           }
 
-          var funcId = toolkit.strf('{0}.{1}', id, func.name);
-          var kwargs = {
-            funcId       : funcId,
-            origin       : 'integration',
-            originId     : 'integration',
-            execMode     : 'onPublish',
-            queue        : CONFIG._FUNC_TASK_DEFAULT_QUEUE,
-            taskInfoLimit: CONFIG._TASK_INFO_DEFAULT_LIMIT_INTEGRATION,
+          var expires = timeout;
+
+          var taskReq = {
+            name: 'Func.Runner',
+            kwargs: {
+              funcId  : funcId,
+              origin  : 'integration',
+              originId: 'autoRun.onScriptPublish',
+            },
+            queue          : CONFIG._FUNC_TASK_QUEUE_DEFAULT,
+            timeout        : timeout,
+            expires        : expires,
+            taskRecordLimit: CONFIG._TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_INTEGRATION,
           }
-          var taskOptions = {
-            queue: CONFIG._FUNC_TASK_DEFAULT_QUEUE,
-          }
-          celery.putTask('Biz.FuncRunner', null, kwargs, taskOptions);
+          res.locals.cacheDB.putTask(taskReq);
         });
       });
     });
   });
 };
 
-function sendPreCheckTask(celery, scriptId, callback) {
-  var exportedAPIFuncs = [];
-
-  var kwargs = {
-    funcId: scriptId,
+function reloadDataMD5Cache(locals, scriptId, callback) {
+  var taskReq = {
+    name  : 'Internal.ReloadDataMD5Cache',
+    kwargs: { type: 'script', id: scriptId },
   }
-  var taskOptions = {
-    queue            : CONFIG._FUNC_TASK_DEFAULT_DEBUG_QUEUE,
-    resultWaitTimeout: CONFIG._FUNC_TASK_DEBUG_TIMEOUT * 1000,
-  }
-  celery.putTask('Biz.FuncDebugger', null, kwargs, taskOptions, null, function(err, celeryRes, extraInfo) {
-    if (err) return callback(err);
-
-    celeryRes = celeryRes || {};
-    extraInfo = extraInfo || {};
-
-    if (celeryRes.status === 'FAILURE') {
-      if (celeryRes.einfoTEXT && celeryRes.einfoTEXT.indexOf('billiard.exceptions.SoftTimeLimitExceeded') >= 0) {
-        // 超时错误
-        return callback(new E('EFuncTimeout', 'Code pre-check failed. Script does not finish in a reasonable time, please check your code and try again', {
-          id       : celeryRes.id,
-          etype    : celeryRes.result && celeryRes.result.exc_type,
-          einfoTEXT: celeryRes.einfoTEXT || 'No error info',
-        }));
-
-      } else {
-        // 其他错误
-        return callback(new E('EFuncFailed', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again', {
-          id       : celeryRes.id,
-          etype    : celeryRes.result && celeryRes.result.exc_type,
-          einfoTEXT: celeryRes.einfoTEXT || 'No error info',
-        }));
-      }
-
-    } else if (extraInfo.status === 'TIMEOUT') {
-      return callback(new E('EFuncTimeout', 'Code pre-check failed. Script TIMEOUT during executing, please check your code and try again', {
-        id   : extraInfo.id,
-        etype: celeryRes.result && celeryRes.result.exc_type,
-      }));
-
-    } else if (celeryRes.retval && celeryRes.retval.einfoTEXT) {
-      return callback(new E('EScriptPreCheck', 'Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again', {
-        id       : extraInfo.id,
-        etype    : celeryRes.result && celeryRes.result.exc_type,
-        einfoTEXT: celeryRes.retval.einfoTEXT || 'No error info',
-        traceInfo: celeryRes.retval.traceInfo || 'No trace info',
-      }));
-    }
-
-    try {
-      exportedAPIFuncs = celeryRes.retval.result.exportedAPIFuncs
-    } catch(_) {
-      // Nope
-    } finally {
-      // 保证一定为数组
-      if (toolkit.isNothing(exportedAPIFuncs)) {
-        exportedAPIFuncs = [];
-      }
-    }
-
-    // 检查重名函数
-    var funcNameMap = {};
-    for (var i = 0; i < exportedAPIFuncs.length; i++) {
-      var name = exportedAPIFuncs[i].name;
-
-      if (!funcNameMap[name]) {
-        funcNameMap[name] = true;
-      } else {
-        return callback(new E('EClientDuplicated', 'Found duplicated func names in script', {
-          funcName: name,
-        }));
-      }
-    }
-
-    return callback(null, exportedAPIFuncs);
-  });
+  locals.cacheDB.putTask(taskReq, callback);
 };
 
-function reloadDataMD5Cache(celery, scriptId, callback) {
-  var taskKwargs = { type: 'script', id: scriptId };
-  celery.putTask('Sys.ReloadDataMD5Cache', null, taskKwargs, null, null, callback);
-};
-
-exports.sendPreCheckTask   = sendPreCheckTask;
 exports.reloadDataMD5Cache = reloadDataMD5Cache;

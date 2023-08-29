@@ -1023,7 +1023,7 @@ function _createAxiosOpt(method, pathPattern, options) {
   let axiosOpt = {
     method      : method,
     url         : url,
-    timeout     : options.timeout || 60 * 1000,
+    timeout     : options.timeout || 3 * 60 * 1000,
     extraOptions: options.extraOptions,
   };
 

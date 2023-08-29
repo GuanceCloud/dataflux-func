@@ -10,7 +10,7 @@ var E       = require('../utils/serverError');
 var CONFIG  = require('../utils/yamlResources').get('CONFIG');
 var toolkit = require('../utils/toolkit');
 
-/* Configure */
+/* Init */
 var LIST_KEY_LIMIT   = 500;
 var PREVIEW_LIMIT_MB = 5;
 

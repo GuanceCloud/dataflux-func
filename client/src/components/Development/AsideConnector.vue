@@ -15,7 +15,7 @@ Connector deleted : 连接器已删除
 
 Are you sure you want to delete the Connector?<br><strong class="text-bad">{label}</strong>: 是否确认删除此连接器<br><strong class="text-bad">{label}</strong>
 
-Go to Recent Task Info: 前往最近任务信息
+Go to Recent Task Record: 前往最近任务记录
 </i18n>
 
 <template>
@@ -132,9 +132,9 @@ Go to Recent Task Info: 前往最近任务信息
           <div class="goto-links" v-if="data.connectorType">
             <!-- 关联直接函数调用 -->
             <el-link v-if="C.CONNECTOR_MAP.get(data.connectorType).configFields.topicHandlers || data.connectorType === 'guance'"
-              @click="common.goToTaskInfo({ origin: 'connector', originId: data.id })">
+              @click="common.goToTaskRecord({ origin: 'connector', originId: data.id })">
               <i class="fa fa-fw fa-info-circle"></i>
-              {{ $t('Go to Recent Task Info') }}
+              {{ $t('Go to Recent Task Record') }}
             </el-link>
           </div>
 

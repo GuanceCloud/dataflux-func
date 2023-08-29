@@ -1,6 +1,10 @@
 # 本文档主要定义全局通用，以及在非.vue文件（如：toolkit.js, const.js 等）中的翻译
 
 en:
+  # 通用
+  ',': ', '
+  ':': ': '
+
   # const.js - AUTH_LINK_THROTTLING
   timePerSecond: '{n} time / second | {n} times / second'
   timePerMinute: '{n} time / minute | {n} times / minute'
@@ -384,21 +388,16 @@ en:
   'timePerYear'  : '{n} 次/年'
 
   # const.js - TASK_STATUS
-  Succeeded: 已成功
-  Failed   : 已失败
+  Success: 成功
+  Failure: 失败
+  # Timeout: 超时
+  Skip   : 跳过
 
   # const.js - SCRIPT_RECOVER_POINT
   Before package import    : 脚本集导入前
   Before package install   : 脚本集安装前
   Before Script Lib recover: 脚本库还原前
   Created by user manually : 用户手动创建
-
-  # const.js - FUNC_EXEC_MODE
-  Sync Call : 同步调用
-  Async Call: 异步调用
-  Crontab   : 定时运行
-  On Launch : 启动后运行
-  On Publish: 发布后运行
 
   # const.js - FUNC_INTEGRATION
   Sign in: 登录

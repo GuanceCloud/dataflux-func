@@ -12,7 +12,7 @@ var toolkit = require('../utils/toolkit');
 
 var scriptSetExportHistoryMod = require('../models/scriptSetExportHistoryMod');
 
-/* Configure */
+/* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = scriptSetExportHistoryMod.createCRUDHandler();

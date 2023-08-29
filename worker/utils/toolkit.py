@@ -31,6 +31,7 @@ import arrow
 from dateutil import parser as dateutil_parser
 import nanoid
 from Cryptodome.Cipher import AES
+from croniter import croniter
 
 SHORT_UNIX_TIMESTAMP_OFFSET = 1503982020
 
@@ -109,9 +110,12 @@ def gen_data_id(prefix=None):
     prefix = prefix or 'data'
     return prefix + '-' + nanoid.generate('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 12)
 
+def gen_task_id():
+    return gen_data_id('task')
+
 def gen_time_serial_seq(d=None, rand_length=4):
     if not d:
-        d = time.time()
+        d = get_timestamp(3)
     elif isinstance(d, datetime.datetime):
         d = time.mktime(d.timetuple())
 
@@ -125,8 +129,11 @@ def gen_time_serial_seq(d=None, rand_length=4):
 
     return offsetted_timestamp + rand_int
 
-def get_first_part(s, sep='-', count=2):
-    return sep.join(s.split(sep)[0:count])
+def get_short_id(s, sep='-', count=6):
+    if sep in s:
+        return s.split(sep)[1][0:count]
+    else:
+        return s
 
 def json_find(j, path, safe=False):
     if j is None:
@@ -153,7 +160,7 @@ def json_find(j, path, safe=False):
             if safe:
                 return None
             else:
-                e = Exception('json_find() - hit non-dict at `{}`'.format(curr_path))
+                e = Exception(f'json_find() - hit non-dict at `{curr_path}`')
                 raise e
 
             break
@@ -229,28 +236,34 @@ def json_update_by_keys(s, d, keys=None):
 
     return d
 
-def json_dumps_default(v):
-    if isinstance(v, datetime.datetime):
-        return to_iso_datetime(v)
-    elif isinstance(v, float) and (math.isnan(v) or math.isinf(v)):
+def json_dumps_default(j):
+    if isinstance(j, datetime.datetime):
+        return to_iso_datetime(j)
+    elif isinstance(j, float) and (math.isnan(j) or math.isinf(j)):
         return None
     else:
-        return pprint.saferepr(v)
+        return pprint.saferepr(j)
 
-def json_dumps(v, **kwargs):
+def json_dumps(j, ignore_nothing=False, keep_none=False, **kwargs):
+    if j is None and keep_none:
+        return None
+
     kwargs['allow_nan'] = False
     kwargs['indent'] = kwargs.get('indent') or 0
 
+    if ignore_nothing:
+        j = no_none_or_whitespace(j)
+
     try:
-        return ujson.dumps(v, **kwargs)
+        return ujson.dumps(j, **kwargs)
 
     except Exception as e:
-        print('Warning: ujson.dumps(...) failed, use simplejson.dumps(...) instead: ', repr(e))
+        print('Warning: ujson.dumps(...) failed, use simplejson.dumps(...) instead:', repr(e))
 
         kwargs['indent'] = kwargs['indent'] or None
         if not kwargs['indent']:
             kwargs['separators'] = (',', ':')
-        return simplejson.dumps(v, default=json_dumps_default, ignore_nan=True, **kwargs)
+        return simplejson.dumps(j, default=json_dumps_default, ignore_nan=True, **kwargs)
 
 def json_loads(s):
     return ujson.loads(s)
@@ -270,7 +283,7 @@ def is_none_or_empty(o):
 
     return False
 
-def is_none_or_white_space(o):
+def is_none_or_whitespace(o):
     if is_none_or_empty(o):
         return True
 
@@ -279,8 +292,17 @@ def is_none_or_white_space(o):
 
     return False
 
-def no_none_or_white_space(o):
-    return dict([(k,v) for k, v in o.items() if not is_none_or_white_space(v)])
+def no_none_or_whitespace(o):
+    return dict([(k,v) for k, v in o.items() if not is_none_or_whitespace(v)])
+
+def get_timestamp(ndigits=0):
+    if ndigits == 0:
+        return int(time.time())
+    else:
+        return round(time.time(), ndigits)
+
+def get_timestamp_ms():
+    return int(time.time() * 1000)
 
 def get_date_string(d=None, f=None):
     if not d:
@@ -296,7 +318,7 @@ def get_date_string(d=None, f=None):
 
 def get_time_string(d=None, f=None):
     if not d:
-        d = time.time()
+        d = get_timestamp(3)
     elif isinstance(d, six.string_types):
         d = to_unix_timestamp(d)
     elif isinstance(d, datetime.datetime):
@@ -308,7 +330,7 @@ def get_time_string(d=None, f=None):
 
 def get_datetime_string(d=None, f=None):
     if not d:
-        d = time.time()
+        d = get_timestamp(3)
     elif isinstance(d, six.string_types):
         d = to_unix_timestamp(d)
     elif isinstance(d, datetime.datetime):
@@ -379,11 +401,11 @@ def to_boolean(o):
 
 def is_past_datetime(d):
     ts = to_unix_timestamp(d)
-    return ts > time.time()
+    return ts > get_timestamp(3)
 
 def get_days_from_now(d):
     ts = to_unix_timestamp(d)
-    days = float(ts - time.time()) / 3600 / 24
+    days = float(ts - get_timestamp(3)) / 3600 / 24
     return days
 
 def get_md5(s):
@@ -470,20 +492,20 @@ def gen_rand_string(length=None, chars=None):
 
 def _get_cache_key(topic, name, tags=None):
     if not topic:
-        e = Exception('WAT: Can not use a topic with `{}`'.format(topic))
+        e = Exception(f'Can not use a topic with `{topic}`')
         raise e
 
     if not name:
-        e = Exception('WAT: Can not use a name with `{}`'.format(name))
+        e = Exception(f'Can not use a name with `{name}`')
         raise e
 
     if not tags:
-        cache_key = '{}@{}'.format(topic, name)
+        cache_key = f'{topic}@{name}'
         return cache_key
 
     else:
         parts = [str(tag) for tag in tags]
-        cache_key = '{}@{}:{}:'.format(topic, name, ':'.join(parts))
+        cache_key = f"{topic}@{name}:{':'.join(parts)}:"
         return cache_key
 
 def _parse_cache_key(cache_key):
@@ -510,10 +532,17 @@ def _parse_cache_key(cache_key):
 
 def _get_worker_queue(name):
     if not isinstance(name, int) and not name:
-        e = Exception('WAT: Queue name not specified.')
+        e = Exception('Worker Queue name not specified.')
         raise e
 
-    return 'workerQueue@{}'.format(name)
+    return f'workerQueue@{name}'
+
+def _get_delay_queue(name):
+    if not isinstance(name, int) and not name:
+        e = Exception('Delay Queue name not specified.')
+        raise e
+
+    return f'delayQueue@{name}'
 
 def as_array(o):
     if o is None:
@@ -542,9 +571,9 @@ def gen_reg_exp_by_wildcard(pattern):
                         .replace('*', '[^\\.\\|]+')
 
     if pattern.endswith('**'):
-        reg_exp = '^{}'.format(reg_exp)
+        reg_exp = f'^{reg_exp}'
     else:
-        reg_exp = '^{}$'.format(reg_exp)
+        reg_exp = f'^{reg_exp}$'
 
     return reg_exp
 
@@ -576,9 +605,9 @@ def limit_text(s, max_length=30, show_length=None, length_title=None):
         limited = s[0:max_length - 3] + '...'
 
         if show_length == 'newLine':
-            limited += '\n <{}: {}>'.format(length_title, len(s))
+            limited += f'\n <{length_title}: {len(s)}>'
         elif show_length:
-            limited += ' <{}: {}>'.format(length_title, len(s))
+            limited += f' <{length_title}: {len(s)}>'
 
         return limited
 
@@ -595,7 +624,7 @@ def merge_query(url, query):
     scheme = six.ensure_str(splited_url.scheme)
     netloc = six.ensure_str(splited_url.netloc)
     path   = six.ensure_str(splited_url.path)
-    merged_url = '{}://{}{}'.format(splited_url.scheme, splited_url.netloc, splited_url.path)
+    merged_url = f'{splited_url.scheme}://{splited_url.netloc}{splited_url.path}'
     if merged_query:
         next_query = {}
         for k, v in merged_query.items():
@@ -622,17 +651,11 @@ def to_short_unix_timestamp(t):
 def from_short_unix_timestamp(t):
     return t + SHORT_UNIX_TIMESTAMP_OFFSET
 
-class FakeTaskRequest(object):
-    def __init__(self, fake_task_id=None):
-        self.called_directly = False
-        self.id              = fake_task_id or 'TASK-' + gen_rand_string(4).upper()
-        self.delivery_info   = { 'routing_key': 'WORKER-INTERNAL@NONE' }
-        self.origin          = 'WORKER-INTERNAL'
-
 class FakeTask(object):
     def __init__(self, fake_task_id=None):
-        self.request = FakeTaskRequest(fake_task_id)
-        self.name    = 'WORKER-INTERNAL'
+        self.name    = 'WORKER'
+        self.queue   = 'NONE'
+        self.task_id = fake_task_id or 'WORKER'
 
 class IgnoreCaseDict(dict):
     def __lower_key(self, key):
@@ -659,7 +682,7 @@ class IgnoreCaseDict(dict):
             self.__setitem__(k, v)
 
     def __repr__(self):
-        return '{0}({1})'.format(type(self).__name__, super().__repr__())
+        return f'{type(self).__name__}({super().__repr__()})'
 
 class LocalCache(object):
     def __init__(self, expires=None, clean_interval=60):
@@ -742,3 +765,25 @@ def mask_auth_url(s):
         return RE_HTTP_BASIC_AUTH_MASK.sub(RE_HTTP_BASIC_AUTH_MASK_REPLACE, s)
     except Exception as e:
         return s
+
+def to_croniter_style(crontab):
+    parts = crontab.split(' ')
+
+    if len(parts) < 5:
+        parts.extend([ '*' ] * (5 - len(parts)))
+
+    if len(parts) == 5:
+        parts.append('0')
+    elif len(parts) > 5:
+        parts = parts[1:6] + parts[0:1]
+
+    return ' '.join(parts)
+
+def is_valid_crontab(crontab):
+    crontab = to_croniter_style(crontab)
+    return croniter.is_valid(crontab)
+
+def is_match_crontab(crontab, t, tz):
+    crontab = to_croniter_style(crontab)
+    at = arrow.get(t).to(tz)
+    return croniter.match(crontab, at.datetime)

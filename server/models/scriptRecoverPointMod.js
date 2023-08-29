@@ -13,7 +13,7 @@ var modelHelper = require('../utils/modelHelper');
 
 var scriptSetMod = require('./scriptSetMod');
 
-/* Configure */
+/* Init */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   displayName: 'script recover point',
   entityName : 'scriptRecoverPoint',

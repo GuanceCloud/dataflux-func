@@ -9,7 +9,6 @@ var mysql   = require('mysql2');
 var moment  = require('moment');
 
 /* Project Modules */
-var g             = require('./utils/g');
 var E             = require('./utils/serverError');
 var yamlResources = require('./utils/yamlResources');
 var toolkit       = require('./utils/toolkit');
@@ -41,15 +40,16 @@ exports.beforeAppCreate = function(callback) {
   process.env.UV_THREADPOOL_SIZE = parseInt(CONFIG._NODE_UV_THREADPOOL_SIZE);
 
   // Init toolkit
-  var APP_NAME_SERVER = CONFIG.APP_NAME + '-server';
-  var APP_NAME_WORKER = CONFIG.APP_NAME + '-worker';
+  var APP_NAME_SERVER  = CONFIG.APP_NAME + '-server';
+  var APP_NAME_WORKER  = CONFIG.APP_NAME + '-worker';
+  var APP_NAME_MONITOR = CONFIG.APP_NAME + '-monitor';
 
   toolkit.getCacheKey = function(topic, name, tags, appName) {
     var cacheKey = toolkit._getCacheKey(topic, name, tags);
 
     // Add app name to cache key
     appName = appName || APP_NAME_SERVER;
-    var cacheKeyWithAppName = toolkit.strf('{0}#{1}', appName, cacheKey);
+    var cacheKeyWithAppName = `${appName}#${cacheKey}`;
     return cacheKeyWithAppName;
   };
 
@@ -57,12 +57,8 @@ exports.beforeAppCreate = function(callback) {
     return toolkit.getCacheKey(topic, name, tags, APP_NAME_WORKER);
   };
 
-  toolkit.getWorkerQueue = function(name) {
-    var workerQueue = toolkit._getWorkerQueue(name);
-
-    // Add app name to cache key
-    var workerQueueWithPrefix = toolkit.strf('{0}#{1}', APP_NAME_WORKER, workerQueue);
-    return workerQueueWithPrefix;
+  toolkit.getMonitorCacheKey = function(topic, name, tags) {
+    return toolkit.getCacheKey(topic, name, tags, APP_NAME_MONITOR);
   };
 
   toolkit.parseCacheKey = function(cacheKey) {
@@ -73,6 +69,14 @@ exports.beforeAppCreate = function(callback) {
     cacheKeyInfo.topic   = appNameTopicParts[1];
 
     return cacheKeyInfo;
+  };
+
+  toolkit.getWorkerQueue = function(name) {
+    return `${APP_NAME_WORKER}#${toolkit._getWorkerQueue(name)}`;
+  };
+
+  toolkit.getDelayQueue = function(name) {
+    return `${APP_NAME_WORKER}#${toolkit._getDelayQueue(name)}`;
   };
 
   async.series([
@@ -130,8 +134,6 @@ exports.beforeAppCreate = function(callback) {
 };
 
 exports.afterAppCreated = function(app, server) {
-  g.runUpTime = toolkit.getTimestamp();
-
   var hostname = os.hostname();
 
   // System Metrics
@@ -142,7 +144,7 @@ exports.afterAppCreated = function(app, server) {
     var currentCPUUsage    = process.cpuUsage(startCPUUsage);
     var currentMemoryUsage = process.memoryUsage();
 
-    var cpuPercent = (currentCPUUsage.user + currentCPUUsage.system) * 100 / (CONFIG._MONITOR_SYS_STATS_CHECK_INTERVAL * 1000 * 1000);
+    var cpuPercent = (currentCPUUsage.user + currentCPUUsage.system) * 100 / (CONFIG._MONITOR_REPORT_INTERVAL * 1000 * 1000);
     cpuPercent = parseFloat(cpuPercent.toFixed(2));
 
     // Update `startCPUUsage` for next tick.
@@ -150,27 +152,27 @@ exports.afterAppCreated = function(app, server) {
 
     async.series([
       function(asyncCallback) {
-        var cacheKey = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', 'serverCPUPercent', 'hostname', hostname]);
+        var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', 'serverCPUPercent', 'hostname', hostname]);
         var opt = { timestamp: currentTimestamp, value: cpuPercent };
         return app.locals.cacheDB.tsAdd(cacheKey, opt, asyncCallback);
       },
       function(asyncCallback) {
-        var cacheKey = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', 'serverMemoryRSS', 'hostname', hostname]);
+        var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', 'serverMemoryRSS', 'hostname', hostname]);
         var opt = { timestamp: currentTimestamp, value: currentMemoryUsage.rss };
         return app.locals.cacheDB.tsAdd(cacheKey, opt, asyncCallback);
       },
       function(asyncCallback) {
-        var cacheKey = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', 'serverMemoryHeapTotal', 'hostname', hostname]);
+        var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', 'serverMemoryHeapTotal', 'hostname', hostname]);
         var opt = { timestamp: currentTimestamp, value: currentMemoryUsage.heapTotal };
         return app.locals.cacheDB.tsAdd(cacheKey, opt, asyncCallback);
       },
       function(asyncCallback) {
-        var cacheKey = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', 'serverMemoryHeapUsed', 'hostname', hostname]);
+        var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', 'serverMemoryHeapUsed', 'hostname', hostname]);
         var opt = { timestamp: currentTimestamp, value: currentMemoryUsage.heapUsed };
         return app.locals.cacheDB.tsAdd(cacheKey, opt, asyncCallback);
       },
       function(asyncCallback) {
-        var cacheKey = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', 'serverMemoryHeapExternal', 'hostname', hostname]);
+        var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', 'serverMemoryHeapExternal', 'hostname', hostname]);
         var opt = { timestamp: currentTimestamp, value: currentMemoryUsage.external };
         return app.locals.cacheDB.tsAdd(cacheKey, opt, asyncCallback);
       },
@@ -186,19 +188,19 @@ exports.afterAppCreated = function(app, server) {
             async.series([
               // 总使用量
               function(innerCallback) {
-                var cacheKey = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', 'dbTableTotalUsed', 'table', tableInfo.Name]);
+                var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', 'dbTableTotalUsed', 'table', tableInfo.Name]);
                 var opt = { timestamp: currentTimestamp, value: tableInfo.Data_length + tableInfo.Index_length };
                 return app.locals.cacheDB.tsAdd(cacheKey, opt, innerCallback);
               },
               // 数据使用量
               function(innerCallback) {
-                var cacheKey = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', 'dbTableDataUsed', 'table', tableInfo.Name]);
+                var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', 'dbTableDataUsed', 'table', tableInfo.Name]);
                 var opt = { timestamp: currentTimestamp, value: tableInfo.Data_length };
                 return app.locals.cacheDB.tsAdd(cacheKey, opt, innerCallback);
               },
               // 索引使用量
               function(innerCallback) {
-                var cacheKey = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', 'dbTableIndexUsed', 'table', tableInfo.Name]);
+                var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', 'dbTableIndexUsed', 'table', tableInfo.Name]);
                 var opt = { timestamp: currentTimestamp, value: tableInfo.Index_length };
                 return app.locals.cacheDB.tsAdd(cacheKey, opt, innerCallback);
               },
@@ -212,7 +214,7 @@ exports.afterAppCreated = function(app, server) {
 
           var cacheDBKeyUsed = parseInt(cacheRes) || null;
 
-          var cacheKey = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', 'cacheDBKeyUsed']);
+          var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', 'cacheDBKeyUsed']);
           var opt = { timestamp: currentTimestamp, value: cacheDBKeyUsed };
           return app.locals.cacheDB.tsAdd(cacheKey, opt, asyncCallback);
         });
@@ -223,18 +225,19 @@ exports.afterAppCreated = function(app, server) {
 
           var cacheDBMemoryUsed = parseInt(cacheRes.match(/used_memory:(\d+)/)[1]) || null;
 
-          var cacheKey = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', 'cacheDBMemoryUsed']);
+          var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', 'cacheDBMemoryUsed']);
           var opt = { timestamp: currentTimestamp, value: cacheDBMemoryUsed };
           return app.locals.cacheDB.tsAdd(cacheKey, opt, asyncCallback);
         });
       },
       function(asyncCallback) {
-        async.eachLimit(CONFIG._MONITOR_WORKER_QUEUE_LIST, 5, function(queue, eachCallback) {
+        var queues = toolkit.range(CONFIG._WORKER_QUEUE_COUNT);
+        async.eachLimit(queues, 5, function(queue, eachCallback) {
           var workerQueue = toolkit.getWorkerQueue(queue);
           app.locals.cacheDB.llen(workerQueue, function(err, cacheRes) {
             if (err) return eachCallback(err);
 
-            var cacheKey = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', 'workerQueueLength', 'queue', queue]);
+            var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', 'workerQueueLength', 'queue', queue]);
             var workerQueueLength = parseInt(cacheRes) || 0;
             var opt = { timestamp: currentTimestamp, value: workerQueueLength };
             app.locals.cacheDB.tsAdd(cacheKey, opt, eachCallback);
@@ -250,8 +253,6 @@ exports.afterAppCreated = function(app, server) {
             var prefix = null;
             if (toolkit.startsWith(key, CONFIG.APP_NAME)) {
               prefix = key.split(':')[0] + ':{Tags}';
-            } else if (toolkit.startsWith(key, 'celery-task-meta-')) {
-              prefix = 'celery-task-meta-{Task ID}';
             } else {
               prefix = 'OTHER';
             }
@@ -262,7 +263,7 @@ exports.afterAppCreated = function(app, server) {
 
           async.eachOfLimit(keyPrefixCountMap, 5, function(count, prefix, eachCallback) {
             prefix = toolkit.getBase64(prefix);
-            var cacheKey = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', 'cacheDBKeyCountByPrefix', 'prefix', prefix]);
+            var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', 'cacheDBKeyCountByPrefix', 'prefix', prefix]);
             var opt = { timestamp: currentTimestamp, value: count };
             app.locals.cacheDB.tsAdd(cacheKey, opt, eachCallback);
           }, asyncCallback);
@@ -274,7 +275,7 @@ exports.afterAppCreated = function(app, server) {
   };
 
   // Start interval
-  setInterval(recordSystemMetrics, CONFIG._MONITOR_SYS_STATS_CHECK_INTERVAL * 1000);
+  setInterval(recordSystemMetrics, CONFIG._MONITOR_REPORT_INTERVAL * 1000);
   recordSystemMetrics();
 
   var path = require('path');

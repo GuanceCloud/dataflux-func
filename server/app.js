@@ -16,7 +16,7 @@ var bodyParser       = require('body-parser');
 var cookieParser     = require('cookie-parser');
 var cors             = require('cors');
 
-/* Configure */
+/* Init */
 
 /* Load YAML resources */
 var yamlResources = require('./utils/yamlResources');
@@ -42,7 +42,6 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
 
 function startApplication() {
   /* Project Modules */
-  var g           = require('./utils/g');
   var E           = require('./utils/serverError');
   var toolkit     = require('./utils/toolkit');
   var logHelper   = require('./utils/logHelper');
@@ -142,7 +141,7 @@ function startApplication() {
   });
 
   // 集成登录认证
-  app.use(require('./controllers/indexAPICtrl').integratedAuthMid);
+  app.use(require('./controllers/mainAPICtrl').integratedAuthMid);
 
   // Dump user information
   if (CONFIG.MODE === 'dev') {
@@ -150,7 +149,7 @@ function startApplication() {
   }
 
   // Load routes
-  require('./routers/miscAPIRouter');
+  require('./routers/indexAPIRouter');
   require('./routers/authAPIRouter');
   require('./routers/userAPIRouter');
   require('./routers/accessKeyAPIRouter');
@@ -158,7 +157,7 @@ function startApplication() {
   require('./routers/systemSettingAPIRouter');
   require('./routers/debugAPIRouter');
 
-  require('./routers/indexAPIRouter');
+  require('./routers/mainAPIRouter');
   require('./routers/pythonPackageAPIRouter');
   require('./routers/resourceAPIRouter');
 
@@ -180,9 +179,8 @@ function startApplication() {
   require('./routers/batchAPIRouter');
   require('./routers/apiAuthAPIRouter');
 
-  require('./routers/taskInfoAPIRouter');
-
-  require('./routers/datafluxFuncTaskResultAPIRouter');
+  require('./routers/taskRecordAPIRouter');
+  require('./routers/taskRecordFuncAPIRouter');
 
   require('./routers/operationRecordAPIRouter');
 
@@ -266,11 +264,6 @@ function startApplication() {
           for (var i = 0; i < stackLines.length; i++) {
             (res.locals.logger || console).error(stackLines[i]);
           }
-        }
-
-        // 5xx Error hook
-        if ('function' === typeof g.on5xxError) {
-          g.on5xxError(req, res, err);
         }
       }
     }

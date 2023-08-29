@@ -6,18 +6,18 @@
 var async = require('async');
 
 /* Project Modules */
-var E            = require('../utils/serverError');
-var CONFIG       = require('../utils/yamlResources').get('CONFIG');
-var toolkit      = require('../utils/toolkit');
-var celeryHelper = require('../utils/extraHelpers/celeryHelper');
+var E       = require('../utils/serverError');
+var CONFIG  = require('../utils/yamlResources').get('CONFIG');
+var toolkit = require('../utils/toolkit');
 
-var scriptAPICtrl = require('./scriptAPICtrl');
-var blueprintMod  = require('../models/blueprintMod');
-var scriptSetMod  = require('../models/scriptSetMod');
-var scriptMod     = require('../models/scriptMod');
-var funcMod       = require('../models/funcMod');
+var blueprintMod = require('../models/blueprintMod');
+var scriptSetMod = require('../models/scriptSetMod');
+var scriptMod    = require('../models/scriptMod');
+var funcMod      = require('../models/funcMod');
 
-/* Configure */
+var mainAPICtrl = require('./mainAPICtrl');
+
+/* Init */
 var NODE_FUNC_IMPORTS_MAP = {
   BuiltinHashNode: function(props) {
     return [ 'hashlib' ];
@@ -361,8 +361,6 @@ exports.delete = crudHandler.createDeleteHandler();
 exports.deploy = function(req, res, next) {
   var id = req.params.id;
 
-  var celery = celeryHelper.createHelper(res.locals.logger);
-
   var blueprintModel = blueprintMod.createModel(res.locals);
   var scriptSetModel = scriptSetMod.createModel(res.locals);
   var scriptModel    = scriptMod.createModel(res.locals);
@@ -371,7 +369,7 @@ exports.deploy = function(req, res, next) {
   var blueprintScriptSetId = `blueprint_${id}`;
   var blueprintScriptId    = `${blueprintScriptSetId}__main`;
   var blueprint            = null;
-  var nextExportedAPIFuncs = null;
+  var nextAPIFuncs         = null;
 
   async.series([
     // 获取蓝图画布数据
@@ -410,19 +408,22 @@ exports.deploy = function(req, res, next) {
     },
     // 发送脚本代码预检查任务
     function(asyncCallback) {
-      scriptAPICtrl.sendPreCheckTask(celery, blueprintScriptId, function(err, exportedAPIFuncs) {
+      var opt = {
+        scriptId: blueprintScriptId,
+      }
+      mainAPICtrl.callFuncDebugger(res.locals, opt, function(err, taskResp) {
         if (err) return asyncCallback(err);
 
-        nextExportedAPIFuncs = exportedAPIFuncs;
+        nextAPIFuncs = taskResp.result.apiFuncs;
 
         return asyncCallback();
       });
     },
     // 更新函数
     function(asyncCallback) {
-      if (toolkit.isNothing(nextExportedAPIFuncs)) return asyncCallback();
+      if (toolkit.isNothing(nextAPIFuncs)) return asyncCallback();
 
-      funcModel.update(blueprintScriptId, nextExportedAPIFuncs, asyncCallback);
+      funcModel.update(blueprintScriptId, nextAPIFuncs, asyncCallback);
     },
   ], function(err) {
     if (err) return next(err);

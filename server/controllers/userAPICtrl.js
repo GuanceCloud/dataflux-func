@@ -11,7 +11,7 @@ var auth    = require('../utils/auth');
 
 var userMod = require('../models/userMod');
 
-/* Configure */
+/* Init */
 var GET_FIELDS = [
   'seq',
   'id',

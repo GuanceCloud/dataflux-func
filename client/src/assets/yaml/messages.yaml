@@ -116,8 +116,6 @@ en: {}
   Unsupported resource operation                                                                          : 资源不支持进行此操作
   Unzip destination already existed                                                                       : 解压目标地址已经存在
   User not signed in                                                                                      : 用户尚未登录
-  Wait async task result timeout, but task is still running. Use task ID to fetch result later            : 等待异步任务结果超时，但任务可能依然正在运行。后续可以使用任务 ID 查询结果
-  Waiting Func result timeout, but task is still running. Use task ID to fetch result later               : 等待函数结果超时，但任务可能依然正在运行。后续可以使用任务 ID 查询结果
   Worker no response                                                                                      : 工作单元无响应
   X-Auth-Token not sent                                                                                   : X-Auth-Token 尚未发送
   Zip file already existed                                                                                : 压缩文件已经存在

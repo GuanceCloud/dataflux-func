@@ -71,7 +71,7 @@ Saved Draft Code: 已保存的草稿代码
             <el-form-item v-if="!conflictStatus">
               <el-tooltip placement="bottom" :enterable="false">
                 <div slot="content">
-                  {{ $t('Shortcut') }}{{ $t(':') }} <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>E</kbd>
+                  {{ $t('Shortcut') }}{{ $t(':') }}<kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>E</kbd>
                 </div>
                 <el-button
                   @click="startEdit"
@@ -85,7 +85,7 @@ Saved Draft Code: 已保存的草稿代码
               <el-radio-group v-model="showMode" size="mini" plain>
                 <el-tooltip placement="bottom" v-for="mode, i in C.CODE_VIEWER_SHOW_MODE" :key="mode.key" :enterable="false">
                   <div slot="content">
-                    {{ $t('Shortcut') }}{{ $t(':') }} <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>{{ i + 1 }}</kbd>
+                    {{ $t('Shortcut') }}{{ $t(':') }}<kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>{{ i + 1 }}</kbd>
                   </div>
                   <el-radio-button :label="mode.key">{{ mode.name }}</el-radio-button>
                 </el-tooltip>

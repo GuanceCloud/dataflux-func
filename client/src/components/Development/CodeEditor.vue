@@ -70,11 +70,12 @@ Do you want to publish the Script now?                                          
 Script not published                                                                   : 脚本未发布
 Publish Now                                                                            : 立即发布
 Skip Publishing                                                                        : 跳过发布
-Run Time                                                                               : 函数执行耗时
+Time Cost                                                                              : 函数执行耗时
 Peak Memory Allocated                                                                  : 内存分配峰值
 It took too much time for running (more than 3s), may not be suitable for synchronous calling scenario: 耗时较长（大于 3 秒），可能不适合需要响应速度较高的场景
-'Func Return Value (repr)'                                                             : 函数返回值（repr）
-Stack                                                                                  : 错误堆栈
+'Logs by print(...)'                                                                   : print(...) 日志
+'Return Value (pprint.saferepr)'                                                       : 返回值（pprint.saferepr）
+Stack                                                                                  : 调用堆栈
 
 Publish Failed                                                                                                                     : 发布失败
 Script Error                                                                                                                       : 脚本错误
@@ -84,6 +85,7 @@ Script publishing failed. Please check your code                                
 Script executing failed. Please check your code                                                                                    : 脚本执行失败，请检查代码是否存在错误
 Script publishing failed. Script executing module may crashed, please contact the administrator to report this issue               : 脚本发布时发生故障，后端脚本执行模块可能存在问题，请联系管理员排查问题
 Script executing failed. Script executing module may crashed, please contact the administrator to report this issue                : 脚本执行时发生故障，后端脚本执行模块可能存在问题，请联系管理员排查问题
+Worker no response, please check the status of this system                                                                         : 工作单元没有响应，请检查系统状态
 Detail information is shown in the output box bellow                                                                               : 详细信息可在下方输出窗口中查看
 Script publishing timeout, please make sure that no time-consuming code in global scope                                            : 脚本发布预检查超时，请注意不要再全局范围内编写耗时代码
 If this issue persists, please contact the administrator to report this issue                                                      : 如果问题持续出现，请联系管理员排查问题
@@ -197,7 +199,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                     <el-tooltip placement="bottom" :enterable="false">
                       <div slot="content">
                         {{ $t('Run selected Func') }}<br>
-                        {{ $t('Shortcut') }}{{ $t(':') }} <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>B</kbd>
+                        {{ $t('Shortcut') }}{{ $t(':') }}<kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>B</kbd>
                       </div>
                       <el-button
                         v-prevent-re-click @click="callFuncDraft"
@@ -214,7 +216,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                       <el-tooltip placement="bottom" :enterable="false">
                         <div slot="content">
                           {{ $t('Save Script draft') }}<br>
-                          {{ $t('Shortcut') }}{{ $t(':') }} <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>S</kbd>
+                          {{ $t('Shortcut') }}{{ $t(':') }}<kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>S</kbd>
                         </div>
                         <el-button
                           v-prevent-re-click @click="saveScript()"
@@ -559,7 +561,7 @@ export default {
 
       // 清除所有高亮
       this.updateHighlightLineConfig('selectedFuncLine', null);
-      this.updateHighlightLineConfig('errorLine', null);
+      this.updateHighlightLineConfig('exceptionLine', null);
 
       if (!await this.T.confirm(this.$t('Are you sure you want to publish the Script?'))) return;
 
@@ -578,7 +580,6 @@ export default {
       apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/publish', {
         params: { id: this.scriptId },
         body: {
-          wait: false,
           data: { note: 'Published by Code Editor'}
         },
         alert : { okMessage: this.$t('Script published, new Script is in effect immediately'),  muteError: true },
@@ -592,7 +593,7 @@ export default {
       if (!apiRes.ok) {
         // 输出结果
         this.outputResult('publish', this.scriptId, apiRes);
-        this.alertOnEScript(apiRes, true);
+        this.alertOnError(apiRes, true);
         return;
       }
 
@@ -608,7 +609,7 @@ export default {
 
       if (!await this.T.confirm(this.$t('Are you sure you want to reset the Script?'))) return;
 
-      this.updateHighlightLineConfig('errorLine', null);
+      this.updateHighlightLineConfig('exceptionLine', null);
 
       await this.loadData({codeField: 'code'});
 
@@ -620,7 +621,7 @@ export default {
 
       // 清除所有高亮
       this.updateHighlightLineConfig('selectedFuncLine', null);
-      this.updateHighlightLineConfig('errorLine', null);
+      this.updateHighlightLineConfig('exceptionLine', null);
 
       // 保存
       if (this.isEditable) {
@@ -652,7 +653,7 @@ export default {
         this.countDownTimer = null;
       }
 
-      let leftSeconds = this.$store.getters.SYSTEM_INFO('_FUNC_TASK_DEBUG_TIMEOUT');
+      let leftSeconds = this.$store.getters.SYSTEM_INFO('_FUNC_TASK_TIMEOUT_DEBUGGER');
       updateCountDownTipTitle(leftSeconds);
 
       this.countDownTimer = setInterval(() => {
@@ -713,14 +714,11 @@ export default {
         });
       }
 
-      if (!apiRes.ok && apiRes.reason !== 'EScriptPreCheck') {
-        // 只在预检查以外的情况下才弹框
-        this.alertOnEScript(apiRes);
-      }
+      this.alertOnError(apiRes);
     },
     clearHighlight() {
       this.updateHighlightLineConfig('selectedFuncLine', null);
-      this.updateHighlightLineConfig('errorLine', null);
+      this.updateHighlightLineConfig('exceptionLine', null);
     },
     clearScriptOutput() {
       this.scriptOutput = [];
@@ -729,69 +727,32 @@ export default {
       this.resizeVueSplitPane(100);
     },
     outputResult(type, name, apiRes) {
-      if (!apiRes.ok && apiRes.reason !== 'EScriptPreCheck') {
-        // 成功、预检查失败时执行
-        return;
-      }
+      // 预检查正常执行时执行
+      if (!apiRes.ok) return;
 
       this.funcCallSeq++;
 
-      let peakMemroyUsage = null; // 内存分配峰值
-      let cost            = null; // 执行耗时
-      let logMessages     = null; // 日志输出
-      let funcOutput      = null; // 函数输出
-      let stackInfo       = null; // 错误堆栈
+      let result = apiRes.data.result;
+      let status          = result.status;          // 任务结果
+      let peakMemroyUsage = result.peakMemroyUsage; // 内存分配峰值
+      let cost            = result.cost;            // 执行耗时
+      let printLogs       = result.printLogs;       // print 日志
+      let returnValue     = result.returnValue;     // 函数返回值
+      let exception       = result.exception;           // 异常
+      let exceptionType   = result.exceptionType;      // 异常类型
+      let traceback       = result.traceback;      // 调用堆栈
 
-      // 执行耗时，日志输出，函数输出
-      if (apiRes.data) {
-        // 执行耗时
-        if (apiRes.ok) {
-          peakMemroyUsage = apiRes.data.peakMemroyUsage;
-          cost            = apiRes.data.cost.toFixed(3);
-        }
+      // print 日志添加格式
+      printLogs = printLogs.map(l => {
+        // 由于日志开头格式固定，此处直接使用字符串处理，而不用正则
+        let lineParts = l.split(' ');
+        let timeTag     = `<span class="text-main">${lineParts[0]} ${lineParts[1]}</span>`
+        let timeDiffTag = `<span class="text-good">${lineParts[2]}</span>`
+        let logContent = htmlEscaper.escape(lineParts.slice(3).join(' '));
 
-        // 日志输出
-        // 在线调试，无论成功失败，包含日志输出
-        // 【此处进行预处理，避免在computed中反复计算】
-        logMessages = apiRes.data.result.logMessages;
-        if (Array.isArray(logMessages)) {
-          logMessages = logMessages.map(l => {
-            // 由于日志开头格式固定，此处直接使用字符串处理，而不用正则
-            let lineParts = l.split(' ');
-            let timeTag     = `<span class="text-main">${lineParts[0]} ${lineParts[1]}</span>`
-            let timeDiffTag = `<span class="text-good">${lineParts[2]}</span>`
-            let logContent = htmlEscaper.escape(lineParts.slice(3).join(' '));
-
-            return [timeTag, timeDiffTag, logContent].join(' ');
-          });
-          logMessages = logMessages.join('\n') || null;
-        }
-
-        // 函数输出
-        // 在线调试成功时，包含函数输出
-        if (apiRes.ok) {
-          try {
-            funcOutput = apiRes.data.result.funcResult.repr || null;
-            funcOutput = htmlEscaper.escape(funcOutput);
-          } catch(_) {
-            // 硬超时无返回值，此时获取函数输出报错时，忽略
-          }
-        }
-      }
-
-      // 错误堆栈
-      if (apiRes.detail && apiRes.detail.einfoTEXT) {
-        // 错误堆栈
-        // 发布失败/在线调试失败时，包含错误堆栈信息
-        // 【此处进行预处理，避免在computed中反复计算】
-        let stackLines = apiRes.detail.einfoTEXT.split('\n').reduce((acc, x) => {
-          if (!x.trim()) return acc;
-
-          acc.push(`<span class="code-editor-output-error-stack">${htmlEscaper.escape(x)}</span>`);
-          return acc;
-        }, []);
-        stackInfo = stackLines.join('\n');
-      }
+        return [timeTag, timeDiffTag, logContent].join(' ');
+      });
+      printLogs = printLogs.join('\n') || null;
 
       let output = {
         seq            : this.funcCallSeq,
@@ -799,9 +760,9 @@ export default {
         name           : name,
         peakMemroyUsage: peakMemroyUsage,
         cost           : cost,
-        logMessages    : logMessages,
-        funcOutput     : funcOutput,
-        stackInfo      : stackInfo,
+        printLogs      : printLogs,
+        returnValue    : returnValue,
+        traceback      : traceback,
       };
       this.scriptOutput.push(output);
 
@@ -818,51 +779,26 @@ export default {
       });
 
       // 标记错误行
-      if (!apiRes.ok) {
-        // 等待输出栏弹出后执行
+      if (status !== 'success') {
         setImmediate(() => {
-          const currentFilename = `${this.scriptId}`;
+          // 提取错误行号
+          let _re = new RegExp(`^\\s*File "${this.scriptId}", line (\\d+)(, in (\\w+))?$`, 'gm');
+          let _m  = [...traceback.matchAll(_re)];
+          let exceptionLine = parseInt(_m.pop()[1]) - 1;
 
-          let stack = apiRes.detail.traceInfo.stack;
-          let inFileStack = stack.filter((s) => {
-            if (!s.isInScript) return;
-            if (s.filename !== currentFilename) return;
-            return true;
-          });
-
-          // 顶层用户脚本帧（用于定位用户脚本的运行时错误）
-          let lastInFileFrame = inFileStack[inFileStack.length - 1];
-
-          // 最后报错行（用于定位语法错误）
-          let lastErrorLine = [...apiRes.detail.traceInfo.exceptionDump.matchAll(/^File \"(\w+)\", line (\d+)$/mg)].pop()
-
-          // 定位错误行
-          let errorLine = lastInFileFrame
-                        ? lastInFileFrame.lineNumber - 1
-                        : parseInt(lastErrorLine[2]) - 1;
-
-          let errorText = '';
-          try {
-            errorText = apiRes.detail.traceInfo.exceptionDump.split('\n').pop().split(':')[0].trim();
-          } catch(err) {
-            return console.error(err)
-          }
-
-          let innerHTML = `
-              <span class="error-info">
-                <i class="fa fa-fw fa-times-circle"></i>
-                <span>${errorText}</span>
-              </span> `;
-
-          this.updateHighlightLineConfig('errorLine', {
-            line            : errorLine,
+          // 高亮错误行
+          this.updateHighlightLineConfig('exceptionLine', {
+            line            : exceptionLine,
             scroll          : 1,
             marginType      : 'prev',
             textClass       : 'highlight-text',
-            backgroundClass : 'error-line-background highlight-code-line-blink',
+            backgroundClass : 'exception-line-background highlight-code-line-blink',
             lineWidgetConfig: {
-              type     : 'errorLine',
-              innerHTML: innerHTML,
+              type     : 'exceptionLine',
+              innerHTML: `<span class="exception-info">
+                            <i class="fa fa-fw fa-times-circle"></i>
+                            <span>${exceptionType}</span>
+                          </span> `,
             },
           });
         });
@@ -913,21 +849,15 @@ export default {
     closeVueSplitPane() {
       this.$refs.vueSplitPane.percent = this.SPLIT_PANE_CLOSE_PERCENT;
     },
-    alertOnEScript(apiRes, isPublish) {
-      // 预检查任务本身永远不会失败，脚本执行失败时返回的`reason`字段为`"EScriptPreCheck"`
-      // 除此之外的报错均为引擎故障
+    alertOnError(apiRes, isPublish) {
+      // 预检查任务本身永远不会失败，实际错误包装在 result 字段中
+      // 发生直接报错均为引擎故障
 
       let title   = null;
       let message = null;
       switch(apiRes.reason) {
-        case 'EScriptPreCheck':
-          if (isPublish) {
-            this.T.alert(`${this.$t('Script publishing failed. Please check your code')}
-                <br>${this.$t('Detail information is shown in the output box bellow')}`);
-          } else {
-            this.T.alert(`${this.$t('Script executing failed. Please check your code')}
-                <br>${this.$t('Detail information is shown in the output box bellow')}`);
-          }
+        case 'EWorkerNoResponse':
+          this.T.alert(`${this.$t('Worker no response, please check the status of this system')}`);
           break;
 
         case 'EAPITimeout':
@@ -938,7 +868,7 @@ export default {
           } else {
             this.T.alert(`${this.$t('Waiting Func response timeout')}
                 <span class="text-main">
-                  <br>${this.$t('There is a {seconds} time limit when calling Funcs in Code Editor', { seconds: this.$tc('seconds', this.$store.getters.SYSTEM_INFO('_FUNC_TASK_DEBUG_TIMEOUT')) })}
+                  <br>${this.$t('There is a {seconds} time limit when calling Funcs in Code Editor', { seconds: this.$tc('seconds', this.$store.getters.SYSTEM_INFO('_FUNC_TASK_TIMEOUT_DEBUGGER')) })}
                   <br>${this.$t('It is not recommended for synchronous calling Funcs that response slowly')}</small>
                 </span>`);
           }
@@ -1009,9 +939,9 @@ export default {
 
         let div = null;
         switch(config.type) {
-          case 'errorLine':
+          case 'exceptionLine':
             div = document.createElement('div');
-            div.classList.add('error-line-text');
+            div.classList.add('exception-line-text');
             div.classList.add('highlight-text');
 
             const editorStyle = this.$store.getters.codeMirrorSettings.style;
@@ -1168,57 +1098,68 @@ export default {
             titleLabel = this.$t('Executed Func') + this.$t(':');
             break;
         }
-        let title = `<span class="code-editor-output-info">${titleLabel} ${o.name}</span>`;
+        let title = `<span class="code-editor-output-info">${titleLabel} <code>${o.name}</code></span>`;
+
+        // print 日志
+        // 【已经经过预处理，此处已经是纯文本，无需进一步处理】
+        let printLogs = o.printLogs;
 
         // 执行内存消耗
         let peakMemoryUsageInfo = '';
         if (o.peakMemroyUsage) {
-          peakMemoryUsageInfo = `<span class="code-editor-output-info">${this.$t('Peak Memory Allocated')}${this.$t(':')} ${this.T.byteSizeHuman(o.peakMemroyUsage)}</span>`;
+          peakMemoryUsageInfo = `<span class="code-editor-output-info">${this.$t('Peak Memory Allocated')}${this.$t(':')}${this.T.byteSizeHuman(o.peakMemroyUsage)}</span>`;
         }
 
         // 执行耗时
         let costInfo = '';
         if (o.cost) {
-          costInfo = `<span class="code-editor-output-info">${this.$t('Run Time')}${this.$t(':')} ${this.$tc('seconds', o.cost)}</span>`;
+          costInfo = `<span class="code-editor-output-info">${this.$t('Time Cost')}${this.$t(':')}${this.$tc('seconds', o.cost)}</span>`;
           if (o.cost > 3) {
             costInfo += `<br>&#12288;<span class="text-watch">${this.$t('It took too much time for running (more than 3s), may not be suitable for synchronous calling scenario')}</span>`;
           }
         }
 
-        // 日志输出
+        // 函数返回值
         // 【已经经过预处理，此处已经是纯文本，无需进一步处理】
-        let logMessages = o.logMessages;
+        let returnValueInfo = null;
+        let returnValue = o.returnValue;
+        if (returnValue) {
+          // HTML 转义
+          returnValue = htmlEscaper.escape(returnValue);
 
-        // 函数输出
-        // 【已经经过预处理，此处已经是纯文本，无需进一步处理】
-        let funcOutput = o.funcOutput;
-        let funcOutputTitle = null;
-        if (funcOutput) {
-          funcOutputTitle = `<span class="code-editor-output-info">${this.$t('Func Return Value (repr)')}${this.$t(':')}</span>`;
+          returnValueInfo = `<span class="code-editor-output-info">${this.$t('Return Value (pprint.saferepr)')}${this.$t(':')}</span><code>${returnValue}</code>`;
         }
 
-        // 错误堆栈
+        // 调用堆栈
         // 【已经经过预处理，此处已经是纯文本，无需进一步处理】
-        let stackInfo = o.stackInfo;
-        let stackInfoTitle = null;
-        if (stackInfo) {
-          stackInfoTitle = `<span class="code-editor-output-info">${this.$t('Stack')}${this.$t(':')}</span>`
+        let tracebackTitle = null;
+        let traceback = o.traceback;
+        if (traceback) {
+          tracebackTitle = `<span class="code-editor-output-info">${this.$t('Stack')}${this.$t(':')}</span>`
+
+          // HTML 转义、添加样式
+          traceback = traceback
+          .split('\n')
+          .map(line => {
+            return `<code class="code-editor-output-traceback">${htmlEscaper.escape(line)}</code>`;
+          })
+          .join('\n');
         }
 
         let section = [ divider, title ]
-        if (logMessages) {
-          section.push('', logMessages);
-        }
-        if (funcOutputTitle) {
-          section.push('', funcOutputTitle, funcOutput);
+        if (printLogs) {
+          section.push('', printLogs);
         }
         if (costInfo || peakMemoryUsageInfo) {
           section.push('');
           if (peakMemoryUsageInfo) section.push(peakMemoryUsageInfo);
           if (costInfo)            section.push(costInfo);
         }
-        if (stackInfoTitle) {
-          section.push('', stackInfoTitle,  stackInfo);
+        if (returnValueInfo) {
+          section.push('', returnValueInfo);
+        }
+        if (tracebackTitle) {
+          section.push('', tracebackTitle,  traceback);
         }
 
         // 过滤空白内容
@@ -1376,7 +1317,7 @@ export default {
   async beforeRouteLeave(to, from, next) {
     // 清除所有高亮
     this.updateHighlightLineConfig('selectedFuncLine', null);
-    this.updateHighlightLineConfig('errorLine', null);
+    this.updateHighlightLineConfig('exceptionLine', null);
 
     if (!this.isEditable) {
       return next();
@@ -1465,7 +1406,7 @@ export default {
 .CodeMirror .highlight-text {
   text-shadow: 1px 1px 3px #b3b3b3;
 }
-.CodeMirror .error-info {
+.CodeMirror .exception-info {
   max-width: 15vw;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1482,14 +1423,14 @@ export default {
   background-image: linear-gradient(to right, rgba(255,255,224,1) 0, rgba(255,255,224,0) 75%);
   border-right: none;
 }
-.CodeMirror .error-line-background {
+.CodeMirror .exception-line-background {
   border: 2px solid;
   border-image: linear-gradient(to left, rgb(255,0,0,1) 0, rgb(255,0,0,0) 75%) 1 1;
   background-image: linear-gradient(to left, rgba(255,214,220,1) 0, rgba(255,214,220,0) 75%);
   border-left: none;
 }
 
-.CodeMirror .error-line-text {
+.CodeMirror .exception-line-text {
   position: absolute;
   color: red;
   right: 0;
@@ -1530,7 +1471,6 @@ export default {
   border-radius: 3px;
 }
 pre .code-editor-output-info {
-  font-style: italic;
   color: grey;
 }
 .code-editor-output-info + .code-editor-output-info:last-child {
@@ -1539,7 +1479,7 @@ pre .code-editor-output-info {
 pre .code-editor-output-seq {
   font-size:large
 }
-pre .code-editor-output-error-stack {
+pre .code-editor-output-traceback {
   color: red;
 }
 

@@ -11,14 +11,12 @@ var AdmZip = require("adm-zip");
 var yaml   = require('js-yaml');
 
 /* Project Modules */
-var E            = require('../utils/serverError');
-var CONFIG       = require('../utils/yamlResources').get('CONFIG');
-var ROUTE        = require('../utils/yamlResources').get('ROUTE');
-var toolkit      = require('../utils/toolkit');
-var common       = require('../utils/common');
-var celeryHelper = require('../utils/extraHelpers/celeryHelper');
+var E       = require('../utils/serverError');
+var CONFIG  = require('../utils/yamlResources').get('CONFIG');
+var ROUTE   = require('../utils/yamlResources').get('ROUTE');
+var toolkit = require('../utils/toolkit');
+var common  = require('../utils/common');
 
-var scriptAPICtrl             = require('./scriptAPICtrl');
 var scriptSetMod              = require('../models/scriptSetMod');
 var scriptMod                 = require('../models/scriptMod');
 var funcMod                   = require('../models/funcMod');
@@ -29,7 +27,10 @@ var crontabConfigMod          = require('../models/crontabConfigMod');
 var batchMod                  = require('../models/batchMod');
 var scriptSetExportHistoryMod = require('../models/scriptSetExportHistoryMod');
 
-/* Configure */
+var mainAPICtrl = require('./mainAPICtrl');
+
+
+/* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = scriptSetMod.createCRUDHandler();
@@ -497,8 +498,7 @@ exports.import = function(req, res, next) {
 
           requirements = _requirements;
 
-          var celery = celeryHelper.createHelper(res.locals.logger);
-          reloadDataMD5Cache(celery, asyncCallback);
+          reloadDataMD5Cache(res.locals, asyncCallback);
         });
       }
     },
@@ -598,8 +598,7 @@ exports.confirmImport = function(req, res, next) {
 
         requirements = _requirements;
 
-        var celery = celeryHelper.createHelper(res.locals.logger);
-        reloadDataMD5Cache(celery, asyncCallback);
+        reloadDataMD5Cache(res.locals, asyncCallback);
       });
     },
   ], function(err) {
@@ -632,9 +631,12 @@ exports.deploy = function(req, res, next) {
   });
 };
 
-function reloadDataMD5Cache(celery, callback) {
-  var taskKwargs = { all: true };
-  celery.putTask('Sys.ReloadDataMD5Cache', null, taskKwargs, null, callback);
+function reloadDataMD5Cache(locals, callback) {
+  var taskReq = {
+    name  : 'Internal.ReloadDataMD5Cache',
+    kwargs: { all: true },
+  }
+  locals.cacheDB.putTask(taskReq, callback);
 };
 
 function doDeploy(locals, scriptSetId, options, callback) {
@@ -642,8 +644,6 @@ function doDeploy(locals, scriptSetId, options, callback) {
   options.withCrontabConfig  = options.withCrontabConfig  || false;
   options.startupScriptTitle = options.startupScriptTitle || null;
   options.configReplacer     = options.configReplacer     || {};
-
-  var celery = celeryHelper.createHelper(locals.logger);
 
   var startupScriptId = `${CONFIG._STARTUP_SCRIPT_SET_ID}__${scriptSetId}`;
 
@@ -655,9 +655,8 @@ function doDeploy(locals, scriptSetId, options, callback) {
   var funcModel          = funcMod.createModel(locals);
   var crontabConfigModel = crontabConfigMod.createModel(locals);
 
-  var installedScriptSet   = null;
-  var exampleScript        = null;
-  var nextExportedAPIFuncs = null;
+  var exampleScript = null;
+  var nextAPIFuncs  = null;
   async.series([
     // 获取已安装脚本集
     function(asyncCallback) {
@@ -734,27 +733,30 @@ function doDeploy(locals, scriptSetId, options, callback) {
     },
     // 发送脚本代码预检查任务
     function(asyncCallback) {
-      scriptAPICtrl.sendPreCheckTask(celery, startupScriptId, function(err, exportedAPIFuncs) {
+      var opt = {
+        scriptId: startupScriptId,
+      }
+      mainAPICtrl.callFuncDebugger(locals, opt, function(err, taskResp) {
         if (err) return asyncCallback(err);
 
-        nextExportedAPIFuncs = exportedAPIFuncs;
+        nextAPIFuncs = taskResp.result.apiFuncs;
 
         return asyncCallback();
       });
     },
     // 更新函数
     function(asyncCallback) {
-      if (toolkit.isNothing(nextExportedAPIFuncs)) return asyncCallback();
+      if (toolkit.isNothing(nextAPIFuncs)) return asyncCallback();
 
-      funcModel.update(startupScriptId, nextExportedAPIFuncs, asyncCallback);
+      funcModel.update(startupScriptId, nextAPIFuncs, asyncCallback);
     },
     // 检查自动触发配置存在性 / 创建自动触发配置
     function(asyncCallback) {
       if (!options.withCrontabConfig) return asyncCallback();
-      if (toolkit.isNothing(nextExportedAPIFuncs)) return asyncCallback();
+      if (toolkit.isNothing(nextAPIFuncs)) return asyncCallback();
 
-      for (var i = 0; i < nextExportedAPIFuncs.length; i++) {
-        var apiFunc = nextExportedAPIFuncs[i];
+      for (var i = 0; i < nextAPIFuncs.length; i++) {
+        var apiFunc = nextAPIFuncs[i];
         if (apiFunc.extraConfig && apiFunc.extraConfig.fixedCrontab) {
           startupScriptCrontabFunc = apiFunc;
           break;
@@ -797,7 +799,7 @@ function doDeploy(locals, scriptSetId, options, callback) {
     callback(null, startupScriptId, startupCrontabId, startupScriptCrontabFunc);
 
     // 刷新数据 MD5 缓存
-    reloadDataMD5Cache(celery);
+    reloadDataMD5Cache(res.locals);
   });
 };
 

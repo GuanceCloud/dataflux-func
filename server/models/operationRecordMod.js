@@ -12,7 +12,7 @@ var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 var routeLoader = require('../utils/routeLoader');
 
-/* Configure */
+/* Init */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   displayName: 'operation record',
   entityName : 'operationRecord',

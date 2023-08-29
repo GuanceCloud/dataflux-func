@@ -53,7 +53,7 @@ function routeMonitor(routeConfig) {
       return next();
     }
 
-    var cacheKey = toolkit.getCacheKey('monitor', 'systemMetrics', [
+    var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', [
         'metric', 'matchedRouteCount',
         'date', toolkit.getDateString()]);
     async.series([
@@ -379,7 +379,7 @@ var genParamSample = exports.genParamSample = function(paramConfig) {
  */
 exports.load = function(config, middlewares) {
   if (!config) {
-    throw new Error('WAT: No config found, please check the `route-config` and `*Router` is correct.');
+    throw new Error('No config found, please check the `route-config` and `*Router` is correct.');
   }
 
   // Load requireSignIn option
@@ -598,7 +598,7 @@ exports.mount = function(app) {
     // Check middlewares
     for (var j = 0; j < r.middlewares.length; j++) {
       if ('function' !== typeof r.middlewares[j]) {
-        throw new Error(toolkit.strf('WAT: Middleware is not a function for `{0}`, please check your controller source code.', c.url));
+        throw new Error(toolkit.strf('Middleware is not a function for `{0}`, please check your controller source code.', c.url));
       }
     }
 

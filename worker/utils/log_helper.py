@@ -18,7 +18,7 @@ from worker.utils.colors import colors
 
 CONFIG = yaml_resources.get('CONFIG')
 
-# Configure
+# Init
 REDIS = None
 
 RUN_UP_TIME = int(time.time())
@@ -53,8 +53,7 @@ LOG_TEXT_FIELDS = [
     # 'timestampHumanized',
     'timestampShort',
     'hostname',
-    # 'queue',
-    'queueShort',
+    'queue',
     # 'taskId',
     'taskIdShort',
     'task',
@@ -155,21 +154,21 @@ class LoggingFormatter(logging.Formatter):
                 # Pretty field
                 field_value = meta.get(field) or ''
                 if field == 'upTime':
-                    field_value = 'UP {}s'.format(field_value or '0')
+                    field_value = f'UP {field_value or 0}s'
 
                 elif field == 'costTime':
-                    field_value = '{}ms'.format(field_value or '0')
+                    field_value = f'{field_value or 0}ms'
 
                 elif field == 'diffTime':
-                    field_value = '+{}ms'.format(field_value or '0')
+                    field_value = f'+{field_value or 0}ms'
 
                 elif field == 'userId' or field == 'userIdShort':
                     field_value = field_value or 'NON_USER_ID'
 
                 elif field == 'username':
-                    field_value = '@{}'.format(field_value or 'NON_USERNAME')
+                    field_value = f'@{field_value or "NON_USERNAME"}'
 
-                field_value = '[{}]'.format(field_value)
+                field_value = f'[{field_value}]'
 
                 # Add color
                 if self.options.get('color') and hasattr(colors, field_color):
@@ -213,7 +212,7 @@ class LogHelper(object):
 
         self._task_start_time = int(time.time() * 1000)
         self._prev_log_time   = None
-        self._staged_logs     = [];
+        self._staged_logs     = []
 
     def log(self, level, message):
         if not isinstance(level, str) or level.upper() not in LOG_LEVELS['levels']:
@@ -226,21 +225,10 @@ class LogHelper(object):
 
         now_ms    = int(time.time() * 1000)
         now       = int(now_ms / 1000)
-        now_str   = arrow.get(now).to(CONFIG['LOG_TIMEZONE']).format('YYYY-MM-DD HH:mm:ss')
+        now_str   = arrow.get(now).to(CONFIG['TIMEZONE']).format('YYYY-MM-DD HH:mm:ss')
         now_short = now_str[5:]
 
-        meta_extra = toolkit.get_attr(self.task.request, 'extra', {})
-
-        if self.task.request.called_directly:
-            _task_id = 'CALLED_DIRECTLY'
-            _queue   = 'CALLED_DIRECTLY@NONE'
-            _origin  = 'CALLED_DIRECTLY'
-        else:
-            _task_id = self.task.request.id
-            _queue   = self.task.request.delivery_info['routing_key']
-            _origin  = self.task.request.origin
-
-        message = toolkit.mask_auth_url(message)
+        message = toolkit.mask_auth_url(f'{message}')
 
         log_line = {
             'message': message,
@@ -256,19 +244,17 @@ class LogHelper(object):
                 'timestampHumanized': now_str,
                 'timestampShort'    : now_short,
                 'hostname'          : HOSTNAME,
-                'queue'             : _queue,
-                'queueShort'        : '#' + _queue.split('@')[1],
-                'clientIP'          : meta_extra.get('clientIP'),
-                'clientId'          : meta_extra.get('clientId'),
-                'taskId'            : _task_id,
-                'taskIdShort'       : toolkit.get_first_part(_task_id),
+                'queue'             : f'#{self.task.queue}',
+                # 'clientIP'          : meta_extra.get('clientIP'),
+                # 'clientId'          : meta_extra.get('clientId'),
+                'taskId'            : self.task.task_id,
+                'taskIdShort'       : toolkit.get_short_id(self.task.task_id),
                 'task'              : self.task.name,
-                'origin'            : _origin,
                 'diffTime'          : now_ms - (self._prev_log_time or self._task_start_time),
                 'costTime'          : now_ms - self._task_start_time,
-                'userId'            : meta_extra.get('userId'),
-                'userIdShort'       : toolkit.get_first_part(meta_extra.get('userId', '')) or None,
-                'username'          : meta_extra.get('username'),
+                # 'userId'            : meta_extra.get('userId'),
+                # 'userIdShort'       : toolkit.get_short_id(meta_extra.get('userId', '')) or None,
+                # 'username'          : meta_extra.get('username'),
             }
         }
 
@@ -294,7 +280,7 @@ class LogHelper(object):
 
     def __getattr__(self, level):
         if level.upper() not in LOG_LEVELS['levels']:
-            raise AttributeError("'{}' does not support the level '{}'".format(self.__class__.__name__, level))
+            raise AttributeError(f"'{self.__class__.__name__}' does not support the level '{level}'")
 
         def _f(*args):
             return self.log(level, *args)

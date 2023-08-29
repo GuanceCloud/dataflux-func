@@ -672,15 +672,27 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key    : 'success',
-        name   : $t('Succeeded'),
+        name   : $t('Success'),
         tagType: 'success',
         icon   : 'el-icon-success',
       },
       {
         key    : 'failure',
-        name   : $t('Failed'),
+        name   : $t('Failure'),
         tagType: 'danger',
         icon   : 'el-icon-error',
+      },
+      {
+        key    : 'timeout',
+        name   : $t('Timeout'),
+        tagType: 'danger',
+        icon   : 'el-icon-time',
+      },
+      {
+        key    : 'skip',
+        name   : $t('Skip'),
+        tagType: 'warning',
+        icon   : 'el-icon-d-arrow-right',
       },
     ];
   },
@@ -774,40 +786,6 @@ kafka.publish(topic='some_topic', message='some_message')`,
   },
   get SCRIPT_RECOVER_POINT_MAP() {
     return new MAP_CONST(this.SCRIPT_RECOVER_POINT);
-  },
-
-  // 函数执行模式
-  get FUNC_EXEC_MODE() {
-    return [
-      {
-        key      : 'sync',
-        name     : $t('Sync Call'),
-        textClass: 'text-main',
-      },
-      {
-        key      : 'async',
-        name     : $t('Async Call'),
-        textClass: 'text-watch',
-      },
-      {
-        key      : 'crontab',
-        name     : $t('Crontab'),
-        textClass: 'text-good',
-      },
-      {
-        key      : 'onLaunch',
-        name     : $t('On Launch'),
-        textClass: 'text-info',
-      },
-      {
-        key      : 'onPublish',
-        name     : $t('On Publish'),
-        textClass: 'text-info',
-      },
-    ];
-  },
-  get FUNC_EXEC_MODE_MAP() {
-    return new MAP_CONST(this.FUNC_EXEC_MODE);
   },
 
   // 函数集成

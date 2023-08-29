@@ -9,7 +9,7 @@ var E       = require('./serverError');
 var CONFIG  = require('./yamlResources').get('CONFIG');
 var toolkit = require('./toolkit');
 
-/* Configure */
+/* Init */
 svgCaptcha.options.width      = 120;
 svgCaptcha.options.height     = 30;
 svgCaptcha.options.noise      = 2;

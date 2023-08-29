@@ -11,11 +11,11 @@ var CONFIG      = require('../utils/yamlResources').get('CONFIG');
 var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 
-var funcMod          = require('../models/funcMod');
-var crontabConfigMod = require('../models/crontabConfigMod');
-var taskInfoMod      = require('../models/taskInfoMod');
+var funcMod           = require('../models/funcMod');
+var crontabConfigMod  = require('../models/crontabConfigMod');
+var taskRecordFuncMod = require('../models/taskRecordFuncMod');
 
-/* Configure */
+/* Init */
 var GLOBAL_SCOPE = 'GLOBAL';
 
 /* Handlers */
@@ -28,7 +28,7 @@ exports.list = function(req, res, next) {
   var crontabConfigPageInfo = null;
 
   var crontabConfigModel = crontabConfigMod.createModel(res.locals);
-  var taskInfoModel      = taskInfoMod.createModel(res.locals);
+  var taskRecordFuncModel      = taskRecordFuncMod.createModel(res.locals);
 
   async.series([
     function(asyncCallback) {
@@ -39,8 +39,8 @@ exports.list = function(req, res, next) {
         crontabConfigs        = dbRes;
         crontabConfigPageInfo = pageInfo;
 
-        if (opt.extra && opt.extra.withTaskInfo) {
-          return taskInfoModel.appendTaskInfo(crontabConfigs, asyncCallback);
+        if (opt.extra && opt.extra.withTaskRecord) {
+          return taskRecordFuncModel.appendTaskRecord(crontabConfigs, asyncCallback);
         } else {
           return asyncCallback();
         }

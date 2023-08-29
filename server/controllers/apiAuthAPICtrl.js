@@ -13,7 +13,7 @@ var toolkit = require('../utils/toolkit');
 
 var apiAuthMod = require('../models/apiAuthMod');
 
-/* Configure */
+/* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = apiAuthMod.createCRUDHandler();

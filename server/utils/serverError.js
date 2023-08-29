@@ -22,6 +22,15 @@ var ServerError = function(respCodeName, message, detail, originError) {
 
 ServerError.prototype = new Error();
 
+ServerError.prototype.setDetail = function(keyOrObj, value) {
+  this.detail = this.detail || {};
+  if ('string' === keyOrObj) {
+    this.detail[keyOrObj] = value;
+  } else if ('object' === keyOrObj) {
+    Object.assign(this.detail, keyOrObj);
+  }
+};
+
 ServerError.prototype.toJSON = function() {
   return {
     ok     : this.status < 400 ? true : false,

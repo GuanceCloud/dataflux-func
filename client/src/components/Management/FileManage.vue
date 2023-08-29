@@ -59,7 +59,7 @@ File already existed                                                            
             </el-button>
           </el-popover>
 
-          <el-tooltip :content="`${$t('File size limit')}${$t(':')} ${T.byteSizeHuman($store.getters.SYSTEM_INFO('_RESOURCE_UPLOAD_FILE_SIZE_LIMIT'))}`" placement="bottom">
+          <el-tooltip :content="`${$t('File size limit')}${$t(':')}${T.byteSizeHuman($store.getters.SYSTEM_INFO('_RESOURCE_UPLOAD_FILE_SIZE_LIMIT'))}`" placement="bottom">
             <el-upload ref="upload"
               class="upload-button"
               :limit="2"

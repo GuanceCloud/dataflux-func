@@ -61,8 +61,8 @@ $response:
     $example  : TRACE-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
 
 # 主要功能
-indexAPI:
-  $tag     : Core Feature
+mainAPI:
+  $tag     : Main Feature
   $tag_zhCN: 主要功能
 
   overview:
@@ -97,75 +97,6 @@ indexAPI:
     showInDoc    : true
     name         : Call Func
     name_zhCN    : 调用函数
-    descType: markdown
-    desc: |
-      函数参数`kwargs`以字典`dict`方式传递（即`func(**kwargs)`）
-
-      - 当不指定，或指定同步模式`options.execMode="sync"`时，接口会等待函数返回，并直接将结果返回给调用者，*但一定时间后API接口依然会超时*。
-      - 当指定同步模式`options.execMode="async"`时，接口会立即返回，函数返回值需要另外调用接口查询。
-
-      当`returnType`为`"ALL"`时，返回值结构如下：
-
-      |           字段           |   类型   |                       说明                      |
-      |--------------------------|----------|-------------------------------------------------|
-      | `error`                  | `number` | 错误码。整数部分与HTTP状态码相同（200表示正常） |
-      | `message`                | `string` | 错误信息（正常时为固定空字符串）                |
-      | `data`                   | `json`   | 函数执行结果                                    |
-      | `data.result`            | `json`   | 本次函数执行结果（仅在同步模式时返回）          |
-      | `data.result.raw`        | `ANY`    | 本次函数运行结果原始值                          |
-      | `data.result.repr`       | `string` | 本次函数运行结果经`repr()`处理后的值            |
-      | `data.result.jsonDumps`  | `string` | 本次函数运行结果经`json.dumps()`处理后的值      |
-      | `data.taskId`            | `string` | 本次函数执行任务 ID                             |
-      | `traceId`                | `string` | 本次请求的请求 ID，可用于查阅日志               |
-      | `reqCost`                | `number` | 本次请求服务器端耗时（毫秒）                    |
-
-      示例如下：
-
-      ```json
-      {
-        "error"  : 200,
-        "message": "",
-        "data": {
-          "result": {
-            "raw"      : "Hello, Tom",
-            "repr"     : "'Hello, Tom'",
-            "jsonDumps": "\"Hello, Tom\""
-          },
-          "taskId": "task-00000000-0000-0000-0000-000000000000",
-        },
-        "traceId": "TRACE-00000000-0000-0000-0000-000000000000",
-        "reqCost": 35
-      }
-      ```
-
-      当`returnType`*不为*`"ALL"`，返回值中`result`字段为指定的返回格式。
-
-      当`returnType`为`"raw"`时，返回值结构如下：
-
-      |           字段           |   类型   |                       说明                      |
-      |--------------------------|----------|-------------------------------------------------|
-      | `error`                  | `number` | 错误码。整数部分与HTTP状态码相同（200表示正常） |
-      | `message`                | `string` | 错误信息（正常时为固定空字符串）                |
-      | `data`                   | `json`   | 函数执行结果                                    |
-      | `data.result`            | `ANY`    | 本次函数运行结果原始值（`returnType`=`"raw"`）  |
-      | `data.taskId`            | `string` | 本次函数执行任务 ID                             |
-      | `traceId`                | `string` | 本次请求的请求 ID，可用于查阅日志               |
-      | `reqCost`                | `number` | 本次请求服务器端耗时（毫秒）                    |
-
-      示例如下：
-
-      ```json
-      {
-        "error"  : 200,
-        "message": "",
-        "data": {
-          "result": "Hello, Tom",
-          "taskId": "task-00000000-0000-0000-0000-000000000000",
-        },
-        "traceId": "TRACE-00000000-0000-0000-0000-000000000000",
-        "reqCost": 35
-      }
-      ```
     method       : post
     url          : /api/v1/func/:funcId
     response     : json
@@ -182,12 +113,6 @@ indexAPI:
         $example: {'msg': 'Tom'}
       options:
         $desc: 选项
-        apiTimeout:
-          $desc    : API超时时间（秒，默认5秒）
-          $type    : integer
-          $minValue: 1
-          $maxValue: 30
-          $example : 5
         returnType:
           $desc: Return type (default "raw")
           $type: enum
@@ -196,24 +121,6 @@ indexAPI:
             - raw
             - repr
             - jsonDumps
-        unfold:
-          $desc: 拆包（仅限execMode=sync。默认false）
-          $type: boolean
-        execMode:
-          $desc: 执行模式（sync=同步；async=异步。默认sync）
-          $type: enum
-          $in:
-            - sync
-            - async
-        saveResult:
-          $desc   : 是否保存结果供后续查询（默认false）
-          $type   : boolean
-          $example: false
-        eta:
-          $desc     : 预约执行（ISO8601格式，仅限execMode=async）
-          $type     : string
-          $isISO8601: true
-          $example  : '2020-01-01T00:00:00Z'
 
   callAuthLinkByGet:
     showInDoc    : true
@@ -233,36 +140,14 @@ indexAPI:
         $type   : jsonstring
         $example: '{"msg": "Tom"}'
       options:
-        $desc   : 选项（详细请参考 POST 方式描述）
+        $desc   : options
         $type   : jsonstring
-        $example: '{"execMode": "async"}'
+        $example: '{ "returnType": "ALL" }'
 
   callAuthLinkByGetWithFormat:
     showInDoc    : true
     name         : Call Auth Link (GET with specified format)
     name_zhCN    : 调用授权链接（GET 方式，指定形式）
-    descType: markdown
-    desc: |
-      在某些第三方系统无法使用标准调用格式时，可以指定不同格式方便调用：
-
-      - 标准形式
-
-      ```http
-      GET /api/v1/al/auln-xxxxx
-      ?kwargs={"arg1":"arg_value1","arg2":"arg_value2"}
-      &options={"opt1":"opt_value1","opt2":"opt_value2"}
-      ```
-      - 简化形式 `simplified`
-
-      ```http
-      GET /api/v1/al/auln-xxxxx/simplified
-      ?arg1=arg_value1
-      &arg2=arg_value2
-      ```
-
-      *注意：本形式所有参数值都以字符串传递，函数需要自行转换数据类型*
-      *注意2：本形式不支持标准格式中的`options`参数*
-
     method       : get
     url          : [ /api/v1/al/:id/:format, /api/v1/al/:id/:format/* ]
     response     : json
@@ -276,6 +161,7 @@ indexAPI:
         $type: enum
         $in:
           - normal
+          - s
           - simplified
 
   callAuthLinkByPost:
@@ -306,57 +192,11 @@ indexAPI:
             - raw
             - repr
             - jsonDumps
-        unfold:
-          $desc: 拆包（仅限execMode=sync。默认true）
-          $type: boolean
-        execMode:
-          $desc: 执行模式（sync=同步；async=异步。默认sync）
-          $type: enum
-          $in:
-            - sync
-            - async
 
   callAuthLinkByPostWithFormat:
     showInDoc    : true
     name         : Call Auth Link (POST with specified format)
     name_zhCN    : 调用授权链接（POST 方式，指定形式）
-    descType: markdown
-    desc: |
-      在某些第三方系统无法使用标准调用形式时，可以指定不同形式方便调用：
-
-      - 标准形式
-
-      ```http
-      POST /api/v1/al/auln-xxxxx
-      Content-Type: application/json
-
-      {
-        "kwargs": {
-          "arg1": "arg_value1",
-          "arg2": "arg_value2"
-        },
-        "options": {
-          "opt1": "opt_value1",
-          "opt2": "opt_value2"
-        }
-      }
-      ```
-
-      *注意：本形式不支持上传文件*
-
-      - 简化形式 `simplified`
-
-      ```http
-      POST /api/v1/al/auln-xxxxx/simplified
-      Content-Type: x-www-form-urlencoded
-
-      arg1=arg_value1&arg2=arg_value2
-      ```
-
-      *注意：本形式所有参数值都以字符串传递，函数需要自行转换数据类型*
-      *注意2：本形式不支持标准形式中的`options`参数*
-      *注意3：当上传文件时，需要指定`Content-Type: multipart/form-data`*
-
     method       : post
     url          : [ /api/v1/al/:id/:format, /api/v1/al/:id/:format/* ]
     response     : json
@@ -370,6 +210,7 @@ indexAPI:
         $type: enum
         $in:
           - normal
+          - s
           - simplified
     files:
       $desc        : File (limit 10GB)
@@ -414,27 +255,6 @@ indexAPI:
     showInDoc    : true
     name         : Call Batch (GET with specified format)
     name_zhCN    : 调用批处理（GET 方式，指定形式）
-    descType: markdown
-    desc: |
-      在某些第三方系统无法使用标准调用形式时，可以指定不同形式方便调用：
-
-      - 标准形式
-
-      ```
-      GET /api/v1/bat/bat-xxxxx
-      &kwargs={"arg1":"arg_value1","arg2":"arg_value2"}
-      ```
-
-      - 简化形式 `simplified`
-
-      ```
-      GET /api/v1/bat/bat-xxxxx/simplified
-      ?arg1=arg_value1
-      &arg2=arg_value2
-      ```
-
-      *注意：本形式所有参数值都以字符串传递，函数需要自行转换数据类型*
-
     method       : get
     url          : [ /api/v1/bat/:id/:format, /api/v1/bat/:id/:format/* ]
     response     : json
@@ -449,6 +269,7 @@ indexAPI:
         $type: enum
         $in:
           - normal
+          - s
           - simplified
 
   callBatchByPost:
@@ -474,43 +295,6 @@ indexAPI:
     showInDoc    : true
     name         : Call Batch (POST with specified format)
     name_zhCN    : 调用批处理（POST 方式，指定形式）
-    descType: markdown
-    desc: |
-      在某些第三方系统无法使用标准调用形式时，可以指定不同形式方便调用：
-
-      - 标准形式
-
-      ```http
-      POST /api/v1/al/auln-xxxxx
-      Content-Type: application/json
-
-      {
-        "kwargs": {
-          "arg1": "arg_value1",
-          "arg2": "arg_value2"
-        },
-        "options": {
-          "opt1": "opt_value1",
-          "opt2": "opt_value2"
-        }
-      }
-      ```
-
-      *注意：本形式不支持上传文件*
-
-      - 简化形式 `simplified`
-
-      ```http
-      POST /api/v1/al/auln-xxxxx/simplified
-      Content-Type: x-www-form-urlencoded
-
-      arg1=arg_value1&arg2=arg_value2
-      ```
-
-      *注意：本形式所有参数值都以字符串传递，函数需要自行转换数据类型*
-      *注意2：本形式不支持标准形式中的`options`参数*
-      *注意3：当上传文件时，需要指定`Content-Type: multipart/form-data`*
-
     method       : post
     url          : [ /api/v1/bat/:id/:format, /api/v1/bat/:id/:format/* ]
     response     : json
@@ -524,6 +308,7 @@ indexAPI:
         $type: enum
         $in:
           - normal
+          - s
           - simplified
     files:
       $desc        : File (limit 10GB)
@@ -555,32 +340,6 @@ indexAPI:
         $desc: Func calling arguments in dict format (**kwargs)
         $type: json
         $example: {'msg': 'Tom'}
-
-  getFuncResult:
-    showInDoc    : true
-    name         : Get Func result
-    name_zhCN    : 获取函数结果
-    method       : get
-    url          : /api/v1/func-result
-    response     : json
-    requireSignIn: $NOT_CONFIG._IS_STREAKING
-    privilege    : general_r
-    query:
-      taskId:
-        $desc      : 任务 ID（接口调用时返回）
-        $isRequired: true
-        $type      : string
-      returnType:
-        $desc: Return type (default "raw")
-        $type: enum
-        $in:
-          - ALL
-          - raw
-          - repr
-          - jsonDumps
-      unfold:
-        $desc: 拆包
-        $type: boolean
 
   getFuncList:
     showInDoc    : true
@@ -758,7 +517,7 @@ indexAPI:
         $type: string
 
 # 杂项
-miscAPI:
+indexAPI:
   $tag     : MISC
   $tag_zhCN: 杂项
 
@@ -2020,10 +1779,6 @@ scriptAPI:
         $desc: 脚本 ID
         $type: string
     body:
-      wait:
-        $desc   : 等待发布结束
-        $type   : boolean
-        $example: false
       data:
         $isRequired: false
         note:
@@ -3544,7 +3299,7 @@ authLinkAPI:
       - func.description
       - func.tagsJSON
     query:
-      _withTaskInfo:
+      _withTaskRecord:
         $desc: 是否附带任务信息
         $type: boolean
       id:
@@ -3700,13 +3455,13 @@ authLinkAPI:
           $desc      : 是否显示于文档
           $isRequired: false
           $type      : boolean
-        taskInfoLimit:
-          $desc      : 近期任务保留数
+        taskRecordLimit:
+          $desc      : 任务记录保留数
           $isRequired: false
           $allowNull : true
           $type      : int
           $minValue  : 0
-          $maxValue  : 5000
+          $maxValue  : 10000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -3801,13 +3556,13 @@ authLinkAPI:
           $desc      : 是否显示于文档
           $isRequired: false
           $type      : boolean
-        taskInfoLimit:
-          $desc      : 近期任务保留数
+        taskRecordLimit:
+          $desc      : 任务记录保留数
           $isRequired: false
           $allowNull : true
           $type      : int
           $minValue  : 0
-          $maxValue  : 5000
+          $maxValue  : 10000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -3918,13 +3673,13 @@ authLinkAPI:
             $desc      : 是否显示于文档
             $isRequired: false
             $type      : boolean
-          taskInfoLimit:
-            $desc      : 近期任务保留数
+          taskRecordLimit:
+            $desc      : 任务记录保留数
             $isRequired: false
             $allowNull : true
             $type      : int
             $minValue  : 0
-            $maxValue  : 5000
+            $maxValue  : 10000
           isDisabled:
             $desc      : 是否禁用
             $isRequired: false
@@ -4020,13 +3775,13 @@ authLinkAPI:
           $desc     : API 认证 ID
           $allowNull: true
           $type     : string
-        taskInfoLimit:
-          $desc      : 近期任务保留数
+        taskRecordLimit:
+          $desc      : 任务记录保留数
           $isRequired: false
           $allowNull : true
           $type      : int
           $minValue  : 0
-          $maxValue  : 5000
+          $maxValue  : 10000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4121,7 +3876,7 @@ crontabConfigAPI:
       - func.description
       - func.tagsJSON
     query:
-      _withTaskInfo:
+      _withTaskRecord:
         $desc: 是否附带任务信息
         $type: boolean
       id:
@@ -4229,13 +3984,13 @@ crontabConfigAPI:
           $type      : string
           $isISO8601 : true
           $example   : '2019-01-01T00:00:00Z'
-        taskInfoLimit:
-          $desc      : 近期任务保留数
+        taskRecordLimit:
+          $desc      : 任务记录保留数
           $isRequired: false
           $allowNull : true
           $type      : int
           $minValue  : 0
-          $maxValue  : 5000
+          $maxValue  : 10000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4294,13 +4049,13 @@ crontabConfigAPI:
           $type      : string
           $isISO8601 : true
           $example   : '2019-01-01T00:00:00Z'
-        taskInfoLimit:
-          $desc      : 近期任务保留数
+        taskRecordLimit:
+          $desc      : 任务记录保留数
           $isRequired: false
           $allowNull : true
           $type      : int
           $minValue  : 0
-          $maxValue  : 5000
+          $maxValue  : 10000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4370,13 +4125,13 @@ crontabConfigAPI:
             $type      : string
             $isISO8601 : true
             $example   : '2019-01-01T00:00:00Z'
-          taskInfoLimit:
-            $desc      : 近期任务保留数
+          taskRecordLimit:
+            $desc      : 任务记录保留数
             $isRequired: false
             $allowNull : true
             $type      : int
             $minValue  : 0
-            $maxValue  : 5000
+            $maxValue  : 10000
           isDisabled:
             $desc      : 是否禁用
             $isRequired: false
@@ -4478,13 +4233,13 @@ crontabConfigAPI:
             $desc      : 标签
             $isRequired: true
             $type      : string
-        taskInfoLimit:
-          $desc      : 近期任务保留数
+        taskRecordLimit:
+          $desc      : 任务记录保留数
           $isRequired: false
           $allowNull : true
           $type      : int
           $minValue  : 0
-          $maxValue  : 5000
+          $maxValue  : 10000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4584,7 +4339,7 @@ batchAPI:
       - func.description
       - func.tagsJSON
     query:
-      _withTaskInfo:
+      _withTaskRecord:
         $desc: 是否附带任务信息
         $type: boolean
       id:
@@ -4695,13 +4450,13 @@ batchAPI:
           $desc      : 是否显示于文档
           $isRequired: false
           $type      : boolean
-        taskInfoLimit:
-          $desc      : 近期任务保留数
+        taskRecordLimit:
+          $desc      : 任务记录保留数
           $isRequired: false
           $allowNull : true
           $type      : int
           $minValue  : 0
-          $maxValue  : 5000
+          $maxValue  : 10000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4751,13 +4506,13 @@ batchAPI:
           $desc      : 是否显示于文档
           $isRequired: false
           $type      : boolean
-        taskInfoLimit:
-          $desc      : 近期任务保留数
+        taskRecordLimit:
+          $desc      : 任务记录保留数
           $isRequired: false
           $allowNull : true
           $type      : int
           $minValue  : 0
-          $maxValue  : 5000
+          $maxValue  : 10000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4823,13 +4578,13 @@ batchAPI:
             $desc      : 是否显示于文档
             $isRequired: false
             $type      : boolean
-          taskInfoLimit:
-            $desc      : 近期任务保留数
+          taskRecordLimit:
+            $desc      : 任务记录保留数
             $isRequired: false
             $allowNull : true
             $type      : int
             $minValue  : 0
-            $maxValue  : 5000
+            $maxValue  : 10000
           isDisabled:
             $desc      : 是否禁用
             $isRequired: false
@@ -4924,13 +4679,13 @@ batchAPI:
           $desc     : API 认证 ID
           $allowNull: true
           $type     : string
-        taskInfoLimit:
-          $desc      : 近期任务保留数
+        taskRecordLimit:
+          $desc      : 任务记录保留数
           $isRequired: false
           $allowNull : true
           $type      : int
           $minValue  : 0
-          $maxValue  : 5000
+          $maxValue  : 10000
         isDisabled:
           $desc      : 是否禁用
           $isRequired: false
@@ -4991,17 +4746,17 @@ batchAPI:
         $searchType: jsonArrayHasAll
         $searchKey : func.tagsJSON
 
-# 任务信息
-taskInfoAPI:
-  $tag     : Task Info
-  $tag_zhCN: 任务信息
+# 任务记录
+taskRecordAPI:
+  $tag     : Task Record
+  $tag_zhCN: 任务记录
 
   list:
     showInDoc    : true
-    name         : List task info
-    name_zhCN    : 列出任务信息
+    name         : List task record
+    name_zhCN    : 列出任务记录
     method       : get
-    url          : /api/v1/task-info/do/list
+    url          : /api/v1/task-records/do/list
     response     : json
     requireSignIn: true
     privilege    : general_r
@@ -5009,12 +4764,10 @@ taskInfoAPI:
     fieldSelecting: true
     fuzzySearch:
       - task.id
-      - task.origin
-      - task.originId
-      - task.rootTaskId
-      - task.funcId
-      - task.logMessageTEXT
-      - task.einfoTEXT
+      - task.name
+      - task.exceptionType
+      - task.exceptionTEXT
+      - task.tracebackTEXT
       - task.status
     query:
       id:
@@ -5022,95 +4775,107 @@ taskInfoAPI:
         $type      : string
         $searchType: eq
         $searchKey : task.id
-      origin:
-        $desc      : 根据来源过滤
+      name:
+        $desc      : 按名称过滤
         $type      : string
         $searchType: eq
-        $searchKey : task.origin
-      originId:
-        $desc      : 根据来源 ID 过滤
+        $searchKey : task.name
+      queue:
+        $desc      : 按队列过滤
         $type      : string
         $searchType: eq
-        $searchKey : task.originId
-      rootTaskId:
-        $desc      : 根据主任务 ID 过滤
-        $type      : string
-        $searchType: eq
-        $searchKey : task.rootTaskId
-      funcId:
-        $desc      : 按函数 ID 过滤
-        $type      : string
-        $searchType: eq
-        $searchKey : task.funcId
+        $searchKey : task.queue
       status:
         $desc: 按状态过滤
         $type: enum
         $in:
           - success
           - failure
+          - timeout
+          - skip
         $searchType: eq
         $searchKey : task.status
 
-# DataFlux Func 函数调用任务结果
-datafluxFuncTaskResultAPI:
-  $tag     : Func Call Task Result
-  $tag_zhCN: 函数调用结果
+taskRecordFuncAPI:
+  $tag     : Task Record (Func)
+  $tag_zhCN: 任务记录（函数）
 
   list:
-    name         : List Func task result
-    name_zhCN    : 列出函数任务结果
+    showInDoc    : true
+    name         : List task record (func)
+    name_zhCN    : 列出任务记录
     method       : get
-    url          : /api/v1/dataflux-func-task-results/do/list
+    url          : /api/v1/task-records/func/do/list
     response     : json
     requireSignIn: true
     privilege    : general_r
-    paging       : marker
+    paging       : simple
     fieldSelecting: true
-    orderFields:
-      seq: dftr.seq
     fuzzySearch:
-      - dftr.id
-      - dftr.origin
-      - dftr.kwargsJSON->>$.funcId
+      - task.id
+      - task.rootTaskId
+      - task.scriptSetId
+      - task.scriptId
+      - task.funcId
+      - task.origin
+      - task.originId
+      - task.exceptionType
+      - task.exceptionTEXT
+      - task.tracebackTEXT
+      - task.printLogsTEXT
+      - task.returnValueJSON
+      - task.status
     query:
       id:
         $desc      : 按任务 ID 过滤
         $type      : string
-        $searchType: like
-        $searchKey : dftr.id
-      origin:
-        $desc      : 按任务来源过滤
-        $type      : string
-        $searchType: like
-        $searchKey : dftr.origin
-      funcId:
-        $desc      : 按函数过滤
-        $type      : string
-        $searchType: like
-        $searchKey : dftr.kwargsJSON->>$.funcId
-      execMode:
-        $desc      : 按执行模式过滤
-        $type      : enum
         $searchType: eq
-        $searchKey : dftr.kwargsJSON->>$.execMode
+        $searchKey : task.id
+      rootTaskId:
+        $desc      : 按主任务 ID 过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : task.rootTaskId
+      scriptSetId:
+        $desc      : 按脚本集 ID 过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : task.scriptSetId
+      scriptId:
+        $desc      : 按脚本 ID 过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : task.scriptId
+      funcId:
+        $desc      : 按函数 ID 过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : task.funcId
+      origin:
+        $desc      : 按来源过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : task.origin
+      originId:
+        $desc      : 按来源 ID 过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : task.originId
+      queue:
+        $desc      : 按队列过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : task.queue
+      status:
+        $desc: 按状态过滤
+        $type: enum
         $in:
-          - sync
-          - async
-          - crontab
-
-  get:
-    name         : Get Func task result
-    name_zhCN    : 获取函数任务结果
-    method       : get
-    url          : /api/v1/dataflux-func-task-results/:id/do/get
-    response     : json
-    requireSignIn: true
-    privilege    : general_r
-    fieldSelecting: true
-    params:
-      id:
-        $desc: 任务 ID
-        $type: string
+          - success
+          - failure
+          - timeout
+          - skip
+        $searchType: eq
+        $searchKey : task.status
 
 # 操作记录
 operationRecordAPI:
@@ -5705,8 +5470,8 @@ debugAPI:
 
   putTask:
     showInDoc    : true
-    name         : Put async task
-    name_zhCN    : 发送异步任务
+    name         : Put task
+    name_zhCN    : 发送任务
     descType     : markdown
     desc         : "*CAUTION: This API is just for debug, please DO NOT use in a production environment.*"
     method       : post
@@ -5716,72 +5481,37 @@ debugAPI:
     authType     : builtin.byXAuthToken
     privilege    : general_w
     body:
-      waitResult:
-        $desc   : Wait task result before response
+      name:
+        $desc      : Task name
+        $isRequired: true
+        $type      : string
+        $example   : Example.Success
+      kwargs:
+        $desc: Dict arguments (**kwargs)
+        $type: json
+        $example: {'kwarg1': 'val1', 'kwarg2': 'val2'}
+      delay:
+        $desc   : Delay for executing task (seconds)
+        $type   : integer
+        $example: 3
+      queue:
+        $desc    : Queue
+        $type    : integer
+        $minValue: 0
+        $maxValue: 9
+        $example : 0
+      timeout:
+        $desc   : Timeout for executing task (seconds)
+        $type   : integer
+        $example: 3
+      expires:
+        $desc   : Expires for executing task (seconds)
+        $type   : integer
+        $example: 3
+      ignoreResult:
+        $desc   : If ignore task result
         $type   : boolean
-        $example: true
-      times:
-        $desc    : Send times
-        $type    : int
-        $minValue: 1
-        $example : 1
-      task:
-        name:
-          $desc      : Task name
-          $isRequired: true
-          $type      : string
-          $example   : Example.Echo.Success
-        args:
-          $desc: List arguments (*args)
-          $:
-            $type: any
-          $example: ['arg1', 'arg2', 'arg3']
-        kwargs:
-          $desc: Dict arguments (**kwargs)
-          $type: json
-          $example: {'kwarg1': 'val1', 'kwarg2': 'val2'}
-        options:
-          $desc: Task options
-          queue:
-            $desc   : Queue
-            $type   : string
-            $example: celery
-          eta:
-            $desc     : ETA (ISO8601)
-            $type     : string
-            $isISO8601: true
-            $example  : '2020-01-01T00:00:00Z'
-          expires:
-            $desc     : Expires (ISO8601)
-            $type     : string
-            $isISO8601: true
-            $example  : '2020-01-01T00:00:00Z'
-          retries:
-            $desc    : Retry times
-            $type    : int
-            $minValue: 0
-          timeLimit:
-            $desc    : Time limit (in seconds)
-            $type    : int
-            $minValue: 1
-          softTimeLimit:
-            $desc    : Time soft limit (in seconds)
-            $type    : int
-            $minValue: 1
-          origin:
-            $desc   : origin
-            $type   : string
-            $example: Host-1
-          priority:
-            $desc    : Priority
-            $type    : int
-            $minValue: 0
-            $maxValue: 255
-            $example : 0
-          extra:
-            $desc   : Extra information
-            $type   : any
-            $example: {"extraKey": "extraValue"}
+        $example: false
 
   testAPIBehavior:
     showInDoc: true

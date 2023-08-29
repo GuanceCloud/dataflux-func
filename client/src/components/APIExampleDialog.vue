@@ -70,7 +70,7 @@ seconds: 秒
               step-strictly
               :step="1"
               :precision="0"
-              :min="$store.getters.SYSTEM_INFO('_FUNC_TASK_MIN_TIMEOUT')" :max="$store.getters.SYSTEM_INFO('_FUNC_TASK_MAX_TIMEOUT')">
+              :min="$store.getters.SYSTEM_INFO('_FUNC_TASK_TIMEOUT_MIN')" :max="$store.getters.SYSTEM_INFO('_FUNC_TASK_TIMEOUT_MAX')">
             </el-input-number>&emsp;{{ $tc('seconds', callOptions.timeout) }}
           </el-form-item>
 
@@ -433,7 +433,7 @@ export default {
       return {
         execMode  : 'sync',
         saveResult: false,
-        timeout   : this.$store.getters.SYSTEM_INFO('_FUNC_TASK_DEFAULT_TIMEOUT'),
+        timeout   : this.$store.getters.SYSTEM_INFO('_FUNC_TASK_TIMEOUT_DEFAULT'),
         apiTimeout: this.$store.getters.SYSTEM_INFO('_FUNC_TASK_DEFAULT_API_TIMEOUT'),
       }
     },

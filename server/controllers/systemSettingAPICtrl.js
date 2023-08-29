@@ -12,7 +12,7 @@ var toolkit = require('../utils/toolkit');
 
 var systemSettingMod = require('../models/systemSettingMod');
 
-/* Configure */
+/* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = systemSettingMod.createCRUDHandler();

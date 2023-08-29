@@ -18,7 +18,7 @@ var scriptSetImportHistoryMod = require('./scriptSetImportHistoryMod');
 
 var connectorMod = require('./connectorMod');
 
-/* Configure */
+/* Init */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   displayName: 'script set',
   entityName : 'scriptSet',

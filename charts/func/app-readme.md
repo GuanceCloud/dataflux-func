@@ -9,7 +9,7 @@ DataFlux Func 前身为 [观测云](https://guance.com/) 下属的一个计算�
 本系统主要分为 2 个部分：
 
 - Server：使用 Node.js + Express 构建，主要提供 Web UI 服务、对外 API 接口
-- Worker：使用 Python3 + Celery 构建，主要提供 Python 脚本的执行环境（内含 Beat 模块）
+- Worker：使用 Python3 构建，主要提供 Python 脚本的执行环境（内含 Beat 模块）
 
 > 目前 DataFlux Func 正在快速开发过程中，我们建议始终安装最新版使用，因此暂不提供历史版本。
 
@@ -41,7 +41,7 @@ DataFlux Func, formerly a computing component under [Guance](https://guance.com/
 The system is divided into 2 main parts.
 
 - Server: built with Node.js + Express, mainly providing Web UI services and API interface
-- Worker: built with Python3 + Celery, mainly providing the execution environment of Python scripts (including Beat module)
+- Worker: built with Python3, mainly providing the execution environment of Python scripts (including Beat module)
 
 > As DataFlux Func is currently under rapid development, we recommend always installing the latest version and therefore do not provide historical versions at this time.
 

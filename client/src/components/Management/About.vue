@@ -35,7 +35,6 @@ Clear Log and Cache: 清空日志与缓存表
 Worker Queues cleared: 工作队列已清空
 Log and Cache cleared: 日志与缓存表已清空
 
-'Full Node name is celery@{Number}'                                 : 完整节点名称为 celery@{编号}
 'Full Worker Queue name is DataFluxFunc-worker#workerQueue@{Number}': 完整工作队列名称为 DataFluxFunc-worker#workerQueue@{序号}
 
 taskRemain: （存在 {n} 个待处理任务）

@@ -14,4 +14,8 @@ fi
 
 # Run Worker
 echo "[STARTER] Run Worker"
-celery --app worker.app --quiet worker --loglevel ERROR
+if [ $# -eq 0 ]; then
+    python worker/app.py 0 1 2 3 4 5 6 7 8 9
+else
+    python worker/app.py $*
+fi

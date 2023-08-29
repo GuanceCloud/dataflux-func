@@ -16,9 +16,9 @@ var toolkit    = require('./utils/toolkit');
 var systemSettingMod = require('./models/systemSettingMod');
 var connectorMod     = require('./models/connectorMod');
 var funcMod          = require('./models/funcMod');
-var indexAPICtrl     = require('./controllers/indexAPICtrl');
+var mainAPICtrl     = require('./controllers/mainAPICtrl');
 
-/* Configure */
+/* Init */
 var IS_MASTER_NODE           = null;
 var MASTER_LOCK_EXPIRES      = 15;
 var CONNECTOR_CHECK_INTERVAL = 3 * 1000;
@@ -263,36 +263,36 @@ function createWebSocketClient(locals, connector, datafluxFuncId) {
     var funcCallKwargs = eventObj.data.callKwargs || {};
 
     // 调用函数
-    var funcCallOptions = null;
+    var taskReq = null;
     var funcResult      = null;
     async.series([
       // 生成函数调用配置
       function(asyncCallback) {
         var opt = {
+          funcId        : handlerFuncId,
+          funcCallKwargs: funcCallKwargs || {},
           origin        : 'connector',
           originId      : connector.id,
-          queue         : CONFIG._FUNC_TASK_DEFAULT_WEBSOCKET_HANDLER_QUEUE,
-          funcCallKwargs: funcCallKwargs || {},
-          execMode      : 'sync',
+          queue         : CONFIG._FUNC_TASK_QUEUE_WEBSOCKET_HANDLER,
         }
-        indexAPICtrl._createFuncCallOptionsFromOptions(locals, handlerFuncId, opt, function(err, _funcCallOptions) {
+        mainAPICtrl.createFuncRunnerTaskReq(locals, opt, function(err, _taskReq) {
           if (err) return asyncCallback(err);
 
-          funcCallOptions = _funcCallOptions;
+          taskReq = _taskReq;
 
           return asyncCallback();
         });
       },
       // 发送任务
       function(asyncCallback) {
-        indexAPICtrl._callFuncRunner(locals, funcCallOptions, function(err, ret) {
+        mainAPICtrl.callFuncRunner(locals, taskReq, function(err, taskResp) {
           locals.logger.debug('[GUANCE WS] GUANCE -> FUNC: `{0}`', handlerFuncId);
 
           if (err) return asyncCallback(err);
 
           // 提取结果
           try {
-            funcResult = ret.data.result.raw;
+            funcResult = taskResp.result.returnValue;
           } catch(err) {
             funcResult = null;
           }

@@ -1,27 +1,21 @@
 <i18n locale="en" lang="yaml">
-overviewCountUnit     : ''
-workerCount           : 'NO Worker | {n} Worker | {n} Workers'
-taskCount             : 'NO Queued Task | {n} Queued Task | {n} Queued Tasks'
-scriptSetOverviewCount: '(NO Script Set) | ({n} Script Set) | ({n} Script Sets)'
-recentOperationCount  : '(Latest {n} Operation) | (Latest {n} Operations)'
+overviewCountUnit   : ''
+workerCount         : 'NO Worker | {n} Worker | {n} Workers'
+processCount        : 'NO Process | {n} Process | {n} Processes'
+taskCount           : 'NO Task | {n} Task | {n} Tasks'
+recentOperationCount: '(Latest {n} Operation) | (Latest {n} Operations)'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-overviewCountUnit     : 个
-workerCount           : '工作单元 {n} 个'
-taskCount             : '排队任务 {n} 个'
-scriptSetOverviewCount: '（{n} 个）'
-recentOperationCount  : 最近 {n} 条
+overviewCountUnit   : 个
+workerCount         : '工作单元 {n} 个'
+processCount        : '工作进程 {n} 个'
+taskCount           : '任务 {n} 个'
+recentOperationCount: 最近 {n} 条
 
 Overview         : 总览
 Biz Entity       : 业务实体
 Worker Queue Info: 队列信息
-Script overview  : 脚本总览
-Origin           : 来源
-Code size        : 代码大小
-Publish ver.     : 发布版本
-Publish time     : 发布时间
-Never published  : 从未发布
 Recent operations: 最近操作记录
 Client           : 客户端
 Client ID        : 客户端 ID
@@ -34,7 +28,7 @@ Cost             : 耗时
 Show detail      : 显示请求详情
 Request          : 请求
 Response         : 响应
-Pressure         : 压力
+Load             : 负载
 </i18n>
 
 <template>
@@ -47,8 +41,27 @@ Pressure         : 压力
 
       <!-- 列表区 -->
       <el-main>
-        <el-divider content-position="left"><h1>{{ $t('Biz Entity') }}</h1></el-divider>
+        <el-divider content-position="left"><h1>{{ $t('Worker Queue Info') }}</h1></el-divider>
+        <el-card
+          class="worker-queue-card"
+          :class="{ 'worker-queue-highlight': workerQueue.taskCount > 0 }"
+          shadow="hover"
+          v-for="workerQueue, i in workerQueueInfo"
+          :key="i">
+          <div class="worker-queue-info">
+            <span class="worker-queue-number">#{{ i }}</span>
+            <br><span :class="{ 'text-bad' : (workerQueue.workerCount ) <= 0 }">{{ $tc('workerCount',  workerQueue.workerCount ) }}</span>
+            <br><span :class="{ 'text-bad' : (workerQueue.processCount) <= 0 }">{{ $tc('processCount', workerQueue.processCount) }}</span>
+            <br><span :class="{ 'text-main': (workerQueue.taskCount)    >  0 }">{{ $tc('taskCount',    workerQueue.taskCount)    }}</span>
+          </div>
 
+          <el-progress type="circle" width="110"
+            :percentage="workerQueueLoadPercentage(workerQueue.taskCount, workerQueue.processCount)"
+            :format="workerQueueLoadFormat"
+            :color="WORKER_QUEUE_TASK_COUNT_COLORS"></el-progress>
+        </el-card>
+
+        <el-divider content-position="left"><h1>{{ $t('Biz Entity') }}</h1></el-divider>
         <el-card class="overview-card" shadow="hover" v-for="d in bizEntityCount" :key="d.name">
           <i v-if="C.OVERVIEW_ENTITY_MAP.get(d.name).icon" class="fa fa-fw overview-icon" :class="C.OVERVIEW_ENTITY_MAP.get(d.name).icon"></i>
           <i v-else-if="C.OVERVIEW_ENTITY_MAP.get(d.name).tagText" type="info" class="overview-icon overview-icon-text"><code>{{ C.OVERVIEW_ENTITY_MAP.get(d.name).tagText }}</code></i>
@@ -60,100 +73,7 @@ Pressure         : 压力
           </span>
         </el-card>
 
-        <el-divider content-position="left"><h1>{{ $t('Worker Queue Info') }}</h1></el-divider>
-        <el-card
-          class="worker-queue-card"
-          :class="{ 'worker-queue-highlight': workerQueue.taskCount > 0 }"
-          shadow="hover"
-          v-for="workerQueue, i in workerQueueInfo"
-          :key="i">
-          <div class="worker-queue-info">
-            <span class="worker-queue-number">#{{ i }}</span>
-            <br><span :class="{ 'text-bad' : (workerQueue.workerCount || 0) <= 0 }">{{ $tc('workerCount', workerQueue.workerCount || 0) }}</span>
-            <br><span :class="{ 'text-main': (workerQueue.taskCount   || 0) >  0 }">{{ $tc('taskCount', T.numberLimit(workerQueue.taskCount, 999)) }}</span>
-          </div>
-
-          <el-progress type="circle" width="110"
-            :percentage="workerQueuePressurePercentage(workerQueue.pressure, workerQueue.maxPressure)"
-            :format="workerQueuePressureFormat"
-            :color="WORKER_QUEUE_PRESSURE_COLORS"></el-progress>
-        </el-card>
-
-        <el-divider class="overview-divider" content-position="left"><h1>{{ $t('Script overview') }} {{ $tc('scriptSetOverviewCount', scriptSetOverview.length) }}</h1></el-divider>
-
-        <el-table :data="scriptSetOverview">
-          <el-table-column :label="$t('Script Set')" sortable>
-            <template slot-scope="scope">
-              <span>{{ scope.row.title || scope.row.id }}</span>
-            </template>
-          </el-table-column>
-
-          <el-table-column :label="ID" sortable>
-            <template slot-scope="scope">
-              <code class="text-main">{{ scope.row.id }}</code>
-              <CopyButton :content="scope.row.id" />
-            </template>
-          </el-table-column>
-
-          <el-table-column :label="$t('Origin')" sortable sort-by="origin" width="150">
-            <template slot-scope="scope">
-              <span v-if="!scope.row.origin">-</span>
-              <span v-else-if="scope.row.origin === 'user'">
-                <i class="fa fa-fw fa-user"></i>
-                {{ $t('User') }}
-              </span>
-              <span v-else-if="scope.row.origin === 'builtin'" class="text-watch">
-                <i class="fa fa-fw fa-microchip"></i>
-                {{ $t('Built-in') }}
-              </span>
-              <span v-else-if="scope.row.origin === 'scriptMarket'" class="text-main">
-                <i class="fa fa-fw fa-shopping-cart"></i>
-                {{ $t('Script Market') }}
-              </span>
-              <span v-else-if="scope.row.origin === 'UNKNOWN'" class="text-info">
-                <i class="fa fa-fw fa-question-circle"></i>
-                {{ $t('UNKNOWN') }}
-              </span>
-              <span v-else class="text-info">
-                <i class="fa fa-fw fa-question-circle"></i>
-                {{ $t('UNKNOWN') }}({{ scope.row.origin }})
-              </span>
-            </template>
-          </el-table-column>
-
-          <el-table-column :label="$t('Script')" sortable sort-by="scriptCount" align="right" width="120">
-            <template slot-scope="scope">
-              <code v-if="!scope.row.scriptCount">-</code>
-              <code v-else>{{ scope.row.scriptCount }}</code>
-            </template>
-          </el-table-column>
-
-          <el-table-column :label="$t('Func')" sortable sort-by="funcCount" align="right" width="120">
-            <template slot-scope="scope">
-              <code v-if="!scope.row.funcCount">-</code>
-              <code v-else>{{ scope.row.funcCount }}</code>
-            </template>
-          </el-table-column>
-
-          <el-table-column :label="$t('Code size')" sortable sort-by="codeSize" align="right" width="140">
-            <template slot-scope="scope">
-              <code v-if="scope.row.codeSize">{{ scope.row.codeSizeHuman }}</code>
-            </template>
-          </el-table-column>
-
-          <el-table-column :label="$t('Publish time')" sortable sort-by="latestPublishTimestamp" align="right" width="200">
-            <template slot-scope="scope">
-              <template v-if="scope.row.latestPublishTime">
-                <span>{{ scope.row.latestPublishTime | datetime }}</span>
-                <br>
-                <span class="text-info">{{ scope.row.latestPublishTime | fromNow }}</span>
-              </template>
-            </template>
-          </el-table-column>
-        </el-table>
-
         <el-divider class="overview-divider" content-position="left"><h1>{{ $t('Recent operations') }} {{ $tc('recentOperationCount', latestOperations.length) }}</h1></el-divider>
-
         <el-table :data="latestOperations">
           <el-table-column :label="$t('Time')" width="200">
             <template slot-scope="scope">
@@ -259,19 +179,6 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      if (apiRes.data.scriptSetOverview) {
-        apiRes.data.scriptSetOverview.forEach(d => {
-          if (d.codeSize) {
-            d.codeSizeHuman = this.T.byteSizeHuman(d.codeSize);
-          }
-
-          d.latestPublishTimestamp = 0;
-          if (d.latestPublishTime) {
-            d.latestPublishTimestamp = new Date(d.latestPublishTime).getTime();
-          }
-        });
-      }
-
       (sections || this.OVERVIEW_SECTIONS).forEach(s => {
         this[s] = apiRes.data[s];
       });
@@ -312,13 +219,17 @@ export default {
       this.$refs.longTextDialog.update(httpInfoTEXT, fileName);
     },
     overviewCountFontSize(count) {
-      // 最大80px，每多一位减少15px
       let numberLength = ('' + count).length;
       let fontSize = parseInt(280 / numberLength * 1.2);
       return Math.min(80, fontSize);
     },
-    workerQueuePressurePercentage(pressure, maxPressure) {
-      var percentage = 100 * pressure / (maxPressure * 2);
+    workerQueueLoadPercentage(taskCount, processCount) {
+      let taskQuota = processCount * 100;
+
+      if (taskQuota <= 0 && taskCount > 0) return 100;
+      if (taskCount === 0) return 0;
+
+      let percentage = 100 * taskCount / taskQuota;
       if (percentage < 0) {
         percentage = 0;
       } else if (percentage > 100) {
@@ -327,20 +238,19 @@ export default {
 
       return percentage;
     },
-    workerQueuePressureFormat(percentage) {
-      return `${this.$t('Pressure')}${this.$t(':')} ${parseInt(percentage * 2)}`;
+    workerQueueLoadFormat(percentage) {
+      return `${this.$t('Load')}${this.$t(':')}${parseInt(percentage)}`;
     },
   },
   computed: {
     OVERVIEW_SECTIONS() {
       return [
-        'bizEntityCount',
         'workerQueueInfo',
-        'scriptSetOverview',
+        'bizEntityCount',
         'latestOperations',
       ];
     },
-    WORKER_QUEUE_PRESSURE_COLORS() {
+    WORKER_QUEUE_TASK_COUNT_COLORS() {
       return [
         { color: '#00aa00', percentage: 50 },
         { color: '#ff6600', percentage: 80 },
@@ -352,10 +262,9 @@ export default {
   },
   data() {
     return {
-      bizEntityCount   : [],
-      workerQueueInfo  : [],
-      scriptSetOverview: [],
-      latestOperations : [],
+      workerQueueInfo : [],
+      bizEntityCount  : [],
+      latestOperations: [],
 
       autoRefreshTimer: null,
     }
@@ -375,11 +284,32 @@ export default {
 .overview-divider {
   margin-top: 100px;
 }
+
+.worker-queue-card {
+  width: 260px;
+  height: 150px;
+  display: inline-block;
+  margin: 10px 10px;
+  position: relative;
+}
+.worker-queue-highlight {
+  color: #FF6600;
+  border-color: #FF6600;
+}
+.worker-queue-info {
+  font-size: 12px;
+  text-align: left;
+}
+.worker-queue-info .worker-queue-number {
+  font-size: 40px;
+  letter-spacing: 5px;
+}
+
 .overview-card {
-  width: 300px;
+  width: 320px;
   height: 200px;
   display: inline-block;
-  margin: 10px 20px;
+  margin: 10px 10px;
   position: relative;
 }
 .overview-icon {
@@ -395,7 +325,7 @@ export default {
   font-size: 120px;
 }
 .overview-name {
-  font-size: 36px;
+  font-size: 32px;
   display: block;
   z-index: 1;
   position: relative;
@@ -418,25 +348,6 @@ export default {
   line-height: 1.5;
   margin: 0;
   color: grey;
-}
-.worker-queue-card {
-  width: 260px;
-  height: 150px;
-  display: inline-block;
-  margin: 10px 20px;
-  position: relative;
-}
-.worker-queue-highlight {
-  color: #FF6600;
-  border-color: #FF6600;
-}
-.worker-queue-info {
-  font-size: 12px;
-  text-align: left;
-}
-.worker-queue-info .worker-queue-number {
-  font-size: 40px;
-  letter-spacing: 5px;
 }
 </style>
 

@@ -1,77 +1,174 @@
 # -*- coding: utf-8 -*-
 
 # Built-in Modules
-import time
 import traceback
-from urllib.parse import urljoin
+import pprint
 
 # 3rd-party Modules
-import six
 import arrow
-import requests
-from celery.exceptions import SoftTimeLimitExceeded, TimeLimitExceeded
-import celery.states as celery_status
 
 # Project Modules
-from worker.app import app
 from worker.utils import toolkit, yaml_resources
-from worker.utils.log_helper import LogHelper, LOG_LEVELS
+from worker.utils.log_helper import LogHelper
 from worker.utils.extra_helpers import MySQLHelper, RedisHelper, FileSystemHelper
 from worker.utils.extra_helpers.dataway import DataWay
 
 CONST  = yaml_resources.get('CONST')
 CONFIG = yaml_resources.get('CONFIG')
 
-CELERY_TASK_KEY_PREFIX = 'celery-task-meta-'
+SYSTEM_SETTING_LOCAL_CACHE = toolkit.LocalCache(expires=15)
 
-GUANCE_DATA_DEFAULT_STATUS = 'info'
+GUANCE_DATA_STATUS_DEFAULT = 'info'
 GUANCE_DATA_STATUS_MAP = {
+    'failure': 'critical',
+    'timeout': 'error',
+    'skip'   : 'warning',
+    'waiting': 'info',
+    'pending': 'info',
     'success': 'ok',
-    'failure': 'error',
-    'ok'     : 'ok',
-    'error'  : 'error'
 }
 
 class TaskInLockedException(Exception):
     pass
 
-def gen_task_id():
-    '''
-    Generate a prefixed task ID
-    '''
-    return toolkit.gen_data_id('task')
+class TaskTimeoutException(Exception):
+    pass
 
-class BaseTask(app.Task):
+class BaseTask(object):
     '''
     Base task class
-
-    1. Send Result Saving Task automatically.
-    Overwrited hooks `on_success`, `on_failure` for sending Result Saving Task
-    with an ID: `<Main Task ID>-RESULT`.
-
-    Note: Sub class should provides following 2 tasks (See `example.py`):
-        - `_success_result_saving_task` Result Saving Task for SUCCESS
-        - `_failure_result_saving_task` Result Saving Task for FAILURE
-
-    2. More detailed task status
-    Before `__call__()` is called. Set extra information to `self.request` and Redis.
-    Moreover, when `on_success`, `on_failure` is called, status will be updated by
-    setting information to Redis.
-
-    Note: Task inherit from the `BaseTask` will always store task result and status
-    to the Celery original task result key(Overwrite).
     '''
-    ignore_result = True
+    # 名称
+    name = None
 
-    _success_result_saving_task = None
-    _failure_result_saving_task = None
+    # 默认运行队列
+    default_queue = CONFIG['_TASK_QUEUE_DEFAULT']
+
+    # 默认过期时间
+    default_expires = CONFIG['_TASK_EXPIRES_DEFAULT']
+
+    # 默认超时时间
+    default_timeout = CONFIG['_TASK_TIMEOUT_DEFAULT']
+
+    # 默认任务记录保留数量
+    default_task_record_limit = CONFIG['_TASK_RECORD_LIMIT_DEFAULT']
+
+    # 默认是否忽略结果
+    default_ignore_result = True
+
+    def __init__(self,
+                 task_id=None,
+                 kwargs=None,
+                 trigger_time=None,
+                 delay=None,
+                 queue=None,
+                 timeout=None,
+                 expires=None,
+                 ignore_result=None,
+                 task_record_limit=None):
+
+        self.task_id = task_id or toolkit.gen_task_id()
+        self.kwargs  = kwargs or dict()
+
+        self.trigger_time = trigger_time or toolkit.get_timestamp(3)
+        self.start_time   = None
+        self.end_time     = None
+
+        self.result    = None
+        self.exception = None
+        self.traceback = None
+        self.status    = 'waiting'
+
+        # 默认配置
+        self.delay             = 0
+        self.queue             = self.default_queue
+        self.timeout           = self.default_timeout
+        self.expires           = self.default_expires
+        self.ignore_result     = self.default_ignore_result
+        self.task_record_limit = self.default_task_record_limit
+
+        # 实例指定配置
+        if delay is not None:
+            self.delay =  delay
+
+        if queue is not None:
+            self.queue = queue
+
+        if timeout is not None:
+            self.timeout = timeout
+
+        if expires is not None:
+            self.expires = expires
+
+        if ignore_result is not None:
+            self.ignore_result = ignore_result
+
+        if task_record_limit is not None:
+            self.task_record_limit = task_record_limit
+
+        # 任务锁
+        self._lock_key   = None
+        self._lock_value = None
+
+        # 关联组件
+        self.logger       = LogHelper(self)
+        self.db           = MySQLHelper(self.logger)
+        self.cache_db     = RedisHelper(self.logger)
+        self.file_storage = FileSystemHelper(self.logger)
+
+    @property
+    def trigger_time_ms(self):
+        if self.trigger_time is None:
+            return None
+        else:
+            return self.trigger_time * 1000
+
+    @property
+    def trigger_time_iso(self):
+        if self.trigger_time is None:
+            return None
+        else:
+            return arrow.get(self.trigger_time).to(CONFIG['TIMEZONE']).isoformat()
+
+    @property
+    def start_time_ms(self):
+        if self.start_time is None:
+            return None
+        else:
+            return self.start_time * 1000
+
+    @property
+    def start_time_iso(self):
+        if self.start_time is None:
+            return None
+        else:
+            return arrow.get(self.start_time).to(CONFIG['TIMEZONE']).isoformat()
+
+    @property
+    def end_time_ms(self):
+        if self.end_time is None:
+            return None
+        else:
+            return self.end_time * 1000
+
+    @property
+    def end_time_iso(self):
+        if self.end_time is None:
+            return None
+        else:
+            return arrow.get(self.end_time).to(CONFIG['TIMEZONE']).isoformat()
 
     @property
     def system_settings(self):
-        return self.DFF_system_settings
+        global SYSTEM_SETTING_LOCAL_CACHE
 
-    def _load_system_settings(self):
-        system_setting_ids = [
+        # 从缓存读取
+        data = SYSTEM_SETTING_LOCAL_CACHE['data']
+        if data:
+            return data
+
+        # 从数据库读取
+        ids = [
             'GUANCE_DATA_UPLOAD_ENABLED',
             'GUANCE_DATA_UPLOAD_URL',
             'GUANCE_DATA_SITE_NAME',
@@ -84,254 +181,156 @@ class BaseTask(app.Task):
                 WHERE
                     id IN ( ? )
                 '''
-        sql_params = [ system_setting_ids ]
+        sql_params = [ ids ]
         db_res = self.db.query(sql, sql_params)
 
-        system_settings = {}
+        data = {}
 
         # 默认值
-        for _id in system_setting_ids:
-            system_settings[_id] = CONST['systemSettings'][_id]
+        for _id in ids:
+            data[_id] = CONST['systemSettings'][_id]
 
         # 用户配置
         for d in db_res:
-            system_settings[d['id']] = toolkit.json_loads(d['value'])
+            data[d['id']] = toolkit.json_loads(d['value'])
 
-        self.DFF_system_settings = system_settings
+        # 加入缓存
+        SYSTEM_SETTING_LOCAL_CACHE['data'] = data
 
-    def _set_task_status(self, status, **next_context):
-        '''
-        Set task result for WAT's monitor.
-        '''
-        # Fixed in Celery for saving/publishing task result.
-        # See [https://github.com/celery/celery/blob/v4.1.0/celery/backends/base.py#L518]
-        if self.request.called_directly:
-            return
+        return data
 
-        self.request.update(**next_context)
+    @property
+    def guance_data_upload_url(self):
+        guance_data_upload_enabled = self.system_settings.get('GUANCE_DATA_UPLOAD_ENABLED') or False
+        guance_data_upload_url     = self.system_settings.get('GUANCE_DATA_UPLOAD_URL')     or None
 
-        if status not in (celery_status.SUCCESS, celery_status.FAILURE):
-            return
+        if guance_data_upload_enabled and guance_data_upload_url:
+            return guance_data_upload_url
 
-        # Publish result by Redis
-        key = 'celery-task-meta-' + self.request.id
+    @property
+    def exception_type(self):
+        if not self.exception:
+            return None
 
-        content = {
-            'task'  : self.name,
-            'id'    : self.request.id,
-            'args'  : self.request.args,
-            'kwargs': self.request.kwargs,
-            'origin': self.request.origin, # 注意：Celery 中 Task.requset.origin 和 Func 业务中的 Origin *不是*一回事
-            'queue' : self.worker_queue,
-            'status': status,
+        return self.exception.__class__.__name__
 
-            'startTime'       : self.request.x_start_time,
-            'endTime'         : self.request.x_end_time,
-            'retval'          : self.request.x_retval,
-            'einfoTEXT'       : self.request.x_einfo_text,
-            'exceptionMessage': self.request.x_exception_message,
-            'exceptionDump'   : self.request.x_exception_dump,
-        }
+    @property
+    def exception_text(self):
+        if not self.exception:
+            return None
 
-        if hasattr(self.request, 'extra'):
-            content['extra'] = self.request.extra
+        return pprint.saferepr(self.exception)
 
-        content = toolkit.json_dumps(content, indent=None)
+    def lock(self, max_age=None):
+        max_age = int(max_age or 30)
 
-        self.backend.client.publish(key, content)
-
-    def __call__(self, *args, **kwargs):
-        self.DFF_system_settings = {}
-        self.DFF_task_lock_key   = None
-        self.DFF_task_lock_value = None
-
-        # Add Queue Info
-        self.worker_queue = self.request.delivery_info['routing_key']
-        self.queue        = self.worker_queue.split('@').pop()
-
-        # Add logger
-        self.logger = LogHelper(self)
-
-        # Add DB Helper
-        self.db = MySQLHelper(self.logger)
-
-        # Add Cache Helper
-        self.cache_db = RedisHelper(self.logger)
-
-        # Add File Storage Helper
-        self.file_storage = FileSystemHelper(self.logger)
-
-        # Load System Settings
-        self._load_system_settings()
-
-        if CONFIG['MODE'] == 'prod':
-            self.db.skip_log       = True
-            self.cache_db.skip_log = True
-
-        # Add extra information
-        if not self.request.called_directly:
-            self._set_task_status(celery_status.PENDING,
-                    x_start_time=int(time.time()),
-                    x_end_time=None,
-                    x_retval=None,
-                    x_einfo_text=None,
-                    x_exception_message=None,
-                    x_exception_dump=None)
-
-        # Sleep delay
-        if 'sleepDelay' in kwargs:
-            sleep_delay = 0
-            try:
-                sleep_delay = float(kwargs['sleepDelay'])
-                self.logger.debug('[SLEEP DELAY] {} seconds...'.format(sleep_delay))
-
-            except Exception as e:
-                for line in traceback.format_exc().splitlines():
-                    self.logger.error(line)
-            else:
-                time.sleep(sleep_delay)
-
-        # Run
-        try:
-            task_info = '`{}`'.format(self.name)
-            func_id = kwargs.get('funcId')
-            if func_id:
-                task_info = '`{}`'.format(func_id) + '@' + task_info
-
-            self.logger.debug('[CALL] {}'.format(task_info))
-
-            return super().__call__(*args, **kwargs)
-
-        except TaskInLockedException as e:
-            # 任务重复运行错误，认为正常结束即可
-            self.logger.warning(str(e))
-
-        except (SoftTimeLimitExceeded, TimeLimitExceeded) as e:
-            raise
-
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
-
-            raise
-
-    def on_retry(self, exc, task_id, args, kwargs, einfo):
-        if self.request.called_directly:
-            return
-
-        self._set_task_status(celery_status.RETRY)
-
-        self.logger.warning('[{}]'.format(celery_status.RETRY))
-
-    def on_success(self, retval, task_id, args, kwargs):
-        if self.request.called_directly:
-            return
-
-        self._set_task_status(celery_status.SUCCESS,
-                x_end_time=int(time.time()),
-                x_retval=retval)
-
-        if self._success_result_saving_task:
-            args = (
-                task_id,
-                self.name,
-                self.request.origin,
-                self.request.x_start_time,
-                self.request.x_end_time,
-                self.request.args,
-                self.request.kwargs,
-                retval,
-                celery_status.SUCCESS,
-                None
-            )
-            result_task_id = '{}-RESULT'.format(task_id)
-            self._success_result_saving_task.apply_async(task_id=result_task_id, args=args)
-
-        self.logger.debug('[{}]'.format(celery_status.SUCCESS))
-
-    def on_failure(self, exc, task_id, args, kwargs, einfo):
-        if self.request.called_directly:
-            return
-
-        # Exception Object can not be convert to JSON
-        einfo_text        = str(einfo)
-        exception_message = str(einfo.exception)
-        exception_dump    = repr(einfo.exception)
-
-        self._set_task_status(celery_status.FAILURE,
-                x_end_time=int(time.time()),
-                x_einfo_text=einfo_text,
-                x_exception_message=exception_message,
-                x_exception_dump=exception_dump)
-
-        if self._failure_result_saving_task:
-            args = (
-                task_id,
-                self.name,
-                self.request.origin,
-                self.request.x_start_time,
-                self.request.x_end_time,
-                self.request.args,
-                self.request.kwargs,
-                None,
-                celery_status.FAILURE,
-                einfo_text
-            )
-            result_task_id = '{}-RESULT'.format(task_id)
-            self._failure_result_saving_task.apply_async(task_id=result_task_id, args=args)
-
-        self.logger.error('[{}]'.format(celery_status.FAILURE))
-
-    def lock_task(self, max_age=30):
-        max_age = int(max_age)
         lock_key   = toolkit.get_cache_key('lock', 'task', tags=[ 'task', self.name ])
         lock_value = toolkit.gen_uuid()
+
         if not self.cache_db.lock(lock_key, lock_value, max_age):
             raise TaskInLockedException(f"Task `{self.name}` already launched.")
 
-        self.DFF_task_lock_key   = lock_key
-        self.DFF_task_lock_value = lock_value
+        self._lock_key   = lock_key
+        self._lock_value = lock_value
 
-    def unlock_task(self):
-        self.cache_db.unlock(self.DFF_task_lock_key, self.DFF_task_lock_value)
+    def unlock(self):
+        if self._lock_key and self._lock_value:
+            self.cache_db.unlock(self._lock_key, self._lock_value)
 
-        self.DFF_task_lock_key   = None
-        self.DFF_task_lock_value = None
+        self._lock_key   = None
+        self._lock_value = None
 
-    def upload_guance_data(self, category, points):
-        self.logger.debug(f'[UPLOAD GUANCE DATA]: {len(points)} {category} point(s)')
+    def create_task_record_data(self, task_resp):
+        data = {
+            'id'            : self.task_id,
+            'name'          : self.name,
+            'kwargsJSON'    : toolkit.json_dumps(self.kwargs),
+            'triggerTimeMs' : self.trigger_time_ms,
+            'startTimeMs'   : self.start_time_ms,
+            'endTimeMs'     : self.end_time_ms,
+            'delay'         : self.delay,
+            'queue'         : self.queue,
+            'timeout'       : self.timeout,
+            'expires'       : self.expires,
+            'ignoreResult'  : self.ignore_result,
+            'resultJSON'    : toolkit.json_dumps(self.result, keep_none=True),
+            'status'        : self.status,
+            'exceptionType' : self.exception_type,
+            'exceptionTEXT' : self.exception_text,
+            'tracebackTEXT' : self.traceback,
+        }
+        return data
 
-        if not points:
+    def create_task_record_guance_data(self, task_resp):
+        data = {
+            'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD'],
+            'tags': {
+                'id'         : self.task_id,
+                'name'       : self.name,
+                'queue'      : str(self.queue),
+                'task_status': self.status,
+            },
+            'fields': {
+                'kwargs'          : toolkit.json_dumps(self.kwargs),
+                'delay'           : self.delay,
+                'timeout'         : self.timeout,
+                'expires'         : self.expires,
+                'ignore_result'   : self.ignore_result,
+                'result'          : toolkit.json_dumps(self.result, keep_none = True),
+                'exception_type'  : self.exception_type,
+                'exception'       : self.exception_text,
+                'traceback'       : self.traceback,
+                'trigger_time_iso': self.trigger_time_iso,
+                'start_time_iso'  : self.start_time_iso,
+                'end_time_iso'    : self.end_time_iso,
+                'wait_cost'       : self.start_time_ms - self.trigger_time_ms,
+                'run_cost'        : self.end_time_ms   - self.start_time_ms,
+                'total_cost'      : self.end_time_ms   - self.trigger_time_ms,
+            }
+        }
+        return data
+
+    def buff_task_record(self, task_resp):
+        # 为了提高处理性能，此处仅写入 Redis 队列，不直接写入数据库
+        data = self.create_task_record_data(task_resp)
+        if data:
+            cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecord')
+            self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
+
+        if self.guance_data_upload_url:
+            data = self.create_task_record_guance_data(task_resp)
+            if data:
+                cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordGuance')
+                self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
+
+    def upload_guance_data(self, category, data):
+        if not self.guance_data_upload_url:
             return
 
-        points = toolkit.as_array(points)
-
-        upload_enabled = self.system_settings.get('GUANCE_DATA_UPLOAD_ENABLED') or False
-        upload_url     = self.system_settings.get('GUANCE_DATA_UPLOAD_URL')     or None
-        if not all([ upload_enabled, upload_url ]):
+        if not data:
             return
 
-        for p in points:
-            p['tags'] = p.get('tags') or {}
+        data = toolkit.as_array(data)
 
-            # 替换 tags.status 值
-            guance_status = GUANCE_DATA_DEFAULT_STATUS
-            try:
-                guance_status = GUANCE_DATA_STATUS_MAP[p['tags']['status']]
-            except Exception as e:
-                pass
-            finally:
-                p['tags']['status'] = guance_status
+        self.logger.debug(f'[UPLOAD GUANCE DATA]: {len(data)} {category} point(s)')
 
+        for p in data:
             # 添加 tags.site_name
             site_name = self.system_settings.get('GUANCE_DATA_SITE_NAME')
             if site_name:
                 p['tags']['site_name'] = site_name
 
+            # 根据 task_status 增补适用于观测云的 status 值
+            if 'task_status' in p['tags']:
+                try:
+                    p['tags']['status'] = GUANCE_DATA_STATUS_MAP[p['tags']['task_status']]
+                except Exception as e:
+                    p['tags']['status'] = GUANCE_DATA_STATUS_DEFAULT
+
         # 上报数据
         try:
-            dataway = DataWay(url=upload_url)
-            status_code, resp_data = dataway.post_line_protocol(path=f'/v1/write/{category}', points=points)
+            dataway = DataWay(url=self.guance_data_upload_url)
+            status_code, resp_data = dataway.post_line_protocol(path=f'/v1/write/{category}', points=data)
             if status_code > 200:
                 self.logger.error(resp_data)
 
@@ -339,42 +338,116 @@ class BaseTask(app.Task):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
-            # 不要将错误抛出
+    def response(self, task_resp):
+        cache_key = toolkit.get_cache_key('task', 'response', [ 'name', self.name, 'id', self.task_id ])
+        task_resp_dumps = toolkit.json_dumps(task_resp, ignore_nothing=True, indent=None)
 
-class BaseResultSavingTask(app.Task):
-    '''
-    Base result saving task class
-    '''
-    ignore_result = True
+        self.cache_db.publish(cache_key, task_resp_dumps)
 
-    def __call__(self, *args, **kwargs):
-        # Add logger
-        self.logger = LogHelper(self)
+    def create_task_request(self):
+        task_req = {
+            'name'  : self.name,
+            'id'    : self.task_id,
+            'kwargs': self.kwargs,
 
-        # Add DB Helper
-        self.db = MySQLHelper(self.logger)
+            'triggerTime': self.trigger_time,
 
-        # Add Cache Helper
-        self.cache_db = RedisHelper(self.logger)
+            'queue'          : self.queue,
+            'delay'          : self.delay,
+            'timeout'        : self.timeout,
+            'expires'        : self.expires,
+            'ignoreResult'   : self.ignore_result,
+            'taskRecordLimit': self.task_record_limit,
+        }
+        return task_req
 
-        # Run
+    @classmethod
+    def from_task_request(cls, task_req):
+        task_inst = cls(task_id=task_req.get('id'),
+                            kwargs=task_req.get('kwargs'),
+                            trigger_time=task_req.get('triggerTime'),
+                            queue=task_req.get('queue'),
+                            delay=task_req.get('delay'),
+                            timeout=task_req.get('timeout'),
+                            expires=task_req.get('expires'),
+                            ignore_result=task_req.get('ignoreResult'),
+                            task_record_limit=task_req.get('taskRecordLimit'))
+        return task_inst
+
+    def start(self):
+        # 任务信息
+        self.status     = 'pending'
+        self.start_time = toolkit.get_timestamp(3)
+
+        if CONFIG['MODE'] == 'prod':
+            self.db.skip_log       = True
+            self.cache_db.skip_log = True
+
+        # 调用子类 run() 函数
         try:
-            return super().__call__(*args, **kwargs)
+            self.logger.debug(f'[CALL] {self.name}')
+            self.result = self.run(**self.kwargs)
 
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
+        except TaskInLockedException as e:
+            # 任务重复运行错误，警告即可
+            self.status = 'skip'
+            self.exception  = e
+            self.logger.warning(self.exception)
+
+        except TaskTimeoutException as e:
+            # 任务超时
+            self.status = 'timeout'
+
+            # 可替换错误信息、堆栈信息
+            self.exception = self.exception or e
+            self.traceback = self.traceback or traceback.format_exc()
+
+            for line in self.traceback.splitlines():
                 self.logger.error(line)
 
-            raise
+        except Exception as e:
+            # 其他错误
+            self.status = 'failure'
 
-    def on_success(self, retval, task_id, args, kwargs):
-        if self.request.called_directly:
-            return
+            # 可替换错误信息、堆栈信息
+            self.exception = self.exception or e
+            self.traceback = self.traceback or traceback.format_exc()
 
-        self.logger.debug('[SUCCESS]')
+            for line in self.traceback.splitlines():
+                self.logger.error(line)
 
-    def on_failure(self, exc, task_id, args, kwargs, einfo):
-        if self.request.called_directly:
-            return
+        else:
+            # 正常
+            self.status = 'success'
 
-        self.logger.error('[FAILURE]')
+        finally:
+            self.end_time = toolkit.get_timestamp(3)
+
+            # 任务响应
+            task_resp = {
+                'name': self.name,
+                'id'  : self.task_id,
+
+                'triggerTime': self.trigger_time,
+                'startTime'  : self.start_time,
+                'endTime'    : self.end_time,
+
+                'result'       : self.result if not self.ignore_result else 'IGNORED',
+                'status'       : self.status,
+                'exception'    : self.exception_text,
+                'exceptionType': self.exception_type,
+                'traceback'    : self.traceback,
+            }
+
+            # 任务记录
+            self.buff_task_record(task_resp)
+
+            # 发送结果通知
+            if not self.ignore_result:
+                self.response(task_resp)
+
+            # 自动解锁
+            self.unlock()
+
+    def run(self, **kwargs):
+        self.logger.info(f'{self.name} Task launched.')

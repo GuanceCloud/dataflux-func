@@ -13,7 +13,7 @@ var modelHelper  = require('../utils/modelHelper');
 
 var fileServiceMod = require('../models/fileServiceMod');
 
-/* Configure */
+/* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = fileServiceMod.createCRUDHandler();
@@ -60,4 +60,3 @@ exports.add = function(req, res, next) {
     return res.locals.sendJSON(ret);
   });
 };
-

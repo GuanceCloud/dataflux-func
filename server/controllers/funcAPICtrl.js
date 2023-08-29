@@ -13,7 +13,7 @@ var urlFor  = require('../utils/routeLoader').urlFor;
 
 var funcMod = require('../models/funcMod');
 
-/* Configure */
+/* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = funcMod.createCRUDHandler();

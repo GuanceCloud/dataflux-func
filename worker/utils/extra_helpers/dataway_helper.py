@@ -11,7 +11,7 @@ from worker.utils import toolkit
 from worker.utils.extra_helpers.dataway import DataWay
 
 def get_config(c):
-    return toolkit.no_none_or_white_space({
+    return toolkit.no_none_or_whitespace({
         'url'       : c.get('url'),
         'host'      : c.get('host'),
         'port'      : c.get('port'),

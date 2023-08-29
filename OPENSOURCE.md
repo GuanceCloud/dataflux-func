@@ -15,7 +15,6 @@
 | body-parser              | 1.20.0      | MIT           | https://github.com/expressjs/body-parser#readme                                      |
 | bowser                   | 2.11.0      | MIT           | https://github.com/lancedikson/bowser                                                |
 | byte-size                | 7.0.1       | MIT           | https://github.com/75lb/byte-size#readme                                             |
-| celery-client            | 0.4.0       | MIT           | https://github.com/pastgift/celery-client-js                                         |
 | clipboard                | 2.0.11      | MIT           | https://clipboardjs.com/                                                             |
 | codemirror               | 5.65.7      | MIT           | https://codemirror.net/                                                              |
 | colors                   | 1.4.0       | MIT           | https://github.com/Marak/colors.js                                                   |
@@ -82,7 +81,6 @@
 | 项目              | 版本   | 许可证                                                                         | 官网                                           |
 | ----------------- | ------ | ------------------------------------------------------------------------------ | ---------------------------------------------- |
 | arrow             | 0.17.0 | Apache Software License (Apache 2.0)                                           | https://arrow.readthedocs.io/                  |
-| celery            | 5.2.7  | BSD License (BSD)                                                              | http://celeryproject.org/                      |
 | clickhouse-driver | 0.1.5  | MIT License (MIT)                                                              | https://github.com/mymarilyn/clickhouse-driver |
 | croniter          | 1.3.5  | MIT License (MIT License)                                                      | http://github.com/kiorky/croniter              |
 | cx-Oracle         | 7.3.0  | BSD License (BSD License)                                                      | https://oracle.github.io/python-cx_Oracle      |

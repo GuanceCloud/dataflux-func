@@ -49,6 +49,10 @@ LIMIT_ARGS_DUMP = 200
 LUA_UNLOCK_SCRIPT_KEY_COUNT = 1
 LUA_UNLOCK_SCRIPT = 'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end '
 
+LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT = 2
+LUA_ZPOP_BELOW_LPUSH_SCRIPT = 'if redis.call("zcount", KEYS[1], "-inf", ARGV[1]) > 0 then return redis.call("lpush", KEYS[2], redis.call("zpopmin", KEYS[1])[1]) else return nil end '
+LUA_ZPOP_ABOVE_LPUSH_SCRIPT = 'if redis.call("zcount", KEYS[1], ARGV[1], "+inf") > 0 then return redis.call("lpush", KEYS[2], redis.call("zpopmax", KEYS[1])[1]) else return nil end '
+
 CLIENT_CONFIG = None
 CLIENT        = None
 
@@ -152,10 +156,11 @@ class RedisHelper(object):
                 elif isinstance(key, dict):
                     key = ', '.join(key.keys())
 
-            kwargs_dump = ''
-            if kwargs:
-                kwargs_dump = 'kwargs=' + toolkit.json_dumps(kwargs)
-            self.logger.debug('[REDIS] Run `{} {}` {}'.format(command.upper(), key, kwargs_dump))
+            dumps = ' '.join([
+                ' '.join([ str(x) for x in command_args[1:]]),
+                ' '.join([ f'{k}={v}' for k, v in kwargs.items()])
+            ]).strip()
+            self.logger.debug(f'[REDIS] Run `{command.upper()} {key} {dumps}`'.strip())
 
         return getattr(self.client, command)(*command_args, **kwargs)
 
@@ -206,6 +211,16 @@ class RedisHelper(object):
 
     def mget(self, keys, *args):
         return self.run('mget', keys, *args)
+
+    def get_by_pattern(self, pattern):
+        if not self.skip_log:
+            self.logger.debug('[REDIS] GET by pattern `{}`'.format(pattern))
+
+        keys = self.keys(pattern)
+        if len(keys) <= 0:
+            return None
+        else:
+            return self.mget(keys)
 
     def mset(self, key_values, **kwargs):
         return self.run('mset', key_values, **kwargs)
@@ -296,11 +311,17 @@ class RedisHelper(object):
     def rpush(self, key, value):
         return self.run('rpush', key, value)
 
-    def lpop(self, key):
-        return self.run('lpop', key)
+    def lpop(self, key, count=1):
+        return self.run('lpop', key, count)
 
-    def rpop(self, key):
-        return self.run('rpop', key)
+    def blpop(self, key):
+        return self.run('blpop', key)
+
+    def rpop(self, key, count=1):
+        return self.run('rpop', key, count)
+
+    def brpop(self, key):
+        return self.run('brpop', key)
 
     def llen(self, key):
         return self.run('llen', key)
@@ -465,3 +486,36 @@ class RedisHelper(object):
             ts_data = list(map(lambda x: { 't': x[0], 'v': x[1] }, ts_data))
 
         return ts_data
+
+    def zadd(self, key, score, value):
+        return self.run('zadd', key, { value: score })
+
+    def zpop_below_lpush(self, key, dest_key, score):
+        return self.run('eval', LUA_ZPOP_BELOW_LPUSH_SCRIPT, LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT, key, dest_key, score)
+
+    def zpop_above_lpush(self, key, dest_key, score):
+        return self.run('eval', LUA_ZPOP_ABOVE_LPUSH_SCRIPT, LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT, key, dest_key, score)
+
+    def put_task(self, task_req):
+        task_req = task_req or {}
+
+        if not task_req.get('name'):
+            raise Exception("task_req['name'] is required")
+
+        # Put task
+        task_req['id']          = task_req.get('id')          or toolkit.gen_task_id()
+        task_req['triggerTime'] = task_req.get('triggerTime') or toolkit.get_timestamp(3)
+
+        if toolkit.is_none_or_whitespace(task_req.get('queue')):
+            task_req['queue'] = CONFIG['_TASK_QUEUE_DEFAULT']
+
+        task_req_dumps = toolkit.json_dumps(task_req)
+
+        if task_req.get('delay'):
+            delay_queue = toolkit.get_delay_queue(task_req['queue'])
+            eta         = task_req['triggerTime'] + task_req['delay']
+            return self.zadd(delay_queue, eta, task_req_dumps)
+
+        else:
+            worker_queue = toolkit.get_worker_queue(task_req['queue'])
+            return self.lpush(worker_queue, task_req_dumps)

@@ -12,7 +12,7 @@ var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 var urlFor      = require('../utils/routeLoader').urlFor;
 
-/* Configure */
+/* Init */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   displayName: 'func',
   entityName : 'func',
@@ -106,7 +106,7 @@ EntityModel.prototype.list = function(options, callback) {
       funcDoc = [];
       dbRes.forEach(function(d) {
         funcDoc.push({
-          url: urlFor('indexAPI.callFunc', {
+          url: urlFor('mainAPI.callFunc', {
             params: { funcId: d.id },
           }),
 
@@ -135,11 +135,11 @@ EntityModel.prototype.list = function(options, callback) {
   });
 };
 
-EntityModel.prototype.update = function(scriptId, exportedAPIFuncs, callback) {
+EntityModel.prototype.update = function(scriptId, apiFuncs, callback) {
   var self = this;
 
   var scriptSetId = scriptId.split('__')[0];
-  exportedAPIFuncs = toolkit.asArray(exportedAPIFuncs);
+  apiFuncs = toolkit.asArray(apiFuncs);
 
   var transScope = modelHelper.createTransScope(self.db);
   async.series([
@@ -156,10 +156,10 @@ EntityModel.prototype.update = function(scriptId, exportedAPIFuncs, callback) {
       self.db.query(sql, sqlParams, asyncCallback);
     },
     function(asyncCallback) {
-      if (toolkit.isNothing(exportedAPIFuncs)) return asyncCallback();
+      if (toolkit.isNothing(apiFuncs)) return asyncCallback();
 
       var _data = [];
-      exportedAPIFuncs.forEach(function(d) {
+      apiFuncs.forEach(function(d) {
         var argsJSON = null;
         if (d.args && 'string' !== typeof d.args) {
           argsJSON = JSON.stringify(d.args);
@@ -170,7 +170,7 @@ EntityModel.prototype.update = function(scriptId, exportedAPIFuncs, callback) {
           kwargsJSON = JSON.stringify(d.kwargs);
         }
 
-        var extraConfigJSON = null;
+        var extraConfigJSON = {};
         if (d.extraConfig && 'string' !== typeof d.extraConfig) {
           extraConfigJSON = JSON.stringify(d.extraConfig);
         }
@@ -227,7 +227,7 @@ EntityModel.prototype.update = function(scriptId, exportedAPIFuncs, callback) {
       if (scopeErr) return callback(scopeErr);
 
       // 清除函数名缓存
-      var cacheKeyPattern = toolkit.getCacheKey('cache', 'integrationFuncId', ['*']);
+      var cacheKeyPattern = toolkit.getCacheKey('cache', 'integrationFuncId', [ '*' ]);
       self.cacheDB.delByPattern(cacheKeyPattern, callback);
     });
   });

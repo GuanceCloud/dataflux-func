@@ -14,7 +14,7 @@ var logHelper = require('../logHelper');
 var LUA_UNLOCK_SCRIPT_KEY_COUNT = 1;
 var LUA_UNLOCK_SCRIPT = 'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end ';
 
-/* Configure */
+/* Init */
 
 function getConfig(c, retryStrategy) {
   var config = {
@@ -54,6 +54,9 @@ function getConfig(c, retryStrategy) {
 var CLIENT_CONFIG  = null;
 var CLIENT         = null;
 var DEFAULT_LOGGER = logHelper.createHelper(null, null, 'DEFAULT_REDIS_CLIENT');
+
+var SUB_CLIENT           = null;
+var TASK_ON_RESPONSE_MAP = {};
 
 /**
  * @constructor
@@ -1073,6 +1076,109 @@ RedisHelper.prototype.pagedList = function(key, paging, callback) {
     if (err) return callback(err);
     return callback(null, data, pageInfo);
   });
+};
+
+RedisHelper.prototype.putTask = function(taskReq, callback) {
+  var self = this;
+
+  taskReq  = taskReq || {};
+  callback = toolkit.ensureFn(callback);
+
+  if (!taskReq.name) {
+    return callback(new Error('taskReq.name is required.'));
+  }
+
+  // Init task response sub client
+  if (!SUB_CLIENT) {
+    SUB_CLIENT = self.client.duplicate();
+    TASK_ON_RESPONSE_MAP = {};
+
+    var taskRespCacheKey = toolkit.getWorkerCacheKey('task', 'response', [ 'name', '*', 'id', '*' ]);
+    SUB_CLIENT.psubscribe(taskRespCacheKey);
+
+    SUB_CLIENT.on('pmessage', function(pattern, channel, message) {
+      var taskId = toolkit.parseCacheKey(channel).tags.id;
+
+      var onResponse = TASK_ON_RESPONSE_MAP[taskId];
+      delete TASK_ON_RESPONSE_MAP[taskId];
+
+      if ('function' !== typeof onResponse) return;
+
+      var taskResp = message;
+      if (taskResp) {
+        try {
+          taskResp = JSON.parse(taskResp);
+        } catch(ex) {
+          // Nope
+        }
+      }
+
+      onResponse(taskResp);
+    });
+  }
+
+  // Prepare
+  if (taskReq.ignoreResult === true) {
+    delete taskReq.onResponse;
+  } else {
+    taskReq.ignoreResult = !!!taskReq.onResponse;
+  }
+
+  // Push task
+  taskReq.id          = taskReq.id          || toolkit.genTaskId();
+  taskReq.triggerTime = taskReq.triggerTime || toolkit.getTimestamp(3);
+
+  if (toolkit.isNothing(taskReq.queue)) {
+    taskReq.queue = CONFIG._TASK_QUEUE_DEFAULT;
+  }
+
+  if (taskReq.onResponse) {
+    TASK_ON_RESPONSE_MAP[taskReq.id] = taskReq.onResponse;
+    delete taskReq.onResponse;
+
+    // Waiting for response
+    var _timeout = taskReq.timeout || CONFIG._TASK_TIMEOUT_DEFAULT;
+    _timeout = Math.min(_timeout, CONFIG._TASK_RESULT_WAIT_TIMEOUT_MAX);
+
+    // 留出响应时间
+    _timeout += 10;
+
+    setTimeout(function() {
+      var onResponse = TASK_ON_RESPONSE_MAP[taskReq.id];
+      delete TASK_ON_RESPONSE_MAP[taskReq.id];
+
+      if (onResponse) {
+        var taskResp = {
+          name  : taskReq.name,
+          id    : taskReq.id,
+          kwargs: taskReq.kwargs,
+
+          triggerTime: taskReq.triggerTime,
+
+          status: 'noResponse',
+        }
+        onResponse(taskResp);
+      }
+    }, _timeout * 1000);
+  }
+
+  var taskReqDumps = JSON.stringify(taskReq);
+
+  if (taskReq.delay) {
+    var delayQueue = toolkit.getDelayQueue(taskReq.queue);
+    var eta = taskReq.triggerTime + taskReq.delay;
+    return self.client.zadd(delayQueue, eta, taskReqDumps, function(err) {
+      if (err) return callback(err);
+      return callback(null, taskReq.id);
+    });
+
+  } else {
+    var workerQueue = toolkit.getWorkerQueue(taskReq.queue);
+    return self.client.lpush(workerQueue, taskReqDumps, function(err) {
+      if (err) return callback(err);
+      return callback(null, taskReq.id);
+    });
+  }
 };
 
 exports.RedisHelper = RedisHelper;

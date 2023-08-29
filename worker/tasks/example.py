@@ -4,76 +4,30 @@
 import time
 
 # Project Modules
-from worker.app import app
-from worker.tasks import BaseTask, BaseResultSavingTask
-from worker.utils import toolkit
+from worker.utils import toolkit, yaml_resources
+from worker.tasks import BaseTask
 
-@app.task(name='Example.Result', bind=True, base=BaseResultSavingTask)
-def result_saving_task(self, task_id, name, origin, start_time, end_time, args, kwargs, retval, status, einfo_text):
-    options = kwargs or {}
+class ExampleSuccess(BaseTask):
+    name = 'Example.ExampleSuccess'
 
-    '''
-    Result saving task
-    '''
-    args_json   = self.db.dump_for_json(args)
-    kwargs_json = self.db.dump_for_json(kwargs)
-    retval_json = self.db.dump_for_json(retval)
+    default_timeout = 30
 
-    sql = '''
-        INSERT INTO wat_main_task_result_example
-        SET
-             `id`         = ?
-            ,`task`       = ?
-            ,`origin`     = ?
-            ,`startTime`  = ?
-            ,`endTime`    = ?
-            ,`argsJSON`   = ?
-            ,`kwargsJSON` = ?
-            ,`retvalJSON` = ?
-            ,`status`     = ?
-            ,`einfoTEXT`  = ?
-    '''
-    sql_params = (task_id, name, origin, start_time, end_time, args_json, kwargs_json, retval_json, status, einfo_text)
-    self.db.query(sql, sql_params)
+    def run(self, **kwargs):
+        s = 'Example: Success'
+        return { 'message': s }
 
-class BizTask(BaseTask):
-    '''
-    Business task
-    '''
-    # Specify the success/failure result saving task
-    _success_result_saving_task = result_saving_task
-    _failure_result_saving_task = result_saving_task
+class ExampleFailure(BaseTask):
+    name = 'Example.ExampleFailure'
 
-@app.task(name='Example.Echo.Success', bind=True, base=BizTask)
-def echo_success(self, *args, **kwargs):
-    '''
-    Example success task
-    '''
-    self.logger.info('Example echo Task started.')
+    default_timeout = 30
 
-    # Do something...
+    def run(self, **kwargs):
+        raise Exception('Example: Failure')
 
-    # Just return JSON data
-    retval = {
-        'args'  : args,
-        'kwargs': kwargs,
-    }
-    return retval
+class ExampleTimeout(BaseTask):
+    name = 'Example.ExampleTimeout'
 
-@app.task(name='Example.Echo.Failure', bind=True, base=BizTask)
-def echo_failure(self, *args, **kwargs):
-    '''
-    Example failure task
-    '''
-    self.logger.info('Example echo Task started.')
+    default_timeout = 15
 
-    # Do something...
-
-    raise Exception('Example Error')
-
-    # Just return JSON data
-    retval = {
-        'args'  : args,
-        'kwargs': kwargs,
-    }
-    return retval
+    def run(self, **kwargs):
+        time.sleep(30)

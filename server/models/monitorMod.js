@@ -12,7 +12,7 @@ var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 var routeLoader = require('../utils/routeLoader');
 
-/* Configure */
+/* Init */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
 };
 
@@ -49,7 +49,7 @@ EntityModel.prototype.getSystemMetrics = function(callback) {
       async.eachOfSeries(metricScaleMap, function(scale, metric, eachCallback) {
         data[metric] = {};
 
-        var cacheKeyPattern = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', metric, 'hostname', '*']);
+        var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'hostname', '*']);
         var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, scale: scale, fillZero: true };
 
         self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
@@ -74,7 +74,7 @@ EntityModel.prototype.getSystemMetrics = function(callback) {
       async.eachSeries(dbMetrics, function(metric, eachCallback) {
         data[metric] = {};
 
-        var cacheKeyPattern = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', metric, 'table', '*']);
+        var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'table', '*']);
         var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, scale: 1024 * 1024, fillZero: true };
 
         self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
@@ -97,7 +97,7 @@ EntityModel.prototype.getSystemMetrics = function(callback) {
       };
 
       async.eachOfSeries(metricScaleMap, function(scale, metric, eachCallback) {
-        var cacheKey = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', metric]);
+        var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric]);
         var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, scale: scale, fillZero: true };
 
         self.locals.cacheDB.tsGet(cacheKey, opt, function(err, tsData) {
@@ -114,7 +114,7 @@ EntityModel.prototype.getSystemMetrics = function(callback) {
 
       data[metric] = {};
 
-      var cacheKeyPattern = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', metric, 'funcId', '*']);
+      var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'funcId', '*']);
       var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, agg: 'sum', fillZero: true };
 
       self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
@@ -134,7 +134,7 @@ EntityModel.prototype.getSystemMetrics = function(callback) {
 
       data[metric] = {};
 
-      var cacheKeyPattern = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', metric, 'queue', '*']);
+      var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'queue', '*']);
       var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, fillZero: true };
 
       self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
@@ -154,7 +154,7 @@ EntityModel.prototype.getSystemMetrics = function(callback) {
 
       data[metric] = {};
 
-      var cacheKeyPattern = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', metric, 'prefix', '*']);
+      var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'prefix', '*']);
       var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, fillZero: true };
 
       self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
@@ -173,7 +173,7 @@ EntityModel.prototype.getSystemMetrics = function(callback) {
     function(asyncCallback) {
       var metric = 'matchedRouteCount';
 
-      var cacheKey = toolkit.getCacheKey('monitor', 'systemMetrics', ['metric', metric, 'date', toolkit.getDateString()]);
+      var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'date', toolkit.getDateString()]);
 
       self.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
         if (err) return asyncCallback(err);
@@ -209,7 +209,7 @@ EntityModel.prototype.listAbnormalRequests = function(type, callback) {
   async.series([
     // 获取数据
     function(asyncCallback) {
-      var cacheKey = toolkit.getCacheKey('monitor', 'abnormalRequest', ['type', type]);
+      var cacheKey = toolkit.getMonitorCacheKey('monitor', 'abnormalRequest', ['type', type]);
       var paging   = self.locals.paging;
       self.locals.cacheDB.pagedList(cacheKey, paging, function(err, cacheRes, pageInfo) {
         if (err) return asyncCallback(err);

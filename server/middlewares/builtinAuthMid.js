@@ -185,7 +185,7 @@ exports.byAccessKey = function byAccessKey(req, res, next) {
   }
 
   var serverTimestamp = toolkit.getTimestamp();
-  if (Math.abs(akTimestamp - serverTimestamp) > CONFIG._WEB_AK_TIMESTAMP_MAX_DIFF) {
+  if (Math.abs(akTimestamp - serverTimestamp) > CONFIG._WEB_AK_TIMESTAMP_DIFF_LIMIT) {
     res.locals.reqAuthError = new E('EUserAuth', 'Invalid Access Key timestamp');
     return next(res.locals.reqAuthError);
   }

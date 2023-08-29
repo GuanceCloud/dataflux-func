@@ -188,8 +188,8 @@ you must first create an Auth Link for the Python function and access the Python
 
             <el-table-column align="right" width="380">
               <template slot-scope="scope">
-                <el-link @click="common.goToTaskInfo({ origin: 'authLink', originId: scope.row.id }, { hlDataId: scope.row.id })" :disabled="!scope.row.taskInfoCount">
-                  {{ $t('Recent') }} <code v-if="scope.row.taskInfoCount">({{ T.numberLimit(scope.row.taskInfoCount) }})</code>
+                <el-link @click="common.goToTaskRecord({ origin: 'authLink', originId: scope.row.id }, { hlDataId: scope.row.id })" :disabled="!scope.row.taskRecordCount">
+                  {{ $t('Recent') }} <code v-if="scope.row.taskRecordCount">({{ T.numberLimit(scope.row.taskRecordCount) }})</code>
                 </el-link>
                 <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)">{{ $t('Example') }}</el-link>
                 <el-link :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" v-prevent-re-click @click="quickSubmitData(scope.row, 'enable')">{{ $t('Enable') }}</el-link>
@@ -286,7 +286,7 @@ export default {
     async loadData() {
       // 默认过滤条件
       let _listQuery = this.dataFilter = this.T.createListQuery({
-        _withTaskInfo: true,
+        _withTaskRecord: true,
       });
       if (this.T.isNothing(this.$route.query)) {
         _listQuery.origin = 'user';
