@@ -439,7 +439,12 @@ upgradeInfo:
         CHANGE `taskInfoLimit` `taskRecordLimit` int(11) DEFAULT NULL COMMENT '任务记录数量';
 
       -- 删除多余字段
-      ALTER TABLE `biz_main_crontab_config` DROP COLUMN `saveResult`;
+      ALTER TABLE `biz_main_crontab_config`
+        DROP COLUMN `saveResult`;
+
+      -- 自动触发支持指定时区
+      ALTER TABLE `biz_main_crontab_config`
+        ADD COLUMN `timezone` varchar(256) DEFAULT NULL COMMENT '时区' AFTER `crontab`;
 
       -- 重建任务记录表
       CREATE TABLE `biz_main_task_record` (
