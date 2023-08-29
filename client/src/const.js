@@ -672,15 +672,27 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key    : 'success',
-        name   : $t('Succeeded'),
+        name   : $t('Success'),
         tagType: 'success',
         icon   : 'el-icon-success',
       },
       {
         key    : 'failure',
-        name   : $t('Failed'),
+        name   : $t('Failure'),
         tagType: 'danger',
         icon   : 'el-icon-error',
+      },
+      {
+        key    : 'timeout',
+        name   : $t('Timeout'),
+        tagType: 'danger',
+        icon   : 'el-icon-time',
+      },
+      {
+        key    : 'skip',
+        name   : $t('Skip'),
+        tagType: 'warning',
+        icon   : 'el-icon-d-arrow-right',
       },
     ];
   },

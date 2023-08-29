@@ -150,8 +150,8 @@ connector  : 连接器
                 :config-func-id="scope.row.funcId"
                 :id="scope.row.func_id"
                 :title="scope.row.func_title" />
-              <InfoBlock v-if="scope.row.einfoSummary"
-                :title="scope.row.einfoSummary"
+              <InfoBlock v-if="scope.row.exceptionTEXT"
+                :title="scope.row.exceptionTEXT"
                 type="error"  />
             </template>
           </el-table-column>
@@ -241,12 +241,6 @@ export default {
           this.hasTaskType = true;
         }
 
-        // 简要错误信息
-        if (d.edumpTEXT || d.einfoTEXT) {
-          d.einfoSummary = d.edumpTEXT || d.einfoTEXT.split('\n').pop();
-          d.einfoSummary = this.T.limitText(d.einfoSummary, 500);
-        }
-
         // 日志长度
         d.logLines = 0
         if (d.printLogsTEXT) {
@@ -305,8 +299,7 @@ export default {
 
       let contentLines = [];
       contentLines.push(`===== ${this.$t('Task')} =====`);
-      contentLines.push(`${this.$t('Func ID')}: ${this.$t(d.funcId)}`);
-      contentLines.push(`${this.$t('Func Name')}: ${this.$t(d.func_name)}`);
+      contentLines.push(`${this.$t('Func ID')} : ${this.$t(d.funcId)}`);
       contentLines.push(`${this.$t('Func Title')}: ${this.$t(d.func_title)}`);
       contentLines.push(`${this.$t('Queue')}: #${d.queue}`);
 
@@ -314,9 +307,14 @@ export default {
       contentLines.push(`${this.$t('Trigger Time')}: ${this.T.getDateTimeString(d.triggerTimeMs)} ${this.$t('(')}${this.T.fromNow(d.triggerTimeMs)}${this.$t(')')}`);
       contentLines.push(`${this.$t('Start Time')}: ${this.T.getDateTimeString(d.startTimeMs)} ${this.$t('(')}${this.T.fromNow(d.startTimeMs)}${this.$t(')')}`);
       contentLines.push(`${this.$t('End Time')}: ${this.T.getDateTimeString(d.endTimeMs)} ${this.$t('(')}${this.T.fromNow(d.endTimeMs)}${this.$t(')')}`);
-      contentLines.push(`${this.$t('Delay')}: ${d.delay} ${this.$t('s')}`);
 
-      if (d.waitCostMs > 2000) {
+      if (d.delay > 0) {
+        contentLines.push(`${this.$t('Delay')}: ${d.delay} ${this.$t('s')}`);
+      } else {
+        contentLines.push(`${this.$t('Delay')}: -`);
+      }
+
+      if (d.waitCostMs > 1000) {
         contentLines.push(`${this.$t('Wait Cost')}: ${d.waitCostMs} ${this.$t('ms')}`);
       } else {
         contentLines.push(`${this.$t('Wait Cost')}: -`);

@@ -199,7 +199,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                     <el-tooltip placement="bottom" :enterable="false">
                       <div slot="content">
                         {{ $t('Run selected Func') }}<br>
-                        {{ $t('Shortcut') }}{{ $t(':') }} <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>B</kbd>
+                        {{ $t('Shortcut') }}{{ $t(':') }}<kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>B</kbd>
                       </div>
                       <el-button
                         v-prevent-re-click @click="callFuncDraft"
@@ -216,7 +216,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                       <el-tooltip placement="bottom" :enterable="false">
                         <div slot="content">
                           {{ $t('Save Script draft') }}<br>
-                          {{ $t('Shortcut') }}{{ $t(':') }} <kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>S</kbd>
+                          {{ $t('Shortcut') }}{{ $t(':') }}<kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>S</kbd>
                         </div>
                         <el-button
                           v-prevent-re-click @click="saveScript()"
@@ -1107,13 +1107,13 @@ export default {
         // 执行内存消耗
         let peakMemoryUsageInfo = '';
         if (o.peakMemroyUsage) {
-          peakMemoryUsageInfo = `<span class="code-editor-output-info">${this.$t('Peak Memory Allocated')}${this.$t(':')} ${this.T.byteSizeHuman(o.peakMemroyUsage)}</span>`;
+          peakMemoryUsageInfo = `<span class="code-editor-output-info">${this.$t('Peak Memory Allocated')}${this.$t(':')}${this.T.byteSizeHuman(o.peakMemroyUsage)}</span>`;
         }
 
         // 执行耗时
         let costInfo = '';
         if (o.cost) {
-          costInfo = `<span class="code-editor-output-info">${this.$t('Time Cost')}${this.$t(':')} ${this.$tc('seconds', o.cost)}</span>`;
+          costInfo = `<span class="code-editor-output-info">${this.$t('Time Cost')}${this.$t(':')}${this.$tc('seconds', o.cost)}</span>`;
           if (o.cost > 3) {
             costInfo += `<br>&#12288;<span class="text-watch">${this.$t('It took too much time for running (more than 3s), may not be suitable for synchronous calling scenario')}</span>`;
           }
@@ -1127,7 +1127,7 @@ export default {
           // HTML 转义
           returnValue = htmlEscaper.escape(returnValue);
 
-          returnValueInfo = `<span class="code-editor-output-info">${this.$t('Return Value (pprint.saferepr)')}${this.$t(':')}</span> <code>${returnValue}</code>`;
+          returnValueInfo = `<span class="code-editor-output-info">${this.$t('Return Value (pprint.saferepr)')}${this.$t(':')}</span><code>${returnValue}</code>`;
         }
 
         // 调用堆栈

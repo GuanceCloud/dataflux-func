@@ -1,6 +1,10 @@
 # 本文档主要定义全局通用，以及在非.vue文件（如：toolkit.js, const.js 等）中的翻译
 
 en:
+  # 通用
+  ',': ', '
+  ':': ': '
+
   # const.js - AUTH_LINK_THROTTLING
   timePerSecond: '{n} time / second | {n} times / second'
   timePerMinute: '{n} time / minute | {n} times / minute'
@@ -384,8 +388,10 @@ en:
   'timePerYear'  : '{n} 次/年'
 
   # const.js - TASK_STATUS
-  Succeeded: 已成功
-  Failed   : 已失败
+  Success: 成功
+  Failure: 失败
+  # Timeout: 超时
+  Skip   : 跳过
 
   # const.js - SCRIPT_RECOVER_POINT
   Before package import    : 脚本集导入前

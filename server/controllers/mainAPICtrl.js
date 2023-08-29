@@ -871,7 +871,7 @@ exports.overview = function(req, res, next) {
   var userModel          = userMod.createModel(res.locals);
   var systemSettingModel = systemSettingMod.createModel(res.locals);
 
-  var overviewParts = [
+  var bizEntityMeta = [
     { name : 'scriptSet',     model: scriptSetModel},
     { name : 'script',        model: scriptModel},
     { name : 'func',          model: funcModel},
@@ -885,10 +885,9 @@ exports.overview = function(req, res, next) {
   ];
 
   var overview = {
-    bizEntityCount   : [],
-    workerQueueInfo  : [],
-    scriptSetOverview: [],
-    latestOperations : [],
+    workerQueueInfo : [],
+    bizEntityCount  : [],
+    latestOperations: [],
   };
 
   var SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET = CONST.systemSettings.SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET;
@@ -917,15 +916,64 @@ exports.overview = function(req, res, next) {
         return asyncCallback();
       });
     },
+    // 各队列工作单元数量、工作进程数量、队列长度
+    function(asyncCallback) {
+      if (sectionMap && !sectionMap.workerQueueInfo) return asyncCallback();
+
+      async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(i, timesCallback) {
+        overview.workerQueueInfo[i] = {
+          workerCount : 0,
+          processCount: 0,
+          taskCount   : 0,
+        }
+
+        async.series([
+          function(eachCallback) {
+            var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'workerCountOnQueue', [
+                  'workerQueue', i]);
+            res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+              if (err) return eachCallback(err);
+
+              overview.workerQueueInfo[i].workerCount = parseInt(cacheRes || 0) || 0;
+
+              return eachCallback();
+
+            }, eachCallback);
+          },
+          function(eachCallback) {
+            var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'processCountOnQueue', [
+                  'workerQueue', i]);
+            res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+              if (err) return eachCallback(err);
+
+              overview.workerQueueInfo[i].processCount = parseInt(cacheRes || 0) || 0;
+
+              return eachCallback();
+
+            }, eachCallback);
+          },
+          function(eachCallback) {
+            var workerQueue = toolkit.getWorkerQueue(i);
+            res.locals.cacheDB.run('llen', workerQueue, function(err, cacheRes) {
+              if (err) return eachCallback(err);
+
+              overview.workerQueueInfo[i].taskCount = parseInt(cacheRes || 0) || 0;
+
+              return eachCallback();
+            });
+          },
+        ], timesCallback);
+      }, asyncCallback);
+    },
     // 业务实体计数
     function(asyncCallback) {
       if (sectionMap && !sectionMap.bizEntityCount) return asyncCallback();
 
-      async.eachSeries(overviewParts, function(part, eachCallback) {
+      async.eachSeries(bizEntityMeta, function(meta, eachCallback) {
         var opt = null;
         if (nonScriptSetOriginIds.length > 0) {
           // 特定业务实体使用过滤条件
-          switch(part.name) {
+          switch(meta.name) {
             case 'scriptSet':
                 opt = {
                   baseSQL: `
@@ -970,90 +1018,17 @@ exports.overview = function(req, res, next) {
           }
         }
 
-        part.model.count(opt, function(err, dbRes) {
+        meta.model.count(opt, function(err, dbRes) {
           if (err) return eachCallback(err);
 
           overview.bizEntityCount.push({
-            name : part.name,
+            name : meta.name,
             count: dbRes,
           });
 
           return eachCallback();
         });
       }, asyncCallback);
-    },
-    // 查询所在队列工作单元数量、最大压力等信息
-    function(asyncCallback) {
-      if (sectionMap && !sectionMap.workerQueueInfo) return asyncCallback();
-
-      async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(i, timesCallback) {
-        var cacheKey = toolkit.getWorkerCacheKey('heartbeat', 'workerCountOnQueue', [
-              'workerQueue', i]);
-        res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
-          if (err) return timesCallback(err);
-
-          var workerCount = parseInt(cacheRes || 0) || 0;
-          var maxPressure = (workerCount || 1) * CONFIG._WORKER_LIMIT_WORKER_QUEUE_PRESSURE_BASE;
-
-          var _info = {
-            workerCount: workerCount,
-            maxPressure: maxPressure,
-          }
-          overview.workerQueueInfo.push(_info);
-
-          return timesCallback();
-        });
-      }, asyncCallback);
-    },
-    // 队列压力
-    function(asyncCallback) {
-      if (sectionMap && !sectionMap.workerQueueInfo) return asyncCallback();
-
-      var cacheKeys = [];
-      for (var i = 0; i < CONFIG._WORKER_QUEUE_COUNT ; i++) {
-        var cacheKey = toolkit.getCacheKey('cache', 'workerQueuePressure', ['workerQueue', i])
-        cacheKeys.push(cacheKey);
-      }
-
-      res.locals.cacheDB.run('mget', cacheKeys, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        cacheRes.forEach(function(p, i) {
-          overview.workerQueueInfo[i].pressure = parseInt(p || 0) || 0;
-        });
-
-        return asyncCallback();
-      });
-    },
-    // 队列长度
-    function(asyncCallback) {
-      if (sectionMap && !sectionMap.workerQueueInfo) return asyncCallback();
-
-      async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(i, timesCallback) {
-        var workerQueue = toolkit.getWorkerQueue(i);
-        res.locals.cacheDB.run('llen', workerQueue, function(err, cacheRes) {
-          if (err) return timesCallback(err);
-
-          overview.workerQueueInfo[i].taskCount = parseInt(cacheRes || 0) || 0;
-
-          return timesCallback(err);
-        });
-      }, asyncCallback);
-    },
-    // 脚本集总览
-    function(asyncCallback) {
-      if (sectionMap && !sectionMap.scriptSetOverview) return asyncCallback();
-
-      var opt = {
-        excludeOriginIds: nonScriptSetOriginIds,
-      };
-      scriptSetModel.overview(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        overview.scriptSetOverview = dbRes;
-
-        return asyncCallback();
-      });
     },
     // 最近若干次操作记录
     function(asyncCallback) {
