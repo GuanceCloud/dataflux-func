@@ -123,8 +123,9 @@ def tick():
             if not cache_res:
                 break
 
-    # 计算距离下一秒时长
-    wait_time = 1 - tick_time % 1
+    # 计算距离下一轮时长
+    interval = 60
+    wait_time = interval - tick_time % interval
     time.sleep(wait_time)
 
 def handle_sigalarm(self, signum, frame):

@@ -95,8 +95,12 @@ def heartbeat():
 
         # 统计
         for p in CHILD_PROCESS_MAP.values():
-            total_cpu_percent += p.cpu_percent()
-            total_memory_pss  += p.memory_full_info().pss
+            try:
+                total_cpu_percent += p.cpu_percent()
+                total_memory_pss  += p.memory_full_info().pss
+
+            except psutil.ZombieProcess as e:
+                pass
 
         hostname          = socket.gethostname()
         total_cpu_percent = round(total_cpu_percent, 2)
@@ -142,7 +146,7 @@ def run_background(func, pool_size, max_tasks):
         while not shutdown_event.is_set():
             for p in pool:
                 if not p.is_alive():
-                    p.close()
+                    p.join()
                     pool.remove(p)
 
             while len(pool) < pool_size:

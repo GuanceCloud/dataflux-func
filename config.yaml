@@ -298,7 +298,7 @@ _TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL: 40960
 
 # 自动执行任务频率
 _CRONTAB_STARTER              : '* * * * *'
-_CRONTAB_FLUSH_DATA_BUFFER    : '*/30 * * * * *'
+_CRONTAB_FLUSH_DATA_BUFFER    : '* * * * *'
 _CRONTAB_AUTO_CLEAN           : '* * * * *'
 _CRONTAB_AUTO_BACKUP_DB       : '0 * * * *'
 _CRONTAB_RELOAD_DATA_MD5_CACHE: '* * * * *'
