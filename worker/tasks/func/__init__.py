@@ -1580,7 +1580,6 @@ class FuncBaseTask(BaseTask):
 
             # DataFlux Func 内置变量
             '_DFF_DEBUG'            : debug,
-            '_DFF_EXEC_MODE'        : self.exec_mode,
             '_DFF_TASK_ID'          : self.task_id,
             '_DFF_ROOT_TASK_ID'     : self.root_task_id,
             '_DFF_SCRIPT_SET_ID'    : self.script_set_id,
