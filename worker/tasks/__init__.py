@@ -60,6 +60,7 @@ class BaseTask(object):
                  task_id=None,
                  kwargs=None,
                  trigger_time=None,
+                 eta=None,
                  delay=None,
                  queue=None,
                  timeout=None,
@@ -80,6 +81,7 @@ class BaseTask(object):
         self.status    = 'waiting'
 
         # 默认配置
+        self.eta               = None
         self.delay             = 0
         self.queue             = self.default_queue
         self.timeout           = self.default_timeout
@@ -88,8 +90,11 @@ class BaseTask(object):
         self.task_record_limit = self.default_task_record_limit
 
         # 实例指定配置
+        if eta is not None:
+            self.eta = eta
+
         if delay is not None:
-            self.delay =  delay
+            self.delay = delay
 
         if queue is not None:
             self.queue = queue
@@ -248,6 +253,7 @@ class BaseTask(object):
             'triggerTimeMs' : self.trigger_time_ms,
             'startTimeMs'   : self.start_time_ms,
             'endTimeMs'     : self.end_time_ms,
+            'eta'           : self.eta,
             'delay'         : self.delay,
             'queue'         : self.queue,
             'timeout'       : self.timeout,
@@ -272,6 +278,7 @@ class BaseTask(object):
             },
             'fields': {
                 'kwargs'          : toolkit.json_dumps(self.kwargs),
+                'eta'             : self.eta,
                 'delay'           : self.delay,
                 'timeout'         : self.timeout,
                 'expires'         : self.expires,
@@ -354,6 +361,7 @@ class BaseTask(object):
             'triggerTime': self.trigger_time,
 
             'queue'          : self.queue,
+            'eta'            : self.eta,
             'delay'          : self.delay,
             'timeout'        : self.timeout,
             'expires'        : self.expires,
@@ -368,6 +376,7 @@ class BaseTask(object):
                             kwargs=task_req.get('kwargs'),
                             trigger_time=task_req.get('triggerTime'),
                             queue=task_req.get('queue'),
+                            eta=task_req.get('eta'),
                             delay=task_req.get('delay'),
                             timeout=task_req.get('timeout'),
                             expires=task_req.get('expires'),

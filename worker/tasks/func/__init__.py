@@ -1593,6 +1593,7 @@ class FuncBaseTask(BaseTask):
             '_DFF_TRIGGER_TIME_MS'  : int(self.trigger_time_ms),
             '_DFF_START_TIME'       : int(self.start_time),
             '_DFF_START_TIME_MS'    : int(self.start_time_ms),
+            '_DFF_ETA'              : self.eta,
             '_DFF_DELAY'            : self.delay,
             '_DFF_CRONTAB'          : self.kwargs.get('crontab'),
             '_DFF_CRONTAB_DELAY'    : self.kwargs.get('crontabDelay'),

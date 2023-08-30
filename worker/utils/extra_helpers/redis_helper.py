@@ -511,11 +511,23 @@ class RedisHelper(object):
 
         task_req_dumps = toolkit.json_dumps(task_req)
 
-        if task_req.get('delay'):
-            delay_queue = toolkit.get_delay_queue(task_req['queue'])
-            eta         = task_req['triggerTime'] + task_req['delay']
-            return self.zadd(delay_queue, eta, task_req_dumps)
+        # 计算执行时间
+        run_time = 0
+        if task_req.get('eta') or task_req.get('delay'):
+            if task_req.get('eta'):
+                # 优先使用 eta
+                run_time = arrow.get(task_req['eta']).timestamp
+                task_req.pop('delay', None)
 
-        else:
+            elif task_req.get('delay'):
+                run_time = task_req['triggerTime'] + task_req['delay']
+                task_req.pop('eta', None)
+
+        # 发送任务
+        if run_time <= arrow.get().timestamp:
             worker_queue = toolkit.get_worker_queue(task_req['queue'])
             return self.lpush(worker_queue, task_req_dumps)
+
+        else:
+            delay_queue = toolkit.get_delay_queue(task_req['queue'])
+            return self.zadd(delay_queue, run_time, task_req_dumps)

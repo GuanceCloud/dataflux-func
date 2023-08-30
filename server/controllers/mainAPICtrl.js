@@ -179,7 +179,8 @@ function createFuncRunnerTaskReq(locals, options, callback) {
         originId: options.originId || 'UNKNOWN',
       },
 
-      // 延迟执行
+      // ETA / 延迟执行
+      eta  : options.eta   || undefined,
       delay: options.delay || undefined,
 
       // 任务记录保留数量

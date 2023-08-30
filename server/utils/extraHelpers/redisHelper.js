@@ -1,9 +1,9 @@
 'use strict';
 
 /* 3rd-party Modules */
-var redis      = require('redis');
-var async      = require('async');
-var micromatch = require('micromatch');
+var redis  = require('redis');
+var async  = require('async');
+var moment = require('moment');
 
 /* Project Modules */
 var CONFIG    = require('../yamlResources').get('CONFIG');
@@ -1164,17 +1164,31 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
 
   var taskReqDumps = JSON.stringify(taskReq);
 
-  if (taskReq.delay) {
-    var delayQueue = toolkit.getDelayQueue(taskReq.queue);
-    var eta = taskReq.triggerTime + taskReq.delay;
-    return self.client.zadd(delayQueue, eta, taskReqDumps, function(err) {
+  // 计算执行时间
+  var runTime = 0;
+  if (taskReq.eta || taskReq.delay) {
+    if (taskReq.eta) {
+      // 优先使用 eta
+      runTime = moment(taskReq.eta).unix();
+      delete taskReq.delay;
+
+    } else if (taskReq.delay) {
+      runTime = taskReq.triggerTime + taskReq.delay;
+      delete taskReq.eta;
+    }
+  }
+
+  // 发送任务
+  if (runTime <= moment().unix()) {
+    var workerQueue = toolkit.getWorkerQueue(taskReq.queue);
+    return self.client.lpush(workerQueue, taskReqDumps, function(err) {
       if (err) return callback(err);
       return callback(null, taskReq.id);
     });
 
   } else {
-    var workerQueue = toolkit.getWorkerQueue(taskReq.queue);
-    return self.client.lpush(workerQueue, taskReqDumps, function(err) {
+    var delayQueue = toolkit.getDelayQueue(taskReq.queue);
+    return self.client.zadd(delayQueue, runTime, taskReqDumps, function(err) {
       if (err) return callback(err);
       return callback(null, taskReq.id);
     });

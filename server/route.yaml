@@ -121,6 +121,32 @@ mainAPI:
             - raw
             - repr
             - jsonDumps
+        eta:
+          $desc     : ETA (ISO8601)
+          $type     : string
+          $isISO8601: true
+          $example  : '2020-01-01T00:00:00Z'
+        delay:
+          $desc    : Delay seconds to run
+          $type    : integer
+          $minValue: 1
+
+        apiTimeout:
+          $isDeprecated: true
+          $desc: Deprecated options
+          $type: any
+        unfold:
+          $isDeprecated: true
+          $desc: Deprecated options
+          $type: any
+        execMode:
+          $isDeprecated: true
+          $desc: Deprecated options
+          $type: any
+        saveResult:
+          $isDeprecated: true
+          $desc: Deprecated options
+          $type: any
 
   callAuthLinkByGet:
     showInDoc    : true
