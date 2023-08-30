@@ -361,7 +361,7 @@ function createFuncRunnerTaskReqFromHTTPRequest(locals, req, options, callback) 
   } catch(err) {
     // 业务错误时补全脚本/函数信息
     if (err instanceof E) {
-      err.setDetail({ funcId: funcId });
+      err.setDetail({ funcId: options.funcId });
     }
     return callback(err);
   }
