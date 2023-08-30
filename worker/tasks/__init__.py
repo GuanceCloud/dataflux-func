@@ -386,7 +386,7 @@ class BaseTask(object):
 
         # 调用子类 run() 函数
         try:
-            self.logger.debug(f'[CALL] {self.name}')
+            self.logger.info(f'[CALL] {self.name}')
             self.result = self.run(**self.kwargs)
 
         except TaskInLockedException as e:

@@ -44,10 +44,10 @@ class CrontabStarter(BaseTask):
             SELECT
                  `func`.`id`              AS `funcId`
                 ,`func`.`extraConfigJSON` AS `funcExtraConfigJSON`
-                ,JSON_EXTRACT(
+                ,JSON_UNQUOTE(JSON_EXTRACT(
                     `func`.`extraConfigJSON`,
                     '$.integrationConfig.crontab'
-                ) AS `crontab`
+                )) AS `crontab`
 
             FROM `biz_main_func` AS `func`
             WHERE
