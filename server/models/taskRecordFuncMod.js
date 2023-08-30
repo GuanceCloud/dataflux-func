@@ -119,7 +119,7 @@ EntityModel.prototype.appendTaskRecord = function(data, callback) {
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
   sql.append('   b.*');
-  sql.append('  ,a.startTimeMs   AS lastStartTimeMs');
+  sql.append('  ,a.startTimeMs   AS lastStartTime');
   sql.append('  ,a.status        AS lastStatus');
   sql.append('  ,a.exceptionTEXT AS lastExceptionTEXT');
   sql.append('FROM biz_main_task_record_func AS a');
@@ -147,9 +147,9 @@ EntityModel.prototype.appendTaskRecord = function(data, callback) {
     dbRes.forEach(function(d) {
       if (!d.originId) return;
 
-      // lastStartTimeMs 转 ISO8601
-      if (d.lastStartTimeMs) {
-        d.lastStartTimeMs = moment(d.lastStartTimeMs).toISOString();
+      // lastStartTime 转 ISO8601
+      if (d.lastStartTime) {
+        d.lastStartTime = moment(d.lastStartTime).toISOString();
       }
 
       taskRecordMap[d.originId] = d;
@@ -159,9 +159,9 @@ EntityModel.prototype.appendTaskRecord = function(data, callback) {
     data.forEach(function(x) {
       var taskRecord = taskRecordMap[x.id] || {};
       x.taskRecordCount    = taskRecord.taskRecordCount    || 0
-      x.lastStartTimeMs    = taskRecord.lastStartTimeMs    || null;
+      x.lastStartTime      = taskRecord.lastStartTime      || null;
       x.lastStatus         = taskRecord.lastStatus         || null;
-      x.lastExceptionTEXT      = taskRecord.lastExceptionTEXT      || null;
+      x.lastExceptionTEXT  = taskRecord.lastExceptionTEXT  || null;
       x.recentSuccessCount = taskRecord.recentSuccessCount || 0;
       x.recentFailureCount = taskRecord.recentFailureCount || 0;
     });
