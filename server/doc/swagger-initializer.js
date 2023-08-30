@@ -1,3 +1,16 @@
+function autoFormatJSON(ev) {
+  var el = ev.target;
+
+  // 自动格式化 JSON
+  if (el.type === 'textarea'&& el.classList.contains('body-param__text')) {
+    try {
+      el.value = JSON.stringify(JSON.parse(el.value), null, 2);
+    } catch(e) {
+      // Nope
+    }
+  }
+}
+
 window.onload = function() {
   var vuexData = JSON.parse(localStorage.getItem('vuex')) || {};
   var apiDocPath = `/api?lang=${vuexData.uiLocale || 'zh-CN'}`;
@@ -39,5 +52,6 @@ window.onload = function() {
     },
   });
 
+  document.addEventListener('blur', autoFormatJSON, { capture: true });
   //</editor-fold>
 };
