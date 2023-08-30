@@ -135,8 +135,7 @@ EntityModel.prototype.appendTaskRecord = function(data, callback) {
   sql.append('      GROUP BY');
   sql.append('        originId');
   sql.append(') AS b');
-  sql.append('  ON  a.originId = b.originId');
-  sql.append('  AND a.seq      = b.seq');
+  sql.append('  ON a.seq = b.seq');
 
   var sqlParams = [ originIds ];
   this.db.query(sql, sqlParams, function(err, dbRes) {
