@@ -12,130 +12,16 @@ var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 var urlFor      = require('../utils/routeLoader').urlFor;
 
-var funcMod           = require('../models/funcMod');
-var authLinkMod       = require('../models/authLinkMod');
-var taskRecordFuncMod = require('../models/taskRecordFuncMod');
+var funcMod     = require('../models/funcMod');
+var authLinkMod = require('../models/authLinkMod');
 
 /* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = authLinkMod.createCRUDHandler();
+exports.list       = crudHandler.createListHandler();
 exports.delete     = crudHandler.createDeleteHandler();
 exports.deleteMany = crudHandler.createDeleteManyHandler();
-
-exports.list = function(req, res, next) {
-  var authLinks        = null;
-  var authLinkPageInfo = null;
-
-  var authLinkModel = authLinkMod.createModel(res.locals);
-  var taskRecordFuncModel = taskRecordFuncMod.createModel(res.locals);
-
-  async.series([
-    function(asyncCallback) {
-      var opt = res.locals.getQueryOptions();
-      authLinkModel.list(opt, function(err, dbRes, pageInfo) {
-        if (err) return asyncCallback(err);
-
-        authLinks        = dbRes;
-        authLinkPageInfo = pageInfo;
-
-        if (opt.extra && opt.extra.withTaskRecord) {
-          return taskRecordFuncModel.appendTaskRecord(authLinks, asyncCallback);
-        } else {
-          return asyncCallback();
-        }
-      });
-    },
-    // 查询最近几天调用次数
-    function(asyncCallback) {
-      if (authLinks.length <= 0) return asyncCallback();
-
-      var oneDaySeconds = 60 * 60 * 24;
-      async.eachLimit(authLinks, 10, function(authLink, eachCallback) {
-        authLink.recentRunningCount = [];
-
-        var days = parseInt(CONFIG._RECENT_FUNC_RUNNING_COUNT_EXPIRES / oneDaySeconds);
-        async.timesLimit(days, 10, function(n, timesCallback) {
-          var dateStr = toolkit.getDateString(Date.now() - n * oneDaySeconds * 1000);
-          var cacheKey = toolkit.getWorkerCacheKey('cache', 'recentAuthLinkCallCount', [
-              'authLinkId', authLink.id, 'date', dateStr]);
-          res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
-            // 报错跳过
-            if (err) return timesCallback();
-
-            authLink.recentRunningCount.push({
-              date : dateStr,
-              count: parseInt(cacheRes || 0),
-            });
-
-            return timesCallback();
-          });
-        }, eachCallback);
-      }, asyncCallback);
-    },
-    // 查询记录最近几次调用时长
-    function(asyncCallback) {
-      if (authLinks.length <= 0) return asyncCallback();
-
-      async.eachLimit(authLinks, 10, function(authLink, eachCallback) {
-        authLink.recentRunningStatus = {};
-        authLink.recentRunningCost = {
-          samples: null,
-          min    : null,
-          max    : null,
-          avg    : null,
-          mid    : null,
-          p75    : null,
-          p95    : null,
-          p99    : null,
-        };
-
-        var cacheKey = toolkit.getWorkerCacheKey('cache', 'recentAuthLinkCallStatus', [
-            'authLinkId', authLink.id]);
-        res.locals.cacheDB.lrange(cacheKey, 0, -1, function(err, cacheRes) {
-          // 报错跳过
-          if (err) return eachCallback();
-          // 无数据跳过
-          if (!cacheRes) return eachCallback();
-
-          authLink.recentRunningStatus = cacheRes.reduce(function(acc, x) {
-            x = JSON.parse(x);
-            if (!acc[x.status]) {
-              acc[x.status] = 1;
-            } else {
-              acc[x.status]++;
-            }
-            return acc;
-          }, {});
-          authLink.recentRunningStatus.total = cacheRes.length;
-
-          var costList = cacheRes.map(function(x) {
-            x = JSON.parse(x);
-            return x.costMs;
-          });
-
-          authLink.recentRunningCost.samples = costList.length;
-          if (costList.length > 1) {
-            authLink.recentRunningCost.min = parseInt(toolkit.mathMin(costList));
-            authLink.recentRunningCost.max = parseInt(toolkit.mathMax(costList));
-            authLink.recentRunningCost.avg = parseInt(toolkit.mathAvg(costList));
-            authLink.recentRunningCost.mid = parseInt(toolkit.mathMedian(costList));
-            authLink.recentRunningCost.p75 = parseInt(toolkit.mathPercentile(costList, 75));
-            authLink.recentRunningCost.p95 = parseInt(toolkit.mathPercentile(costList, 95));
-            authLink.recentRunningCost.p99 = parseInt(toolkit.mathPercentile(costList, 99));
-          }
-
-          return eachCallback();
-        });
-      }, asyncCallback);
-    },
-  ], function(err) {
-    if (err) return next(err);
-
-    var ret = toolkit.initRet(authLinks, authLinkPageInfo);
-    res.locals.sendJSON(ret);
-  });
-};
 
 exports.add = function(req, res, next) {
   var data = req.body.data;

@@ -3299,9 +3299,6 @@ authLinkAPI:
       - func.description
       - func.tagsJSON
     query:
-      _withTaskRecord:
-        $desc: 是否附带任务信息
-        $type: boolean
       id:
         $desc      : 根据 ID 过滤
         $type      : commaArray
@@ -3876,9 +3873,6 @@ crontabConfigAPI:
       - func.description
       - func.tagsJSON
     query:
-      _withTaskRecord:
-        $desc: 是否附带任务信息
-        $type: boolean
       id:
         $desc      : 根据 ID 过滤
         $type      : commaArray
@@ -4339,9 +4333,6 @@ batchAPI:
       - func.description
       - func.tagsJSON
     query:
-      _withTaskRecord:
-        $desc: 是否附带任务信息
-        $type: boolean
       id:
         $desc      : 根据 ID 过滤
         $type      : commaArray
@@ -4876,6 +4867,28 @@ taskRecordFuncAPI:
           - skip
         $searchType: eq
         $searchKey : task.status
+
+  getStatistics:
+    showInDoc    : true
+    name         : Get task record statistic
+    name_zhCN    : 获取任务记录统计
+    method       : get
+    url          : /api/v1/task-records/func/do/get-statistics
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    query:
+      groupField:
+        $desc      : 分组字段
+        $isRequired: true
+        $type      : enum
+        $in:
+          - originId
+          - funcId
+      groupIds:
+        $desc      : 分组 ID 列表
+        $isRequired: true
+        $type      : commaArray
 
 # 操作记录
 operationRecordAPI:

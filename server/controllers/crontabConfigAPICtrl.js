@@ -11,48 +11,17 @@ var CONFIG      = require('../utils/yamlResources').get('CONFIG');
 var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 
-var funcMod           = require('../models/funcMod');
-var crontabConfigMod  = require('../models/crontabConfigMod');
-var taskRecordFuncMod = require('../models/taskRecordFuncMod');
+var funcMod          = require('../models/funcMod');
+var crontabConfigMod = require('../models/crontabConfigMod');
 
 /* Init */
 var GLOBAL_SCOPE = 'GLOBAL';
 
 /* Handlers */
 var crudHandler = exports.crudHandler = crontabConfigMod.createCRUDHandler();
+exports.list       = crudHandler.createListHandler();
 exports.delete     = crudHandler.createDeleteHandler();
 exports.deleteMany = crudHandler.createDeleteManyHandler();
-
-exports.list = function(req, res, next) {
-  var crontabConfigs        = null;
-  var crontabConfigPageInfo = null;
-
-  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
-  var taskRecordFuncModel      = taskRecordFuncMod.createModel(res.locals);
-
-  async.series([
-    function(asyncCallback) {
-      var opt = res.locals.getQueryOptions();
-      crontabConfigModel.list(opt, function(err, dbRes, pageInfo) {
-        if (err) return asyncCallback(err);
-
-        crontabConfigs        = dbRes;
-        crontabConfigPageInfo = pageInfo;
-
-        if (opt.extra && opt.extra.withTaskRecord) {
-          return taskRecordFuncModel.appendTaskRecord(crontabConfigs, asyncCallback);
-        } else {
-          return asyncCallback();
-        }
-      });
-    },
-  ], function(err) {
-    if (err) return next(err);
-
-    var ret = toolkit.initRet(crontabConfigs, crontabConfigPageInfo);
-    res.locals.sendJSON(ret);
-  });
-};
 
 exports.add = function(req, res, next) {
   var data = req.body.data;

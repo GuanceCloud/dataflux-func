@@ -7,13 +7,13 @@ failureCount  : 'Failure {n}'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Fixed  : 固定
-Not Set: 未配置
-Config : 配置
-Created: 创建
-Expires: 过期
-Recent : 近期执行
-Run    : 执行
+Fixed      : 固定
+Not Set    : 未配置
+Config     : 配置
+Created    : 创建
+Expires    : 过期
+Task Record: 任务记录
+Run        : 执行
 
 Crontab Config disabled : 自动触发配置已禁用
 Crontab Config enabled  : 自动触发配置已启用
@@ -131,36 +131,41 @@ Using Crontab Config, you can have functions executed at regular intervals: 使�
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Status')" width="200">
+          <el-table-column :label="$t('Task Record')" width="240">
             <template slot-scope="scope">
-              <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
-              <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
-
-              <template v-if="scope.row.lastStartTime">
-                <br>
-                <span v-if="scope.row.lastStatus === 'success'" class="text-good">
-                  <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastStartTime) }) }}
+              <template v-if="statisticMap[scope.row.id]">
+                <span v-if="statisticMap[scope.row.id].lastStatus === 'success'" class="text-good">
+                  <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(statisticMap[scope.row.id].lastStartTime) }) }}
                 </span>
-                <span v-else-if="scope.row.lastStatus === 'failure'" class="text-bad">
-                  <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                <span v-else-if="statisticMap[scope.row.id].lastStatus === 'failure'" class="text-bad">
+                  <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(statisticMap[scope.row.id].lastStartTime) }) }}
                 </span>
                 <span v-else class="text-main">
-                  <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                  <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(statisticMap[scope.row.id].lastStartTime) }) }}
                 </span>
 
                 <br>
                 <i class="fa fa-fw fa-pie-chart text-info"></i>
-                <span :class="{ 'text-good': !!scope.row.recentSuccessCount }">{{ $t('successCount', { n: T.numberLimit(scope.row.recentSuccessCount) }) }}</span>
-                / <span :class="{ 'text-bad': !!scope.row.recentFailureCount }">{{ $t('failureCount', { n: T.numberLimit(scope.row.recentFailureCount) }) }}</span>
+                <span :class="{ 'text-good': !!statisticMap[scope.row.id].recentSuccessCount }">{{ $t('successCount', { n: T.numberLimit(statisticMap[scope.row.id].recentSuccessCount) }) }}</span>
+                / <span :class="{ 'text-bad': !!statisticMap[scope.row.id].recentFailureCount }">{{ $t('failureCount', { n: T.numberLimit(statisticMap[scope.row.id].recentFailureCount) }) }}</span>
               </template>
+            </template>
+          </el-table-column>
+
+          <el-table-column :label="$t('Status')" width="100">
+            <template slot-scope="scope">
+              <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
+              <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
             </template>
           </el-table-column>
 
           <el-table-column align="right" width="350">
             <template slot-scope="scope">
-              <el-link @click="common.goToTaskRecord({ origin: 'crontab', originId: scope.row.id }, { hlDataId: scope.row.id })" :disabled="!scope.row.taskRecordCount">
-                {{ $t('Recent') }} <code v-if="scope.row.taskRecordCount">({{ T.numberLimit(scope.row.taskRecordCount) }})</code>
-              </el-link>
+              <template v-if="statisticMap[scope.row.id]">
+                <el-link @click="common.goToTaskRecord({ origin: 'crontab', originId: scope.row.id }, { hlDataId: scope.row.id })" :disabled="!statisticMap[scope.row.id].taskRecordCount">
+                  {{ $t('Task Record') }} <code v-if="statisticMap[scope.row.id].taskRecordCount">({{ T.numberLimit(statisticMap[scope.row.id].taskRecordCount) }})</code>
+                </el-link>
+              </template>
               <el-link @click="runTask(scope.row)" :disabled="!scope.row.func_id">
                 {{ $t('Run') }}
               </el-link>
@@ -201,9 +206,7 @@ export default {
   methods: {
     async loadData() {
       // 默认过滤条件
-      let _listQuery = this.dataFilter = this.T.createListQuery({
-        _withTaskRecord: true,
-      });
+      let _listQuery = this.dataFilter = this.T.createListQuery();
       if (this.T.isNothing(this.$route.query)) {
         _listQuery.origin = 'user';
       }
@@ -217,6 +220,9 @@ export default {
       this.pageInfo = apiRes.pageInfo;
 
       this.$store.commit('updateLoadStatus', true);
+
+      // 获取统计信息
+      this.statisticMap = await this.common.loadStatistic('originId', this.data.map(d => d.id));
     },
     async quickSubmitData(d, operation) {
       switch(operation) {
@@ -303,8 +309,9 @@ export default {
     let _dataFilter = this.T.createListQuery();
 
     return {
-      data    : [],
-      pageInfo: _pageInfo,
+      data        : [],
+      statisticMap: {},
+      pageInfo    : _pageInfo,
 
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,

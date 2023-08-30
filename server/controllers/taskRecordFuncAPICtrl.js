@@ -43,3 +43,16 @@ exports.list = function(req, res, next) {
     res.locals.sendJSON(ret);
   });
 };
+
+exports.getStatistics = function(req, res, next) {
+  var groupField = req.query.groupField;
+  var groupIds   = req.query.groupIds;
+
+  var taskRecordFuncModel = taskRecordFuncMod.createModel(res.locals);
+  taskRecordFuncModel.getStatistics(groupField, groupIds, function(err, dbRes) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet(dbRes);
+    return res.locals.sendJSON(ret);
+  });
+};

@@ -7,30 +7,11 @@ failureCount  : 'Failure {n}'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Info           : 信息
-Recent Response: 响应
-Config         : 配置
-Auth           : 认证
-Expires        : 过期
-Throttling     : 限流
-Shown in doc   : 在文档中显示
-Hidden in doc  : 在文档中隐藏
-Recent         : 近期调用
-Today          : 今天
-'-1 Day'       : 昨天
-'-2 Day'       : 前天
-Times          : 次
-Response       : 响应速度
-No info        : 暂无信息
-Percentage     : 比例
-Result         : 执行结果
-Success        : 成功执行
-Cached         : 命中缓存
-Func Error     : 函数报错
-Func Timeout   : 函数超时
-API Timeout    : 接口超时
-Bad return     : 非法结果
-Unknown Error  : 未知错误
+Config     : 配置
+Auth       : 认证
+Expires    : 过期
+Throttling : 限流
+Task Record: 任务记录
 
 Auth Link disabled: 授权链接已禁用
 Auth Link enabled : 授权链接已启用
@@ -60,13 +41,6 @@ you must first create an Auth Link for the Python function and access the Python
         <div class="list-page-header">
           <span>{{ $t('Auth Link') }}</span>
           <div class="header-control">
-            <el-switch
-              v-model="showCountCost"
-              :inactive-text="$t('Info')"
-              :active-text="$t('Recent Response')">
-            </el-switch>
-            &#12288;
-
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
             <el-tooltip :content="$t('Show all contents')" placement="bottom" :enterable="false">
@@ -131,121 +105,77 @@ you must first create an Auth Link for the Python function and access the Python
             </template>
           </el-table-column>
 
-          <template v-if="!showCountCost">
-            <el-table-column :label="$t('Config')" width="220">
-              <template slot-scope="scope">
-                <span class="text-info">{{ $t('Auth') }}{{ $t(':') }}</span>
-                <el-tooltip :content="scope.row.apia_title" :disabled="!!!scope.row.apia_title" placement="right">
-                  <span :class="{ 'text-main': !!scope.row.apia_id }">{{ C.API_AUTH_MAP.get(scope.row.apia_type).name }}</span>
-                </el-tooltip>
+          <el-table-column :label="$t('Config')" width="220">
+            <template slot-scope="scope">
+              <span class="text-info">{{ $t('Auth') }}{{ $t(':') }}</span>
+              <el-tooltip :content="scope.row.apia_title" :disabled="!!!scope.row.apia_title" placement="right">
+                <span :class="{ 'text-main': !!scope.row.apia_id }">{{ C.API_AUTH_MAP.get(scope.row.apia_type).name }}</span>
+              </el-tooltip>
 
-                <br>
-                <span class="text-info">{{ $t('Expires') }}{{ $t(':') }}</span>
-                <span v-if="!scope.row.expireTime">-</span>
-                <template v-else>
-                  <RelativeDateTime :datetime="scope.row.expireTime"
-                    :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'" />
-                </template>
-
-                <br>
-                <span class="text-info">{{ $t('Throttling') }}{{ $t(':') }}</span>
-                <span v-if="T.isNothing(scope.row.throttlingJSON)">-</span>
-                <el-tooltip v-else placement="right">
-                  <div slot="content">
-                    <template v-for="opt in C.AUTH_LINK_THROTTLING">
-                      <span v-if="scope.row.throttlingJSON[opt.key]">{{ $tc(opt.name, scope.row.throttlingJSON[opt.key]) }}<br></span>
-                    </template>
-                  </div>
-                  <span class="text-bad">{{ $t('ON') }}</span>
-                </el-tooltip>
+              <br>
+              <span class="text-info">{{ $t('Expires') }}{{ $t(':') }}</span>
+              <span v-if="!scope.row.expireTime">-</span>
+              <template v-else>
+                <RelativeDateTime :datetime="scope.row.expireTime"
+                  :class="T.isExpired(scope.row.expireTime) ? 'text-bad' : 'text-good'" />
               </template>
-            </el-table-column>
 
-            <el-table-column :label="$t('Status')" width="200">
-              <template slot-scope="scope">
-                <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
-                <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
-
-                <template v-if="scope.row.lastStartTime">
-                  <br>
-                  <span v-if="scope.row.lastStatus === 'success'" class="text-good">
-                    <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastStartTime) }) }}
-                  </span>
-                  <span v-else-if="scope.row.lastStatus === 'failure'" class="text-bad">
-                    <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(scope.row.lastStartTime) }) }}
-                  </span>
-                  <span v-else class="text-main">
-                    <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastStartTime) }) }}
-                  </span>
-
-                  <br>
-                  <i class="fa fa-fw fa-pie-chart text-info"></i>
-                  <span :class="{ 'text-good': !!scope.row.recentSuccessCount }">{{ $t('successCount', { n: T.numberLimit(scope.row.recentSuccessCount) }) }}</span>
-                  / <span :class="{ 'text-bad': !!scope.row.recentFailureCount }">{{ $t('failureCount', { n: T.numberLimit(scope.row.recentFailureCount) }) }}</span>
-                </template>
-              </template>
-            </el-table-column>
-
-            <el-table-column align="right" width="380">
-              <template slot-scope="scope">
-                <el-link @click="common.goToTaskRecord({ origin: 'authLink', originId: scope.row.id }, { hlDataId: scope.row.id })" :disabled="!scope.row.taskRecordCount">
-                  {{ $t('Recent') }} <code v-if="scope.row.taskRecordCount">({{ T.numberLimit(scope.row.taskRecordCount) }})</code>
-                </el-link>
-                <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)">{{ $t('Example') }}</el-link>
-                <el-link :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" v-prevent-re-click @click="quickSubmitData(scope.row, 'enable')">{{ $t('Enable') }}</el-link>
-                <el-link :disabled="T.isNothing(scope.row.func_id)" v-else @click="quickSubmitData(scope.row, 'disable')">{{ $t('Disable') }}</el-link>
-                <el-link @click="openSetup(scope.row, 'setup')">{{ $t('Setup') }}</el-link>
-                <el-link @click="quickSubmitData(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
-              </template>
-            </el-table-column>
-          </template>
-
-          <template v-else>
-            <el-table-column :label="$t('Recent')" align="right" width="200">
-              <template slot-scope="scope">
-                <template v-for="d, index in scope.row.recentRunningCount.slice(0, 3)">
-                  <code>{{ [$t('Today'), $t('-1 Day'), $t('-2 Day')][index] }}:</code> <code class="count-cost-value">{{ d.count }}</code> {{ $t('Times') }}<br>
-                </template>
-              </template>
-            </el-table-column>
-
-            <el-table-column :label="$t('Response')" align="right" width="200">
-              <template slot-scope="scope">
-                <span v-if="scope.row.recentRunningCost.samples <= 0" class="text-info">{{ $t('No info') }}</span>
-                <template v-else>
-                  <code>MIN:</code> <code class="count-cost-value" :class="getCostClass(scope.row.recentRunningCost.min)">{{ scope.row.recentRunningCost.min }}</code> {{ $t('ms') }}<br>
-                  <code>MAX:</code> <code class="count-cost-value" :class="getCostClass(scope.row.recentRunningCost.max)">{{ scope.row.recentRunningCost.max }}</code> {{ $t('ms') }}<br>
-                  <code>AVG:</code> <code class="count-cost-value" :class="getCostClass(scope.row.recentRunningCost.avg)">{{ scope.row.recentRunningCost.avg }}</code> {{ $t('ms') }}<br>
-                  <code>MID:</code> <code class="count-cost-value" :class="getCostClass(scope.row.recentRunningCost.mid)">{{ scope.row.recentRunningCost.mid }}</code> {{ $t('ms') }}<br>
-                </template>
-              </template>
-            </el-table-column>
-
-            <el-table-column :label="$t('Percentage')" align="right" width="200">
-              <template slot-scope="scope">
-                <span v-if="scope.row.recentRunningCost.samples <= 0" class="text-info">{{ $t('No info') }}</span>
-                <template v-else>
-                  <code>P75:</code> <code class="count-cost-value" :class="getCostClass(scope.row.recentRunningCost.p75)">{{ scope.row.recentRunningCost.p75 }}</code> {{ $t('ms') }}<br>
-                  <code>P95:</code> <code class="count-cost-value" :class="getCostClass(scope.row.recentRunningCost.p95)">{{ scope.row.recentRunningCost.p95 }}</code> {{ $t('ms') }}<br>
-                  <code>P99:</code> <code class="count-cost-value" :class="getCostClass(scope.row.recentRunningCost.p99)">{{ scope.row.recentRunningCost.p99 }}</code> {{ $t('ms') }}<br>
-                </template>
-              </template>
-            </el-table-column>
-
-            <el-table-column :label="$t('Result')" align="right" width="200">
-              <template slot-scope="scope">
-                <span v-if="scope.row.recentRunningStatus.total <= 0" class="text-info">{{ $t('No info') }}</span>
-                <template v-else>
-                  <template v-for="opt, k in RUNNING_STATUS_MAP">
-                    <template v-if="scope.row.recentRunningStatus[k]">
-                      <code>{{ opt.title }}:</code>
-                      <code class="count-cost-value" :class="opt.class">{{ (scope.row.recentRunningStatus[k] / scope.row.recentRunningStatus.total * 100).toFixed(1) }}</code> %<br>
-                    </template>
+              <br>
+              <span class="text-info">{{ $t('Throttling') }}{{ $t(':') }}</span>
+              <span v-if="T.isNothing(scope.row.throttlingJSON)">-</span>
+              <el-tooltip v-else placement="right">
+                <div slot="content">
+                  <template v-for="opt in C.AUTH_LINK_THROTTLING">
+                    <span v-if="scope.row.throttlingJSON[opt.key]">{{ $tc(opt.name, scope.row.throttlingJSON[opt.key]) }}<br></span>
                   </template>
-                </template>
+                </div>
+                <span class="text-bad">{{ $t('ON') }}</span>
+              </el-tooltip>
+            </template>
+          </el-table-column>
+
+          <el-table-column :label="$t('Task Record')" width="240">
+            <template slot-scope="scope">
+              <template v-if="statisticMap[scope.row.id]">
+                <span v-if="statisticMap[scope.row.id].lastStatus === 'success'" class="text-good">
+                  <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(statisticMap[scope.row.id].lastStartTime) }) }}
+                </span>
+                <span v-else-if="statisticMap[scope.row.id].lastStatus === 'failure'" class="text-bad">
+                  <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(statisticMap[scope.row.id].lastStartTime) }) }}
+                </span>
+                <span v-else class="text-main">
+                  <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(statisticMap[scope.row.id].lastStartTime) }) }}
+                </span>
+
+                <br>
+                <i class="fa fa-fw fa-pie-chart text-info"></i>
+                <span :class="{ 'text-good': !!statisticMap[scope.row.id].recentSuccessCount }">{{ $t('successCount', { n: T.numberLimit(statisticMap[scope.row.id].recentSuccessCount) }) }}</span>
+                / <span :class="{ 'text-bad': !!statisticMap[scope.row.id].recentFailureCount }">{{ $t('failureCount', { n: T.numberLimit(statisticMap[scope.row.id].recentFailureCount) }) }}</span>
               </template>
-            </el-table-column>
-          </template>
+            </template>
+          </el-table-column>
+
+          <el-table-column :label="$t('Status')" width="100">
+            <template slot-scope="scope">
+              <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
+              <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
+            </template>
+          </el-table-column>
+
+          <el-table-column align="right" width="380">
+            <template slot-scope="scope">
+              <template v-if="statisticMap[scope.row.id]">
+                <el-link @click="common.goToTaskRecord({ origin: 'authLink', originId: scope.row.id }, { hlDataId: scope.row.id })" :disabled="!statisticMap[scope.row.id].taskRecordCount">
+                  {{ $t('Task Record') }} <code v-if="statisticMap[scope.row.id].taskRecordCount">({{ T.numberLimit(statisticMap[scope.row.id].taskRecordCount) }})</code>
+                </el-link>
+              </template>
+              <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)">{{ $t('Example') }}</el-link>
+              <el-link :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" v-prevent-re-click @click="quickSubmitData(scope.row, 'enable')">{{ $t('Enable') }}</el-link>
+              <el-link :disabled="T.isNothing(scope.row.func_id)" v-else @click="quickSubmitData(scope.row, 'disable')">{{ $t('Disable') }}</el-link>
+              <el-link @click="openSetup(scope.row, 'setup')">{{ $t('Setup') }}</el-link>
+              <el-link @click="quickSubmitData(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
+            </template>
+          </el-table-column>
         </el-table>
       </el-main>
 
@@ -285,9 +215,7 @@ export default {
   methods: {
     async loadData() {
       // 默认过滤条件
-      let _listQuery = this.dataFilter = this.T.createListQuery({
-        _withTaskRecord: true,
-      });
+      let _listQuery = this.dataFilter = this.T.createListQuery();
       if (this.T.isNothing(this.$route.query)) {
         _listQuery.origin = 'user';
       }
@@ -301,6 +229,9 @@ export default {
       this.pageInfo = apiRes.pageInfo;
 
       this.$store.commit('updateLoadStatus', true);
+
+      // 获取统计信息
+      this.statisticMap = await this.common.loadStatistic('originId', this.data.map(d => d.id));
     },
     async quickSubmitData(d, operation) {
       switch(operation) {
@@ -391,49 +322,8 @@ export default {
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
     },
-    getCostClass(cost) {
-      if (cost < 3000) {
-        return 'text-good';
-      } else if (cost < 10000) {
-        return 'text-watch';
-      } else {
-        return 'text-bad';
-      }
-    },
   },
   computed: {
-    RUNNING_STATUS_MAP() {
-      return {
-        OK: {
-          title: this.$t('Success'),
-          class: 'text-good',
-        },
-        cached: {
-          title: this.$t('Cached'),
-          class: 'text-good',
-        },
-        EFuncFailed: {
-          title: this.$t('Func Error'),
-          class: 'text-bad',
-        },
-        EFuncTimeout: {
-          title: this.$t('Func Timeout'),
-          class: 'text-bad',
-        },
-        EAPITimeout: {
-          title: this.$t('API Timeout'),
-          class: 'text-bad',
-        },
-        EFuncResultParsingFailed: {
-          title: this.$t('Bad return'),
-          class: 'text-bad',
-        },
-        UnknownError: {
-          title: this.$t('Unknown Error'),
-          class: 'text-bad',
-        },
-      }
-    },
   },
   props: {
   },
@@ -442,15 +332,14 @@ export default {
     let _dataFilter = this.T.createListQuery();
 
     return {
-      data    : [],
-      pageInfo: _pageInfo,
+      data        : [],
+      statisticMap: {},
+      pageInfo    : _pageInfo,
 
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,
         origin      : _dataFilter.origin,
       },
-
-      showCountCost: false,
     }
   },
 }

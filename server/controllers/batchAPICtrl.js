@@ -12,47 +12,16 @@ var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 var urlFor      = require('../utils/routeLoader').urlFor;
 
-var funcMod           = require('../models/funcMod');
-var batchMod          = require('../models/batchMod');
-var taskRecordFuncMod = require('../models/taskRecordFuncMod');
+var funcMod  = require('../models/funcMod');
+var batchMod = require('../models/batchMod');
 
 /* Init */
 
 /* Handlers */
 var crudHandler = exports.crudHandler = batchMod.createCRUDHandler();
+exports.list       = crudHandler.createListHandler();
 exports.delete     = crudHandler.createDeleteHandler();
 exports.deleteMany = crudHandler.createDeleteManyHandler();
-
-exports.list = function(req, res, next) {
-  var batches       = null;
-  var batchPageInfo = null;
-
-  var batchModel    = batchMod.createModel(res.locals);
-  var taskRecordFuncModel = taskRecordFuncMod.createModel(res.locals);
-
-  async.series([
-    function(asyncCallback) {
-      var opt = res.locals.getQueryOptions();
-      batchModel.list(opt, function(err, dbRes, pageInfo) {
-        if (err) return asyncCallback(err);
-
-        batches       = dbRes;
-        batchPageInfo = pageInfo;
-
-        if (opt.extra && opt.extra.withTaskRecord) {
-          return taskRecordFuncModel.appendTaskRecord(batches, asyncCallback);
-        } else {
-          return asyncCallback();
-        }
-      });
-    },
-  ], function(err) {
-    if (err) return next(err);
-
-    var ret = toolkit.initRet(batches, batchPageInfo);
-    res.locals.sendJSON(ret);
-  });
-};
 
 exports.add = function(req, res, next) {
   var data = req.body.data;

@@ -362,6 +362,29 @@ export function goToTaskRecord(query, options) {
   });
 }
 
+export async function loadStatistic(groupField, groupIds) {
+  let statisticMap = {};
+
+  const bulkSize = 20;
+  while (groupIds.length > 0) {
+    let _groupIds = groupIds.slice(0, bulkSize);
+    groupIds = groupIds.slice(bulkSize);
+
+    let apiRes = await T.callAPI_get('/api/v1/task-records/func/do/get-statistics', {
+      query: {
+        groupField: groupField,
+        groupIds  : _groupIds.join(','),
+      },
+    });
+
+    if (apiRes.ok) {
+      Object.assign(statisticMap, apiRes.data);
+    }
+  }
+
+  return statisticMap;
+}
+
 export async function checkScriptMarketUpdate(scriptMarketId) {
   let apiRes = await T.callAPI_get('/api/v1/script-markets/do/check-update', {
     query: { scriptMarketId: scriptMarketId },

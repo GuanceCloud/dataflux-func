@@ -73,6 +73,50 @@ EntityModel.prototype.list = function(options, callback) {
   this._list(options, callback);
 };
 
+EntityModel.prototype.getStatistics = function(groupField, groupIds, callback) {
+  groupIds = toolkit.asArray(groupIds);
+
+  var sql = toolkit.createStringBuilder();
+  sql.append('SELECT');
+  sql.append('   b.*');
+  sql.append('  ,a.startTimeMs   AS lastStartTime');
+  sql.append('  ,a.status        AS lastStatus');
+  sql.append('  ,a.exceptionTEXT AS lastExceptionTEXT');
+  sql.append('FROM biz_main_task_record_func AS a');
+  sql.append('JOIN (SELECT');
+  sql.append('         ??                                     AS groupId');
+  sql.append('        ,MAX(seq)                               AS seq');
+  sql.append('        ,COUNT(*)                               AS taskRecordCount');
+  sql.append("        ,COUNT(IF(status = 'success', 1, NULL)) AS recentSuccessCount");
+  sql.append("        ,COUNT(IF(status = 'failure', 1, NULL)) AS recentFailureCount");
+  sql.append('      FROM biz_main_task_record_func');
+  sql.append('      WHERE');
+  sql.append('        ?? IN (?)');
+  sql.append('      GROUP BY');
+  sql.append('        ??');
+  sql.append(') AS b');
+  sql.append('  ON a.seq = b.seq');
+
+  var sqlParams = [ groupField, groupField, groupIds, groupField ];
+  this.db.query(sql, sqlParams, function(err, dbRes) {
+    if (err) return callback(err);
+
+    var statisticMap = {};
+    dbRes.forEach(function(d) {
+      if (!d.groupId) return;
+
+      // lastStartTime 转 ISO8601
+      if (d.lastStartTime) {
+        d.lastStartTime = moment(d.lastStartTime).toISOString();
+      }
+
+      statisticMap[d.groupId] = d;
+    });
+
+    return callback(null, statisticMap);
+  });
+};
+
 EntityModel.prototype.appendSubTaskCount = function(data, callback) {
   if (toolkit.isNothing(data)) return callback(null, data);
 
@@ -105,64 +149,6 @@ EntityModel.prototype.appendSubTaskCount = function(data, callback) {
     data.forEach(function(x) {
       var subTaskCount = subTaskCountMap[x.id] || 0;
       x.subTaskCount = subTaskCount || 0;
-    });
-
-    return callback(null, data);
-  });
-};
-
-EntityModel.prototype.appendTaskRecord = function(data, callback) {
-  if (toolkit.isNothing(data)) return callback(null, data);
-
-  var originIds = toolkit.arrayElementValues(data, 'id');
-
-  var sql = toolkit.createStringBuilder();
-  sql.append('SELECT');
-  sql.append('   b.*');
-  sql.append('  ,a.startTimeMs   AS lastStartTime');
-  sql.append('  ,a.status        AS lastStatus');
-  sql.append('  ,a.exceptionTEXT AS lastExceptionTEXT');
-  sql.append('FROM biz_main_task_record_func AS a');
-  sql.append('JOIN (SELECT');
-  sql.append('         originId');
-  sql.append('        ,MAX(seq)  AS seq');
-  sql.append('        ,COUNT(*)  AS taskRecordCount');
-  sql.append("        ,COUNT(IF(status = 'success', 1, NULL)) AS recentSuccessCount");
-  sql.append("        ,COUNT(IF(status = 'failure', 1, NULL)) AS recentFailureCount");
-  sql.append('      FROM biz_main_task_record_func');
-  sql.append('      WHERE');
-  sql.append('        originId IN (?)');
-  sql.append('      GROUP BY');
-  sql.append('        originId');
-  sql.append(') AS b');
-  sql.append('  ON a.seq = b.seq');
-
-  var sqlParams = [ originIds ];
-  this.db.query(sql, sqlParams, function(err, dbRes) {
-    if (err) return callback(err);
-
-    // 整理成map
-    var taskRecordMap = {};
-    dbRes.forEach(function(d) {
-      if (!d.originId) return;
-
-      // lastStartTime 转 ISO8601
-      if (d.lastStartTime) {
-        d.lastStartTime = moment(d.lastStartTime).toISOString();
-      }
-
-      taskRecordMap[d.originId] = d;
-    });
-
-    // 填入数据
-    data.forEach(function(x) {
-      var taskRecord = taskRecordMap[x.id] || {};
-      x.taskRecordCount    = taskRecord.taskRecordCount    || 0
-      x.lastStartTime      = taskRecord.lastStartTime      || null;
-      x.lastStatus         = taskRecord.lastStatus         || null;
-      x.lastExceptionTEXT  = taskRecord.lastExceptionTEXT  || null;
-      x.recentSuccessCount = taskRecord.recentSuccessCount || 0;
-      x.recentFailureCount = taskRecord.recentFailureCount || 0;
     });
 
     return callback(null, data);

@@ -9,3 +9,7 @@ var taskRecordFuncAPICtrl = require('../controllers/taskRecordFuncAPICtrl');
 routeLoader.load(ROUTE.taskRecordFuncAPI.list, [
   taskRecordFuncAPICtrl.list,
 ]);
+
+routeLoader.load(ROUTE.taskRecordFuncAPI.getStatistics, [
+  taskRecordFuncAPICtrl.getStatistics,
+]);

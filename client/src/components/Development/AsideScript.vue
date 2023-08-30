@@ -1250,10 +1250,9 @@ export default {
       let apiRes  = null;
       let listOpt = {
         query: {
-          _withTaskRecord: true,
           origin       : 'user',
           funcId       : data.id,
-          pageSize     : 100,
+          pageSize     : 20,
         }
       };
 
