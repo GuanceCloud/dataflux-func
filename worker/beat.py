@@ -87,7 +87,7 @@ def tick():
     2. 到达执行时间的延迟任务进入工作队列
     '''
     # 计算等待时长
-    interval = 60
+    interval = 1
     wait_time = interval - toolkit.get_timestamp() % interval
     time.sleep(wait_time)
 
@@ -148,4 +148,4 @@ if __name__ == '__main__':
     after_app_created()
 
     # 启动后台
-    run_background(func=tick, pool_size=1, max_tasks=100)
+    run_background(func=tick, pool_size=1, max_tasks=3600)
