@@ -131,8 +131,8 @@ function _assignFuncCallKwargs(destFuncCallKwargs, srcFuncCallKwargs) {
     var baseV  = destFuncCallKwargs[k];
     var inputV = srcFuncCallKwargs[k];
 
-    if (_isFuncArgumentPlaceholder(baseV)) {
-      // 占位符，可以合并
+    if (_isFuncArgumentPlaceholder(baseV) || baseV === undefined) {
+      // 占位符 /  额外参数，可以合并
       destFuncCallKwargs[k] = inputV;
 
     } else {
