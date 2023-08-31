@@ -224,7 +224,7 @@ class BaseTask(object):
         if not self.exception:
             return None
 
-        return pprint.saferepr(self.exception)
+        return str(self.exception)
 
     def lock(self, max_age=None):
         max_age = int(max_age or 30)

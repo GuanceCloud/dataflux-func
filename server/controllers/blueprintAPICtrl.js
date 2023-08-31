@@ -148,8 +148,14 @@ var NODE_FUNC_DEF_BODY_GENERATOR_MAP = {
       codeBlock.append(`'''`);
     }
 
+    // 空函数
+    if (toolkit.isNothing(props.switchItems)) {
+      codeBlock.append(`pass`);
+      return codeBlock;
+    }
+
     // 分支条件添加序号
-    var switchItems = (props.switchItems || []).map(function(item, index) {
+    var switchItems = (props.switchItems).map(function(item, index) {
       item.switchOrder = index + 1;
       return item;
     });
@@ -366,7 +372,7 @@ exports.deploy = function(req, res, next) {
   var scriptModel    = scriptMod.createModel(res.locals);
   var funcModel      = funcMod.createModel(res.locals);
 
-  var blueprintScriptSetId = `blueprint_${id}`;
+  var blueprintScriptSetId = `_bp_${id}`;
   var blueprintScriptId    = `${blueprintScriptSetId}__main`;
   var blueprint            = null;
   var nextAPIFuncs         = null;
@@ -415,7 +421,7 @@ exports.deploy = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         if (taskResp.result.status === 'failure') {
-          return asyncCallback(new E('EBlueprintDeployFailed', 'Blueprint deploying failed. Please check your configuration', taskResp));
+          return asyncCallback(new E('EBlueprintDeployFailed', 'Blueprint deploying failed. Please check your Blueprint', taskResp));
         }
 
         nextAPIFuncs = taskResp.result.apiFuncs;
@@ -502,7 +508,9 @@ function _genNodeFuncDefBlock(blueprint) {
   codeBlock.append(`# Node function wrapper`);
 
   blueprint.canvasJSON.nodes.sort(function(a, b) {
-    if (a.id < b.id) return -1;
+    if (a.type === 'EntryNode') return -1;
+    else if (b.type === 'EntryNode') return 1;
+    else if (a.id < b.id) return -1;
     else if (a.id > b.id) return 1;
     else return 0;
   }).forEach(function(node) {

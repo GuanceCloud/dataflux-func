@@ -436,8 +436,10 @@ function _getFuncCallResultCache(locals, cacheKey, callback) {
 };
 
 function callFuncRunner(locals, taskReq, callback) {
+  callback = toolkit.ensureFn(callback);
+
   if (taskReq.ignoreResult) {
-    // 忽略结果，需要提前生成任务 ID
+    // 忽略结果，不添加回调函数
     return locals.cacheDB.putTask(taskReq, function(err, taskId) {
       if (err) return callback(err);
       return callback(null, taskId);
@@ -611,8 +613,8 @@ function _doAPIResponse(res, taskReq, taskResp, callback) {
       // 作为数据返回
 
       // 当指定了响应体类型后
-      //    returnType 必须为 raw
-      //    unbox 必须为 true
+      //    returnType 必须为 "raw"
+      //    unbox      必须为 true
       var returnType = taskReq.returnType;
       var unbox      = taskReq.unbox;
       if (responseControl.contentType) {
@@ -620,7 +622,6 @@ function _doAPIResponse(res, taskReq, taskResp, callback) {
         unbox      = true;
       }
 
-      console.log(taskResp)
       // 根据 returnType 转换格式
       var result = taskResp.result;
       switch(returnType) {
@@ -636,11 +637,11 @@ function _doAPIResponse(res, taskReq, taskResp, callback) {
       // 拆箱
       if (unbox) {
         // 需要拆箱时，发送数据类型不确定
-        return res.locals.sendRaw(result, responseControl.contentType);
+        return res.locals.sendRaw(result.returnValue, responseControl.contentType);
 
       } else {
         // 不拆箱时，必然是JSON
-        var ret = toolkit.initRet(result)
+        var ret = toolkit.initRet(result.returnValue);
         return res.locals.sendJSON(ret);
       }
     }
@@ -1510,39 +1511,31 @@ exports.integratedSignIn = function(req, res, next) {
   var username = req.body.signIn.username;
   var password = req.body.signIn.password;
 
-  var func = null;
+  var taskReq    = null;
+  var userId     = null;
+  var xAuthToken = null;
+
   async.series([
-    // 获取函数
     function(asyncCallback) {
-      getFuncById(res.locals, funcId, function(err, _func) {
+      var opt = {
+        funcId         : funcId,
+        funcCallKwargs : { username: username, password: password },
+        origin         : 'integration',
+        originId       : 'signIn',
+        taskRecordLimit: CONFIG._TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_INTEGRATION,
+      }
+      createFuncRunnerTaskReq(res.locals, opt, function(err, _taskReq) {
         if (err) return asyncCallback(err);
 
-        func = _func;
+        taskReq = _taskReq;
 
         return asyncCallback();
-      })
+      });
     },
-  ], function(err) {
-    if (err) return next(err);
+    function(asyncCallback) {
+      callFuncRunner(res.locals, taskReq, function(err, taskResp) {
+        if (err && !taskResp) return asyncCallback(err);
 
-    var timeout = CONFIG._FUNC_TASK_TIMEOUT_DEFAULT;
-    if (func.extraConfigJSON && func.extraConfigJSON.timeout) {
-      timeout = parseInt(func.extraConfigJSON.timeout);
-    }
-
-    var taskReq = {
-      name: 'Func.Runner',
-      kwargs: {
-        funcId        : funcId,
-        funcCallKwargs: { username: username, password: password },
-      },
-      origin         : 'integration',
-      originId       : 'signIn',
-      timeout        : timeout,
-      expires        : timeout,
-      taskRecordLimit: CONFIG._TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_INTEGRATION,
-
-      onResponse(taskResp) {
         switch(taskResp.status) {
           case 'noResponse':
             // 无响应
@@ -1563,7 +1556,7 @@ exports.integratedSignIn = function(req, res, next) {
             }));
         }
 
-        var returnValue = taskResp.result.returnValue.raw;
+        var returnValue = taskResp.result.returnValue;
 
         // 函数返回 False 或没有实际意义内容
         if (toolkit.isNothing(returnValue) || returnValue === false) {
@@ -1571,7 +1564,6 @@ exports.integratedSignIn = function(req, res, next) {
         }
 
         // 登录成功
-        var userId          = username;
         var userDisplayName = username;
         var userEmail       = null;
         switch(typeof returnValue) {
@@ -1630,23 +1622,21 @@ exports.integratedSignIn = function(req, res, next) {
         authTokenObj.un = username
         authTokenObj.nm = userDisplayName;
         authTokenObj.em = userEmail;
+        xAuthToken = auth.signXAuthTokenObj(authTokenObj)
 
         var cacheKey     = auth.getCacheKey(authTokenObj);
-        var xAuthToken   = auth.signXAuthTokenObj(authTokenObj)
         var xAuthExpires = CONFIG._WEB_AUTH_EXPIRES;
-
-        res.locals.cacheDB.setex(cacheKey, xAuthExpires, 'x', function(err) {
-          if (err) return asyncCallback(err);
-
-          var ret = toolkit.initRet({
-            userId    : userId,
-            xAuthToken: xAuthToken,
-          });
-          return res.locals.sendJSON(ret);
-        });
-      }
+        res.locals.cacheDB.setex(cacheKey, xAuthExpires, 'x', asyncCallback);
+      });
     }
-    res.locals.cacheDB.putTask(taskReq);
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet({
+      userId    : userId,
+      xAuthToken: xAuthToken,
+    });
+    return res.locals.sendJSON(ret);
   });
 };
 

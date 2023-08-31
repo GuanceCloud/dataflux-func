@@ -658,16 +658,6 @@ function doDeploy(locals, scriptSetId, options, callback) {
   var exampleScript = null;
   var nextAPIFuncs  = null;
   async.series([
-    // 获取已安装脚本集
-    function(asyncCallback) {
-      scriptSetModel.getWithCheck(scriptSetId, [ 'id', 'title' ], function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        installedScriptSet = dbRes;
-
-        return asyncCallback();
-      });
-    },
     // 获取示例脚本
     function(asyncCallback) {
       var exampleScriptId = `${scriptSetId}__example`;
@@ -803,7 +793,7 @@ function doDeploy(locals, scriptSetId, options, callback) {
     callback(null, startupScriptId, startupCrontabId, startupScriptCrontabFunc);
 
     // 刷新数据 MD5 缓存
-    reloadDataMD5Cache(res.locals);
+    reloadDataMD5Cache(locals);
   });
 };
 

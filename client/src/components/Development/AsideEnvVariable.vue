@@ -58,6 +58,28 @@ Are you sure you want to delete the ENV?<br><strong class="text-bad">{label}</st
           :disabled="!!!data.id"
           v-model="data.showPopover">
 
+          <div slot="reference" class="aside-item">
+            <!-- 项目内容 -->
+            <span :class="{'text-bad': data.isPinned}">
+              <el-link v-if="data.type === 'refresh'" type="primary">
+                <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
+              </el-link>
+              <el-link v-else-if="data.type === 'addEnvVariable'" type="primary">
+                <i class="fa fa-fw fa-plus"></i> {{ $t('New ENV') }}
+              </el-link>
+              <div v-else>
+                <span>{{ node.label }}</span>
+              </div>
+            </span>
+
+            <!-- 状态图标 -->
+            <div>
+              <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
+                <i class="fa fa-fw text-bad" :class="[ data.isPinned ? 'fa-thumb-tack':'' ]"></i>
+              </el-tooltip>
+            </div>
+          </div>
+
           <!-- 基本信息 -->
           <div class="aside-tree-node-description">
             <span class="text-info">ID</span>
@@ -106,28 +128,6 @@ Are you sure you want to delete the ENV?<br><strong class="text-bad">{label}</st
             <i class="fa fa-fw fa-times"></i>
             {{ $t('Delete') }}
           </el-button>
-
-          <div slot="reference" class="aside-item">
-            <!-- 项目内容 -->
-            <span :class="{'text-bad': data.isPinned}">
-              <el-link v-if="data.type === 'refresh'" type="primary">
-                <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
-              </el-link>
-              <el-link v-else-if="data.type === 'addEnvVariable'" type="primary">
-                <i class="fa fa-fw fa-plus"></i> {{ $t('New ENV') }}
-              </el-link>
-              <div v-else>
-                <span>{{ node.label }}</span>
-              </div>
-            </span>
-
-            <!-- 状态图标 -->
-            <div>
-              <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
-                <i class="fa fa-fw text-bad" :class="[ data.isPinned ? 'fa-thumb-tack':'' ]"></i>
-              </el-tooltip>
-            </div>
-          </div>
         </el-popover>
       </span>
     </el-tree>

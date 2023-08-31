@@ -5,8 +5,9 @@ function autoFormatJSON(ev) {
   if (el.type === 'textarea'&& el.classList.contains('body-param__text')) {
     try {
       el.value = JSON.stringify(JSON.parse(el.value), null, 2);
+      el.classList.remove('bad-json-body');
     } catch(e) {
-      // Nope
+      el.classList.add('bad-json-body');
     }
   }
 }

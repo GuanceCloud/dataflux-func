@@ -14,6 +14,7 @@ Captcha should be a 4-digit number: 验证码为4位数字
 Invalid username or password                                                                 : 用户名或密码错误
 Invalid captcha                                                                              : 验证码错误或无效
 User has been disabled                                                                       : 当前用户已被禁用
+Worker no response, please check the status of this system                                   : 工作单元没有响应，请检查系统状态
 Integration sign-in func returned an unexpected value, please contact admin                  : 集成登录函数返回了未预期的结果，请联系系统管理员
 Sign in failed. Error occured in integration sign-in func, please concat admin               : 登录失败。集成登录函数抛出异常，请联系系统管理员
 Sign in failed. Integration sign-in func timeout, please concat admin                        : 登录失败，集成登录函数超时，请联系系统管理员
@@ -173,6 +174,10 @@ export default {
             break;
 
           /* 集成登录失败 */
+          case 'EWorkerNoResponse':
+            this.respError.other = this.$t('Worker no response, please check the status of this system');
+            break;
+
           case 'EFuncResultParsingFailed':
             this.respError.other = this.$t('Integration sign-in func returned an unexpected value, please contact admin');
             break;

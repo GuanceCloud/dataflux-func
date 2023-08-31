@@ -287,7 +287,7 @@ exports.publish = function(req, res, next) {
     // 发送脚本代码预检查任务
     function(asyncCallback) {
       var opt = {
-        scriptId: id
+        scriptId: id,
       }
       mainAPICtrl.callFuncDebugger(res.locals, opt, function(err, taskResp) {
         if (err) return asyncCallback(err);
@@ -353,28 +353,16 @@ exports.publish = function(req, res, next) {
 
           if (!onScriptPublish) return;
 
-          var funcId = `${id}.${func.name}`;
-
-          var timeout = CONFIG._FUNC_TASK_TIMEOUT_DEFAULT;
-          if (func.extraConfig.timeout) {
-            timeout = parseInt(func.extraConfig.timeout);
-          }
-
-          var expires = timeout;
-
-          var taskReq = {
-            name: 'Func.Runner',
-            kwargs: {
-              funcId  : funcId,
-              origin  : 'integration',
-              originId: 'autoRun.onScriptPublish',
-            },
-            queue          : CONFIG._FUNC_TASK_QUEUE_DEFAULT,
-            timeout        : timeout,
-            expires        : expires,
+          var opt = {
+            funcId         : `${id}.${func.name}`,
+            origin         : 'integration',
+            originId       : 'autoRun.onScriptPublish',
             taskRecordLimit: CONFIG._TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_INTEGRATION,
+            ignoreResult   : true,
           }
-          res.locals.cacheDB.putTask(taskReq);
+          mainAPICtrl.createFuncRunnerTaskReq(res.locals, opt, function(err, _taskReq) {
+            if (_taskReq) return mainAPICtrl.callFuncRunner(res.locals, _taskReq);
+          });
         });
       });
     });

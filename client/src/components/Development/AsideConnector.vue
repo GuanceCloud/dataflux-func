@@ -65,6 +65,35 @@ Go to Recent Task Record: 前往最近任务记录
           :disabled="!!!data.id"
           v-model="data.showPopover">
 
+          <div slot="reference" class="aside-item">
+            <!-- 项目内容 -->
+            <span :class="{'text-watch': data.isBuiltin, 'text-bad': data.isPinned}">
+              <el-link v-if="data.type === 'refresh'" type="primary">
+                <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
+              </el-link>
+              <el-link v-else-if="data.type === 'addConnector'" type="primary">
+                <i class="fa fa-fw fa-plus"></i> {{ $t('Add Connector') }}
+              </el-link>
+              <div v-else>
+                <el-tag class="aside-tree-node-tag"
+                  :type="C.CONNECTOR_MAP.get(data.connectorType).tagType"
+                  size="mini">{{ C.CONNECTOR_MAP.get(data.connectorType).name }}</el-tag>
+                <el-tag v-if="data.isBuiltin"
+                  effect="dark"
+                  type="warning"
+                  size="mini">{{ $t('Built-in') }}</el-tag>
+                <span>{{ node.label }}</span>
+              </div>
+            </span>
+
+            <!-- 状态图标 -->
+            <div>
+              <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
+                <i class="fa fa-fw text-bad" :class="[ data.isPinned ? 'fa-thumb-tack':'' ]"></i>
+              </el-tooltip>
+            </div>
+          </div>
+
           <!-- 基本信息 -->
           <div class="aside-tree-node-description">
             <div>
@@ -136,35 +165,6 @@ Go to Recent Task Record: 前往最近任务记录
               <i class="fa fa-fw fa-info-circle"></i>
               {{ $t('Go to Recent Task Record') }}
             </el-link>
-          </div>
-
-          <div slot="reference" class="aside-item">
-            <!-- 项目内容 -->
-            <span :class="{'text-watch': data.isBuiltin, 'text-bad': data.isPinned}">
-              <el-link v-if="data.type === 'refresh'" type="primary">
-                <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
-              </el-link>
-              <el-link v-else-if="data.type === 'addConnector'" type="primary">
-                <i class="fa fa-fw fa-plus"></i> {{ $t('Add Connector') }}
-              </el-link>
-              <div v-else>
-                <el-tag class="aside-tree-node-tag"
-                  :type="C.CONNECTOR_MAP.get(data.connectorType).tagType"
-                  size="mini">{{ C.CONNECTOR_MAP.get(data.connectorType).name }}</el-tag>
-                <el-tag v-if="data.isBuiltin"
-                  effect="dark"
-                  type="warning"
-                  size="mini">{{ $t('Built-in') }}</el-tag>
-                <span>{{ node.label }}</span>
-              </div>
-            </span>
-
-            <!-- 状态图标 -->
-            <div>
-              <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
-                <i class="fa fa-fw text-bad" :class="[ data.isPinned ? 'fa-thumb-tack':'' ]"></i>
-              </el-tooltip>
-            </div>
           </div>
         </el-popover>
       </span>

@@ -381,15 +381,12 @@ export default {
     },
 
     removeImage(imageKey) {
-      console.log(imageKey)
       if (this.form[imageKey]) {
-        console.log(1)
         this.form[imageKey] = null;
       }
 
       let upload = this.$refs[imageKey];
       if (upload) {
-        console.log(2)
         upload.clearFiles();
       }
     },

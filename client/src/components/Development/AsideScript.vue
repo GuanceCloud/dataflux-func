@@ -133,6 +133,46 @@ In most cases, the Script Sets installed from the official Script Market do not 
           :disabled="!data.id && !data.tip"
           v-model="data.showPopover">
 
+          <div slot="reference" class="aside-item">
+            <!-- 项目内容 -->
+            <span :class="{'text-watch': data.origin === 'builtin', 'text-main': data.origin === 'scriptMarket', 'text-bad': data.isPinned}">
+              <el-link v-if="data.type === 'refresh'" type="primary">
+                <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
+              </el-link>
+              <el-link v-else-if="data.type === 'addScriptSet'" type="primary">
+                <i class="fa fa-fw fa-plus"></i> {{ $t('New Script Set') }}
+              </el-link>
+              <el-link v-else-if="data.type === 'scriptSetHiddenTip'" type="info">
+                <i class="fa fa-fw fa-eye-slash"></i> <i>{{ $t('Some Script Sets are hidden') }}</i>
+              </el-link>
+              <div v-else>
+                <template v-if="data.type === 'scriptSet'">
+                  <i v-if="data.origin === 'builtin'" class="fa fa-fw fa-microchip"></i>
+                  <i v-else-if="data.origin === 'scriptMarket'" class="fa fa-fw fa-shopping-cart"></i>
+                  <i v-else-if="data.origin === 'blueprint'" class="fa fa-fw fa-sitemap fa-rotate-270"></i>
+                  <i v-else class="fa fa-fw" :class="[node.expanded ? 'fa-folder-open':'fa-folder']"></i>
+                </template>
+                <i v-else-if="data.type === 'script'" class="fa fa-fw fa-file-code-o"></i>
+                <el-tag v-else-if="data.type === 'func'" type="info" size="mini"><code>def</code></el-tag>
+
+                <el-tag v-if="data.isCodeEdited"
+                  type="danger"
+                  size="mini">{{ $t('Edited') }}</el-tag>
+                <span>{{ node.label }}</span>
+              </div>
+            </span>
+
+            <!-- 状态图标 -->
+            <div>
+              <el-tooltip effect="dark" :content="data.isLockedByOther ? $t('Locked by other user ({user})', { user: data.lockedByUser }) : $t('Locked by you')" placement="top" :enterable="false">
+                <i class="fa fa-fw" :class="[ data.isLocked ? 'fa-lock':'', (data.isLockedByOther ? 'text-bad':'text-good') + (data.isLockedByScriptSet ? '-fade text-small':'') ]"></i>
+              </el-tooltip>
+              <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
+                <i class="fa fa-fw text-bad" :class="[ data.isPinned ? 'fa-thumb-tack':'' ]"></i>
+              </el-tooltip>
+            </div>
+          </div>
+
           <!-- 提示 -->
           <div v-if="data.tip" class="aside-tree-node-tip">
             <i class="fa fa-fw fa-info-circle"></i> <strong v-if="data.tipTitle">{{ data.tipTitle }}<br></strong>
@@ -291,45 +331,6 @@ In most cases, the Script Sets installed from the official Script Market do not 
               </el-tooltip>
             </div>
           </template>
-
-          <div slot="reference" class="aside-item">
-            <!-- 项目内容 -->
-            <span :class="{'text-watch': data.origin === 'builtin', 'text-main': data.origin === 'scriptMarket', 'text-bad': data.isPinned}">
-              <el-link v-if="data.type === 'refresh'" type="primary">
-                <i class="fa fa-fw fa-refresh"></i> {{ $t('Refresh') }}
-              </el-link>
-              <el-link v-else-if="data.type === 'addScriptSet'" type="primary">
-                <i class="fa fa-fw fa-plus"></i> {{ $t('New Script Set') }}
-              </el-link>
-              <el-link v-else-if="data.type === 'scriptSetHiddenTip'" type="info">
-                <i class="fa fa-fw fa-eye-slash"></i> <i>{{ $t('Some Script Sets are hidden') }}</i>
-              </el-link>
-              <div v-else>
-                <template v-if="data.type === 'scriptSet'">
-                  <i v-if="data.origin === 'builtin'" class="fa fa-fw fa-microchip"></i>
-                  <i v-else-if="data.origin === 'scriptMarket'" class="fa fa-fw fa-shopping-cart"></i>
-                  <i v-else class="fa fa-fw" :class="[node.expanded ? 'fa-folder-open':'fa-folder']"></i>
-                </template>
-                <i v-else-if="data.type === 'script'" class="fa fa-fw fa-file-code-o"></i>
-                <el-tag v-else-if="data.type === 'func'" type="info" size="mini"><code>def</code></el-tag>
-
-                <el-tag v-if="data.isCodeEdited"
-                  type="danger"
-                  size="mini">{{ $t('Edited') }}</el-tag>
-                <span>{{ node.label }}</span>
-              </div>
-            </span>
-
-            <!-- 状态图标 -->
-            <div>
-              <el-tooltip effect="dark" :content="data.isLockedByOther ? $t('Locked by other user ({user})', { user: data.lockedByUser }) : $t('Locked by you')" placement="top" :enterable="false">
-                <i class="fa fa-fw" :class="[ data.isLocked ? 'fa-lock':'', (data.isLockedByOther ? 'text-bad':'text-good') + (data.isLockedByScriptSet ? '-fade text-small':'') ]"></i>
-              </el-tooltip>
-              <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
-                <i class="fa fa-fw text-bad" :class="[ data.isPinned ? 'fa-thumb-tack':'' ]"></i>
-              </el-tooltip>
-            </div>
-          </div>
         </el-popover>
       </span>
     </el-tree>
@@ -1250,6 +1251,7 @@ export default {
       let apiRes  = null;
       let listOpt = {
         query: {
+
           origin       : 'user',
           funcId       : data.id,
           pageSize     : 20,

@@ -171,3 +171,8 @@ body {
   right: 60px;
   bottom: 20px;
 }
+
+.swagger-ui .bad-json-body {
+  color: red;
+  border-color: red;
+}
