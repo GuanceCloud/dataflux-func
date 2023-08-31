@@ -238,7 +238,6 @@ exports.delete = function(req, res, next) {
 exports.publish = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data || {};
-  var wait = req.body.wait; // 等待发布结束
 
   var scriptModel               = scriptMod.createModel(res.locals);
   var scriptSetModel            = scriptSetMod.createModel(res.locals);
@@ -292,6 +291,10 @@ exports.publish = function(req, res, next) {
       }
       mainAPICtrl.callFuncDebugger(res.locals, opt, function(err, taskResp) {
         if (err) return asyncCallback(err);
+
+        if (taskResp.result.status === 'failure') {
+          return asyncCallback(new E('EScriptPublishFailed', 'Script publishing failed. Please check your code', taskResp));
+        }
 
         nextAPIFuncs = taskResp.result.apiFuncs;
 

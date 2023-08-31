@@ -739,6 +739,10 @@ function doDeploy(locals, scriptSetId, options, callback) {
       mainAPICtrl.callFuncDebugger(locals, opt, function(err, taskResp) {
         if (err) return asyncCallback(err);
 
+        if (taskResp.result.status === 'failure') {
+          return asyncCallback(new E('EStartupScriptDeployFailed', 'Startup Script deploying failed. Please contact the author', taskResp));
+        }
+
         nextAPIFuncs = taskResp.result.apiFuncs;
 
         return asyncCallback();

@@ -38,12 +38,14 @@ respCodeMap:
   ENotImplemented     : 500.98 # Not implemented
   EAssert             : 500.99 # For Assert
 
-  EAPIAuth                : 401.99  # API 认证失败
-  EAPITimeout             : 599.10  # API 超时超时
-  EWorkerNoResponse       : 599.20  # 工作单元无响应
-  EFuncFailed             : 599.30  # 函数执行失败
-  EFuncTimeout            : 599.31  # 函数执行超时
-  EFuncResultParsingFailed: 599.40  # 函数返回值无法解析
+  EAPIAuth                  : 401.99  # API 认证失败
+  EScriptPublishFailed      : 400.90  # 脚本发布失败
+  EStartupScriptDeployFailed: 400.91  # 启动脚本部署失败
+  EBlueprintDeployFailed    : 400.92  # 蓝图部署失败
+  EFuncFailed               : 599.10  # 函数执行失败
+  EFuncTimeout              : 599.20  # 函数执行超时
+  EFuncResultParsingFailed  : 599.98  # 函数返回值无法解析
+  EWorkerNoResponse         : 599.99  # 工作单元无响应
 
 # File icon for extension
 fileIcon:

@@ -117,10 +117,11 @@ mainAPI:
           $desc: Return type (default "raw")
           $type: enum
           $in:
-            - ALL
             - raw
-            - repr
             - jsonDumps
+        unbox:
+          $desc: Unbox result
+          $type: boolean
         eta:
           $desc     : ETA (ISO8601)
           $type     : string
@@ -132,10 +133,6 @@ mainAPI:
           $minValue: 1
 
         apiTimeout:
-          $isDeprecated: true
-          $desc: Deprecated options
-          $type: any
-        unfold:
           $isDeprecated: true
           $desc: Deprecated options
           $type: any
@@ -214,9 +211,7 @@ mainAPI:
           $desc: Return type (default "raw")
           $type: enum
           $in:
-            - ALL
             - raw
-            - repr
             - jsonDumps
 
   callAuthLinkByPostWithFormat:

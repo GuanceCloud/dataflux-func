@@ -230,29 +230,8 @@ class FuncRunner(FuncBaseTask):
 
         else:
             # 准备函数运行结果
-            return_value     = None
+            return_value     = func_resp.data
             response_control = func_resp.make_response_control()
-
-            if func_resp.data is not None:
-                return_value = {}
-
-                try:
-                    return_value['raw'] = func_resp.data
-                except Exception as e:
-                    for line in traceback.format_exc().splitlines():
-                        self.logger.error(line)
-
-                try:
-                    return_value['repr'] = pprint.saferepr(func_resp.data)
-                except Exception as e:
-                    for line in traceback.format_exc().splitlines():
-                        self.logger.error(line)
-
-                try:
-                    return_value['jsonDumps'] = toolkit.json_dumps(func_resp.data)
-                except Exception as e:
-                    for line in traceback.format_exc().splitlines():
-                        self.logger.error(line)
 
             # 准备返回值
             result = {

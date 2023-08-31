@@ -24,9 +24,7 @@ en: {}
   Cannot not operate file or folder out of resource folder                                                : 无法操作资源目录外的文件或目录
   Cannot use a ID of reserved prefix                                                                      : 无法使用系统保留前缀作为 ID 开头部分
   Client not send X-Auth-Token yet                                                                        : 客户端尚未发送 X-Auth-Token
-  Code pre-check failed. Script does not finish in a reasonable time, please check your code and try again: 代码预检查失败。脚本未能在合理时间内执行结束，请检查代码后再试一次
   Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again: 代码预检查失败。脚本在执行期间产生了异常错误，请检查代码后再试一次
-  Code pre-check failed. Script TIMEOUT during executing, please check your code and try again            : 代码预检查失败。脚本在执行超时，请检查代码后再试一次
   Confirming import timeout                                                                               : 导入确认超时
   Connecting to Connector failed                                                                          : 连接到连接器失败
   Connecting to Connector timeout                                                                         : 连接到连接器超时

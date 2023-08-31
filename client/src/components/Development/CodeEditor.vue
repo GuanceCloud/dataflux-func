@@ -83,8 +83,6 @@ Waiting Timeout                                                                 
 Duplicated Func names                                                                                                              : 函数名重复
 Script publishing failed. Please check your code                                                                                   : 脚本发布失败，请检查代码是否存在错误
 Script executing failed. Please check your code                                                                                    : 脚本执行失败，请检查代码是否存在错误
-Script publishing failed. Script executing module may crashed, please contact the administrator to report this issue               : 脚本发布时发生故障，后端脚本执行模块可能存在问题，请联系管理员排查问题
-Script executing failed. Script executing module may crashed, please contact the administrator to report this issue                : 脚本执行时发生故障，后端脚本执行模块可能存在问题，请联系管理员排查问题
 Worker no response, please check the status of this system                                                                         : 工作单元没有响应，请检查系统状态
 Detail information is shown in the output box bellow                                                                               : 详细信息可在下方输出窗口中查看
 Script publishing timeout, please make sure that no time-consuming code in global scope                                            : 脚本发布预检查超时，请注意不要再全局范围内编写耗时代码
@@ -592,8 +590,8 @@ export default {
 
       if (!apiRes.ok) {
         // 输出结果
-        this.outputResult('publish', this.scriptId, apiRes);
-        this.alertOnError(apiRes, true);
+        this.outputResult('publish', this.scriptId, apiRes.detail.result);
+        this.alertOnError(apiRes);
         return;
       }
 
@@ -704,7 +702,7 @@ export default {
         argParts.push(`${k}=${v}`);
       }
       let argStr = argParts.join(', ');
-      this.outputResult('execute', `${this.selectedItemId}(${argStr})`, apiRes);
+      this.outputResult('execute', `${this.selectedItemId}(${argStr})`, apiRes.data.result);
 
       // 标记运行的函数
       if (apiRes.ok) {
@@ -726,21 +724,17 @@ export default {
       this.clearHighlight();
       this.resizeVueSplitPane(100);
     },
-    outputResult(type, name, apiRes) {
-      // 预检查正常执行时执行
-      if (!apiRes.ok) return;
-
+    outputResult(type, name, result) {
       this.funcCallSeq++;
 
-      let result = apiRes.data.result;
       let status          = result.status;          // 任务结果
       let peakMemroyUsage = result.peakMemroyUsage; // 内存分配峰值
       let cost            = result.cost;            // 执行耗时
       let printLogs       = result.printLogs;       // print 日志
       let returnValue     = result.returnValue;     // 函数返回值
-      let exception       = result.exception;           // 异常
-      let exceptionType   = result.exceptionType;      // 异常类型
-      let traceback       = result.traceback;      // 调用堆栈
+      let exception       = result.exception;       // 异常
+      let exceptionType   = result.exceptionType;   // 异常类型
+      let traceback       = result.traceback;       // 调用堆栈
 
       // print 日志添加格式
       printLogs = printLogs.map(l => {
@@ -850,9 +844,6 @@ export default {
       this.$refs.vueSplitPane.percent = this.SPLIT_PANE_CLOSE_PERCENT;
     },
     alertOnError(apiRes, isPublish) {
-      // 预检查任务本身永远不会失败，实际错误包装在 result 字段中
-      // 发生直接报错均为引擎故障
-
       let title   = null;
       let message = null;
       switch(apiRes.reason) {
@@ -860,28 +851,24 @@ export default {
           this.T.alert(`${this.$t('Worker no response, please check the status of this system')}`);
           break;
 
-        case 'EAPITimeout':
         case 'EFuncTimeout':
-          if (isPublish) {
-            this.T.alert(`${this.$t('Script publishing timeout, please make sure that no time-consuming code in global scope')}
-                <br>${this.$t('If this issue persists, please contact the administrator to report this issue')}`);
-          } else {
-            this.T.alert(`${this.$t('Waiting Func response timeout')}
-                <span class="text-main">
-                  <br>${this.$t('There is a {seconds} time limit when calling Funcs in Code Editor', { seconds: this.$tc('seconds', this.$store.getters.SYSTEM_INFO('_FUNC_TASK_TIMEOUT_DEBUGGER')) })}
-                  <br>${this.$t('It is not recommended for synchronous calling Funcs that response slowly')}</small>
-                </span>`);
-          }
+          // this.T.alert(`${this.$t('Script publishing timeout, please make sure that no time-consuming code in global scope')}
+          //     <br>${this.$t('If this issue persists, please contact the administrator to report this issue')}`);
+          this.T.alert(`${this.$t('Waiting Func response timeout')}
+              <span class="text-main">
+                <br>${this.$t('There is a {seconds} time limit when calling Funcs in Code Editor', { seconds: this.$tc('seconds', this.$store.getters.SYSTEM_INFO('_FUNC_TASK_TIMEOUT_DEBUGGER')) })}
+                <br>${this.$t('It is not recommended for synchronous calling Funcs that response slowly')}</small>
+              </span>`);
+          break;
+
+        case 'EScriptPublishFailed':
+          this.T.alert(`${this.$t('Script publishing failed. Please check your code')}
+              <br>${this.$t('Detail information is shown in the output box bellow')}`);
           break;
 
         case 'EFuncFailed':
-          if (isPublish) {
-            this.T.alert(`${this.$t('Script publishing failed. Script executing module may crashed, please contact the administrator to report this issue')}
-                <br>${this.$t('Detail information is shown in the output box bellow')}`);
-          } else {
-            this.T.alert(`${this.$t('Script executing failed. Script executing module may crashed, please contact the administrator to report this issue')}
-                <br>${this.$t('Detail information is shown in the output box bellow')}`);
-          }
+          this.T.alert(`${this.$t('Script executing failed. Please check your code')}
+              <br>${this.$t('Detail information is shown in the output box bellow')}`);
           break;
 
         case 'EFuncResultParsingFailed':

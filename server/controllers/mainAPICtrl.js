@@ -283,7 +283,7 @@ function createFuncRunnerTaskReq(locals, options, callback) {
     //    优先级：调用时指定 > 默认值
     if (toolkit.notNothing(options.returnType)) {
       // 调用时指定
-      var _RETURN_TYPES = ['ALL', 'raw', 'repr', 'jsonDumps'];
+      var _RETURN_TYPES = [ 'raw', 'jsonDumps'];
       if (_RETURN_TYPES.indexOf(options.returnType) < 0) {
         return callback(new E('EClientBadRequest', 'Invalid options, invalid returnType', { allowed: _RETURN_TYPES }));
       }
@@ -293,6 +293,26 @@ function createFuncRunnerTaskReq(locals, options, callback) {
     } else {
       // 默认值
       taskReq.returnType = 'raw';
+    }
+
+    // 是否拆箱 taskReq.unbox
+    if (toolkit.notNothing(options.unbox)) {
+      // 调用时指定
+      taskReq.unbox = options.unbox;
+
+    } else {
+      // 默认
+      switch(options.origin) {
+        case 'direct':
+          // 直接调用默认不拆箱
+          taskReq.unbox = false;
+          break;
+
+        default:
+          // 其他调用默认拆箱
+          taskReq.unbox = true;
+          break
+      }
     }
 
     return callback(null, taskReq);
@@ -512,10 +532,10 @@ function callFuncDebugger(locals, options, callback) {
         return callback(new E('EWorkerNoResponse', 'Worker no response, please check the status of this system'));
 
       } else if (taskResp.status === 'success' && taskResp.result) {
-        // 预检查处理永远不会失败，且必然有返回数据
+        // Func.Debugger 任务本身永远不会失败，且必然有返回数据
 
       } else {
-        return callback(new E('EAssert', 'Unexpected pre-check result.'));
+        return callback(new E('EAssert', 'Unexpected result.'));
       }
 
       return callback(null, taskResp);
@@ -525,7 +545,6 @@ function callFuncDebugger(locals, options, callback) {
 };
 
 function _doAPIResponse(res, taskReq, taskResp, callback) {
-  var returnValue     = taskResp.result.returnValue     || {};
   var responseControl = taskResp.result.responseControl || {};
 
   // 缓存标记
@@ -580,7 +599,7 @@ function _doAPIResponse(res, taskReq, taskResp, callback) {
     // 直接返回数据
     if (responseControl.download) {
       // 作为文件下载
-      var file     = returnValue.raw;
+      var file     = taskResp.result.returnValue;
       var fileName = responseControl.download;
       if ('string' !== typeof fileName) {
         var fileExt = typeof file === 'object' ? 'json' : 'txt';
@@ -590,19 +609,39 @@ function _doAPIResponse(res, taskReq, taskResp, callback) {
 
     } else {
       // 作为数据返回
-      // 当指定了响应体类型后，returnType 必须为 raw
+
+      // 当指定了响应体类型后
+      //    returnType 必须为 raw
+      //    unbox 必须为 true
       var returnType = taskReq.returnType;
+      var unbox      = taskReq.unbox;
       if (responseControl.contentType) {
         returnType = 'raw';
+        unbox      = true;
       }
 
-      // 根据 returnType 响应
-      if (returnType === 'ALL') {
-        var ret = toolkit.initRet(taskResp);
-        return res.locals.sendJSON(ret);
+      console.log(taskResp)
+      // 根据 returnType 转换格式
+      var result = taskResp.result;
+      switch(returnType) {
+        case 'raw':
+          // Nope
+          break;
+
+        case 'jsonDumps':
+          result.returnValue = JSON.stringify(result.returnValue);
+          break;
+      }
+
+      // 拆箱
+      if (unbox) {
+        // 需要拆箱时，发送数据类型不确定
+        return res.locals.sendRaw(result, responseControl.contentType);
 
       } else {
-        return res.locals.sendRaw(returnValue[returnType] || null, responseControl.contentType);
+        // 不拆箱时，必然是JSON
+        var ret = toolkit.initRet(result)
+        return res.locals.sendJSON(ret);
       }
     }
   }

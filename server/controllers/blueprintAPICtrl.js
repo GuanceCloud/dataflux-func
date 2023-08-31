@@ -414,6 +414,10 @@ exports.deploy = function(req, res, next) {
       mainAPICtrl.callFuncDebugger(res.locals, opt, function(err, taskResp) {
         if (err) return asyncCallback(err);
 
+        if (taskResp.result.status === 'failure') {
+          return asyncCallback(new E('EBlueprintDeployFailed', 'Blueprint deploying failed. Please check your configuration', taskResp));
+        }
+
         nextAPIFuncs = taskResp.result.apiFuncs;
 
         return asyncCallback();
