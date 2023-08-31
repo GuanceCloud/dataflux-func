@@ -555,17 +555,17 @@ function _doAPIResponse(res, taskReq, taskResp, callback) {
 
       // 默认与源文件名相同
       var fileName = filePath.split('/').pop();
-      if ('string' === typeof responseControl.downloadFile) {
+      if ('string' === typeof responseControl.download) {
         // 指定下载名
-        fileName = responseControl.downloadFile;
+        fileName = responseControl.download;
       }
 
-      if (responseControl.downloadFile === false) {
+      if (responseControl.download === false) {
         // 非下载模式
-        locals.sendRaw(buffer, fileName);
+        res.locals.sendRaw(buffer, fileName);
       } else {
         // 下载模式
-        locals.sendFile(buffer, fileName);
+        res.locals.sendFile(buffer, fileName);
       }
 
       // 自动删除文件
@@ -578,15 +578,15 @@ function _doAPIResponse(res, taskReq, taskResp, callback) {
 
   } else {
     // 直接返回数据
-    if (responseControl.downloadFile) {
+    if (responseControl.download) {
       // 作为文件下载
       var file     = returnValue.raw;
-      var fileName = responseControl.downloadFile;
+      var fileName = responseControl.download;
       if ('string' !== typeof fileName) {
         var fileExt = typeof file === 'object' ? 'json' : 'txt';
         fileName = `api-resp.${fileExt}`;
       }
-      return locals.sendFile(file, fileName);
+      return res.locals.sendFile(file, fileName);
 
     } else {
       // 作为数据返回
