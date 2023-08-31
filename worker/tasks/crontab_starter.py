@@ -104,7 +104,7 @@ class CrontabStarter(BaseTask):
         crontab_configs = filter(self.filter_crontab_config, crontab_configs)
         return crontab_configs, latest_seq
 
-    def put_task(self, crontab_config, origin, origin_id, delay=None):
+    def put_task(self, crontab_config, origin, origin_id, delay=None, exec_mode='crontab'):
         # 超时时间 / 过期时间
         timeout = crontab_config['funcExtraConfig'].get('timeout') or CONFIG['_FUNC_TASK_TIMEOUT_DEFAULT']
         expires = timeout
@@ -141,7 +141,7 @@ class CrontabStarter(BaseTask):
                     'crontabDelay'    : delay,
                     'crontabLockKey'  : crontab_lock_key,
                     'crontabLockValue': crontab_lock_value,
-                    'crontabExecMode' : crontab_config.get('execMode') or 'crontab',
+                    'crontabExecMode' : exec_mode,
                 },
 
                 'triggerTime': self.trigger_time,
@@ -214,7 +214,6 @@ class CrontabManualStarter(CrontabStarter):
             return None
 
         crontab_config = self.prepare_contab_config(crontab_configs[0])
-        crontab_config['execMode'] = 'manual'
         return crontab_config
 
     def run(self, **kwargs):
@@ -228,4 +227,4 @@ class CrontabManualStarter(CrontabStarter):
         self.put_task(crontab_config=crontab_config,
                       origin='crontab',
                       origin_id=crontab_config['id'],
-                      is_manual=True)
+                      exec_mode='manual')

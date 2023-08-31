@@ -1301,7 +1301,7 @@ exports.runCrontabConfigManually = function(req, res, next) {
 
     // 发送任务
     var taskReq = {
-      name  : 'Internal.CrontabManualStarter',
+      name  : 'Crontab.ManualStarter',
       kwargs: { crontabConfigId: id },
     }
     res.locals.cacheDB.putTask(taskReq, function(err) {
