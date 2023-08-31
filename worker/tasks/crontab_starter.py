@@ -16,7 +16,7 @@ from worker.tasks import BaseTask
 CONFIG = yaml_resources.get('CONFIG')
 
 class CrontabStarter(BaseTask):
-    name = 'Main.CrontabStarter'
+    name = 'Crontab.Starter'
 
     def filter_crontab_config(self, crontab_config):
         crontab = crontab_config.get('crontab')
@@ -184,7 +184,7 @@ class CrontabStarter(BaseTask):
                 crontab_count += 1
 
 class CrontabManualStarter(CrontabStarter):
-    name = 'Main.CrontabManualStarter'
+    name = 'Crontab.ManualStarter'
 
     def get_crontab_config(self, crontab_config_id):
         sql = '''

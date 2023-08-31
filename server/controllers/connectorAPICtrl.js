@@ -167,7 +167,7 @@ function _checkConfig(locals, type, config, skipTest, callback) {
   if (skipTest) return callback();
 
   var taskReq = {
-    name  : 'Main.CheckConnector',
+    name  : 'Internal.CheckConnector',
     kwargs: { type: type, config: config },
 
     onResponse(taskResp) {
@@ -425,7 +425,7 @@ exports.query = function(req, res, next) {
 
       // 执行命令
       var taskReq = {
-        name  : 'Main.QueryConnector',
+        name  : 'Internal.QueryConnector',
         kwargs: taskKwargs,
 
         onResponse(taskResp) {

@@ -36,6 +36,7 @@ var LOG_LEVELS = exports.LOG_LEVELS = {
   }
 };
 var LOG_TEXT_FIELDS = [
+  'pid',
   // 'appName',
   // 'subAppName',
   'subAppNameShort',
@@ -58,6 +59,7 @@ var LOG_TEXT_FIELDS = [
   'costTime',
 ];
 var LOG_TEXT_COLOR_MAP = {
+  pid               : true,
   appName           : true,
   subAppName        : true,
   subAppNameShort   : true,
@@ -81,6 +83,7 @@ var LOG_TEXT_COLOR_MAP = {
   costTime          : 'cyan',
 };
 var LOG_JSON_FIELD_MAP = {
+  pid               : 'pid',
   appName           : 'app',
   subAppName        : 'sub_app',
   // subAppNameShort   : 'sub_app_short',
@@ -236,8 +239,9 @@ var LOGGER = new winston.Logger(winstonOpt);
  * @param {Object} req - `Express.js` request object
  */
 var LoggerHelper = function(locals, req) {
+  this.pid    = process.pid;
   this.locals = locals;
-  this.req = req;
+  this.req    = req;
 
   this.level = CONFIG.LOG_LEVEL.toUpperCase();
 
@@ -309,6 +313,7 @@ LoggerHelper.prototype._log = function() {
     message     : fixedMessage,
     isFixWinston: fixedMessage !== message,
     meta: {
+      pid               : this.pid,
       appName           : CONFIG.APP_NAME,
       subAppName        : 'Server',
       subAppNameShort   : 'SVR',

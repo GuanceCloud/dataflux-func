@@ -42,6 +42,7 @@ LOG_LEVELS = {
     }
 }
 LOG_TEXT_FIELDS = [
+    'pid',
     # 'appName',
     # 'subAppName',
     'subAppNameShort',
@@ -67,6 +68,7 @@ LOG_TEXT_FIELDS = [
     'costTime',
 ]
 LOG_TEXT_COLOR_MAP = {
+    'pid'               : True,
     'appName'           : True,
     'subAppName'        : True,
     'subAppNameShort'   : True,
@@ -93,6 +95,7 @@ LOG_TEXT_COLOR_MAP = {
     'costTime'          : 'cyan',
 }
 LOG_JSON_FIELD_MAP = {
+    'pid'               : 'pid',
     'appName'           : 'app',
     'subAppName'        : 'sub_app',
     # 'subAppNameShort'   : 'sub_app_short',
@@ -206,6 +209,7 @@ class LogHelper(object):
     Logger helper
     '''
     def __init__(self, task=None):
+        self.pid  = os.getpid()
         self.task = task or toolkit.FakeTask()
 
         self.level = CONFIG['LOG_LEVEL']
@@ -233,6 +237,7 @@ class LogHelper(object):
         log_line = {
             'message': message,
             'meta': {
+                'pid'               : self.pid,
                 'appName'           : CONFIG['APP_NAME'],
                 'subAppName'        : 'Worker',
                 'subAppNameShort'   : 'WKR',

@@ -1262,7 +1262,7 @@ exports.runCrontabConfigManually = function(req, res, next) {
 
     // 发送任务
     var taskReq = {
-      name  : 'Main.CrontabManualStarter',
+      name  : 'Internal.CrontabManualStarter',
       kwargs: { crontabConfigId: id },
     }
     res.locals.cacheDB.putTask(taskReq, function(err) {

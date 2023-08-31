@@ -243,7 +243,7 @@ exports.runListener = function runListener(app) {
     async.series([
       // 查询当前订阅处理工作单元数量
       function(asyncCallback) {
-        var cacheKey = toolkit.getWorkerCacheKey('heartbeat', 'workerCountOnQueue', [
+        var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'processCountOnQueue', [
             'workerQueue', CONFIG._FUNC_TASK_QUEUE_SUB_HANDLER]);
 
         app.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
@@ -259,7 +259,11 @@ exports.runListener = function runListener(app) {
         var skip = false;
 
         // 无可用工作队列 / 无订阅对象时，跳过本轮处理
-        if (subWorkerCount <= 0 || toolkit.isNothing(CONNECTOR_TOPIC_FUNC_MAP)) {
+        if (subWorkerCount <= 0) {
+          app.locals.logger.debug('[SUB] No worker available, skip');
+          skip = true;
+        } else if (toolkit.isNothing(CONNECTOR_TOPIC_FUNC_MAP)) {
+          app.locals.logger.debug('[SUB] No topic func, skip');
           skip = true;
         }
 
