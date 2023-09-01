@@ -446,5 +446,11 @@ export function shouldScriptSetHidden(scriptSet) {
     return true;
   }
 
+  // 隐藏蓝图脚本集
+  if (app.$store.getters.SYSTEM_SETTINGS('SCRIPT_SET_HIDDEN_BLUEPRINT')
+    && scriptSet.origin === 'blueprint') {
+    return true;
+  }
+
   return false;
 }

@@ -256,6 +256,13 @@ Save and Refresh: 保存并刷新
                   </el-select>
                 </el-form-item>
 
+                <el-form-item :label="$t('Blueprint')" prop="SCRIPT_SET_HIDDEN_BLUEPRINT">
+                  <el-select v-model="form['SCRIPT_SET_HIDDEN_BLUEPRINT']" :class="enableClass(form['SCRIPT_SET_HIDDEN_BLUEPRINT'])">
+                    <el-option :label="$t('Hidden')" key="true"  :value="true"></el-option>
+                    <el-option :label="$t('Shown')"  key="false" :value="false"></el-option>
+                  </el-select>
+                </el-form-item>
+
                 <template v-if="showAdvancedSettings">
                   <!-- 高级 -->
                   <el-divider content-position="left"><h1 class="text-bad">{{ $t('Advanced Settings') }}</h1></el-divider>

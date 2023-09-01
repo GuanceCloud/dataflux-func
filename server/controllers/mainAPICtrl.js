@@ -933,6 +933,8 @@ exports.overview = function(req, res, next) {
 
   var SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET = CONST.systemSettings.SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET;
   var SCRIPT_SET_HIDDEN_BUILTIN                = CONST.systemSettings.SCRIPT_SET_HIDDEN_BUILTIN;
+  var SCRIPT_SET_HIDDEN_BLUEPRINT              = CONST.systemSettings.SCRIPT_SET_HIDDEN_BLUEPRINT;
+  var nonScriptSetOrigins                      = [];
   var nonScriptSetOriginIds                    = [];
   async.series([
     // 获取系统配置
@@ -940,6 +942,7 @@ exports.overview = function(req, res, next) {
       var systemSettingIds = [
         'SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET',
         'SCRIPT_SET_HIDDEN_BUILTIN',
+        'SCRIPT_SET_HIDDEN_BLUEPRINT',
       ]
       systemSettingModel.get(systemSettingIds, function(err, dbRes) {
         if (err) return asyncCallback(err);
@@ -951,7 +954,12 @@ exports.overview = function(req, res, next) {
 
         SCRIPT_SET_HIDDEN_BUILTIN = dbRes.SCRIPT_SET_HIDDEN_BUILTIN;
         if (SCRIPT_SET_HIDDEN_BUILTIN) {
-          nonScriptSetOriginIds.push('builtin');
+          nonScriptSetOrigins.push('builtin');
+        }
+
+        SCRIPT_SET_HIDDEN_BLUEPRINT = dbRes.SCRIPT_SET_HIDDEN_BLUEPRINT;
+        if (SCRIPT_SET_HIDDEN_BLUEPRINT) {
+          nonScriptSetOrigins.push('blueprint');
         }
 
         return asyncCallback();
@@ -1011,52 +1019,52 @@ exports.overview = function(req, res, next) {
       if (sectionMap && !sectionMap.bizEntityCount) return asyncCallback();
 
       async.eachSeries(bizEntityMeta, function(meta, eachCallback) {
-        var opt = null;
-        if (nonScriptSetOriginIds.length > 0) {
-          // 特定业务实体使用过滤条件
-          switch(meta.name) {
-            case 'scriptSet':
-                opt = {
-                  baseSQL: `
-                    SELECT
-                      COUNT(sset.id) AS count
-                    FROM biz_main_script_set AS sset`,
-                  filters: {
-                    'sset.originId': { notin: nonScriptSetOriginIds }
-                  }
-                }
-              break;
+        var opt       = null;
+        var useHidden = false;
 
-            case 'script':
-                opt = {
-                  baseSQL: `
-                    SELECT
-                      COUNT(scpt.id) AS count
-                    FROM biz_main_script AS scpt
-                    JOIN biz_main_script_set AS sset
-                      ON scpt.scriptSetId = sset.id`,
-                  filters: {
-                    'sset.originId': { notin: nonScriptSetOriginIds }
-                  }
-                }
-              break;
+        // 脚本集相关的需要去除隐藏的内容
+        switch(meta.name) {
+          case 'scriptSet':
+            opt = {
+              baseSQL: `
+                SELECT
+                  COUNT(sset.id) AS count
+                FROM biz_main_script_set AS sset`,
+            }
+            useHidden = true;
+            break;
 
-            case 'func':
-                opt = {
-                  baseSQL: `
-                    SELECT
-                      COUNT(func.id) AS count
-                    FROM biz_main_func AS func
-                    JOIN biz_main_script AS scpt
-                      ON func.scriptId = scpt.id
-                    JOIN biz_main_script_set AS sset
-                      ON scpt.scriptSetId = sset.id`,
-                  filters: {
-                    'sset.originId': { notin: nonScriptSetOriginIds }
-                  }
-                }
-              break;
-          }
+          case 'script':
+            opt = {
+              baseSQL: `
+                SELECT
+                  COUNT(scpt.id) AS count
+                FROM biz_main_script AS scpt
+                JOIN biz_main_script_set AS sset
+                  ON scpt.scriptSetId = sset.id`,
+            }
+            useHidden = true;
+            break;
+
+          case 'func':
+            opt = {
+              baseSQL: `
+                SELECT
+                  COUNT(func.id) AS count
+                FROM biz_main_func AS func
+                JOIN biz_main_script AS scpt
+                  ON func.scriptId = scpt.id
+                JOIN biz_main_script_set AS sset
+                  ON scpt.scriptSetId = sset.id`,
+            }
+            useHidden = true;
+            break;
+        }
+
+        if (opt && useHidden) {
+          opt.filters = opt.filters || {};
+          if (nonScriptSetOrigins.length   > 0) opt.filters['sset.origin']   = { notin: nonScriptSetOrigins   };
+          if (nonScriptSetOriginIds.length > 0) opt.filters['sset.originId'] = { notin: nonScriptSetOriginIds };
         }
 
         meta.model.count(opt, function(err, dbRes) {

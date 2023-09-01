@@ -119,3 +119,4 @@ systemSettings:
   # 脚本集隐藏
   SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET: true
   SCRIPT_SET_HIDDEN_BUILTIN               : true
+  SCRIPT_SET_HIDDEN_BLUEPRINT             : true
