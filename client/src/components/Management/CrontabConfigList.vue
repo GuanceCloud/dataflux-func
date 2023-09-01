@@ -133,7 +133,11 @@ Using Crontab Config, you can have functions executed at regular intervals: 使�
 
           <el-table-column :label="$t('Task Record')" width="240">
             <template slot-scope="scope">
-              <template v-if="statisticMap[scope.row.id]">
+              <template v-if="!isStatisticLoaded">
+                <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
+                {{ $t('Loading') }}
+              </template>
+              <template v-else-if="statisticMap[scope.row.id]">
                 <span v-if="statisticMap[scope.row.id].lastStatus === 'success'" class="text-good">
                   <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(statisticMap[scope.row.id].lastStartTime) }) }}
                 </span>
@@ -148,6 +152,9 @@ Using Crontab Config, you can have functions executed at regular intervals: 使�
                 <i class="fa fa-fw fa-pie-chart text-info"></i>
                 <span :class="{ 'text-good': !!statisticMap[scope.row.id].recentSuccessCount }">{{ $t('successCount', { n: T.numberLimit(statisticMap[scope.row.id].recentSuccessCount) }) }}</span>
                 / <span :class="{ 'text-bad': !!statisticMap[scope.row.id].recentFailureCount }">{{ $t('failureCount', { n: T.numberLimit(statisticMap[scope.row.id].recentFailureCount) }) }}</span>
+              </template>
+              <template v-else>
+                {{ $t('No recent record') }}
               </template>
             </template>
           </el-table-column>
@@ -222,7 +229,10 @@ export default {
       this.$store.commit('updateLoadStatus', true);
 
       // 获取统计信息
-      this.statisticMap = await this.common.loadStatistic('originId', this.data.map(d => d.id));
+      setTimeout(async () => {
+        this.statisticMap = await this.common.loadStatistic('originId', this.data.map(d => d.id));
+        this.isStatisticLoaded = true;
+      }, 1000);
     },
     async quickSubmitData(d, operation) {
       switch(operation) {
@@ -309,9 +319,11 @@ export default {
     let _dataFilter = this.T.createListQuery();
 
     return {
-      data        : [],
-      statisticMap: {},
-      pageInfo    : _pageInfo,
+      data    : [],
+      pageInfo: _pageInfo,
+
+      statisticMap     : {},
+      isStatisticLoaded: false,
 
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,

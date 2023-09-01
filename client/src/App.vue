@@ -646,6 +646,9 @@ p.form-item {
 .common-table {
   width: 100%;
 }
+.common-table .fa-spin {
+  font-size: 1.1em;
+}
 .common-table .el-table__header {
   height: 60px;
 }
