@@ -229,6 +229,7 @@ export default {
       this.$store.commit('updateLoadStatus', true);
 
       // 获取统计信息
+      this.isStatisticLoaded = false;
       setTimeout(async () => {
         this.statisticMap = await this.common.loadStatistic('originId', this.data.map(d => d.id));
         this.isStatisticLoaded = true;
