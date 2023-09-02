@@ -215,14 +215,14 @@ const routes = [
       },
 
       {
-        path: 'task-record-list',
-        name: 'task-record-list',
-        component: () => import('../components/Management/TaskRecordList.vue'),
+        path: 'task-record-func-list',
+        name: 'task-record-func-list',
+        component: () => import('../components/Management/TaskRecordFuncList.vue'),
       },
       {
-        path: 'sub-task-record-list/:id',
-        name: 'sub-task-record-list',
-        component: () => import('../components/Management/TaskRecordList.vue'),
+        path: 'sub-task-record-func-list/:id',
+        name: 'sub-task-record-func-list',
+        component: () => import('../components/Management/TaskRecordFuncList.vue'),
       },
 
       {
@@ -459,9 +459,9 @@ router.beforeEach((to, from, next) => {
   // 设置页面标题
   if (from.name) {
     let siteTitle = 'DataFlux Func';
-    let variableConfig = store.getters.SYSTEM_INFO('VARIABLE_CONFIG', {});
-    if (variableConfig['CUSTOM_SITE_TITLE_ENABLED'] && variableConfig['CUSTOM_SITE_TITLE_TEXT']) {
-      siteTitle = variableConfig['CUSTOM_SITE_TITLE_TEXT'];
+    if (store.getters.SYSTEM_SETTINGS('CUSTOM_SITE_TITLE_ENABLED')
+    && store.getters.SYSTEM_SETTINGS('CUSTOM_SITE_TITLE_TEXT')) {
+      siteTitle = store.getters.SYSTEM_SETTINGS('CUSTOM_SITE_TITLE_TEXT');
     }
 
     if (['code-editor', 'code-viewer'].indexOf(to.name) >= 0) {

@@ -36,10 +36,10 @@ var LOG_LEVELS = exports.LOG_LEVELS = {
   }
 };
 var LOG_TEXT_FIELDS = [
-  'pid',
   // 'appName',
   // 'subAppName',
   'subAppNameShort',
+  'pid',
   // 'upTime',
   // 'level',
   'levelShort',
@@ -59,10 +59,10 @@ var LOG_TEXT_FIELDS = [
   'costTime',
 ];
 var LOG_TEXT_COLOR_MAP = {
-  pid               : true,
   appName           : true,
   subAppName        : true,
   subAppNameShort   : true,
+  pid               : true,
   upTime            : true,
   level             : true,
   levelShort        : true,
@@ -83,10 +83,10 @@ var LOG_TEXT_COLOR_MAP = {
   costTime          : 'cyan',
 };
 var LOG_JSON_FIELD_MAP = {
-  pid               : 'pid',
   appName           : 'app',
   subAppName        : 'sub_app',
   // subAppNameShort   : 'sub_app_short',
+  pid               : 'pid',
   upTime            : 'up_time',
   level             : 'level',
   // levelShort        : 'level_short',

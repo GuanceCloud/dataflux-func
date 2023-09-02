@@ -357,7 +357,7 @@ export function goToTaskRecord(query, options) {
   }
 
   router.push({
-    name  : 'task-record-list',
+    name  : 'task-record-func-list',
     query : nextRouteQuery,
   });
 }

@@ -4,7 +4,8 @@ Custom Site Favicon        : 自定义网站 Favicon
 Custom Site Logo           : 自定义网站 Logo
 Notice Bar                 : 顶部提示栏
 Doc Link in Navi Bar       : 导航栏文档链接
-Guance Data Report         : 观测云数据上报
+Func Task Record           : 函数任务记录
+Guance Data Upload         : 观测云数据上报
 Official Script Market     : 官方脚本市场
 Hide Following Script Sets : 隐藏下列脚本集
 
@@ -26,14 +27,17 @@ Site Name                  : 站点名
 Drag file to here, or click here to upload: 将文件拖到此处，或点击此处上传
 'System Setting Saved. Page will be refreshed soon...': '系统设置已保存，页面即将刷新...'
 
-Use the specified text as the site title: 使用指定的文案作为网站标题
-Use the specified image as the site icon (favicon): 使用指定的图片作为网站图标（favicon）
-Use the specified image as the system Logo: 使用指定的图片作为网站 Logo
-Show a fixed alert bar at the top of all pages: 在所有页面顶部展示固定的提示栏
+Use the specified text as the site title                 : 使用指定的文案作为网站标题
+Use the specified image as the site icon (favicon)       : 使用指定的图片作为网站图标（favicon）
+Use the specified image as the system Logo               : 使用指定的图片作为网站 Logo
+Show a fixed alert bar at the top of all pages           : 在所有页面顶部展示固定的提示栏
 Show a Document Link to the specified URL in the Navi Bar: 在导航栏展示文档链接，点击后可以跳转至指定的 URL 地址
-Report the monitor data of DataFlux Func to the specified URL: 将 DataFlux Func 的监控数据上报到指定 URL
-Show quick creation button for Official Script Market: 显示官方脚本市场快捷创建按钮
-Some Scripts should be avoided for direct modification, if you need to review them, please turn on the following options: 一些脚本应当避免直接修改，如果需要查看，请开启以下选项
+Save Func Task Records in database of this system        : 将函数任务记录保存在本系统的数据库中
+If disabled, all Func Task Records will be cleared       : 禁用后会清空所有函数任务记录数据
+Upload the self-monitor data to the Guance   : 将自监控数据上报到观测云
+Site Name will be added to tags.site_name                : 站点名会被添加至 tags.site_name
+Show quick creation button for Official Script Market    : 显示官方脚本市场快捷创建按钮
+Some Scripts should be avoided for direct modification, if you need to review them, please turn on the following options: 部分脚本应当避免直接修改，如果需要查看，请开启以下选项
 
 If you don't know the meaning of these configurations, please don't make any changes!: 如果您不知道这些配置的意义，请不要作任何修改！
 
@@ -68,9 +72,11 @@ Save and Refresh: 保存并刷新
                   </el-select>
                 </el-form-item>
 
-                <el-form-item :label="$t('Text')" prop="CUSTOM_SITE_TITLE_TEXT">
-                  <el-input v-model="form['CUSTOM_SITE_TITLE_TEXT']"></el-input>
-                </el-form-item>
+                <template v-if="form['CUSTOM_SITE_TITLE_ENABLED'] === true">
+                  <el-form-item :label="$t('Text')" prop="CUSTOM_SITE_TITLE_TEXT">
+                    <el-input v-model="form['CUSTOM_SITE_TITLE_TEXT']"></el-input>
+                  </el-form-item>
+                </template>
 
                 <!-- 自定义 Favicon -->
                 <el-divider content-position="left"><h1>{{ $t('Custom Site Favicon') }}</h1></el-divider>
@@ -86,28 +92,30 @@ Save and Refresh: 保存并刷新
                   </el-select>
                 </el-form-item>
 
-                <el-form-item :label="$t('Image')" prop="CUSTOM_FAVICON_IMAGE_SRC">
-                  <el-upload drag ref="CUSTOM_FAVICON_IMAGE_SRC"
-                    :limit="2"
-                    :multiple="false"
-                    :auto-upload="false"
-                    :show-file-list="false"
-                    :accept="['.jpg', '.jpeg', '.png', '.gif', 'ico']"
-                    :on-change="onCustomFaviconChange">
-                    <div v-if="form.CUSTOM_FAVICON_IMAGE_SRC" class="image-preview">
-                      <img :src="form.CUSTOM_FAVICON_IMAGE_SRC" />
-                    </div>
-                    <template v-else>
-                      <i class="fa fa-cloud-upload"></i>
-                      <div class="el-upload__text">{{ $t('Drag file to here, or click here to upload') }}</div>
-                    </template>
-                  </el-upload>
-                  <el-button v-if="form.CUSTOM_FAVICON_IMAGE_SRC"
-                    type="text"
-                    @click="removeImage('CUSTOM_FAVICON_IMAGE_SRC')">
-                    {{ $t('Delete Image') }}
-                  </el-button>
-                </el-form-item>
+                <template v-if="form['CUSTOM_FAVICON_ENABLED'] === true">
+                  <el-form-item :label="$t('Image')" prop="CUSTOM_FAVICON_IMAGE_SRC">
+                    <el-upload drag ref="CUSTOM_FAVICON_IMAGE_SRC"
+                      :limit="2"
+                      :multiple="false"
+                      :auto-upload="false"
+                      :show-file-list="false"
+                      :accept="['.jpg', '.jpeg', '.png', '.gif', 'ico']"
+                      :on-change="onCustomFaviconChange">
+                      <div v-if="form.CUSTOM_FAVICON_IMAGE_SRC" class="image-preview">
+                        <img :src="form.CUSTOM_FAVICON_IMAGE_SRC" />
+                      </div>
+                      <template v-else>
+                        <i class="fa fa-cloud-upload"></i>
+                        <div class="el-upload__text">{{ $t('Drag file to here, or click here to upload') }}</div>
+                      </template>
+                    </el-upload>
+                    <el-button v-if="form.CUSTOM_FAVICON_IMAGE_SRC"
+                      type="text"
+                      @click="removeImage('CUSTOM_FAVICON_IMAGE_SRC')">
+                      {{ $t('Delete Image') }}
+                    </el-button>
+                  </el-form-item>
+                </template>
 
                 <!-- 自定义 Logo -->
                 <el-divider content-position="left"><h1>{{ $t('Custom Site Logo') }}</h1></el-divider>
@@ -123,28 +131,30 @@ Save and Refresh: 保存并刷新
                   </el-select>
                 </el-form-item>
 
-                <el-form-item :label="$t('Image')" prop="CUSTOM_LOGO_IMAGE_SRC">
-                  <el-upload drag ref="CUSTOM_LOGO_IMAGE_SRC"
-                    :limit="2"
-                    :multiple="false"
-                    :auto-upload="false"
-                    :show-file-list="false"
-                    :accept="['.jpg', '.jpeg', '.png', '.gif']"
-                    :on-change="onCustomLogoChange">
-                    <div v-if="form.CUSTOM_LOGO_IMAGE_SRC" class="image-preview">
-                      <img :src="form.CUSTOM_LOGO_IMAGE_SRC" />
-                    </div>
-                    <template v-else>
-                      <i class="fa fa-cloud-upload"></i>
-                      <div class="el-upload__text">{{ $t('Drag file to here, or click here to upload') }}</div>
-                    </template>
-                  </el-upload>
-                  <el-button v-if="form.CUSTOM_LOGO_IMAGE_SRC"
-                    type="text"
-                    @click="removeImage('CUSTOM_LOGO_IMAGE_SRC')">
-                    {{ $t('Delete Image') }}
-                  </el-button>
-                </el-form-item>
+                <template v-if="form['CUSTOM_LOGO_ENABLED'] === true">
+                  <el-form-item :label="$t('Image')" prop="CUSTOM_LOGO_IMAGE_SRC">
+                    <el-upload drag ref="CUSTOM_LOGO_IMAGE_SRC"
+                      :limit="2"
+                      :multiple="false"
+                      :auto-upload="false"
+                      :show-file-list="false"
+                      :accept="['.jpg', '.jpeg', '.png', '.gif']"
+                      :on-change="onCustomLogoChange">
+                      <div v-if="form.CUSTOM_LOGO_IMAGE_SRC" class="image-preview">
+                        <img :src="form.CUSTOM_LOGO_IMAGE_SRC" />
+                      </div>
+                      <template v-else>
+                        <i class="fa fa-cloud-upload"></i>
+                        <div class="el-upload__text">{{ $t('Drag file to here, or click here to upload') }}</div>
+                      </template>
+                    </el-upload>
+                    <el-button v-if="form.CUSTOM_LOGO_IMAGE_SRC"
+                      type="text"
+                      @click="removeImage('CUSTOM_LOGO_IMAGE_SRC')">
+                      {{ $t('Delete Image') }}
+                    </el-button>
+                  </el-form-item>
+                </template>
 
                 <!-- 提示栏 -->
                 <el-divider content-position="left"><h1>{{ $t('Notice Bar') }}</h1></el-divider>
@@ -160,20 +170,22 @@ Save and Refresh: 保存并刷新
                   </el-select>
                 </el-form-item>
 
-                <el-form-item :label="$t('Text')" prop="NOTICE_BAR_TEXT">
-                  <el-input
-                    type="textarea"
-                    :autosize="{ minRows: 2 }"
-                    v-model="form['NOTICE_BAR_TEXT']"></el-input>
-                </el-form-item>
+                <template v-if="form['NOTICE_BAR_ENABLED'] === true">
+                  <el-form-item :label="$t('Text')" prop="NOTICE_BAR_TEXT">
+                    <el-input
+                      type="textarea"
+                      :autosize="{ minRows: 2 }"
+                      v-model="form['NOTICE_BAR_TEXT']"></el-input>
+                  </el-form-item>
 
-                <el-form-item :label="$t('Color')" prop="NOTICE_BAR_COLOR">
-                  <el-color-picker
-                    :predefine="colorPanel"
-                    color-format="rgb"
-                    @active-change="onNoticeBarColorChange"
-                    v-model="form['NOTICE_BAR_COLOR']"></el-color-picker>
-                </el-form-item>
+                  <el-form-item :label="$t('Color')" prop="NOTICE_BAR_COLOR">
+                    <el-color-picker
+                      :predefine="colorPanel"
+                      color-format="rgb"
+                      @active-change="onNoticeBarColorChange"
+                      v-model="form['NOTICE_BAR_COLOR']"></el-color-picker>
+                  </el-form-item>
+                </template>
 
                 <!-- 导航栏文档链接 -->
                 <el-divider content-position="left"><h1>{{ $t('Doc Link in Navi Bar') }}</h1></el-divider>
@@ -189,18 +201,32 @@ Save and Refresh: 保存并刷新
                   </el-select>
                 </el-form-item>
 
-                <el-form-item :label="$t('URL')" prop="NAVI_DOC_LINK_URL">
-                  <el-input
-                    type="textarea"
-                    :autosize="{ minRows: 2 }"
-                    v-model="form['NAVI_DOC_LINK_URL']"></el-input>
-                </el-form-item>
+                <template v-if="form['NAVI_DOC_LINK_ENABLED'] === true">
+                  <el-form-item :label="$t('URL')" prop="NAVI_DOC_LINK_URL">
+                    <el-input
+                      type="textarea"
+                      :autosize="{ minRows: 2 }"
+                      v-model="form['NAVI_DOC_LINK_URL']"></el-input>
+                  </el-form-item>
+                </template>
 
-                <!-- 观测云数据上传 -->
-                <el-divider content-position="left"><h1>{{ $t('Guance Data Report') }}</h1></el-divider>
+                <!-- 本地函数任务记录 -->
+                <el-divider content-position="left"><h1>{{ $t('Func Task Record') }}</h1></el-divider>
 
                 <el-form-item>
-                  <InfoBlock :title="$t('Report the monitor data of DataFlux Func to the specified URL')" />
+                  <InfoBlock :title="$t('Save Func Task Records in database of this system')" />
+                  <InfoBlock type="warning" :title="$t('If disabled, all Func Task Records will be cleared')" />
+                </el-form-item>
+
+                <el-form-item :label="$t('Enable')" prop="LOCAL_FUNC_TASK_RECORD_ENABLED">
+                  <el-switch v-model="form['LOCAL_FUNC_TASK_RECORD_ENABLED']" />
+                </el-form-item>
+
+                <!-- 观测云数据上报 -->
+                <el-divider content-position="left"><h1>{{ $t('Guance Data Upload') }}</h1></el-divider>
+
+                <el-form-item>
+                  <InfoBlock :title="$t('Upload the self-monitor data to the Guance')" />
                 </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="GUANCE_DATA_UPLOAD_ENABLED">
@@ -210,16 +236,21 @@ Save and Refresh: 保存并刷新
                   </el-select>
                 </el-form-item>
 
-                <el-form-item :label="$t('URL')" prop="GUANCE_DATA_UPLOAD_URL">
-                  <el-input placeholder="http(s)://<DataKit / DataWay Domain>:<Port>?token=<Token>"
-                    type="textarea"
-                    :autosize="{ minRows: 2 }"
-                    v-model="form['GUANCE_DATA_UPLOAD_URL']"></el-input>
-                </el-form-item>
+                <template v-if="form['GUANCE_DATA_UPLOAD_ENABLED'] === true">
+                  <el-form-item :label="$t('URL')" prop="GUANCE_DATA_UPLOAD_URL">
+                    <el-input
+                      type="textarea"
+                      :autosize="{ minRows: 2 }"
+                      v-model="form['GUANCE_DATA_UPLOAD_URL']"></el-input>
+                    <InfoBlock :title="`DataWay URL${':'}http://openway.guance.con?token=tkn_xxxxx`" />
+                    <InfoBlock :title="`DataKit URL${':'}http://datakit-ip-or-domain:9529`" />
+                  </el-form-item>
 
-                <el-form-item :label="$t('Site Name')" prop="GUANCE_DATA_SITE_NAME">
-                  <el-input v-model="form['GUANCE_DATA_SITE_NAME']"></el-input>
-                </el-form-item>
+                  <el-form-item :label="$t('Site Name')" prop="GUANCE_DATA_SITE_NAME">
+                    <el-input v-model="form['GUANCE_DATA_SITE_NAME']"></el-input>
+                    <InfoBlock :title="$t('Site Name will be added to tags.site_name')" />
+                  </el-form-item>
+                </template>
 
                 <!-- 官方脚本市场 -->
                 <el-divider content-position="left"><h1>{{ $t('Official Script Market') }}</h1></el-divider>
@@ -316,8 +347,11 @@ export default {
     async loadData() {
       await this.$store.dispatch('loadSystemInfo');
 
-      this.data = this.T.jsonCopy(this.$store.getters.SYSTEM_SETTINGS());
-      this.form = this.T.jsonCopy(this.$store.getters.SYSTEM_SETTINGS());
+      const systemSettings = this.T.jsonCopy(this.$store.getters.SYSTEM_SETTINGS())
+      for (let k in systemSettings) {
+        this.$set(this.data, k, systemSettings[k]);
+        this.$set(this.form, k, systemSettings[k]);
+      }
 
       this.$store.commit('updateLoadStatus', true);
     },

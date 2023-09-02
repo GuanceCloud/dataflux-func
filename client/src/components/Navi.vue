@@ -1,6 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
-Current version of DataFlux Func is {0}: 当前 DataFlux Func 版本为 {0}
-Latest version {0} has been released   : 最新版 {0} 已经发布
+Current version is {0}                  : 当前版本为 {0}
+Latest version {0} has been released    : 最新版 {0} 已经发布
 Click here to visit the official website: 点击此处前往官方网站查看
 </i18n>
 
@@ -140,7 +140,7 @@ Click here to visit the official website: 点击此处前往官方网站查看
         <el-image style="width: 550px; left: -50px;" :src="img_noticeNewVersion"></el-image>
         <el-card class="notice-new-version-content">
           <p class="new-version-tip">
-            <i18n path="Current version of DataFlux Func is {0}">
+            <i18n path="Current version is {0}">
               <span class="text-main">{{ $store.getters.SYSTEM_INFO('VERSION') }}</span>
             </i18n>
 

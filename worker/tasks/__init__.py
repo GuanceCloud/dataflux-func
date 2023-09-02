@@ -174,6 +174,7 @@ class BaseTask(object):
 
         # 从数据库读取
         ids = [
+            'LOCAL_FUNC_TASK_RECORD_ENABLED',
             'GUANCE_DATA_UPLOAD_ENABLED',
             'GUANCE_DATA_UPLOAD_URL',
             'GUANCE_DATA_SITE_NAME',
@@ -203,6 +204,10 @@ class BaseTask(object):
         SYSTEM_SETTING_LOCAL_CACHE['data'] = data
 
         return data
+
+    @property
+    def is_local_func_task_record_enabled(self):
+        return self.system_settings.get('LOCAL_FUNC_TASK_RECORD_ENABLED') or False
 
     @property
     def guance_data_upload_url(self):
@@ -268,6 +273,9 @@ class BaseTask(object):
         return data
 
     def create_task_record_guance_data(self, task_resp):
+        if not self.guance_data_upload_url:
+            return None
+
         data = {
             'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD'],
             'tags': {
@@ -305,11 +313,10 @@ class BaseTask(object):
             cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecord')
             self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
 
-        if self.guance_data_upload_url:
-            data = self.create_task_record_guance_data(task_resp)
-            if data:
-                cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordGuance')
-                self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
+        data = self.create_task_record_guance_data(task_resp)
+        if data:
+            cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordGuance')
+            self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
 
     def upload_guance_data(self, category, data):
         if not self.guance_data_upload_url:

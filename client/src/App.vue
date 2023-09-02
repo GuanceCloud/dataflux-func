@@ -4,10 +4,10 @@ Processing, please wait...: 正在处理中，请稍后...
 Multiple Editing: 多重编辑
 This page does not support multiple users or multiple tabs for editing at the same time, to avoid the possible problem of data overwriting each other, please confirm before operation: 本功能不支持多人或多窗口同时编辑。为避免可能出现的数据相互覆盖等问题，请确认后再进行操作
 
-DataFlux Func Upgraded                                                : DataFlux Func 已更新
-The DataFlux Func has been upgraded<br>and the page may be out of date: DataFlux Func 已经升级，页面可能已经过时
-Please refresh the page and continue                                  : 请刷新页面后继续
-Not Now                                                               : 等会再说
+System Upgraded                                            : 系统已更新
+System has been upgraded<br>and the page may be out of date: 系统已经升级，页面可能已经过时
+Please refresh the page and continue                       : 请刷新页面后继续
+Not Now                                                    : 等会再说
 </i18n>
 
 <template>
@@ -63,7 +63,7 @@ Not Now                                                               : 等会�
       :close-on-click-modal="false"
       :close-on-press-escape="false"
       top="15vh"
-      :title="$t('DataFlux Func Upgraded')"
+      :title="$t('System Upgraded')"
       width="600px">
       <div class="upgrade-notice">
         <div class="upgrade-notice-logo">
@@ -78,7 +78,7 @@ Not Now                                                               : 等会�
           </div>
         </div>
         <p class="upgrade-notice-refresh">
-          <span class="text-main" v-html="$t('The DataFlux Func has been upgraded<br>and the page may be out of date')"></span>
+          <span class="text-main" v-html="$t('System has been upgraded<br>and the page may be out of date')"></span>
           <br>
           <br>
           <span class="text-bad">{{ $t('Please refresh the page and continue') }}</span>

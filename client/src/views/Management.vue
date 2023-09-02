@@ -23,6 +23,20 @@
               </span>
             </el-menu-item>
 
+            <el-menu-item index="/management/system-setting" v-if="$store.getters.isAdmin">
+              <span>
+                <i class="fa fa-fw fa-cog"></i>
+                {{ $t('System Setting') }}
+              </span>
+            </el-menu-item>
+
+            <el-menu-item index="/management/user-list" v-if="$store.getters.isAdmin">
+              <span>
+                <i class="fa fa-fw fa-users"></i>
+                {{ $t('User Manage') }}
+              </span>
+            </el-menu-item>
+
             <el-menu-item index="/management/api-auth-list">
               <span>
                 <i class="fa fa-fw fa-lock"></i>
@@ -70,20 +84,6 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item index="/management/user-list">
-              <span>
-                <i class="fa fa-fw fa-users"></i>
-                {{ $t('User Manage') }}
-              </span>
-            </el-menu-item>
-
-            <el-menu-item index="/management/system-setting" v-if="$store.getters.isAdmin">
-              <span>
-                <i class="fa fa-fw fa-cog"></i>
-                {{ $t('System Setting') }}
-              </span>
-            </el-menu-item>
-
             <el-menu-item index="/management/operation-record-list">
               <span>
                 <i class="fa fa-fw fa-keyboard-o"></i>
@@ -91,7 +91,7 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item index="/management/experimental-features">
+            <el-menu-item index="/management/indent-menus">
               <span>
                 <i class="fa fa-fw fa-flask"></i>
                 {{ $t('Experimental Features') }}
@@ -99,7 +99,7 @@
             </el-menu-item>
 
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('PIPTool')"
-              class="experimental-feature" index="/management/pip-tool" >
+              class="indent-menu" index="/management/pip-tool">
               <span>
                 <i class="fa fa-fw fa-cubes"></i>
                 {{ $t('PIP Tool') }}
@@ -107,28 +107,28 @@
             </el-menu-item>
 
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FileManage')"
-              class="experimental-feature" index="/management/file-manage">
+              class="indent-menu" index="/management/file-manage">
               <span>
                 <i class="fa fa-fw fa-file"></i>
                 {{ $t('File Manage') }}
               </span>
             </el-menu-item>
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FileService')"
-              class="experimental-feature" index="/management/file-service-list">
+              class="indent-menu" index="/management/file-service-list">
               <span>
                 <i class="fa fa-fw fa-folder-open"></i>
                 {{ $t('File Service') }}
               </span>
             </el-menu-item>
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncCacheManage')"
-              class="experimental-feature" index="/management/func-cache-manage">
+              class="indent-menu" index="/management/func-cache-manage">
               <span>
                 <i class="fa fa-fw fa-dot-circle-o"></i>
                 {{ $t('Func Cache Manage') }}
               </span>
             </el-menu-item>
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncStoreManage')"
-              class="experimental-feature" index="/management/func-store-manage">
+              class="indent-menu" index="/management/func-store-manage">
               <span>
                 <i class="fa fa-fw fa-database"></i>
                 {{ $t('Func Store Manage') }}
@@ -136,7 +136,7 @@
             </el-menu-item>
 
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncDoc')"
-              class="experimental-feature" :index="`${T.getBaseURL()}/#/func-doc`">
+              class="indent-menu" :index="`${T.getBaseURL()}/#/func-doc`">
               <span>
                 <i class="fa fa-fw fa-book"></i>
                 {{ $t('Func Docs') }}
@@ -144,7 +144,7 @@
             </el-menu-item>
 
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('FuncDoc')"
-              class="experimental-feature" :index="`${T.getBaseURL()}/#/auth-link-func-doc`">
+              class="indent-menu" :index="`${T.getBaseURL()}/#/auth-link-func-doc`">
               <span>
                 <i class="fa fa-fw fa-link"></i>
                 {{ $t('Auth Link Doc') }}
@@ -152,7 +152,7 @@
             </el-menu-item>
 
             <el-menu-item v-if="$store.getters.isExperimentalFeatureEnabled('OpenAPIDoc')"
-              class="experimental-feature" :index="`${T.getBaseURL()}/doc`">
+              class="indent-menu" :index="`${T.getBaseURL()}/doc`">
               <span>
                 <i class="fa fa-fw fa-book"></i>
                 {{ $t('Open API Doc') }}
@@ -160,7 +160,7 @@
             </el-menu-item>
 
             <el-menu-item v-if="$store.getters.isAdmin && $store.getters.isExperimentalFeatureEnabled('AccessKeys')"
-              class="experimental-feature" index="/management/access-key-list">
+              class="indent-menu" index="/management/access-key-list">
               <span>
                 <i class="fa fa-fw fa-key"></i>
                 {{ $t('Access Keys') }}
@@ -218,7 +218,7 @@ export default {
 .aside .el-menu-item {
   padding-right: 40px;
 }
-.aside .experimental-feature.el-menu-item {
+.aside .indent-menu.el-menu-item {
   padding-left: 40px !important;
 }
 </style>

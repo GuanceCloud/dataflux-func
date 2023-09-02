@@ -107,7 +107,7 @@ Using Crontab Config, you can have functions executed at regular intervals: 使�
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Config')" width="220">
+          <el-table-column :label="$t('Config')" width="240">
             <template slot-scope="scope">
               <span class="text-info">Crontab{{ $t(':') }}</span>
               <template v-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCrontab">
@@ -131,7 +131,7 @@ Using Crontab Config, you can have functions executed at regular intervals: 使�
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Task Record')" width="240">
+          <el-table-column v-if="isLocalFuncTaskRecordEnabled" :label="$t('Task Record')" width="240">
             <template slot-scope="scope">
               <template v-if="!isStatisticLoaded">
                 <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
@@ -229,11 +229,13 @@ export default {
       this.$store.commit('updateLoadStatus', true);
 
       // 获取统计信息
-      this.isStatisticLoaded = false;
-      setTimeout(async () => {
-        this.statisticMap = await this.common.loadStatistic('originId', this.data.map(d => d.id));
-        this.isStatisticLoaded = true;
-      }, 1000);
+      if (this.isLocalFuncTaskRecordEnabled) {
+        this.isStatisticLoaded = false;
+        setTimeout(async () => {
+          this.statisticMap = await this.common.loadStatistic('originId', this.data.map(d => d.id));
+          this.isStatisticLoaded = true;
+        }, 1000);
+      }
     },
     async quickSubmitData(d, operation) {
       switch(operation) {
@@ -312,6 +314,9 @@ export default {
     },
   },
   computed: {
+    isLocalFuncTaskRecordEnabled() {
+      return !!this.$store.getters.SYSTEM_SETTINGS('LOCAL_FUNC_TASK_RECORD_ENABLED');
+    },
   },
   props: {
   },

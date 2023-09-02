@@ -50,7 +50,7 @@ Failure Page for Script runtime: 脚本运行时故障查看页面
 Once enabled, it can be accessed from Management page {0} Script Failures: 启用后，可在「管理」{0}「脚本故障」进入
 
 Enable Access Key Manage: 启用 Access Key 管理
-For allowing external systems to call Open APIs: 用于管理允许外部系统调用 DataFlux Func 的 API
+For allowing external systems to call the Open APIs of this system: 用于管理允许外部系统调用本系统的 Open API
 Once enabled, it can be accessed from Management page {0} Access Keys: 启用后，可在「管理」{0}「Access Keys」进入
 </i18n>
 
@@ -132,7 +132,7 @@ Once enabled, it can be accessed from Management page {0} Access Keys: 启用后
                 <el-form-item prop="AccessKeys" v-if="$store.getters.isAdmin">
                   <el-switch :active-text="$t('Enable Access Key Manage')" v-model="form.AccessKeys"></el-switch>
                   <div class="text-small form-item-tip">
-                    {{ $t('For allowing external systems to call Open APIs') }}
+                    {{ $t('For allowing external systems to call the Open APIs of this system') }}
                     <br><i18n path="Once enabled, it can be accessed from Management page {0} Access Keys"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>

@@ -78,7 +78,58 @@ class FuncRunner(FuncBaseTask):
 
         return data
 
+    # 完全重写父类方法
+    def create_task_record_guance_data(self, task_resp):
+        if not self.guance_data_upload_url:
+            return None
+
+        data = {
+            'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD_FUNC'],
+            'tags': {
+                'id'           : self.task_id,
+                'name'         : self.name,
+                'queue'        : str(self.queue),
+                'task_status'  : self.status,
+                'root_task_id' : self.root_task_id,
+                'script_set_id': self.script_set_id,
+                'script_id'    : self.script_id,
+                'func_id'      : self.func_id,
+                'origin'       : self.origin,
+                'origin_id'    : self.origin_id,
+
+                # 观测云监控器特殊字段
+                'workspace_uuid'       : toolkit.json_find_safe(self.func_call_kwargs, 'workspace_uuid'),
+                'df_monitor_id'        : toolkit.json_find_safe(self.func_call_kwargs, 'monitor_opt.id'),
+                'df_monitor_checker_id': toolkit.json_find_safe(self.func_call_kwargs, 'checker_opt.id'),
+            },
+            'fields': {
+                'message': self.full_print_logs,
+
+                'func_call_kwargs': toolkit.json_dumps(self.func_call_kwargs),
+                'crontab'         : self.kwargs.get('crontab'),
+                'call_chain'      : toolkit.json_dumps(self.call_chain, keep_none=True),
+                'return_value'    : toolkit.json_dumps(self.return_value, keep_none=True),
+                'delay'           : self.delay,
+                'timeout'         : self.timeout,
+                'expires'         : self.expires,
+                'ignore_result'   : self.ignore_result,
+                'exception_type'  : self.exception_type,
+                'exception'       : self.exception_text,
+                'trigger_time_iso': self.trigger_time_iso,
+                'start_time_iso'  : self.start_time_iso,
+                'end_time_iso'    : self.end_time_iso,
+                'wait_cost'       : self.start_time_ms - self.trigger_time_ms,
+                'run_cost'        : self.end_time_ms   - self.start_time_ms,
+                'total_cost'      : self.end_time_ms   - self.trigger_time_ms,
+            },
+            'timestamp': int(self.trigger_time),
+        }
+        return data
+
     def _buff_task_record_func(self, task_resp):
+        if not self.is_local_func_task_record_enabled:
+            return
+
         data = {
             '_taskRecordLimit': self.task_record_limit,
 
@@ -129,66 +180,21 @@ class FuncRunner(FuncBaseTask):
         cache_key = toolkit.get_cache_key('dataBuffer', 'funcCallCount')
         self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
 
-    def _buff_guance_data(self, task_resp):
-        if not self.guance_data_upload_url:
-            return
-
-        data = {
-            'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD_FUNC'],
-            'tags': {
-                'id'           : self.task_id,
-                'name'         : self.name,
-                'queue'        : str(self.queue),
-                'task_status'  : self.status,
-                'root_task_id' : self.root_task_id,
-                'script_set_id': self.script_set_id,
-                'script_id'    : self.script_id,
-                'func_id'      : self.func_id,
-                'origin'       : self.origin,
-                'origin_id'    : self.origin_id,
-
-                # 观测云监控器特殊字段
-                'workspace_uuid'       : toolkit.json_find_safe(self.func_call_kwargs, 'workspace_uuid'),
-                'df_monitor_id'        : toolkit.json_find_safe(self.func_call_kwargs, 'monitor_opt.id'),
-                'df_monitor_checker_id': toolkit.json_find_safe(self.func_call_kwargs, 'checker_opt.id'),
-            },
-            'fields': {
-                'message': self.full_print_logs,
-
-                'func_call_kwargs': toolkit.json_dumps(self.func_call_kwargs),
-                'crontab'         : self.kwargs.get('crontab'),
-                'call_chain'      : toolkit.json_dumps(self.call_chain, keep_none=True),
-                'return_value'    : toolkit.json_dumps(self.return_value, keep_none=True),
-                'delay'           : self.delay,
-                'timeout'         : self.timeout,
-                'expires'         : self.expires,
-                'ignore_result'   : self.ignore_result,
-                'exception_type'  : self.exception_type,
-                'exception'       : self.exception_text,
-                'trigger_time_iso': self.trigger_time_iso,
-                'start_time_iso'  : self.start_time_iso,
-                'end_time_iso'    : self.end_time_iso,
-                'wait_cost'       : self.start_time_ms - self.trigger_time_ms,
-                'run_cost'        : self.end_time_ms   - self.start_time_ms,
-                'total_cost'      : self.end_time_ms   - self.trigger_time_ms,
-            },
-            'timestamp': int(self.trigger_time),
-        }
-        cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordGuance')
-        self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
-
+    # 完全重写父类方法
     def buff_task_record(self, task_resp):
-        # 为了提高处理性能，此处仅写入 Redis 队列，不直接写入数据库
-
         # 任务记录（函数）
         self._buff_task_record_func(task_resp)
 
         # 函数调用计数
         self._buff_func_call_count(task_resp)
 
-        # 观测云任务记录
-        self._buff_guance_data(task_resp)
+        # 函数任务可能非常多，且可能同时包含大量日志
+        # 因此直接上报观测云，而不进入缓冲区
+        data = self.create_task_record_guance_data(task_resp)
+        if data:
+            self.upload_guance_data('logging', data)
 
+    # 为父类方法添加处理
     def response(self, task_resp):
         super().response(task_resp)
 

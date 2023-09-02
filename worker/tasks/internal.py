@@ -25,6 +25,8 @@ CONFIG     = yaml_resources.get('CONFIG')
 IMAGE_INFO = yaml_resources.get('IMAGE_INFO')
 
 class BaseInternalTask(BaseTask):
+    default_timeout = 60
+
     def safe_call(self, func, *args, **kwargs):
         try:
             func(*args, **kwargs)
@@ -60,8 +62,9 @@ class FlushDataBuffer(BaseInternalTask):
         return data
 
     def flush_task_record(self):
-        # 搜集数据
         cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecord')
+
+        # 搜集数据
         cache_res = self._flush_data_buffer(cache_key)
         if not cache_res:
             return
@@ -98,8 +101,17 @@ class FlushDataBuffer(BaseInternalTask):
             self.db.query(sql, sql_params)
 
     def flush_task_record_func(self):
-        # 搜集数据
         cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordFunc')
+
+        # 未启用时，自动清空
+        if not self.is_local_func_task_record_enabled:
+            self.cache_db.delete(cache_key)
+
+            sql = '''TRUNCATE biz_main_task_record_func'''
+            self.db.query(sql)
+            return
+
+        # 搜集数据
         cache_res = self._flush_data_buffer(cache_key)
         if not cache_res:
             return
@@ -150,8 +162,14 @@ class FlushDataBuffer(BaseInternalTask):
                 self.db.query(sql, sql_params)
 
     def flush_task_record_guance(self):
-        # 搜集数据
         cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordGuance')
+
+        # 未启用时，自动清空
+        if not self.guance_data_upload_url:
+            self.cache_db.delete(cache_key)
+            return
+
+        # 搜集数据
         cache_res = self._flush_data_buffer(cache_key)
         if not cache_res:
             return
@@ -159,8 +177,9 @@ class FlushDataBuffer(BaseInternalTask):
         self.upload_guance_data('logging', cache_res)
 
     def flush_func_call_count(self):
-        # 搜集数据
         cache_key = toolkit.get_cache_key('dataBuffer', 'funcCallCount')
+
+        # 搜集数据
         cache_res = self._flush_data_buffer(cache_key)
         if not cache_res:
             return
@@ -220,13 +239,14 @@ class FlushDataBuffer(BaseInternalTask):
         # 上锁
         self.lock()
 
-        # 任务记录刷入数据库 / 观测云
-        self.safe_call(self.flush_task_record)
-        self.safe_call(self.flush_task_record_func)
-        self.safe_call(self.flush_task_record_guance)
+        for i in range(CONFIG['_TASK_FLUSH_DATA_BUFFER_TIMES']):
+            # 任务记录刷入数据库 / 观测云
+            self.safe_call(self.flush_task_record)
+            self.safe_call(self.flush_task_record_func)
+            self.safe_call(self.flush_task_record_guance)
 
-        # 函数调用计数刷入数据库 / 观测云
-        self.safe_call(self.flush_func_call_count)
+            # 函数调用计数刷入数据库 / 观测云
+            self.safe_call(self.flush_func_call_count)
 
 class AutoClean(BaseInternalTask):
     name = 'Internal.AutoClean'
@@ -721,7 +741,7 @@ class ReloadDataMD5Cache(BaseInternalTask):
 class CheckConnector(BaseInternalTask):
     name = 'Internal.CheckConnector'
 
-    default_timeout = 30
+    default_timeout = 15
 
     def run(self, **kwargs):
         connector_type   = kwargs.get('type')
@@ -740,7 +760,7 @@ class CheckConnector(BaseInternalTask):
 class QueryConnector(BaseInternalTask):
     name = 'Internal.QueryConnector'
 
-    default_timeout = 30
+    default_timeout = 15
 
     def run(self, **kwargs):
         connector_id   = kwargs.get('id')

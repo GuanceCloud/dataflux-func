@@ -68,7 +68,7 @@ connector  : 连接器
       <el-header height="60px">
         <div class="list-page-header">
           <span>
-            {{ isRootTaskRecordList ? $t('Recent Task Record') : $t('Related Task Record') }}
+            {{ isRoot ? $t('Recent Task Record') : $t('Related Task Record') }}
             <small class="text-info">
               &#12288;
               <span class="task-record-query" v-if="dataFilter.origin">
@@ -92,7 +92,7 @@ connector  : 连接器
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
             <el-tooltip :content="$t('Only main tasks are listed')" placement="bottom" :enterable="false" v-if="hasTaskType">
-              <el-checkbox v-if="isRootTaskRecordList"
+              <el-checkbox v-if="isRoot"
                 :border="true"
                 size="small"
                 v-model="dataFilter.rootTaskId"
@@ -185,7 +185,7 @@ connector  : 连接器
 
           <el-table-column width="240" align="right">
             <template slot-scope="scope">
-              <template v-if="isRootTaskRecordList">
+              <template v-if="isRoot">
                 <el-button v-if="scope.row.subTaskCount > 0 || scope.row.rootTaskId !== 'ROOT'"
                   type="text"
                   @click="openSubTaskRecord(scope.row)"
@@ -210,7 +210,7 @@ connector  : 连接器
 import LongTextDialog from '@/components/LongTextDialog'
 
 export default {
-  name: 'TaskRecordList',
+  name: 'TaskRecordFuncList',
   components: {
     LongTextDialog,
   },
@@ -289,7 +289,7 @@ export default {
       this.$store.commit('updateTableList_scrollY');
 
       this.$router.push({
-        name  : 'sub-task-record-list',
+        name  : 'sub-task-record-func-list',
         params: { id: this.$route.params.id },
         query : nextRouteQuery,
       });
@@ -347,8 +347,8 @@ export default {
     },
   },
   computed: {
-    isRootTaskRecordList() {
-      return this.$route.name === 'task-record-list';
+    isRoot() {
+      return this.$route.name === 'task-record-func-list';
     },
   },
   props: {

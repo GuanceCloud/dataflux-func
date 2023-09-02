@@ -106,6 +106,8 @@ systemSettings:
   # 导航文档地址
   NAVI_DOC_LINK_URL: 'https://func.guance.com/#/doc-index'
 
+  # 是否启用本地函数任务记录
+  LOCAL_FUNC_TASK_RECORD_ENABLED: true
   # 是否启用观测云数据上传
   GUANCE_DATA_UPLOAD_ENABLED: false
   # 观测云数据上传地址

@@ -109,7 +109,7 @@ Are you sure you want to clear the Log and Cache?: 是否确认清空日志与�
                 </p>
               </div>
 
-              <!-- DataFlux Func Server -->
+              <!-- Server -->
               <el-divider content-position="left"><h1>{{ $t('Version Information') }}</h1></el-divider>
 
               <el-form label-width="120px">

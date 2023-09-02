@@ -70,14 +70,13 @@ Are you sure you want to delete the Script?<br><strong class="text-bad">{label}<
 Are you sure you want to run the Crontab Config manually?: 是否确认手动执行此自动触发配置？
 Crontab Config Task sent: 自动触发配置任务已发送
 
-Show Auth Links         : 显示授权链接列表
-Show Crontab Configs    : 显示自动触发配置列表
-Show Batches            : 显示批处理列表
-Go to Recent Task Record: 前往最近任务记录
-Go to Script Market     : 前往脚本市场
+Auth Links, Crontab Configs and Batches: 授权链接、自动触发配置和批处理
+Go to Recent Task Record               : 前往最近任务记录
+Go to Script Market                    : 前往脚本市场
 
-Some Script Sets are hidden: 一些脚本集已隐藏
-In most cases, the Script Sets installed from the official Script Market do not need to be viewed or accessed directly by the user, so they are not shown in this list.: 在大多数情况下，从官方脚本市场安装的脚本集并不需要用户直接查看或操作，因此没有在此列表中展示。
+Some Script Sets have been hidden: 一些脚本集已被隐藏
+"In most cases, the Script Sets that users doesn't need to care about are hidden by default.": "大多数情况下，用户不需要关心的脚本集默认会被隐藏。"
+"You can change the default behavior in [Management / System Settings]."                     : "您可以在「管理 / 系统设置」中修改默认此行为。"
 </i18n>
 
 <template>
@@ -143,7 +142,7 @@ In most cases, the Script Sets installed from the official Script Market do not 
                 <i class="fa fa-fw fa-plus"></i> {{ $t('New Script Set') }}
               </el-link>
               <el-link v-else-if="data.type === 'scriptSetHiddenTip'" type="info">
-                <i class="fa fa-fw fa-eye-slash"></i> <i>{{ $t('Some Script Sets are hidden') }}</i>
+                <i class="fa fa-fw fa-eye-slash"></i> <i>{{ $t('Some Script Sets have been hidden') }}</i>
               </el-link>
               <div v-else>
                 <template v-if="data.type === 'scriptSet'">
@@ -176,7 +175,7 @@ In most cases, the Script Sets installed from the official Script Market do not 
           <!-- 提示 -->
           <div v-if="data.tip" class="aside-tree-node-tip">
             <i class="fa fa-fw fa-info-circle"></i> <strong v-if="data.tipTitle">{{ data.tipTitle }}<br></strong>
-            {{ data.tip }}
+            <span v-html="data.tip" />
           </div>
 
           <!-- 基本信息 -->
@@ -290,33 +289,19 @@ In most cases, the Script Sets installed from the official Script Market do not 
               </el-button>
             </template>
 
-            <!-- 关联配置 -->
+            <!-- 关联信息 -->
             <div class="goto-links">
-              <!-- 关联授权链接 -->
+              <!-- 授权链接、自动触发配置和批处理 -->
               <el-link v-if="data.type === 'func'"
                 @click="openRelEntity(node, data, 'authLink')">
-                <i class="fa fa-fw fa-link"></i>
-                {{ $t('Show Auth Links') }}
+                <i class="fa fa-fw fa-window-restore"></i>
+                {{ $t('Auth Links, Crontab Configs and Batches') }}
               </el-link>
 
-              <!-- 关联自动触发配置 -->
-              <el-link v-if="data.type === 'func'"
-                @click="openRelEntity(node, data, 'crontabConfig')">
-                <i class="fa fa-fw fa-clock-o"></i>
-                {{ $t('Show Crontab Configs') }}
-              </el-link>
-
-              <!-- 关联批处理 -->
-              <el-link v-if="data.type === 'func'"
-                @click="openRelEntity(node, data, 'batch')">
-                <i class="fa fa-fw fa-tasks"></i>
-                {{ $t('Show Batches') }}
-              </el-link>
-
-              <!-- 关联直接函数调用 -->
+              <!-- 前往任务记录 -->
               <el-link v-if="data.type === 'func'"
                 @click="common.goToTaskRecord({ funcId: data.id })">
-                <i class="fa fa-fw fa-info-circle"></i>
+                <i class="fa fa-fw fa-share-square"></i>
                 {{ $t('Go to Recent Task Record') }}
               </el-link>
 
@@ -325,7 +310,7 @@ In most cases, the Script Sets installed from the official Script Market do not 
                 <el-link v-if="data.origin === 'scriptMarket' && data.originId"
                   :disabled="!data.scriptMarketId"
                   @click="openEntity(data, 'scriptMarket')">
-                  <i class="fa fa-fw fa-shopping-cart"></i>
+                  <i class="fa fa-fw fa-share-square"></i>
                   {{ $t('Go to Script Market') }}
                 </el-link>
               </el-tooltip>
@@ -933,10 +918,15 @@ export default {
 
       // 隐藏脚本提示项
       if (hasHiddenScripts) {
+        let scriptHiddenTip = this.$t("In most cases, the Script Sets that users doesn't need to care about are hidden by default.");
+        if (this.$store.getters.isAdmin) {
+          scriptHiddenTip += '<br>' + this.$t("You can change the default behavior in [Management / System Settings].");
+        }
+
         treeData.push({
           type    : 'scriptSetHiddenTip',
-          tipTitle: this.$t('Some Script Sets are hidden'),
-          tip     : this.$t('In most cases, the Script Sets installed from the official Script Market do not need to be viewed or accessed directly by the user, so they are not shown in this list.'),
+          tipTitle: this.$t('Some Script Sets have been hidden'),
+          tip     : scriptHiddenTip,
         });
       }
 

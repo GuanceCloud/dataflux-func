@@ -42,10 +42,10 @@ LOG_LEVELS = {
     }
 }
 LOG_TEXT_FIELDS = [
-    'pid',
     # 'appName',
     # 'subAppName',
     'subAppNameShort',
+    'pid',
     # 'upTime',
     # 'level',
     'levelShort',
@@ -68,10 +68,10 @@ LOG_TEXT_FIELDS = [
     'costTime',
 ]
 LOG_TEXT_COLOR_MAP = {
-    'pid'               : True,
     'appName'           : True,
     'subAppName'        : True,
     'subAppNameShort'   : True,
+    'pid'               : True,
     'upTime'            : True,
     'level'             : True,
     'levelShort'        : True,
@@ -95,10 +95,10 @@ LOG_TEXT_COLOR_MAP = {
     'costTime'          : 'cyan',
 }
 LOG_JSON_FIELD_MAP = {
-    'pid'               : 'pid',
     'appName'           : 'app',
     'subAppName'        : 'sub_app',
     # 'subAppNameShort'   : 'sub_app_short',
+    'pid'               : 'pid',
     'upTime'            : 'up_time',
     'level'             : 'level',
     # 'levelShort'        : 'level_short',

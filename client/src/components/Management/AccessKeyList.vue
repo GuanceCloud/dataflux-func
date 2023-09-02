@@ -5,7 +5,7 @@ No Access Key has ever been added: 从未添加过任何授权链接
 
 Are you sure you want to delete the Access Key?: 是否确认删除此 Access Key？
 
-Add Access Key to allow external systems to call DataFlux Func Open API: 添加 Access Key，允许外部系统调用 DataFlux Func 的 Open API
+Add Access Key to allow external systems to call the Open APIs of this system: 添加 Access Key，允许外部系统调用本系统的 Open API
 </i18n>
 
 <template>
@@ -33,7 +33,7 @@ Add Access Key to allow external systems to call DataFlux Func Open API: 添加 
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Access Key has ever been added') }}</h1>
 
           <p class="no-data-tip">
-            {{ $t('Add Access Key to allow external systems to call DataFlux Func Open API') }}
+            {{ $t('Add Access Key to allow external systems to call the Open APIs of this system') }}
           </p>
         </div>
         <el-table v-else
