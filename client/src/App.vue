@@ -740,13 +740,14 @@ kbd {
   border-radius: 3px;
   box-shadow: 2px 2px 0 darkgrey;
 }
-.list-page-header {
+.common-page-header {
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-.list-page-header > span:first-child {
+.common-page-header > div:first-child > h1 {
+  display: inline;
   font-weight: bold;
   font-size: 22px;
   line-height: 2;
@@ -758,13 +759,6 @@ kbd {
   flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-end;
-}
-.header-control-left {
-  display: inline-block;
-  font-size: 14px;
-  font-weight: normal;
-  position: relative;
-  top: -3px;
 }
 .header-control > * {
   margin-left: 15px !important;

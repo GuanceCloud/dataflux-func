@@ -39,8 +39,8 @@ After adding the Script Market, you can install Script Sets from the Script Mark
       :element-loading-text="processingText">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="list-page-header">
-          <span>{{ $t('Script Market') }}</span>
+        <div class="common-page-header">
+          <h1>{{ $t('Script Market') }}</h1>
 
           <div class="header-control">
             <template v-if="$store.getters.SYSTEM_SETTINGS('OFFICIAL_SCRIPT_MARKET_ENABLED')">

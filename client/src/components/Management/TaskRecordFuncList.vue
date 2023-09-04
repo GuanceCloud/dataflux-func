@@ -66,9 +66,9 @@ connector  : 连接器
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="list-page-header">
-          <span>
-            {{ isRoot ? $t('Recent Task Record') : $t('Related Task Record') }}
+        <div class="common-page-header">
+          <div>
+            <h1>{{ isRoot ? $t('Recent Task Record') : $t('Related Task Record') }}</h1>
             <small class="text-info">
               &#12288;
               <span class="task-record-query" v-if="dataFilter.origin">
@@ -86,7 +86,7 @@ connector  : 连接器
                 <CopyButton :content="dataFilter.funcId" />
               </span>
             </small>
-          </span>
+          </div>
 
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>

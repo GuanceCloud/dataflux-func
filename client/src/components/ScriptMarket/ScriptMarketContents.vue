@@ -89,12 +89,13 @@ Translated Text    : 译文
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="list-page-header">
-          <span>
-            {{ $t('Script Market') }}
+        <div class="common-page-header">
+          <div>
+            <h1>{{ $t('Script Market') }}</h1>
+            &#12288;
             <span class="text-main" v-if="scriptMarket.isOfficial"><i class="fa fa-fw fa-star text-watch"></i> {{ $t('Official Script Market') }}</span>
             <span class="text-main" v-else>{{ common.getScriptMarketTitle(scriptMarket) }}</span>
-          </span>
+          </div>
 
           <div class="header-control" v-if="T.notNothing(data)">
             <template v-if="homepageURL || scriptMarket.type === 'git'">

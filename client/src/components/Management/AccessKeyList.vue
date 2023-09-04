@@ -13,8 +13,8 @@ Add Access Key to allow external systems to call the Open APIs of this system: �
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="list-page-header">
-          <span>Access Key</span>
+        <div class="common-page-header">
+          <h1>Access Key</h1>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 

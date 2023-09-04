@@ -7,8 +7,8 @@ Add external Script Sets by importing Script Sets: 使用脚本集导入功能�
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="list-page-header">
-          <span>{{ $t('Script Set Import History') }}</span>
+        <div class="common-page-header">
+          <h1>{{ $t('Script Set Import History') }}</h1>
           <div class="header-control">
             <el-button @click="openSetup(null, 'import')" size="small">
               <i class="fa fa-fw fa-cloud-upload"></i>

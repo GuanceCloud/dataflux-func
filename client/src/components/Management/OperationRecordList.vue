@@ -18,8 +18,8 @@ All recent important operations will be collected by the system and shown here: 
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="list-page-header">
-          <span>{{ $t('Operation Records') }}</span>
+        <div class="common-page-header">
+          <h1>{{ $t('Operation Records') }}</h1>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
           </div>

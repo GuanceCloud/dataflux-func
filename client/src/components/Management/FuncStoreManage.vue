@@ -20,8 +20,8 @@ See {0} for more information: 查看 {0} 来获取更多信息
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="list-page-header">
-          <span>{{ $t('Func Store Manage') }}</span>
+        <div class="common-page-header">
+          <h1>{{ $t('Func Store Manage') }}</h1>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
           </div>

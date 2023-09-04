@@ -14,8 +14,8 @@ Data exported: 数据已导出
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="list-page-header">
-          <span>{{ $t('Script Set Export') }}</span>
+        <div class="common-page-header">
+          <h1>{{ $t('Script Set Export') }}</h1>
         </div>
       </el-header>
 

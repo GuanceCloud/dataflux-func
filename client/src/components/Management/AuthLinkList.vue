@@ -38,8 +38,8 @@ you must first create an Auth Link for the Python function and access the Python
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="list-page-header">
-          <span>{{ $t('Auth Link') }}</span>
+        <div class="common-page-header">
+          <h1>{{ $t('Auth Link') }}</h1>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 

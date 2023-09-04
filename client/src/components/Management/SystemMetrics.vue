@@ -29,8 +29,8 @@ Matched Route Count        : 接口访问次数（按路由区分）
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="list-page-header">
-          <span>{{ $t('System Metrics') }}</span>
+        <div class="common-page-header">
+          <h1>{{ $t('System Metrics') }}</h1>
           <div class="header-control">
             <el-button @click="updateChart" type="primary" plain size="small" :disabled="isRefreshing">
               <i v-if="isRefreshing" class="fa fa-fw fa-circle-o-notch fa-spin"></i>

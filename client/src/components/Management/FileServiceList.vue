@@ -18,8 +18,8 @@ Expose folders in the Resource as File Services to allow external systems to acc
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="list-page-header">
-          <span>{{ $t('File Service') }}</span>
+        <div class="common-page-header">
+          <h1>{{ $t('File Service') }}</h1>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 

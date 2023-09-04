@@ -32,64 +32,67 @@ File already existed                                                            
       :element-loading-text="progressTip || $t('Processing...')">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="list-page-header">
-          <span>{{ $t('File Manage') }}</span>
-
-          &#12288;
-          <el-tooltip :content="$t('Go Up')">
-            <el-button @click="enterFolder('..')" :disabled="currentFolder === '/'" size="small">
-              <i class="fa fa-fw fa-arrow-up"></i>
-            </el-button>
-          </el-tooltip>
-          <el-tooltip :content="$t('Refresh')">
-            <el-button @click="loadData({ isRefresh: true })" size="small" class="fix-compact-button">
-              <i class="fa fa-fw fa-refresh"></i>
-            </el-button>
-          </el-tooltip>
-
-          &#12288;
-          <el-popover placement="bottom" width="240" v-model="showMkdirPopover">
-            <div class="popover-input">
-              <el-input ref="mkdirName" size="small" v-model="mkdirName" @keyup.enter.native="resourceOperation(mkdirName, 'mkdir')"></el-input>
-              <el-button type="text" @click="resourceOperation(mkdirName, 'mkdir')">{{ $t('Add') }}</el-button>
-            </div>
-            <el-button slot="reference" size="small">
-              <i class="fa fa-fw fa-plus"></i>
-              {{ $t('Folder') }}
-            </el-button>
-          </el-popover>
-
-          <el-tooltip :content="`${$t('File size limit')}${$t(':')}${T.byteSizeHuman($store.getters.SYSTEM_INFO('_RESOURCE_UPLOAD_FILE_SIZE_LIMIT'))}`" placement="bottom">
-            <el-upload ref="upload"
-              class="upload-button"
-              :limit="2"
-              :multiple="false"
-              :auto-upload="true"
-              :show-file-list="false"
-              :http-request="handleUpload"
-              :on-change="onUploadFileChange"
-              action="">
-              <el-button size="small">
-                <i class="fa fa-fw fa-cloud-upload"></i>
-                {{ $t('Upload') }}
+        <div class="common-page-header">
+          <div>
+            <h1>{{ $t('File Manage') }}</h1>
+            &#12288;
+            <el-tooltip :content="$t('Go Up')">
+              <el-button @click="enterFolder('..')" :disabled="currentFolder === '/'" size="small">
+                <i class="fa fa-fw fa-arrow-up"></i>
               </el-button>
-            </el-upload>
-          </el-tooltip>
-
-          &#12288;
-          <code class="resource-navi" v-if="currentFolder !== '/'">
-            <small>{{ $t('Path') }}{{ $t(':') }}</small>
-            <el-button size="small" @click="enterFolder()">
-              <i class="fa fa-fw fa-home"></i>
-            </el-button><template v-for="(layer, index) in currentFolder.slice(1).split('/')">
-              <div class="path-sep"><i class="fa fa-angle-right"></i></div><el-button
-                :key="index"
-                size="small"
-                @click="enterFolder(currentFolder.split('/').slice(0, index + 2).join('/'), true)">
-                {{ layer }}
+            </el-tooltip>
+            <el-tooltip :content="$t('Refresh')">
+              <el-button @click="loadData({ isRefresh: true })" size="small" class="fix-compact-button">
+                <i class="fa fa-fw fa-refresh"></i>
               </el-button>
-            </template>
-          </code>
+            </el-tooltip>
+
+            &#12288;
+            <el-popover placement="bottom" width="240" v-model="showMkdirPopover">
+              <div class="popover-input">
+                <el-input ref="mkdirName" size="small" v-model="mkdirName" @keyup.enter.native="resourceOperation(mkdirName, 'mkdir')"></el-input>
+                <el-button type="text" @click="resourceOperation(mkdirName, 'mkdir')">{{ $t('Add') }}</el-button>
+              </div>
+              <el-button slot="reference" size="small">
+                <i class="fa fa-fw fa-plus"></i>
+                {{ $t('Folder') }}
+              </el-button>
+            </el-popover>
+
+            <el-tooltip :content="`${$t('File size limit')}${$t(':')}${T.byteSizeHuman($store.getters.SYSTEM_INFO('_RESOURCE_UPLOAD_FILE_SIZE_LIMIT'))}`" placement="bottom">
+              <el-upload ref="upload"
+                class="upload-button"
+                :limit="2"
+                :multiple="false"
+                :auto-upload="true"
+                :show-file-list="false"
+                :http-request="handleUpload"
+                :on-change="onUploadFileChange"
+                action="">
+                <el-button size="small">
+                  <i class="fa fa-fw fa-cloud-upload"></i>
+                  {{ $t('Upload') }}
+                </el-button>
+              </el-upload>
+            </el-tooltip>
+
+            &#12288;
+            <code class="resource-navi" v-if="currentFolder !== '/'">
+              <small>{{ $t('Path') }}{{ $t(':') }}</small>
+              <el-button size="small" @click="enterFolder()">
+                <i class="fa fa-fw fa-home"></i>
+              </el-button><template v-for="(layer, index) in currentFolder.slice(1).split('/')">
+                <div class="path-sep"><i class="fa fa-angle-right"></i></div><el-button
+                  :key="index"
+                  size="small"
+                  @click="enterFolder(currentFolder.split('/').slice(0, index + 2).join('/'), true)">
+                  {{ layer }}
+                </el-button>
+              </template>
+            </code>
+          </div>
+          <div class="header-control">
+          </div>
         </div>
       </el-header>
 

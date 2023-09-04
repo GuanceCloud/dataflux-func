@@ -219,7 +219,10 @@ Save and Refresh: 保存并刷新
                 </el-form-item>
 
                 <el-form-item :label="$t('Enable')" prop="LOCAL_FUNC_TASK_RECORD_ENABLED">
-                  <el-switch v-model="form['LOCAL_FUNC_TASK_RECORD_ENABLED']" />
+                  <el-select v-model="form['LOCAL_FUNC_TASK_RECORD_ENABLED']" :class="enableClass(form['LOCAL_FUNC_TASK_RECORD_ENABLED'])">
+                    <el-option :label="$t('Enabled')"  key="true"  :value="true"></el-option>
+                    <el-option :label="$t('Disabled')" key="false" :value="false"></el-option>
+                  </el-select>
                 </el-form-item>
 
                 <!-- 观测云数据上报 -->

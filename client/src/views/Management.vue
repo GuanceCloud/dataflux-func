@@ -91,7 +91,7 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item index="/management/indent-menus">
+            <el-menu-item index="/management/experimental-features">
               <span>
                 <i class="fa fa-fw fa-flask"></i>
                 {{ $t('Experimental Features') }}

@@ -59,79 +59,78 @@
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="list-page-header">
-          <span>
-            {{ $t('Blueprint') }}
+        <div class="common-page-header">
+          <div>
+            <h1>{{ $t('Blueprint') }}</h1>
             <span class="text-main">{{ data.title || data.id }}</span>
             &#12288;
-
-            <span class="header-control-left">
-              <el-button size="mini" @click="deploy">
-                <i class="fa fa-fw fa-coffee"></i>
-                {{ $t('Deploy') }}
-              </el-button>
-              &nbsp;
-              <el-button-group>
-                <el-tooltip effect="dark" :content="$t('Undo')" placement="bottom">
-                  <el-button size="mini" :disabled="!undoAble" @click="canvasAction('undo')">
-                    <i class="fa fa-fw fa-undo"></i>
-                  </el-button>
-                </el-tooltip>
-                <el-tooltip effect="dark" :content="$t('Redo')" placement="bottom">
-                  <el-button size="mini" :disabled="!redoAble" @click="canvasAction('redo')">
-                    <i class="fa fa-fw fa-repeat"></i>
-                  </el-button>
-                </el-tooltip>
-              </el-button-group>
-              &nbsp;
-              <el-button-group>
-                <el-tooltip effect="dark" :content="$t('Zoom In')" placement="bottom">
-                  <el-button size="mini" @click="canvasAction('zoomIn')">
-                    <i class="fa fa-fw fa-plus"></i>
-                  </el-button>
-                </el-tooltip>
-                <el-tooltip effect="dark" :content="$t('Reset')" placement="bottom">
-                  <el-button size="mini" @click="canvasAction('resetZoom')" style="width: 70px">
-                    {{ parseInt(currentScale * 100) }}%
-                  </el-button>
-                </el-tooltip>
-                <el-tooltip effect="dark" :content="$t('Zoom Out')" placement="bottom">
-                  <el-button size="mini" @click="canvasAction('zoomOut')">
-                    <i class="fa fa-fw fa-minus"></i>
-                  </el-button>
-                </el-tooltip>
-                <el-button size="mini" @click="canvasAction('fitView')">
-                  <i class="fa fa-fw fa-window-maximize"></i>
-                  {{ $t('Fit View') }}
+            <el-button size="mini" @click="deploy">
+              <i class="fa fa-fw fa-coffee"></i>
+              {{ $t('Deploy') }}
+            </el-button>
+            &nbsp;
+            <el-button-group>
+              <el-tooltip effect="dark" :content="$t('Undo')" placement="bottom">
+                <el-button size="mini" :disabled="!undoAble" @click="canvasAction('undo')">
+                  <i class="fa fa-fw fa-undo"></i>
                 </el-button>
-              </el-button-group>
+              </el-tooltip>
+              <el-tooltip effect="dark" :content="$t('Redo')" placement="bottom">
+                <el-button size="mini" :disabled="!redoAble" @click="canvasAction('redo')">
+                  <i class="fa fa-fw fa-repeat"></i>
+                </el-button>
+              </el-tooltip>
+            </el-button-group>
+            &nbsp;
+            <el-button-group>
+              <el-tooltip effect="dark" :content="$t('Zoom In')" placement="bottom">
+                <el-button size="mini" @click="canvasAction('zoomIn')">
+                  <i class="fa fa-fw fa-plus"></i>
+                </el-button>
+              </el-tooltip>
+              <el-tooltip effect="dark" :content="$t('Reset')" placement="bottom">
+                <el-button size="mini" @click="canvasAction('resetZoom')" style="width: 70px">
+                  {{ parseInt(currentScale * 100) }}%
+                </el-button>
+              </el-tooltip>
+              <el-tooltip effect="dark" :content="$t('Zoom Out')" placement="bottom">
+                <el-button size="mini" @click="canvasAction('zoomOut')">
+                  <i class="fa fa-fw fa-minus"></i>
+                </el-button>
+              </el-tooltip>
+              <el-button size="mini" @click="canvasAction('fitView')">
+                <i class="fa fa-fw fa-window-maximize"></i>
+                {{ $t('Fit View') }}
+              </el-button>
+            </el-button-group>
 
-              &#12288;
-              <template v-if="selectedElementData">
-                <span>{{ $t('Selected') }}{{ $t(':') }}</span>
-                <strong class="text-main">{{ C.BLUEPRINT_ELEMENT_TYPE_MAP.get(selectedElementData.type).name }}</strong>
-                &nbsp;
-                <el-tooltip effect="dark" :content="$t('Or double-click the node')" placement="bottom">
-                  <el-button v-if="selectedElementCanAction('openProps')"
-                    size="mini"
-                    type="primary" plain
-                    @click="elementAction('openProps')">
-                    <i class="fa fa-fw fa-sliders"></i>
-                    {{ $t('Open Setting Panel') }}
-                  </el-button>
-                </el-tooltip>
+            &#12288;
+            <template v-if="selectedElementData">
+              <span>{{ $t('Selected') }}{{ $t(':') }}</span>
+              <strong class="text-main">{{ C.BLUEPRINT_ELEMENT_TYPE_MAP.get(selectedElementData.type).name }}</strong>
+              &nbsp;
+              <el-tooltip effect="dark" :content="$t('Or double-click the node')" placement="bottom">
+                <el-button v-if="selectedElementCanAction('openProps')"
+                  size="mini"
+                  type="primary" plain
+                  @click="elementAction('openProps')">
+                  <i class="fa fa-fw fa-sliders"></i>
+                  {{ $t('Open Setting Panel') }}
+                </el-button>
+              </el-tooltip>
 
-                <el-tooltip v-if="selectedElementCanAction('delete')"
-                  effect="dark"
-                  :content="$t('Delete')"
-                  placement="bottom">
-                  <el-button size="mini" @click="elementAction('delete')">
-                    <i class="fa fa-fw fa-trash"></i>
-                  </el-button>
-                </el-tooltip>
-              </template>
-            </span>
-          </span>
+              <el-tooltip v-if="selectedElementCanAction('delete')"
+                effect="dark"
+                :content="$t('Delete')"
+                placement="bottom">
+                <el-button size="mini" @click="elementAction('delete')">
+                  <i class="fa fa-fw fa-trash"></i>
+                </el-button>
+              </el-tooltip>
+            </template>
+          </div>
+          <div class="header-control">
+          </div>
         </div>
       </el-header>
 

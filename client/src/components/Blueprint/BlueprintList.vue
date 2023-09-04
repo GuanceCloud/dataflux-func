@@ -13,8 +13,8 @@ Add Blueprint to deploy data processing flow in a visualization way: 添加蓝�
     <el-container direction="vertical" v-show="$store.state.isLoaded">
       <!-- 标题区 -->
       <el-header height="60px">
-        <div class="list-page-header">
-          <span>{{ $t('Blueprint') }}</span>
+        <div class="common-page-header">
+          <h1>{{ $t('Blueprint') }}</h1>
           <div class="header-control">
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
