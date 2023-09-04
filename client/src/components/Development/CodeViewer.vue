@@ -256,7 +256,7 @@ export default {
       });
     },
     updateSelectableItems() {
-      this.selectableItems = this.common.getSelectableItems(this.data.codeDraft, this.scriptId);
+      this.selectableItems = this.common.getPythonCodeItems(this.data.codeDraft, this.scriptId);
     },
     _clearLineHighlight(line) {
       try {

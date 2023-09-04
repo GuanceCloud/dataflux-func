@@ -835,7 +835,7 @@ export default {
       this.debouncedUpdatePanePercent(this.$store, percent);
     },
     updateSelectableItems() {
-      this.selectableItems = this.common.getSelectableItems(this.data.codeDraft, this.scriptId);
+      this.selectableItems = this.common.getPythonCodeItems(this.data.codeDraft, this.scriptId);
     },
     openVueSplitPane() {
       this.$refs.vueSplitPane.percent = this.splitPanePercent;

@@ -121,7 +121,7 @@ export function getBaseURL() {
 };
 
 export function isLocalhost() {
-  return location.hostname === 'localhost';
+  return location.hostname === 'localhost' || location.hostname === 'localdev';
 }
 export function isFuncDev() {
   return location.hostname === 'func-dev.dataflux.cn' || isLocalhost();

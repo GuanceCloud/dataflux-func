@@ -6,7 +6,7 @@ import C from '@/const'
 
 let FUNC_ARGUMENT_PLACEHOLDERS = store.getters.SYSTEM_INFO('_FUNC_ARGUMENT_PLACEHOLDER_LIST');
 
-export function getSelectableItems(pythonCode, scriptId) {
+export function getPythonCodeItems(pythonCode, scriptId) {
   if (!pythonCode) [];
 
   let todoItems    = [];
@@ -90,8 +90,8 @@ export function getSelectableItems(pythonCode, scriptId) {
     }
   });
 
-  let selectableItems = todoItems.concat(codeItems);
-  return selectableItems;
+  let allItems = todoItems.concat(codeItems);
+  return allItems;
 }
 
 export async function getAPIAuthList() {
