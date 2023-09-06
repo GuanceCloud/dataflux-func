@@ -223,25 +223,81 @@ common.replaceImportDataOrigin = function(importData, origin, originId) {
 };
 
 common.getGuanceNodes = function(callback) {
-  var guanceNodes = [];
+  var guanceNodeNameMap = {};
+  var guanceNodes       = [];
 
-  var requestOptions = {
-    method : 'get',
-    url    : 'https://func.guance.com/guance-nodes.json',
-    headers: { 'Cache-Control': 'no-cache' },
-    json   : true,
-  };
-  request(requestOptions, function(err, _res, _body) {
-    if (!err) {
-      guanceNodes = _body.nodes || [];
-      if (['0.0.0', 'dev'].indexOf(IMAGE_INFO.VERSION) < 0) {
-        guanceNodes = guanceNodes.filter(function(x) {
-          return x.key !== 'testing';
-        });
-      }
+  async.series([
+    // 加载优化后的节点名
+    function(asyncCallback) {
+      var requestOptions = {
+        method : 'get',
+        url    : 'https://func.guance.com/guance-node-names.json',
+        headers: { 'Cache-Control': 'no-cache' },
+        json   : true,
+      };
+      request(requestOptions, function(err, _res, _body) {
+        // 忽略报错
+        if (err) return asyncCallback();
+
+        guanceNodeNameMap = _body;
+        
+        return asyncCallback();
+      });
+    },
+    // 获取观测云节点列表
+    function(asyncCallback) {
+      var requestOptions = {
+        method : 'get',
+        url    : 'https://urls.guance.com/',
+        headers: { 'Cache-Control': 'no-cache' },
+        json   : true,
+      };
+      request(requestOptions, function(err, _res, _body) {
+        if (err) return asyncCallback();
+      
+        // 转换格式
+        var urls = _body.urls || {};
+        for (var key in urls) {
+          var url = urls[key];
+  
+          guanceNodes.push({
+            'key'      : key,
+            'name'     : (guanceNodeNameMap[key] || {}).name    || url.name,
+            'name_en'  : (guanceNodeNameMap[key] || {}).name_en || url.name_en,
+            'openapi'  : url.open_api  || url.openapi || null,
+            'websocket': url.websocket || null,
+            'openway'  : url.openway   || null,
+          });
+        }
+    
+        return asyncCallback();
+      });
+    }
+  ], function(err) {
+    // 忽略报错
+
+    // 添加私有部署节点
+    guanceNodes.push({
+      'key'      : 'private',
+      'name'     : '私有部署',
+      'name_en'  : 'Private',
+      'openapi'  : 'https://openapi.YOUR_DOMAIN.com',
+      'websocket': 'https://websocket.YOUR_DOMAIN.com',
+      'openway'  : 'https://openway.YOUR_DOMAIN.com',
+    });
+
+    // 开发版添加测试环境节点
+    if (['0.0.0', 'dev'].indexOf(IMAGE_INFO.VERSION) >= 0) {
+      guanceNodes.push({
+        'key'      : 'testing',
+        'name'     : '测试环境',
+        'name_en'  : 'Testing',
+        'openapi'  : 'http://testing-ft2x-open-api.cloudcare.cn',
+        'websocket': 'http://testing-ft2x-websocket.cloudcare.cn',
+        'openway'  : 'http://testing-openway.cloudcare.cn',
+      });
     }
 
-    // 忽略报错
     return callback(null, guanceNodes);
   });
 };
