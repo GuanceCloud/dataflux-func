@@ -343,10 +343,11 @@ exports.imageInfo = function(req, res, next) {
 exports.systemInfo = function(req, res, next) {
   var systemInfo = {
     // 来自镜像信息
-    ARCHITECTURE    : IMAGE_INFO.ARCHITECTURE,
-    EDITION         : IMAGE_INFO.EDITION,
-    VERSION         : IMAGE_INFO.VERSION,
+    ARCHITECTURE     : IMAGE_INFO.ARCHITECTURE,
+    EDITION          : IMAGE_INFO.EDITION,
+    VERSION          : IMAGE_INFO.VERSION,
     RELEASE_TIMESTAMP: IMAGE_INFO.RELEASE_TIMESTAMP,
+    LINUX_DISTRO     : IMAGE_INFO.LINUX_DISTRO,
 
     // 来自配置
     MODE              : CONFIG.MODE,

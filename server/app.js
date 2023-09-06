@@ -27,7 +27,8 @@ yamlResources.loadFile('ROUTE',      path.join(__dirname, './route.yaml'));
 yamlResources.loadFile('PRIVILEGE',  path.join(__dirname, './privilege.yaml'));
 
 // Load arch
-yamlResources.set('IMAGE_INFO', 'ARCHITECTURE', childProcess.execFileSync('uname', [ '-m' ]).toString().trim());
+yamlResources.set('IMAGE_INFO', 'ARCHITECTURE',
+  childProcess.execFileSync('uname', [ '-m' ]).toString().trim());
 
 var CONFIG = null;
 
@@ -46,6 +47,17 @@ function startApplication() {
   var toolkit     = require('./utils/toolkit');
   var logHelper   = require('./utils/logHelper');
   var routeLoader = require('./utils/routeLoader');
+
+  // Linux Distro
+  var linuxDistro = null;
+  try {
+      linuxDistro = toolkit.safeReadFileSync('/linux-distro')
+                || childProcess.execFileSync('lsb_release', [ '-is' ]).toString().trim();
+  } catch(err) {
+    // Nope
+  } finally {
+    yamlResources.set('IMAGE_INFO', 'LINUX_DISTRO', linuxDistro);
+  }
 
   // Express
   var app = express();

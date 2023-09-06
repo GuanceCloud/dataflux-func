@@ -731,6 +731,10 @@ export default {
             return this.$store.getters.SYSTEM_INFO('ARCHITECTURE') === 'x86_64';
             break;
 
+          case 'oracle':
+            return this.$store.getters.SYSTEM_INFO('LINUX_DISTRO') !== 'UniontechOS';
+            break;
+
           default:
             return true;
         }
