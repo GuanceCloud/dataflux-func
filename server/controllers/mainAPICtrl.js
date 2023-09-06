@@ -548,6 +548,7 @@ function callFuncDebugger(locals, options, callback) {
 
 function _doAPIResponse(res, taskReq, taskResp, callback) {
   var responseControl = taskResp.result.responseControl || {};
+  var returnValue     = taskResp.result.returnValue     || null;
 
   // 缓存标记
   if (taskResp.isCached) {
@@ -601,7 +602,7 @@ function _doAPIResponse(res, taskReq, taskResp, callback) {
     // 直接返回数据
     if (responseControl.download) {
       // 作为文件下载
-      var file     = taskResp.result.returnValue;
+      var file     = returnValue;
       var fileName = responseControl.download;
       if ('string' !== typeof fileName) {
         var fileExt = typeof file === 'object' ? 'json' : 'txt';
@@ -623,25 +624,26 @@ function _doAPIResponse(res, taskReq, taskResp, callback) {
       }
 
       // 根据 returnType 转换格式
-      var result = taskResp.result;
       switch(returnType) {
         case 'raw':
           // Nope
           break;
 
         case 'jsonDumps':
-          result.returnValue = JSON.stringify(result.returnValue);
+          returnValue = JSON.stringify(returnValue);
           break;
       }
 
       // 拆箱
       if (unbox) {
         // 需要拆箱时，发送数据类型不确定
-        return res.locals.sendRaw(result.returnValue, responseControl.contentType);
+        return res.locals.sendRaw(returnValue, responseControl.contentType);
 
       } else {
-        // 不拆箱时，必然是JSON
-        var ret = toolkit.initRet(result.returnValue);
+        // 不拆箱时，必然是 JSON，且结果包含在 data.result 中
+        var ret = toolkit.initRet({
+          result: returnValue,
+        });
         return res.locals.sendJSON(ret);
       }
     }
