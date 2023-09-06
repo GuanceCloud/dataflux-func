@@ -239,7 +239,7 @@ export default {
       return percentage;
     },
     workerQueueLoadFormat(percentage) {
-      return `${this.$t('Load')}${this.$t(':')}${parseInt(percentage)}`;
+      return `${this.$t('Load')}${this.$t(':')}${parseInt(percentage)}%`;
     },
   },
   computed: {

@@ -116,6 +116,7 @@ export async function getFuncList() {
   let scriptSetMap = {};
   let scriptMap    = {};
   let funcMap      = {};
+  let blueprints   = [];
   let funcs        = [];
 
   let apiRes = null;
@@ -147,18 +148,31 @@ export async function getFuncList() {
     if (!apiRes || !apiRes.ok) return;
 
     apiRes.data.forEach(d => {
-      if (shouldScriptSetHidden(d)) return;
       if (!relatedScriptSetIds[d.id]) return;
 
       // 加入映射表
-      scriptSetMap[d.id] = {
-        label   : d.title || d.id,
-        value   : d.id,
-        title   : d.title,
-        origin  : d.origin,
-        originId: d.originId,
-        children: [],
-      };
+      // 蓝图
+      if (d.origin === 'blueprints') {
+        blueprints.push({
+          label: d.title || d.id,
+          value: `${d.id}__main.run`,
+          title: d.title,
+          tip  : d.id,
+        });
+      }
+
+      // 脚本集
+      if (!shouldScriptSetHidden(d)) {
+        scriptSetMap[d.id] = {
+          label   : d.title || d.id,
+          value   : d.id,
+          title   : d.title,
+          origin  : d.origin,
+          originId: d.originId,
+          children: [],
+          tip     : d.id,
+        };
+      }
     });
   }
 
@@ -180,6 +194,7 @@ export async function getFuncList() {
         value   : d.id,
         title   : d.title,
         children: [],
+        tip     : d.id,
       };
 
       // 插入上一层"children"
@@ -204,6 +219,7 @@ export async function getFuncList() {
       scriptSetTitle : d.sset_title,
       scriptId       : d.scriptId,
       scriptTitle    : d.scpt_title,
+      tip            : d.id,
     };
     T.appendSearchFields(funcMap[d.id], ['label', 'value', 'title', 'scriptSetId', 'scriptSetTitle', 'scriptId', 'scriptTitle']);
 
@@ -217,7 +233,16 @@ export async function getFuncList() {
 
   let result = {
     map     : funcMap,
-    cascader: scriptSets,
+    cascader: [
+      {
+        label: app.$t('Script Lib'),
+        children: scriptSets,
+      },
+      {
+        label: app.$t('Blueprint'),
+        children: blueprints,
+      }
+    ]
   }
 
   return result;

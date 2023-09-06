@@ -289,7 +289,7 @@ class FuncStoreHelper(object):
     def __call__(self, *args, **kwargs):
         return self.get(*args, **kwargs)
 
-    def _get_id(key, scope):
+    def _get_id(self, key, scope):
         '''
         计算函数存储 ID
         '''
