@@ -8,8 +8,8 @@ Update time    : 更新时间
 
 Unarchive     : 解压
 Archive in zip: 压缩为 zip
-Archive in tar: 压缩为 tar
 Archive in 7z : 压缩为 7z
+Archive in tar: 压缩为 tar
 Package       : Wheel 包
 Mirror        : PIP 镜像
 
@@ -108,8 +108,8 @@ File already existed                                                            
           <el-table-column :label="$t('Name')" sortable sort-by="name">
             <template slot-scope="scope">
               <el-link v-if="scope.row.type === 'folder'" @click="enterFolder(scope.row.name)">
-                <i :class="`fa fa-fw fa-${scope.row.icon}`"></i>
-                <code>{{ scope.row.name }}/</code>
+                <i :class="`fa fa-fw fa-${scope.row.icon} fa-2x`"></i>
+                <code class="file-folder-name">{{ scope.row.name }}/</code>
               </el-link>
 
               <template v-else>
@@ -117,8 +117,8 @@ File already existed                                                            
                   :href="scope.row.downloadURL"
                   :download="scope.row.name"
                   target="_blank">
-                  <i :class="`fa fa-fw fa-${scope.row.icon}`"></i>
-                  <code>{{ scope.row.name }}</code>
+                  <i :class="`fa fa-fw fa-${scope.row.icon} fa-2x`"></i>
+                  <code class="file-folder-name">{{ scope.row.name }}</code>
                   </el-link>
               </template>
             </template>
@@ -179,8 +179,8 @@ File already existed                                                            
                     <el-dropdown-item :command="{ data: scope.row, operation: 'tar' }">
                       {{ $t('Archive in tar') }}
                     </el-dropdown-item>
-                    <el-dropdown-item :command="{ data: scope.row, operation: 'zip' }">
-                      {{ $t('Archive in zip') }}
+                    <el-dropdown-item :command="{ data: scope.row, operation: '7z' }">
+                      {{ $t('Archive in 7z') }}
                     </el-dropdown-item>
                   </template>
                   <el-dropdown-item divided :command="{ data: scope.row, operation: 'cp' }">
@@ -303,7 +303,7 @@ export default {
           case 'tar':
           case 'bz':
           case 'gz':
-            f.icon = 'file-archive-o';
+            f.icon = 'file-archive-o text-main';
             break;
           case 'htm':
           case 'html':
@@ -651,6 +651,9 @@ export default {
 </script>
 
 <style scoped>
+.file-folder-name {
+  font-size: 16px;
+}
 .resource-navi .el-button {
   margin-left: 0 !important;
   padding: 5px 5px !important;

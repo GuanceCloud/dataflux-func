@@ -2447,6 +2447,12 @@ var maskConfig = toolkit.maskConfig = function(j) {
   return masked;
 };
 
+var childProcessSpawnSync = toolkit.childProcessSpawnSync = function(cmd, cmdArgs, cmdOpt) {
+  cmdOpt = cmdOpt || {};
+
+  return childProcess.spawnSync(cmd, cmdArgs, cmdOpt);
+};
+
 var childProcessSpawn = toolkit.childProcessSpawn = function(cmd, cmdArgs, cmdOpt, callback) {
   cmdOpt = cmdOpt || {};
 

@@ -1348,7 +1348,9 @@ resourceAPI:
         $in:
           - mkdir
           - zip
-          - unzip
+          - tar
+          - 7z
+          - unarchive
           - cp
           - mv
           - rm
