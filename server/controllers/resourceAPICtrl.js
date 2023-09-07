@@ -47,7 +47,11 @@ exports.list = function(req, res, next) {
         updateTime: null,
       };
 
-      var stat = fs.statSync(path.join(absPath, x.name));
+      var filePath = path.join(absPath, x.name);
+
+      if (!fs.existsSync(filePath)) return acc;
+
+      var stat = fs.statSync(filePath);
       f.createTime = stat.birthtimeMs || null;
       f.updateTime = stat.ctimeMs;
 
@@ -82,7 +86,6 @@ exports.get = function(req, res, next) {
   }
 
   var stat = null;
-
   if (fs.existsSync(absPath)) {
     stat = fs.statSync(absPath);
   }
@@ -219,7 +222,8 @@ exports.operate = function(req, res, next) {
       if (toolkit.endsWith(targetName, '.zip')) {
         var outputDir = targetName.slice(0, -'.zip'.length);
         cmd = 'unzip';
-        cmdArgs.push('-q', '-O', 'cp936', targetName, '-d', outputDir);
+        // cmdArgs.push('-q', '-O', 'cp936', targetName, '-d', outputDir);
+        cmdArgs.push('-q', '-O', 'gbk', targetName, '-d', outputDir);
 
       } else if (toolkit.endsWith(targetName, '.tar')) {
         // tar 需要确保目录存在
