@@ -6,15 +6,19 @@ Path           : 路径
 Create time    : 创建时间
 Update time    : 更新时间
 
-Package: Wheel包
-Mirror : PIP镜像
+Unarchive     : 解压
+Archive in zip: 压缩为 zip
+Archive in tar: 压缩为 tar
+Archive in 7z : 压缩为 7z
+Package       : Wheel 包
+Mirror        : PIP 镜像
 
 File uploaded                    : 文件已上传
-'Wheel package installed: {name}': Wheel包已安装：{name}
+'Wheel package installed: {name}': Wheel 包已安装：{name}
 
 Please input destination path                                                        : 请输入目标路径
 'File <code class="text-main">{name}</code> already existed, please input a new name': '文件 <code class="text-main">{name}</code> 已经存在，请输入新文件名'
-Install Wheel package                                                                : 安装Wheel包
+Install Wheel package                                                                : 安装 Wheel 包
 Are you sure you want to delete the content?                                         : 是否确定删除此内容？
 Delete file                                                                          : 删除文件
 File already existed                                                                 : 文件已经存在
@@ -150,8 +154,8 @@ File already existed                                                            
           <el-table-column align="right" width="180">
             <template slot-scope="scope">
               <template v-if="scope.row.type === 'file'">
-                <el-link v-if="zipExts.includes(scope.row.ext)"
-                  @click="resourceOperation(scope.row.name, 'unzip')">{{ $t('Unzip') }}</el-link>
+                <el-link v-if="archiveExts.includes(scope.row.ext)"
+                  @click="resourceOperation(scope.row.name, 'unarchive')">{{ $t('Unarchive') }}</el-link>
 
                 <el-link
                   v-if="previewExts.includes(scope.row.ext) || !scope.row.ext"
@@ -168,9 +172,17 @@ File already existed                                                            
                   <i class="el-icon-arrow-down el-icon--right"></i>
                 </el-link>
                 <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item v-if="!zipExts.includes(scope.row.ext)" :command="{ data: scope.row, operation: 'zip' }">
-                    {{ $t('Zip') }}
-                  </el-dropdown-item>
+                  <template v-if="!archiveExts.includes(scope.row.ext)">
+                    <el-dropdown-item :command="{ data: scope.row, operation: 'zip' }">
+                      {{ $t('Archive in zip') }}
+                    </el-dropdown-item>
+                    <el-dropdown-item :command="{ data: scope.row, operation: 'tar' }">
+                      {{ $t('Archive in tar') }}
+                    </el-dropdown-item>
+                    <el-dropdown-item :command="{ data: scope.row, operation: 'zip' }">
+                      {{ $t('Archive in zip') }}
+                    </el-dropdown-item>
+                  </template>
                   <el-dropdown-item divided :command="{ data: scope.row, operation: 'cp' }">
                     {{ $t('Copy') }}
                   </el-dropdown-item>
@@ -598,7 +610,7 @@ export default {
         'md', 'markdown',
       ]
     },
-    zipExts() {
+    archiveExts() {
       return [
         'zip',
         'tar',
