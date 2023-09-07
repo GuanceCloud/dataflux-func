@@ -183,7 +183,7 @@ File already existed                                                            
                       {{ $t('Archive in 7z') }}
                     </el-dropdown-item>
                   </template>
-                  <el-dropdown-item divided :command="{ data: scope.row, operation: 'cp' }">
+                  <el-dropdown-item :divided="!archiveExts.includes(scope.row.ext)" :command="{ data: scope.row, operation: 'cp' }">
                     {{ $t('Copy') }}
                   </el-dropdown-item>
                   <el-dropdown-item :command="{ data: scope.row, operation: 'mv' }">

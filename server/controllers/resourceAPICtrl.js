@@ -230,8 +230,15 @@ exports.operate = function(req, res, next) {
           entry.entryName = iconv.decode(entry.rawEntryName, 'gbk');
         });
 
-        zipFile.extractAllTo(outputAbsDir);
-        return res.locals.sendJSON();
+        try {
+          zipFile.extractAllTo(outputAbsDir);
+          return res.locals.sendJSON();
+
+        } catch(err) {
+          return next(new E('EBizCondition', 'Resource operation Failed', {
+            message: err.toString(),
+          }));
+        }
 
       } else if (toolkit.endsWith(targetName, '.tar')) {
         // tar 需要确保目录存在
