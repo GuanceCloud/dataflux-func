@@ -152,7 +152,7 @@ export async function getFuncList() {
 
       // 加入映射表
       // 蓝图
-      if (d.origin === 'blueprints') {
+      if (d.origin === 'blueprint') {
         blueprints.push({
           label: d.title || d.id,
           value: `${d.id}__main.run`,

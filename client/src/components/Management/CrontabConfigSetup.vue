@@ -7,7 +7,7 @@ shortcutDays  : '{n} day | {n} days'
 Add Crontab Config  : 添加自动触发配置
 Setup Crontab Config: 配置自动触发配置
 
-Func        : 执行函数
+Execute     : 执行
 Arguments   : 参数指定
 Task Record : 任务记录
 Keep        : 保留
@@ -78,7 +78,7 @@ shortcutDays  : '{n} 天'
           <el-col :span="15">
             <div class="setup-form">
               <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
-                <el-form-item :label="$t('Func')" prop="funcId">
+                <el-form-item :label="$t('Execute')" prop="funcId">
                   <el-cascader ref="funcCascader"
                     popper-class="code-font"
                     placeholder="--"
@@ -87,7 +87,8 @@ shortcutDays  : '{n} 天'
                     v-model="form.funcId"
                     :options="funcCascader"
                     :props="{ expandTrigger: 'hover', emitPath: false, multiple: false }"
-                    @change="autoFillFuncCallKwargsJSON"></el-cascader>
+                    @change="autoFillFuncCallKwargsJSON">
+                    </el-cascader>
                 </el-form-item>
 
                 <el-form-item :label="$t('Arguments')" prop="funcCallKwargsJSON">

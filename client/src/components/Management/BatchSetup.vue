@@ -73,7 +73,7 @@ recentTaskCount: '{n} 个近期任务'
                   <InfoBlock :title="$t('ID will be a part of the calling URL')" />
                 </el-form-item>
 
-                <el-form-item :label="$t('Func')" prop="funcId">
+                <el-form-item :label="$t('Execute')" prop="funcId">
                   <el-cascader ref="funcCascader"
                     popper-class="code-font"
                     placeholder="--"
@@ -82,7 +82,8 @@ recentTaskCount: '{n} 个近期任务'
                     v-model="form.funcId"
                     :options="funcCascader"
                     :props="{ expandTrigger: 'hover', emitPath: false, multiple: false }"
-                    @change="autoFillFuncCallKwargsJSON"></el-cascader>
+                    @change="autoFillFuncCallKwargsJSON">
+                    </el-cascader>
                 </el-form-item>
 
                 <el-form-item :label="$t('Arguments')" prop="funcCallKwargsJSON">
