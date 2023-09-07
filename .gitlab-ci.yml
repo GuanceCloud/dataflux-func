@@ -305,6 +305,31 @@ guancePaaS_release:
   tags:
     - cloudcare-multiarch
 
+guancePaaS_uos_release:
+  stage: build
+  retry: 2
+  only:
+    - /\d+\.\d+\.\d+-\w+-\d+-prod/ # 如： 1.9.48-356017d-1600314708-prod
+  script:
+    # 下载初始化脚本
+    - wget ${INIT_SCRIPT_URL_IMPORT_BUILTIN_SCRIPT_SETS} -O init-scripts/import_builtin_script_sets.py; # 自动执行脚本
+    - wget ${BUILTIN_SCRIPT_SET_URL_DATAFLUX}            -O init-scripts/dataflux.zip;                  # 旧版内置脚本集
+    - wget ${BUILTIN_SCRIPT_SET_URL_GUANCE}              -O init-scripts/guance.zip;                    # 新版内置脚本集
+    # 计算版本号
+    - V=(${CI_COMMIT_REF_NAME//[\.-]/ })
+    - VDIR=${V[0]}.${V[1]}.${V[2]}
+    - REPO=uos-dataflux/$VDIR
+    - TAG=${PROJECT}-${V[3]}-${V[4]}
+    # 构建 / 推送多架构版本
+    - python echo-image-info.py --edition=GSE > image-info.json
+    - docker buildx build
+      --platform linux/amd64
+      -t pubrepo.jiagouyun.com/$REPO:$TAG
+      -f Dockerfile-uos-singleton-GSE .
+      --push
+  tags:
+    - cloudcare-multiarch
+
 # ========== 其他携带版文件上传到 OSS ==========
 
 otherPortableFile_dev:
