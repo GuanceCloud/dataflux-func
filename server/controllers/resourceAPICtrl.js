@@ -5,6 +5,8 @@ var fs   = require('fs-extra');
 var path = require('path');
 
 /* 3rd-party Modules */
+var AdmZip = require('adm-zip');
+var iconv  = require('iconv-lite');
 
 /* Project Modules */
 var E       = require('../utils/serverError');
@@ -221,9 +223,15 @@ exports.operate = function(req, res, next) {
     case 'unarchive':
       if (toolkit.endsWith(targetName, '.zip')) {
         var outputDir = targetName.slice(0, -'.zip'.length);
-        cmd = 'unzip';
-        // cmdArgs.push('-q', '-O', 'cp936', targetName, '-d', outputDir);
-        cmdArgs.push('-q', '-O', 'gbk', targetName, '-d', outputDir);
+        var outputAbsDir = path.join(currentAbsDir, outputDir);
+
+        var zipFile = new AdmZip(targetAbsPath);
+        zipFile.getEntries().forEach(entry => {
+          entry.entryName = iconv.decode(entry.rawEntryName, 'gbk');
+        });
+
+        zipFile.extractAllTo(outputAbsDir);
+        return res.locals.sendJSON();
 
       } else if (toolkit.endsWith(targetName, '.tar')) {
         // tar 需要确保目录存在
