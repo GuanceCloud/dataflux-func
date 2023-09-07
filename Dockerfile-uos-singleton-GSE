@@ -1,0 +1,34 @@
+# 由于在环境准备步骤中，buildx 在 qemu-arm64 下执行速度太慢
+# 因此日常镜像构建由半成品镜像开始打包，以提高效率
+FROM registry.jiagouyun.com/middlewares/uos-dataflux-func:base-gse
+
+MAINTAINER Yiling Zhou <zyl@jiagouyun.com>
+
+ARG TARGETARCH
+
+ENV TARGETARCH ${TARGETARCH}
+ENV PYTHONPATH="$PYTHONPATH:/usr/src/app"
+
+# 构建项目
+#   由于 buildx 在 qemu-arm64 下执行 npm run build 速度太慢
+#   因此改为本机执行 npm run build，并把 dist 目录也提交到 git 库中，不再由服务器进行构建
+#   因此只需要拷贝构建后的内容即可
+WORKDIR /usr/src/app
+COPY . .
+RUN ln -s /usr/src/base/node_modules ./node_modules && \
+    ln -s /usr/src/base/client/node_modules ./client/node_modules
+
+# 启动脚本
+COPY docker-entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["docker-entrypoint.sh"]
+
+# 参考
+# 启动 Web 服务器
+# EXPOSE 8088
+# CMD ./run-server.sh
+
+# 启动 Worker 进程
+# CMD ./run-worker.sh
+
+# 启动 Beat 进程
+# CMD ./run-beat.sh

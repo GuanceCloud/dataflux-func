@@ -342,7 +342,10 @@ export default {
     }
 
     this.$nextTick(() => {
-      this.socketIO = window.socketIO = io(process.env.VUE_APP_SERVER_BASE_URL);
+      this.socketIO = window.socketIO = io(process.env.VUE_APP_SERVER_BASE_URL, {
+        // 此项必须，否则多 Pod 部署后，Socket.io 会产生「400：Session ID unknown」错误
+        transports: [ 'websocket', 'polling' ],
+      });
       this.socketIO
         .on('error', handleError)
         .on('connect', connectSocketIO)

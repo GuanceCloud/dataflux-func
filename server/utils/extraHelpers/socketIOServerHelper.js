@@ -40,7 +40,7 @@ var SocketIOServerHelper = function(server, logger, config) {
     self.config = toolkit.noNullOrWhiteSpace(config);
 
     self.subClient = redis.createClient(redisHelper.getConfig(self.config, _retryStrategy));
-    self.pubClient = redis.createClient(redisHelper.getConfig(self.config, _retryStrategy));
+    self.pubClient = self.subClient.duplicate();
 
     self.subClient.on('error', function(err) {
       self.logger.error('[SOCKET IO] Error: `{0}` (in SubClient)', err.toString());
@@ -70,7 +70,7 @@ var SocketIOServerHelper = function(server, logger, config) {
       });
 
       SUB_CLIENT = redis.createClient(redisHelper.getConfig(CLIENT_CONFIG, self.retryStrategy));
-      PUB_CLIENT = redis.createClient(redisHelper.getConfig(CLIENT_CONFIG, self.retryStrategy));
+      PUB_CLIENT = SUB_CLIENT.duplicate();
 
       // Error handling
       SUB_CLIENT.on('error', function(err) {
