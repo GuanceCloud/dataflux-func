@@ -225,6 +225,10 @@ exports.operate = function(req, res, next) {
         var outputDir = targetName.slice(0, -'.zip'.length);
         var outputAbsDir = path.join(currentAbsDir, outputDir);
 
+        if (fs.existsSync(outputAbsDir)) {
+          return next(new E('EBizCondition', 'Extract output folder already existed', { name: outputAbsDir }));
+        }
+
         var zipFile = new AdmZip(targetAbsPath);
         zipFile.getEntries().forEach(entry => {
           entry.entryName = iconv.decode(entry.rawEntryName, 'gbk');
@@ -241,24 +245,42 @@ exports.operate = function(req, res, next) {
         }
 
       } else if (toolkit.endsWith(targetName, '.tar')) {
-        // tar 需要确保目录存在
         var outputDir = targetName.slice(0, -'.tar'.length);
+        var outputAbsDir = path.join(currentAbsDir, outputDir);
+
+        if (fs.existsSync(outputAbsDir)) {
+          return next(new E('EBizCondition', 'Extract output folder already existed', { name: outputAbsDir }));
+        }
+
+        // tar 需要确保目录存在
         toolkit.childProcessSpawnSync('mkdir', ['-p', outputDir], cmdOpt);
 
         cmd = 'tar';
         cmdArgs.push('-xf', targetName, '-C', outputDir);
 
       } else if (toolkit.endsWith(targetName, '.tar.gz')) {
-        // tar 需要确保目录存在
         var outputDir = targetName.slice(0, -'.tar.gz'.length);
+        var outputAbsDir = path.join(currentAbsDir, outputDir);
+
+        if (fs.existsSync(outputAbsDir)) {
+          return next(new E('EBizCondition', 'Extract output folder already existed', { name: outputAbsDir }));
+        }
+
+        // tar 需要确保目录存在
         toolkit.childProcessSpawnSync('mkdir', ['-p', outputDir], cmdOpt);
 
         cmd = 'tar';
         cmdArgs.push('-xzf', targetName, '-C', outputDir);
 
       } else if (toolkit.endsWith(targetName, '.tar.bz2')) {
-        // tar 需要确保目录存在
         var outputDir = targetName.slice(0, -'.tar.bz2'.length);
+        var outputAbsDir = path.join(currentAbsDir, outputDir);
+
+        if (fs.existsSync(outputAbsDir)) {
+          return next(new E('EBizCondition', 'Extract output folder already existed', { name: outputAbsDir }));
+        }
+
+        // tar 需要确保目录存在
         toolkit.childProcessSpawnSync('mkdir', ['-p', outputDir], cmdOpt);
 
         cmd = 'tar';
@@ -267,6 +289,13 @@ exports.operate = function(req, res, next) {
       } else if (toolkit.endsWith(targetName, '.tar.xz')) {
         // tar 需要确保目录存在
         var outputDir = targetName.slice(0, -'.tar.xz'.length);
+        var outputAbsDir = path.join(currentAbsDir, outputDir);
+
+        if (fs.existsSync(outputAbsDir)) {
+          return next(new E('EBizCondition', 'Extract output folder already existed', { name: outputAbsDir }));
+        }
+
+        // tar 需要确保目录存在
         toolkit.childProcessSpawnSync('mkdir', ['-p', outputDir], cmdOpt);
 
         cmd = 'tar';
@@ -274,6 +303,12 @@ exports.operate = function(req, res, next) {
 
       } else if (toolkit.endsWith(targetName, '.7z')) {
         var outputDir = targetName.slice(0, -'.7z'.length);
+        var outputAbsDir = path.join(currentAbsDir, outputDir);
+
+        if (fs.existsSync(outputAbsDir)) {
+          return next(new E('EBizCondition', 'Extract output folder already existed', { name: outputAbsDir }));
+        }
+
         cmd = '7za';
         cmdArgs.push('-bso0', 'x', targetName, `-o${outputDir}`);
       }
