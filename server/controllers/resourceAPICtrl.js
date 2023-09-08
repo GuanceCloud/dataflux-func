@@ -5,8 +5,6 @@ var fs   = require('fs-extra');
 var path = require('path');
 
 /* 3rd-party Modules */
-var AdmZip = require('adm-zip');
-var iconv  = require('iconv-lite');
 
 /* Project Modules */
 var E       = require('../utils/serverError');
@@ -231,21 +229,6 @@ exports.operate = function(req, res, next) {
 
         cmd = 'unzip';
         cmdArgs.push('-O', 'GBK', targetName, '-d', outputDir);
-
-        // var zipFile = new AdmZip(targetAbsPath);
-        // zipFile.getEntries().forEach(entry => {
-        //   entry.entryName = iconv.decode(entry.rawEntryName, 'gbk');
-        // });
-
-        // try {
-        //   zipFile.extractAllTo(outputAbsDir);
-        //   return res.locals.sendJSON();
-
-        // } catch(err) {
-        //   return next(new E('EBizCondition', 'Resource operation Failed', {
-        //     message: err.toString(),
-        //   }));
-        // }
 
       } else if (toolkit.endsWith(targetName, '.tar')) {
         var outputDir = targetName.slice(0, -'.tar'.length);
