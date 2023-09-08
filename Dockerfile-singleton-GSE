@@ -8,7 +8,7 @@ ARG TARGETARCH
 
 ENV TARGETARCH ${TARGETARCH}
 ENV PYTHONPATH="$PYTHONPATH:/usr/src/app"
-ENV LANG="en_US.UTF-8"
+ENV LANG="C.UTF-8"
 
 # 构建项目
 #   由于 buildx 在 qemu-arm64 下执行 npm run build 速度太慢

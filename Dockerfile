@@ -13,6 +13,7 @@ ARG ORACLE_CLIENT_PKG_ARM64="oracle-instantclient-basic-linux.arm64-19.10.0.0.0d
 ENV TARGETARCH ${TARGETARCH}
 ENV PATH "$PATH:/usr/src/resource/node-v16.17.0-linux-x64/bin:/usr/src/resource/node-v16.17.0-linux-arm64/bin"
 ENV PYTHONPATH="$PYTHONPATH:/usr/src/app"
+ENV LANG="C.UTF-8"
 
 USER root
 
