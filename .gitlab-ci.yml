@@ -309,7 +309,7 @@ guancePaaS_uos_release:
   stage: build
   retry: 2
   only:
-    - /\d+\.\d+\.\d+-\w+-\d+-prod/ # 如： 1.9.48-356017d-1600314708-prod
+    - /\d+\.\d+\.\d+-\w+-\d+-uos-prod/ # 如： 1.9.48-356017d-1600314708-uos-prod
   script:
     # 下载初始化脚本
     - wget ${INIT_SCRIPT_URL_IMPORT_BUILTIN_SCRIPT_SETS} -O init-scripts/import_builtin_script_sets.py; # 自动执行脚本

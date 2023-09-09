@@ -163,7 +163,7 @@ export default {
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
       this.$router.push({
-        name  : 'blueprint-contents',
+        name  : 'blueprint-canvas',
         params: { id: d.id },
         query : nextRouteQuery,
       });

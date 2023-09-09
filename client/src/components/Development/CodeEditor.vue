@@ -246,6 +246,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                           @click="publishScript"
                           :disabled="workerRunning"
                           plain
+                          class="text-main"
                           size="mini">
                           <i class="fa fa-fw fa-coffee"></i> {{ $t('Publish') }}
                         </el-button>

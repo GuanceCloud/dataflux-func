@@ -64,8 +64,12 @@
             <h1>{{ $t('Blueprint') }}</h1>
             <span class="text-main">{{ data.title || data.id }}</span>
             &#12288;
-            <el-button size="mini" @click="deploy">
-              <i class="fa fa-fw fa-coffee"></i>
+            <el-button
+              @click="deploy"
+              plain
+              class="text-main"
+              size="mini">
+              <i class="fa fa-fw fa-beer"></i>
               {{ $t('Deploy') }}
             </el-button>
             &nbsp;
@@ -234,8 +238,8 @@
 
             <!-- 代码 -->
             <el-form-item :label="$t('Code')" v-show="selectedElementHasProp('code')">
-              <div id="codeContainer_BlueprintContents" :style="$store.getters.codeMirrorSettings.style">
-                <textarea id="code_BlueprintContents"></textarea>
+              <div id="codeContainer_BlueprintCanvas" :style="$store.getters.codeMirrorSettings.style">
+                <textarea id="code_BlueprintCanvas"></textarea>
               </div>
             </el-form-item>
 
@@ -493,7 +497,7 @@ import BuiltinDingTalkNode from '@/components/Blueprint/Nodes/BuiltinDingTalkNod
 
 
 export default {
-  name: 'BlueprintContents',
+  name: 'BlueprintCanvas',
   components: {
   },
   watch: {
@@ -841,7 +845,7 @@ export default {
             setImmediate(() => {
               // 初始化代码编辑器
               if (!this.codeMirror) {
-                this.codeMirror = this.T.initCodeMirror('code_BlueprintContents');
+                this.codeMirror = this.T.initCodeMirror('code_BlueprintCanvas');
                 this.codeMirror.setOption('theme', this.T.getCodeMirrorThemeName());
               }
 
@@ -1270,11 +1274,11 @@ export default {
   }
 }
 
-#codeContainer_BlueprintContents {
+#codeContainer_BlueprintCanvas {
   border: 1px solid #DCDFE6;
   border-radius: 3px;
 }
-#codeContainer_BlueprintContents .CodeMirror {
+#codeContainer_BlueprintCanvas .CodeMirror {
   height: 420px;
   width: auto;
 }

@@ -106,9 +106,9 @@ const routes = [
     component: () => import('../components/Blueprint/BlueprintSetup.vue'),
   },
   {
-    path: '/blueprint-contents/:id',
-    name: 'blueprint-contents',
-    component: () => import('../components/Blueprint/BlueprintContents.vue'),
+    path: '/blueprint-canvas/:id',
+    name: 'blueprint-canvas',
+    component: () => import('../components/Blueprint/BlueprintCanvas.vue'),
   },
 
   // 脚本市场
