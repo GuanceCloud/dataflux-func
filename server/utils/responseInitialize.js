@@ -339,7 +339,7 @@ router.all('*', function prepareFunctionalComponents(req, res, next) {
       for (var id in dbRes) {
         var v = dbRes[id];
 
-        if (toolkit.endsWith(id, '_IMAGE_SRC')) {
+        if (toolkit.endsWith(id, '_IMAGE_SRC') && 'string' === typeof v) {
           v = new Buffer.from(v.split(',')[1], 'base64');
         }
 
