@@ -140,8 +140,8 @@ done
 # 配置
 __PREV_DIR=${PWD}
 __PORTABLE_DIR=$(cd `dirname $0`; pwd)
-__SERVER_SECRET=`openssl rand -hex 8`
-__MYSQL_PASSWORD=`openssl rand -hex 8`
+__SERVER_SECRET=`echo ${RANDOM} | md5sum | cut -c 1-16`
+__MYSQL_PASSWORD=`echo ${RANDOM} | md5sum | cut -c 1-16`
 
 __CONFIG_FILE=data/user-config.yaml
 __DOCKER_STACK_FILE=docker-stack.yaml

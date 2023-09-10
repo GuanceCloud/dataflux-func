@@ -48,15 +48,6 @@
         var cssHref = $uiThemeLink.getAttribute('href-pattern').replace('XXX', uiTheme);
         $uiThemeLink.setAttribute('href', cssHref);
 
-        // 切换 favicon
-        var $faviconLink = document.getElementById('favicon');
-        if (SYSTEM_SETTINGS['CUSTOM_FAVICON_ENABLED'] && SYSTEM_SETTINGS['CUSTOM_FAVICON_IMAGE_SRC']) {
-          $faviconLink.setAttribute('href', SYSTEM_SETTINGS['CUSTOM_FAVICON_IMAGE_SRC']);
-        } else {
-          var defaultHref = $faviconLink.getAttribute('origin-href');
-          // $faviconLink.setAttribute('href', defaultHref);
-        }
-
         // 切换 title
         if (SYSTEM_SETTINGS['CUSTOM_SITE_TITLE_ENABLED'] && SYSTEM_SETTINGS['CUSTOM_SITE_TITLE_TEXT']) {
           document.title = SYSTEM_SETTINGS['CUSTOM_SITE_TITLE_TEXT'];

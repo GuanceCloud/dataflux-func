@@ -75,9 +75,6 @@ WORKDIR /usr/src/base/client
 COPY client/package.json client/package-lock.json ./
 RUN npm ci --registry=http://registry.npmmirror.com --disturl=http://npmmirror.com/dist --unsafe-perm
 
-# 其他修改
-# COPY misc/openssl.cnf /etc/ssl/openssl.cnf
-
 # 构建项目
 WORKDIR /usr/src/app
 COPY . .

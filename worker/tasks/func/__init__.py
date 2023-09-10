@@ -1627,6 +1627,9 @@ class FuncBaseTask(BaseTask):
         def __call_func(func_id, kwargs=None):
             return self._call_func(safe_scope, func_id, kwargs)
 
+        def __call_blueprint(blueprint_id, kwargs=None):
+            return self._call_func(safe_scope, f'_bp_{blueprint_id}__main.run', kwargs)
+
         inject_funcs = {
             'LOG' : __log,  # 输出日志
             'EVAL': __eval, # 执行Python表达式
@@ -1650,14 +1653,15 @@ class FuncBaseTask(BaseTask):
             'RESP_LARGE_DATA': FuncResponseLargeData, # 函数响应题（大量数据）
             'REDIRECT'       : FuncRedirect,          # 重定向响应体
 
-            'FUNC'  : __call_func,     # 调用函数（产生新Task）
-            'THREAD': __thread_helper, # 多线程处理模块
+            'FUNC'     : __call_func,      # 调用函数（产生新 Task）
+            'BLUEPRINT': __call_blueprint, # 调用蓝图（产生新Task）
+            'THREAD'   : __thread_helper,  # 多线程处理模块
 
             'TASK'        : self,          # 当前任务
             'SYS_DB'      : self.db,       # 当前 DataFlux Func 数据库
             'SYS_CACHE_DB': self.cache_db, # 当前 DataFlux Func 缓存
 
-            # 无连接器访问
+            # 直接连接器
             'GUANCE_OPENAPI': GuanceOpenAPI,
             'DATAKIT'       : DataKit,
             'DATAWAY'       : DataWay,
