@@ -388,8 +388,7 @@ exports.systemInfo = function(req, res, next) {
     _RESOURCE_UPLOAD_FILE_SIZE_LIMIT: toolkit.toBytes(ROUTE.resourceAPI.upload.files.$limitSize),
   };
 
-  var funcModel          = funcMod.createModel(res.locals);
-  var systemSettingModel = systemSettingMod.createModel(res.locals);
+  var funcModel = funcMod.createModel(res.locals);
 
   async.series([
     // 获取登录集成函数
@@ -420,10 +419,11 @@ exports.systemInfo = function(req, res, next) {
     },
     // 获取系统设置
     function(asyncCallback) {
-      systemSettingModel.get(Object.keys(CONST.systemSettings), function(err, dbRes) {
+      var keys = Object.keys(CONST.systemSettings);
+      res.locals.getSystemSettings(keys, function(err, systemSettings) {
         if (err) return asyncCallback(err);
 
-        systemInfo.SYSTEM_SETTINGS = dbRes;
+        systemInfo.SYSTEM_SETTINGS = systemSettings;
 
         return asyncCallback();
       });

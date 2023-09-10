@@ -213,7 +213,7 @@ router.all('*', function prepareDBCacheUserAccess(req, res, next) {
 
 /**
  * Prepare functional components.
- * @return {Object} res.locals.getSystemSetting
+ * @return {Object} res.locals.getSystemSettings
  * @return {Object} res.locals.getDateTimeRange
  * @return {Object} res.locals.getFulfilledDateTimeRange
  * @return {Object} res.locals.getDateTimeRangeFilter
@@ -313,18 +313,18 @@ router.all('*', function prepareFunctionalComponents(req, res, next) {
     ]);
   };
 
-  res.locals.getSystemSetting = function(ids, callback) {
-    ids = toolkit.asArray(ids);
+  res.locals.getSystemSettings = function(keys, callback) {
+    keys = toolkit.asArray(keys);
 
     // 优先从 LRU 中获取
     var systemSettings = {}
     var nonLRUIds      = [];
-    ids.forEach(function(id) {
-      var v = SYSTEM_SETTING_LRU.get(id);
+    keys.forEach(function(key) {
+      var v = SYSTEM_SETTING_LRU.get(key);
       if (toolkit.notNothing(v)) {
-        systemSettings[id] = v;
+        systemSettings[key] = v;
       } else {
-        nonLRUIds.push(id);
+        nonLRUIds.push(key);
       }
     });
 
@@ -336,15 +336,15 @@ router.all('*', function prepareFunctionalComponents(req, res, next) {
     systemSettingModel.get(nonLRUIds, function(err, dbRes) {
       if (err) return callback(err);
 
-      for (var id in dbRes) {
-        var v = dbRes[id];
+      for (var key in dbRes) {
+        var v = dbRes[key];
 
-        if (toolkit.endsWith(id, '_IMAGE_SRC') && 'string' === typeof v) {
+        if (toolkit.endsWith(key, '_IMAGE_SRC') && 'string' === typeof v) {
           v = new Buffer.from(v.split(',')[1], 'base64');
         }
 
-        SYSTEM_SETTING_LRU.set(id, v);
-        systemSettings[id] = v;
+        SYSTEM_SETTING_LRU.set(key, v);
+        systemSettings[key] = v;
       }
 
       return callback(null, systemSettings);

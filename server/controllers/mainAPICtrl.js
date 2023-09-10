@@ -912,7 +912,6 @@ exports.overview = function(req, res, next) {
   var batchModel         = batchMod.createModel(res.locals);
   var fileServiceModel   = fileServiceMod.createModel(res.locals);
   var userModel          = userMod.createModel(res.locals);
-  var systemSettingModel = systemSettingMod.createModel(res.locals);
 
   var bizEntityMeta = [
     { name : 'scriptSet',     model: scriptSetModel},
@@ -941,25 +940,25 @@ exports.overview = function(req, res, next) {
   async.series([
     // 获取系统配置
     function(asyncCallback) {
-      var systemSettingIds = [
+      var keys = [
         'SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET',
         'SCRIPT_SET_HIDDEN_BUILTIN',
         'SCRIPT_SET_HIDDEN_BLUEPRINT',
       ]
-      systemSettingModel.get(systemSettingIds, function(err, dbRes) {
+      res.locals.getSystemSettings(keys, function(err, systemSettings) {
         if (err) return asyncCallback(err);
 
-        SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET = dbRes.SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET;
+        SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET = systemSettings.SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET;
         if (SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET) {
           nonScriptSetOriginIds.push('smkt-official');
         }
 
-        SCRIPT_SET_HIDDEN_BUILTIN = dbRes.SCRIPT_SET_HIDDEN_BUILTIN;
+        SCRIPT_SET_HIDDEN_BUILTIN = systemSettings.SCRIPT_SET_HIDDEN_BUILTIN;
         if (SCRIPT_SET_HIDDEN_BUILTIN) {
           nonScriptSetOrigins.push('builtin');
         }
 
-        SCRIPT_SET_HIDDEN_BLUEPRINT = dbRes.SCRIPT_SET_HIDDEN_BLUEPRINT;
+        SCRIPT_SET_HIDDEN_BLUEPRINT = systemSettings.SCRIPT_SET_HIDDEN_BLUEPRINT;
         if (SCRIPT_SET_HIDDEN_BLUEPRINT) {
           nonScriptSetOrigins.push('blueprint');
         }
@@ -1061,20 +1060,43 @@ exports.overview = function(req, res, next) {
             }
             useHidden = true;
             break;
+
+          case 'authLink':
+          case 'crontabConfig':
+          case 'batch':
+            opt = {
+              baseSQL: `
+                SELECT
+                  COUNT(*)                      AS count,
+                  SUM(IF(isDisabled = 0, 1, 0)) AS countEnabled
+                FROM ${meta.model.tableName}`
+            }
+            break;
+
+          default:
+            opt = {
+              baseSQL: `
+                SELECT
+                  COUNT(*) AS count
+                FROM ${meta.model.tableName}`
+            }
+            break;
         }
 
-        if (opt && useHidden) {
+        if (useHidden) {
           opt.filters = opt.filters || {};
           if (nonScriptSetOrigins.length   > 0) opt.filters['sset.origin']   = { notin: nonScriptSetOrigins   };
           if (nonScriptSetOriginIds.length > 0) opt.filters['sset.originId'] = { notin: nonScriptSetOriginIds };
         }
 
-        meta.model.count(opt, function(err, dbRes) {
+        opt.orders = false;
+        meta.model._list(opt, function(err, dbRes) {
           if (err) return eachCallback(err);
 
           overview.bizEntityCount.push({
-            name : meta.name,
-            count: dbRes,
+            name        : meta.name,
+            count       : dbRes[0].count,
+            countEnabled: dbRes[0].countEnabled || undefined,
           });
 
           return eachCallback();

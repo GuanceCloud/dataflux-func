@@ -10,8 +10,8 @@ var path = require('path');
 var DEFAULT_FAVICON_PATH = path.join(__dirname, '../statics/favicon.ico');
 
 module.exports = function(req, res, next) {
-  var systemSettingIds = [ 'CUSTOM_FAVICON_ENABLED', 'CUSTOM_FAVICON_IMAGE_SRC' ];
-  res.locals.getSystemSetting(systemSettingIds, function(err, systemSettings) {
+  var keys = [ 'CUSTOM_FAVICON_ENABLED', 'CUSTOM_FAVICON_IMAGE_SRC' ];
+  res.locals.getSystemSettings(keys, function(err, systemSettings) {
     if (err) return next(err);
 
     if (!systemSettings.CUSTOM_FAVICON_ENABLED

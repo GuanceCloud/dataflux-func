@@ -67,13 +67,33 @@ Load             : 负载
           <i v-else-if="C.OVERVIEW_ENTITY_MAP.get(d.name).tagText" type="info" class="overview-icon overview-icon-text"><code>{{ C.OVERVIEW_ENTITY_MAP.get(d.name).tagText }}</code></i>
 
           <span class="overview-name">{{ C.OVERVIEW_ENTITY_MAP.get(d.name).name }}</span>
+
           <span class="overview-count" :style="{'font-size': overviewCountFontSize(d.count) + 'px'}">
-            {{ d.count }}
-            <span class="overview-count-unit">{{ $t('overviewCountUnit') }}</span>
+            <template v-if="d.countEnabled">
+              <el-tooltip effect="dark" :content="$t('Enabled')" placement="left">
+                <span class="text-good">
+                  {{ d.countEnabled }}
+                </span>
+              </el-tooltip>
+              <span class="text-info" :style="{'font-size': overviewCountFontSize(d.count) / 2 + 'px'}">
+                /
+                {{ d.count }}
+              </span>
+              <span class="overview-count-unit">{{ $t('overviewCountUnit') }}</span>
+            </template>
+            <template v-else>
+              {{ d.count }}
+              <span class="overview-count-unit">{{ $t('overviewCountUnit') }}</span>
+            </template>
           </span>
         </el-card>
 
-        <el-divider class="overview-divider" content-position="left"><h1>{{ $t('Recent operations') }} {{ $tc('recentOperationCount', latestOperations.length) }}</h1></el-divider>
+        <el-divider class="overview-divider" content-position="left">
+          <h1>
+            {{ $t('Recent operations') }}
+            <small>{{ $t('(') }}{{ $tc('recentOperationCount', latestOperations.length) }}{{ $t(')') }}</small>
+          </h1>
+        </el-divider>
         <el-table :data="latestOperations">
           <el-table-column :label="$t('Time')" width="200">
             <template slot-scope="scope">
@@ -220,8 +240,8 @@ export default {
     },
     overviewCountFontSize(count) {
       let numberLength = ('' + count).length;
-      let fontSize = parseInt(280 / numberLength * 1.2);
-      return Math.min(80, fontSize);
+      let fontSize = parseInt(200 / numberLength * 1.2);
+      return Math.min(60, fontSize);
     },
     workerQueueLoadPercentage(taskCount, processCount) {
       let taskQuota = processCount * 100;
@@ -306,8 +326,8 @@ export default {
 }
 
 .overview-card {
-  width: 320px;
-  height: 200px;
+  width: 330px;
+  height: 180px;
   display: inline-block;
   margin: 10px 10px;
   position: relative;
@@ -331,7 +351,6 @@ export default {
   position: relative;
 }
 .overview-count {
-  font-weight: 100;
   line-height: 120px;
   font-family: sans-serif;
   display: block;
