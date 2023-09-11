@@ -294,14 +294,16 @@ upgradeInfo:
     database: |-
       -- 脚本集增加和导入、安装时对比
       ALTER TABLE biz_main_script_set
-        ADD COLUMN `originMD5` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '来源MD5' AFTER `originId`;
+        ADD COLUMN `originMD5` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '来源MD5'
+        AFTER `originId`;
 
   # 于观测云SaaS 2022-12-29 迭代中实装
   - seq: 16
     database: |-
       -- 脚本市场加入锁定功能
       ALTER TABLE biz_main_script_market
-        ADD COLUMN `lockedByUserId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '锁定者用户ID';
+        ADD COLUMN `lockedByUserId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '锁定者用户ID'
+        AFTER `configJSON`;
 
   # 于观测云SaaS 2023-04-20 迭代中实装
   - seq: 17
@@ -445,6 +447,11 @@ upgradeInfo:
       -- 自动触发支持指定时区
       ALTER TABLE `biz_main_crontab_config`
         ADD COLUMN `timezone` varchar(256) DEFAULT NULL COMMENT '时区' AFTER `crontab`;
+
+      -- 调整列顺序
+      ALTER TABLE biz_main_script_market
+        CHANGE `lockedByUserId` `lockedByUserId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '锁定者用户ID'
+        AFTER `extraJSON`;
 
       -- 重建任务记录表
       CREATE TABLE `biz_main_task_record` (
