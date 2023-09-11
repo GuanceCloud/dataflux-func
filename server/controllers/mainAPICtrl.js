@@ -506,6 +506,8 @@ function callFuncRunner(locals, taskReq, callback) {
           } else {
             // 命中进入缓存时，直接调用任务响应函数，结束
             var taskResp = cacheRes;
+            taskResp.isCached = true;
+
             return taskReq.onResponse(taskResp);
           }
         });
@@ -552,7 +554,7 @@ function _doAPIResponse(res, taskReq, taskResp, callback) {
 
   // 缓存标记
   if (taskResp.isCached) {
-    res.set('X-Dataflux-Func-Cache', 'Cached');
+    res.set(CONFIG._WEB_IS_CACHED_HEADER, 'Cached');
   }
 
   // 响应控制
