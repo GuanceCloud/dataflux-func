@@ -148,7 +148,7 @@ function _assignFuncCallKwargs(destFuncCallKwargs, srcFuncCallKwargs) {
 };
 
 function createFuncRunnerTaskReq(locals, options, callback) {
-  options = options || {};
+  options = toolkit.jsonCopy(options) || {};
   options.funcCallKwargs = options.funcCallKwargs || {};
 
   var func = null;
@@ -320,7 +320,7 @@ function createFuncRunnerTaskReq(locals, options, callback) {
 };
 
 function createFuncRunnerTaskReqFromHTTPRequest(locals, req, options, callback) {
-  options = options || {};
+  options = toolkit.jsonCopy(options) || {};
 
   // 解析请求数据
   var reqData = req.method.toLowerCase() === 'get' ? req.query : req.body;
@@ -407,7 +407,7 @@ function createFuncRunnerTaskReqFromHTTPRequest(locals, req, options, callback) 
 };
 
 function createFuncRunnerTaskReqForAPIAuth(locals, req, options, callback) {
-  options = options || {};
+  options = toolkit.jsonCopy(options) || {};
 
   // 添加 HTTP 请求信息
   options.httpRequest = _getHTTPRequestInfo(req);
@@ -430,7 +430,7 @@ function _getFuncCallResultCache(locals, cacheKey, callback) {
       cacheRes = JSON.parse(cacheRes);
     }
 
-    FUNC_RESULT_CACHE_LRU.set(lruKey, cacheRes);
+    FUNC_RESULT_CACHE_LRU.set(cacheKey, cacheRes);
     return callback(err, cacheRes);
   });
 };
