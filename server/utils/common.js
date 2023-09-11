@@ -240,7 +240,7 @@ common.getGuanceNodes = function(callback) {
         if (err) return asyncCallback();
 
         guanceNodeNameMap = _body;
-        
+
         return asyncCallback();
       });
     },
@@ -254,22 +254,24 @@ common.getGuanceNodes = function(callback) {
       };
       request(requestOptions, function(err, _res, _body) {
         if (err) return asyncCallback();
-      
+
         // 转换格式
         var urls = _body.urls || {};
         for (var key in urls) {
           var url = urls[key];
-  
+
+          var name    = (guanceNodeNameMap[key] || {}).name    || url.name;
+          var name_en = (guanceNodeNameMap[key] || {}).name_en || url.name_en || name;
           guanceNodes.push({
             'key'      : key,
-            'name'     : (guanceNodeNameMap[key] || {}).name    || url.name,
-            'name_en'  : (guanceNodeNameMap[key] || {}).name_en || url.name_en,
+            'name'     : name,
+            'name_en'  : name_en,
             'openapi'  : url.open_api  || url.openapi || null,
             'websocket': url.websocket || null,
             'openway'  : url.openway   || null,
           });
         }
-    
+
         return asyncCallback();
       });
     }
