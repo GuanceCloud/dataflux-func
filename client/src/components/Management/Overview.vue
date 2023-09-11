@@ -68,23 +68,27 @@ Load             : 负载
 
           <span class="overview-name">{{ C.OVERVIEW_ENTITY_MAP.get(d.name).name }}</span>
 
-          <span class="overview-count" :style="{'font-size': overviewCountFontSize(d.count) + 'px'}">
-            <template v-if="d.countEnabled">
+          <template v-if="d.countEnabled">
+            <span class="overview-count">
               <el-tooltip effect="dark" :content="$t('Enabled')" placement="left">
                 <span class="text-good">
                   {{ d.countEnabled }}
                 </span>
               </el-tooltip>
-              <span class="text-info" :style="{'font-size': overviewCountFontSize(d.count) / 2 + 'px'}">
-                /
-                {{ d.count }}
-              </span>
               <span class="overview-count-unit">{{ $t('overviewCountUnit') }}</span>
-            </template>
-            <template v-else>
+            </span>
+            <span class="overview-count-sub">
+              {{ $t('Total') }}{{ $t(':') }}
+              {{ d.count }}
+            </span>
+          </template>
+
+          <template v-else>
+            <span class="overview-count">
               {{ d.count }}
               <span class="overview-count-unit">{{ $t('overviewCountUnit') }}</span>
-            </template>
+            </span>
+          </template>
           </span>
         </el-card>
 
@@ -238,10 +242,10 @@ export default {
       let fileName = `http-dump.${createTimeStr}`;
       this.$refs.longTextDialog.update(httpInfoTEXT, fileName);
     },
-    overviewCountFontSize(count) {
+    overviewCountFontSize(count, k) {
       let numberLength = ('' + count).length;
-      let fontSize = parseInt(200 / numberLength * 1.2);
-      return Math.min(60, fontSize);
+      let fontSize = parseInt(80 - numberLength * 10 * (k || 1));
+      return Math.max(50, fontSize);
     },
     workerQueueLoadPercentage(taskCount, processCount) {
       let taskQuota = processCount * 100;
@@ -327,7 +331,7 @@ export default {
 
 .overview-card {
   width: 330px;
-  height: 180px;
+  height: 200px;
   display: inline-block;
   margin: 10px 10px;
   position: relative;
@@ -351,12 +355,18 @@ export default {
   position: relative;
 }
 .overview-count {
-  line-height: 120px;
+  line-height: 1.5;
   font-family: sans-serif;
   display: block;
   padding-left: 20px;
   z-index: 1;
   position: relative;
+  font-size: 60px;
+}
+.overview-count-sub {
+  font-size: 20px;
+  position: absolute;
+  right: 20px;
 }
 .overview-count-unit {
   font-size: 40px;
