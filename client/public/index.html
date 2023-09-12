@@ -11,7 +11,6 @@
     <meta http-equiv="Content-Language" content="zh-CN">
     <meta name="viewport" content="width=1280, maximum-scale=1.0">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <link rel="icon" id="favicon" origin-href="<%= BASE_URL %>favicon.ico">
     <link rel="stylesheet" id="uiTheme" href-pattern="<%= BASE_URL %>theme-XXX<%= VUE_APP_CSS_EXT || '.min.css' %>" href="">
     <title>Loading...</title>
   </head>
@@ -47,15 +46,6 @@
         var $uiThemeLink = document.getElementById('uiTheme');
         var cssHref = $uiThemeLink.getAttribute('href-pattern').replace('XXX', uiTheme);
         $uiThemeLink.setAttribute('href', cssHref);
-
-        // 切换 favicon
-        var $faviconLink = document.getElementById('favicon');
-        if (SYSTEM_SETTINGS['CUSTOM_FAVICON_ENABLED'] && SYSTEM_SETTINGS['CUSTOM_FAVICON_IMAGE_SRC']) {
-          $faviconLink.setAttribute('href', SYSTEM_SETTINGS['CUSTOM_FAVICON_IMAGE_SRC']);
-        } else {
-          var defaultHref = $faviconLink.getAttribute('origin-href');
-          // $faviconLink.setAttribute('href', defaultHref);
-        }
 
         // 切换 title
         if (SYSTEM_SETTINGS['CUSTOM_SITE_TITLE_ENABLED'] && SYSTEM_SETTINGS['CUSTOM_SITE_TITLE_TEXT']) {
