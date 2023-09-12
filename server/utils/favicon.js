@@ -21,7 +21,8 @@ module.exports = function(req, res, next) {
 
     } else {
       // 指定网站图标后，返回数据
-      return res.send(systemSettings.CUSTOM_FAVICON_IMAGE_SRC);
+      var iconBuffer = new Buffer.from(systemSettings.CUSTOM_FAVICON_IMAGE_SRC.split(',')[1], 'base64');
+      return res.send(iconBuffer);
     }
   });
 };

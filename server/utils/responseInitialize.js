@@ -339,10 +339,6 @@ router.all('*', function prepareFunctionalComponents(req, res, next) {
       for (var key in dbRes) {
         var v = dbRes[key];
 
-        if (toolkit.endsWith(key, '_IMAGE_SRC') && 'string' === typeof v) {
-          v = new Buffer.from(v.split(',')[1], 'base64');
-        }
-
         SYSTEM_SETTING_LRU.set(key, v);
         systemSettings[key] = v;
       }
