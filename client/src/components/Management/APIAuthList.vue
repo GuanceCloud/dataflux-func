@@ -123,14 +123,18 @@ If you need to enhance security, you can create API Auth for Auth Links and Batc
 
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo" />
+      <APIAuthSetup ref="setup" />
     </el-container>
   </transition>
 </template>
 
 <script>
+import APIAuthSetup from '@/components/Management/APIAuthSetup'
+
 export default {
   name: 'APIAuthList',
   components: {
+    APIAuthSetup,
   },
   watch: {
     $route: {
@@ -182,25 +186,14 @@ export default {
       await this.loadData();
     },
     openSetup(d, target) {
-      let nextRouteQuery = this.T.packRouteQuery();
-
-      this.$store.commit('updateTableList_scrollY');
       switch(target) {
         case 'add':
-          this.$router.push({
-            name : 'api-auth-add',
-            query: nextRouteQuery,
-          })
+          this.$refs.setup.loadData();
           break;
 
         case 'setup':
           this.$store.commit('updateHighlightedTableDataId', d.id);
-
-          this.$router.push({
-            name  : 'api-auth-setup',
-            params: { id: d.id },
-            query : nextRouteQuery,
-          })
+          this.$refs.setup.loadData(d.id);
           break;
       }
     },
@@ -221,6 +214,12 @@ export default {
         _fuzzySearch: _dataFilter._fuzzySearch,
       },
     }
+  },
+  created() {
+    this.$root.$on('reload.apiAuthList', this.loadData);
+  },
+  destroyed() {
+    this.$root.$off('reload.apiAuthList');
   },
 }
 </script>

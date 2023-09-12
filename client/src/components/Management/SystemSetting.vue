@@ -325,7 +325,7 @@ Save and Refresh: 保存并刷新
 
       <!-- 底部栏 -->
       <el-footer>
-        <div class="setup-footer">
+        <div class="setup-page-footer">
           <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save and Refresh') }}</el-button>
         </div>
       </el-footer>

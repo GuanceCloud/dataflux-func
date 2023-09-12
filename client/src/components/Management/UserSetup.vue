@@ -17,64 +17,59 @@ Please input password: 请输入密码
 </i18n>
 
 <template>
-  <transition name="fade">
-    <el-container direction="vertical" v-show="$store.state.isLoaded">
-      <!-- 标题区 -->
-      <el-header height="60px">
-        <h1>{{ pageTitle }} <code class="text-main">{{ data.name || data.username }}</code></h1>
-      </el-header>
+  <el-dialog
+    id="ScriptSetSetup"
+    :visible.sync="show"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    width="750px">
 
-      <!-- 编辑区 -->
+    <template slot="title">
+      {{ pageTitle }} <code class="text-main">{{ data.name || data.username }}</code>
+    </template>
+
+    <el-container direction="vertical">
       <el-main>
-        <el-row :gutter="20">
-          <el-col :span="15">
-            <div class="setup-form">
-              <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
-                <!-- Fake user/password -->
-                <el-form-item style="height: 0; overflow: hidden">
-                  <input tabindex="-1" type="text" name="username" />
-                  <input tabindex="-1" type="password" name="password" />
-                </el-form-item>
+        <div class="setup-form">
+          <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
+            <!-- Fake user/password -->
+            <el-form-item style="height: 0; overflow: hidden">
+              <input tabindex="-1" type="text" name="username" />
+              <input tabindex="-1" type="password" name="password" />
+            </el-form-item>
 
-                <el-form-item :label="$t('Username')" prop="username">
-                  <el-input
-                    maxlength="60"
-                    v-model="form.username"></el-input>
-                </el-form-item>
+            <el-form-item :label="$t('Username')" prop="username">
+              <el-input :disabled="pageMode === 'setup'"
+                maxlength="60"
+                v-model="form.username"></el-input>
+            </el-form-item>
 
-                <el-form-item :label="$t('Name')" prop="name">
-                  <el-input
-                    maxlength="200"
-                    v-model="form.name"></el-input>
-                </el-form-item>
+            <el-form-item :label="$t('Name')" prop="name">
+              <el-input
+                maxlength="200"
+                v-model="form.name"></el-input>
+            </el-form-item>
 
-                <el-form-item :label="$t('Email')" prop="email">
-                  <el-input
-                    v-model="form.email"></el-input>
-                </el-form-item>
+            <el-form-item :label="$t('Email')" prop="email">
+              <el-input
+                v-model="form.email"></el-input>
+            </el-form-item>
 
-                <el-form-item :label="$t('Password')" prop="password">
-                  <el-input :placeholder="passwordPlaceholder"
-                    maxlength="100"
-                    show-password
-                    v-model="form.password"></el-input>
-                </el-form-item>
-              </el-form>
-            </div>
-          </el-col>
-          <el-col :span="9" class="hidden-md-and-down">
-          </el-col>
-        </el-row>
-      </el-main>
+            <el-form-item :label="$t('Password')" prop="password">
+              <el-input :placeholder="passwordPlaceholder"
+                maxlength="100"
+                show-password
+                v-model="form.password"></el-input>
+            </el-form-item>
 
-      <!-- 底部栏 -->
-      <el-footer>
-        <div class="setup-footer">
-          <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+           <el-form-item class="setup-footer">
+              <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+            </el-form-item>
+          </el-form>
         </div>
-      </el-footer>
+      </el-main>
     </el-container>
-  </transition>
+  </el-dialog>
 </template>
 
 <script>
@@ -83,27 +78,25 @@ export default {
   components: {
   },
   watch: {
-    $route: {
-      immediate: true,
-      async handler(to, from) {
-        await this.loadData();
-
-        switch(this.T.setupPageMode()) {
-          case 'add':
-            this.T.jsonClear(this.form);
-            this.data = {};
-            break;
-
-          case 'setup':
-            break;
-        }
-      },
+    show(val) {
+      if (!val) {
+        this.$root.$emit('reload.userList');
+        this.$refs.form.clearValidate();
+      }
     },
   },
   methods: {
-    async loadData() {
-      if (this.T.setupPageMode() === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/users/do/list', this.$route.params.id);
+    async loadData(id) {
+      if (!id) {
+        this.pageMode = 'add';
+        this.T.jsonClear(this.form);
+        this.data = {};
+
+      } else {
+        this.pageMode = 'setup';
+        this.data.id = id;
+
+        let apiRes = await this.T.callAPI_getOne('/api/v1/users/do/list', this.data.id);
         if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -113,12 +106,10 @@ export default {
         this.form = nextForm;
       }
 
-      if (this.T.setupPageMode() === 'add') {
-        // 添加用户时，密码必填
-        this.formRules['password'][0].required = true;
-      }
+      // 添加用户时，密码必填
+      this.formRules['password'][0].required = !!!id;
 
-      this.$store.commit('updateLoadStatus', true);
+      this.show = true;
     },
     async submitData() {
       try {
@@ -127,7 +118,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.T.setupPageMode()) {
+      switch(this.pageMode) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -144,10 +135,8 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$router.push({
-        name : 'user-list',
-        query: this.T.getPrevQuery(),
-      });
+      this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
+      this.show = false;
     },
     async modifyData() {
       let _formData = this.T.jsonCopy(this.form);
@@ -156,16 +145,14 @@ export default {
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/users/:id/do/modify', {
-        params: { id: this.$route.params.id },
+        params: { id: this.data.id },
         body  : { data: _formData },
         alert : { okMessage: this.$t('User saved') },
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$router.push({
-        name : 'user-list',
-        query: this.T.getPrevQuery(),
-      });
+      this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
+      this.show = false;
     },
   },
   computed: {
@@ -174,10 +161,10 @@ export default {
         setup: this.$t('Setup User'),
         add  : this.$t('Add User'),
       };
-      return _map[this.T.setupPageMode()];
+      return _map[this.pageMode];
     },
     passwordPlaceholder() {
-      if (this.T.setupPageMode() === 'add') {
+      if (this.pageMode === 'add') {
         return '';
       } else {
         return this.$t('Leave blank when not changing');
@@ -188,6 +175,9 @@ export default {
   },
   data() {
     return {
+      show    : false,
+      pageMode: null,
+
       data: {},
       form: {
         username: null,
@@ -198,26 +188,26 @@ export default {
       formRules: {
         username: [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input username'),
             required: true,
           },
           {
-            trigger: 'change',
+            trigger : 'change',
             message: this.$t('Only alphabets, numbers and underscore are allowed'),
             pattern: /^[a-zA-Z0-9_]*$/g,
           }
         ],
         name: [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input name'),
             required: true,
           }
         ],
         password: [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input password'),
             required: false,
           }

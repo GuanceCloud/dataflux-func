@@ -115,7 +115,7 @@ export default {
     },
     useCustomId(val) {
       if (val) {
-        this.form.id = `${this.ID_PREFIX}foobar`;
+        this.form.id = `${this.ID_PREFIX}my-file-service`;
       } else {
         this.form.id = null;
       }

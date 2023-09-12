@@ -102,15 +102,6 @@ Are you sure you want to delete the ENV?<br><strong class="text-bad">{label}</st
           <!-- 操作 -->
           <br>
           <el-button-group>
-            <!-- 置顶 -->
-            <el-button
-              size="small"
-              :class="data.isPinned ? 'aside-on-button' : ''"
-              @click="pinData(data.type, data.id, !data.isPinned)">
-              <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
-              {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
-            </el-button>
-
             <!-- 配置/查看 -->
             <el-button
               size="small"
@@ -120,24 +111,42 @@ Are you sure you want to delete the ENV?<br><strong class="text-bad">{label}</st
             </el-button>
           </el-button-group>
 
-          <!-- 删除 -->
-          <el-button
-            class="delete-button"
-            size="small"
-            @click="deleteEntity(data)">
-            <i class="fa fa-fw fa-times"></i>
-            {{ $t('Delete') }}
-          </el-button>
+          <el-button-group>
+            <!-- 置顶 -->
+            <el-button
+              size="small"
+              :class="data.isPinned ? 'aside-on-button' : ''"
+              @click="pinData(data.type, data.id, !data.isPinned)">
+              <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
+              {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
+            </el-button>
+          </el-button-group>
+
+          <el-button-group>
+            <!-- 删除 -->
+            <el-button
+              class="delete-button"
+              size="small"
+              @click="deleteEntity(data)">
+              <i class="fa fa-fw fa-times"></i>
+              {{ $t('Delete') }}
+            </el-button>
+          </el-button-group>
         </el-popover>
       </span>
     </el-tree>
+
+    <EnvVariableSetup ref="setup" />
   </div>
 </template>
 
 <script>
+import EnvVariableSetup from '@/components/Development/EnvVariableSetup'
+
 export default {
   name: 'AsideEnvVariable',
   components: {
+    EnvVariableSetup,
   },
   watch: {
     selectFilterText(val) {
@@ -282,19 +291,13 @@ export default {
 
         // 「添加环境变量」节点
         case 'addEnvVariable':
-          this.$router.push({
-            name: 'env-variable-add',
-          });
+          this.$refs.setup.loadData();
           break;
 
         // 环境变量节点
         case 'envVariable':
           this.selectNode(data.id);
-
-          this.$router.push({
-            name  : 'env-variable-setup',
-            params: {id: data.id},
-          })
+          this.$refs.setup.loadData(data.id);
           break;
 
         default:
@@ -311,9 +314,6 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$router.push({
-        name: 'intro',
-      });
       this.$store.commit('updateEnvVariableListSyncTime');
     },
   },

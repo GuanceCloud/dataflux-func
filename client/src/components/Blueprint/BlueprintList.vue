@@ -79,14 +79,18 @@ Add Blueprint to deploy data processing flow in a visualization way: 添加蓝�
 
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo" />
+      <BlueprintSetup ref="setup" />
     </el-container>
   </transition>
 </template>
 
 <script>
+import BlueprintSetup from '@/components/Blueprint/BlueprintSetup'
+
 export default {
   name: 'BlueprintList',
   components: {
+    BlueprintSetup,
   },
   watch: {
     $route: {
@@ -136,24 +140,14 @@ export default {
       await this.loadData();
     },
     openSetup(d, target) {
-      let nextRouteQuery = this.T.packRouteQuery();
-
       switch(target) {
         case 'add':
-          this.$router.push({
-            name: 'blueprint-add',
-            query: nextRouteQuery,
-          });
+          this.$refs.setup.loadData();
           break;
 
         case 'setup':
           this.$store.commit('updateHighlightedTableDataId', d.id);
-
-          this.$router.push({
-            name  : 'blueprint-setup',
-            params: { id: d.id },
-            query : nextRouteQuery,
-          })
+          this.$refs.setup.loadData(d.id);
           break;
       }
     },
@@ -185,6 +179,12 @@ export default {
         _fuzzySearch: _dataFilter._fuzzySearch,
       },
     }
+  },
+  created() {
+    this.$root.$on('reload.blueprintList', this.loadData);
+  },
+  destroyed() {
+    this.$root.$off('reload.blueprintList');
   },
 }
 </script>

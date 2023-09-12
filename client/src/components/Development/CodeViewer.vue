@@ -31,7 +31,7 @@ Saved Draft Code: 已保存的草稿代码
             <el-tooltip :content="$t('Script Setup')" placement="bottom" :enterable="false">
               <el-button
                 type="text"
-                @click.stop="$router.push({name: 'script-setup', params: {id: data.id}})">
+                @click.stop="showScriptSetup">
                 <i class="fa fa-fw fa-wrench"></i>
               </el-button>
             </el-tooltip>
@@ -82,7 +82,7 @@ Saved Draft Code: 已保存的草稿代码
             </el-form-item>
 
             <el-form-item>
-              <el-radio-group v-model="showMode" size="mini" plain>
+              <el-radio-group v-model="showMode" size="mini">
                 <el-tooltip placement="bottom" v-for="mode, i in C.CODE_VIEWER_SHOW_MODE" :key="mode.key" :enterable="false">
                   <div slot="content">
                     {{ $t('Shortcut') }}{{ $t(':') }}<kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>{{ i + 1 }}</kbd>
@@ -99,14 +99,12 @@ Saved Draft Code: 已保存的草稿代码
             </el-form-item>
 
             <el-form-item>
-              <el-button-group>
-                <el-tooltip :content="$t('Code Editor setting')" placement="bottom" :enterable="false">
-                  <el-button
-                    @click="$refs.codeEditorSetting.open()"
-                    plain
-                    size="mini"><i class="fa fa-fw fa-cog"></i></el-button>
-                </el-tooltip>
-              </el-button-group>
+              <el-tooltip :content="$t('Code Editor setting')" placement="bottom" :enterable="false">
+                <el-button
+                  @click="$refs.codeEditorSetting.open()"
+                  plain
+                  size="mini"><i class="fa fa-fw fa-cog"></i></el-button>
+              </el-tooltip>
             </el-form-item>
           </el-form>
         </div>
@@ -123,6 +121,7 @@ Saved Draft Code: 已保存的草稿代码
       </el-main>
 
       <CodeEditorSetting :codeMirror="codeMirror" ref="codeEditorSetting" />
+      <ScriptSetup ref="setup" />
     </el-container>
   </transition>
 </template>
@@ -134,10 +133,14 @@ import CodeEditorSetting from '@/components/Development/CodeEditorSetting'
 import { createPatch } from 'diff'
 import FileSaver from 'file-saver';
 
+import ScriptSetup from '@/components/Development/ScriptSetup'
+
 export default {
   name: 'CodeViewer',
   components: {
     CodeEditorSetting,
+
+    ScriptSetup,
   },
   watch: {
     $route: {
@@ -389,6 +392,9 @@ export default {
       }
       FileSaver.saveAs(blob, fileName);
     },
+    showSetup() {
+      this.$refs.setup.loadData(this.scriptSetId, this.scriptId);
+    },
   },
   computed: {
     codeMirrorTheme() {
@@ -542,6 +548,11 @@ export default {
 }
 </style>
 <style>
+.code-viewer-action-right .el-radio-group,
+.code-viewer-action-right .el-button-group {
+  position: relative;
+  top: -0.5px;
+}
 #viewModeHint {
   position: absolute;
   right: 30px;

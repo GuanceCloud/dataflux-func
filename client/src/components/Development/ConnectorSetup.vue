@@ -83,316 +83,311 @@ This is a built-in Connector, please contact the admin to change the config: 当
 </i18n>
 
 <template>
-  <transition name="fade">
-    <el-container direction="vertical" v-show="$store.state.isLoaded">
-      <!-- 标题区 -->
-      <el-header height="60px">
-        <h1>{{ pageTitle }} <code class="text-main">{{ data.title || data.id }}</code></h1>
-      </el-header>
+  <el-dialog
+    id="ScriptSetSetup"
+    :visible.sync="show"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    width="750px">
 
-      <!-- 编辑区 -->
+    <template slot="title">
+      {{ pageTitle }} <code class="text-main">{{ data.title || data.id }}</code>
+    </template>
+
+    <el-container direction="vertical">
       <el-main>
-        <el-row :gutter="20">
-          <el-col :span="15">
-            <div class="setup-form">
-              <el-form ref="form" label-width="135px" :model="form" :disabled="data.isBuiltin" :rules="formRules">
-                <!-- Fake user/password -->
-                <el-form-item style="height: 0; overflow: hidden">
-                  <input tabindex="-1" type="text" name="username" />
-                  <input tabindex="-1" type="password" name="password" />
+        <div class="setup-form">
+          <el-form ref="form" label-width="135px" :model="form" :disabled="data.isBuiltin" :rules="formRules">
+            <!-- Fake user/password -->
+            <el-form-item style="height: 0; overflow: hidden">
+              <input tabindex="-1" type="text" name="username" />
+              <input tabindex="-1" type="password" name="password" />
+            </el-form-item>
+
+            <el-form-item v-if="data.isBuiltin">
+              <InfoBlock type="error" :title="$t('This is a built-in Connector, please contact the admin to change the config')" />
+            </el-form-item>
+
+            <el-form-item :label="$t('Type')" prop="type" v-if="pageMode === 'add'">
+              <el-select
+                v-model="form.type"
+                @change="switchType"
+                filterable
+                :filter-method="T.debounce(doFilter)">
+                <el-option v-for="opt in selectShowOptions" :label="opt.fullName" :key="opt.key" :value="opt.key"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item :label="$t('Type')" v-else>
+              <el-select v-model="selectedType" :disabled="true">
+                <el-option :label="C.CONNECTOR_MAP.get(selectedType).fullName" :value="selectedType"></el-option>
+              </el-select>
+            </el-form-item>
+
+            <template v-if="selectedType">
+              <el-form-item v-if="C.CONNECTOR_MAP.get(selectedType).logo">
+                <el-image class="connector-logo" :class="[`logo-${selectedType}`]" :src="C.CONNECTOR_MAP.get(selectedType).logo"></el-image>
+              </el-form-item>
+
+              <el-form-item v-if="C.CONNECTOR_MAP.get(selectedType).tips">
+                <InfoBlock type="info" :title="C.CONNECTOR_MAP.get(selectedType).tips" />
+              </el-form-item>
+
+              <el-form-item :label="$t('Compatibility')" v-if="T.notNothing(C.CONNECTOR_MAP.get(selectedType).compatibleDBs)">
+                <el-tag type="info" size="medium" :disable-transitions="true" v-for="db in C.CONNECTOR_MAP.get(selectedType).compatibleDBs" :key="db">{{ db }}</el-tag>
+              </el-form-item>
+
+              <el-form-item label="ID" prop="id">
+                <el-input :disabled="pageMode === 'setup'"
+                  maxlength="60"
+                  v-model="form.id"></el-input>
+              </el-form-item>
+
+              <el-form-item :label="$t('Title')">
+                <el-input :placeholder="$t('Optional')"
+                  maxlength="200"
+                  v-model="form.title"></el-input>
+                <InfoBlock v-if="selectedType === 'guance'" type="info" :title="$t('This Title will also be displayed in Guance')" />
+              </el-form-item>
+
+              <el-form-item :label="$t('Description')">
+                <el-input :placeholder="$t('Optional')"
+                  type="textarea"
+                  resize="none"
+                  :autosize="{minRows: 2}"
+                  maxlength="5000"
+                  v-model="form.description"></el-input>
+              </el-form-item>
+
+              <!-- 可变区域 -->
+              <el-form-item :label="$t('Guance Node')" v-if="hasConfigField(selectedType, 'guanceNode')" prop="configJSON.guanceNode">
+                <el-select v-model="form.configJSON.guanceNode" @change="switchGuanceNode">
+                  <el-option v-for="node in guanceNodes"
+                    :label="node[`name_${$i18n.locale}`] || node.name" :key="node.key" :value="node.key"></el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item :label="$t('OpenAPI URL')" v-show="form.configJSON.guanceNode === 'private'" v-if="hasConfigField(selectedType, 'guanceOpenAPIURL')" prop="configJSON.guanceOpenAPIURL">
+                <el-input
+                  v-model="form.configJSON.guanceOpenAPIURL"></el-input>
+              </el-form-item>
+              <el-form-item :label="$t('WebSocket URL')" v-show="form.configJSON.guanceNode === 'private'" v-if="hasConfigField(selectedType, 'guanceWebSocketURL')" prop="configJSON.guanceWebSocketURL">
+                <el-input
+                  v-model="form.configJSON.guanceWebSocketURL"></el-input>
+              </el-form-item>
+              <el-form-item :label="$t('OpenWay URL')" v-show="form.configJSON.guanceNode === 'private'" v-if="hasConfigField(selectedType, 'guanceOpenWayURL')" prop="configJSON.guanceOpenWayURL">
+                <el-input
+                  v-model="form.configJSON.guanceOpenWayURL"></el-input>
+              </el-form-item>
+              <el-form-item :label="$t('API Key ID')" v-if="hasConfigField(selectedType, 'guanceAPIKeyId')" prop="configJSON.guanceAPIKeyId">
+                <el-input
+                  v-model="form.configJSON.guanceAPIKeyId"></el-input>
+              </el-form-item>
+              <el-form-item :label="$t('API Key')" v-if="hasConfigField(selectedType, 'guanceAPIKey')" prop="configJSON.guanceAPIKey">
+                <el-input
+                  v-model="form.configJSON.guanceAPIKey" show-password></el-input>
+                <InfoBlock v-if="pageMode === 'setup'" type="info" :title="$t('API Key here is always required')" />
+              </el-form-item>
+
+              <el-form-item :label="$t('Host')" v-if="hasConfigField(selectedType, 'host')" prop="configJSON.host">
+                <el-input @blur="unpackURL"
+                  v-model="form.configJSON.host"></el-input>
+              </el-form-item>
+
+              <el-form-item :label="$t('Port')" v-if="hasConfigField(selectedType, 'port')" prop="configJSON.port">
+                <el-input
+                  v-model.number="form.configJSON.port" min="0" max="65535"></el-input>
+              </el-form-item>
+
+              <el-form-item :label="$t('Servers')" v-if="hasConfigField(selectedType, 'servers')" prop="configJSON.servers">
+                <el-input
+                  type="textarea"
+                  resize="none"
+                  :autosize="{minRows: 2}"
+                  v-model="form.configJSON.servers"></el-input>
+                <InfoBlock type="info" :title="$t('Servers to connect (e.g. host1:80,host2:81)')" />
+              </el-form-item>
+
+              <el-form-item :label="$t('Protocol')" v-if="hasConfigField(selectedType, 'protocol')" prop="configJSON.protocol">
+                <el-select v-model="form.configJSON.protocol">
+                  <el-option label="HTTP" key="http" value="http"></el-option>
+                  <el-option label="HTTPS" key="https" value="https"></el-option>
+                </el-select>
+              </el-form-item>
+
+              <el-form-item :label="$t('Security Protocol')" v-if="hasConfigField(selectedType, 'securityProtocol')" prop="configJSON.securityProtocol">
+                <el-input
+                  v-model="form.configJSON.securityProtocol"></el-input>
+              </el-form-item>
+
+              <el-form-item :label="$t('SASL Mechanisms')" v-if="hasConfigField(selectedType, 'saslMechanisms')" prop="configJSON.saslMechanisms">
+                <el-input
+                  v-model="form.configJSON.saslMechanisms"></el-input>
+              </el-form-item>
+
+              <el-form-item :label="$t('Source')" v-if="hasConfigField(selectedType, 'source')" prop="configJSON.source">
+                <!-- DataKit专用 -->
+                <el-input
+                  v-model="form.configJSON.source"></el-input>
+              </el-form-item>
+
+              <el-form-item :label="$t('Database')" v-if="hasConfigField(selectedType, 'database')" prop="configJSON.database">
+                <el-input
+                  v-model="form.configJSON.database"></el-input>
+              </el-form-item>
+
+              <el-form-item :label="$t('User')" v-if="hasConfigField(selectedType, 'user')" prop="configJSON.user">
+                <el-input
+                  v-model="form.configJSON.user"></el-input>
+              </el-form-item>
+
+              <el-form-item :label="$t('Password')" v-if="hasConfigField(selectedType, 'password')" prop="configJSON.password">
+                <el-input
+                  v-model="form.configJSON.password" show-password></el-input>
+                <InfoBlock v-if="!data.isBuiltin && pageMode === 'setup'" type="info" :title="$t('Password here is always required when the Connector requires password to connect')" />
+              </el-form-item>
+
+              <el-form-item :label="$t('Auth Type')" v-if="hasConfigField(selectedType, 'authType')" prop="configJSON.authType">
+                <el-select v-model="form.configJSON.authType">
+                  <el-option v-if="selectedType === 'redis'" :label="$t('Default')" key="default" value="default"></el-option>
+                  <el-option v-if="selectedType === 'redis'" :label="$t('Alibaba Cloud')" key="aliyun" value="aliyun"></el-option>
+                </el-select>
+              </el-form-item>
+
+              <el-form-item :label="$t('Charset')" v-if="hasConfigField(selectedType, 'charset')" prop="configJSON.charset">
+                <el-input
+                  v-model="form.configJSON.charset"></el-input>
+              </el-form-item>
+
+              <el-form-item label="Token" v-if="hasConfigField(selectedType, 'token')" prop="configJSON.token">
+                <el-input
+                  v-model="form.configJSON.token"></el-input>
+              </el-form-item>
+
+              <el-form-item label="Access Key" v-if="hasConfigField(selectedType, 'accessKey')" prop="configJSON.accessKey">
+                <el-input
+                  v-model="form.configJSON.accessKey"></el-input>
+              </el-form-item>
+
+              <el-form-item label="Secret Key" v-if="hasConfigField(selectedType, 'secretKey')" prop="configJSON.secretKey">
+                <el-input
+                  v-model="form.configJSON.secretKey" show-password></el-input>
+              </el-form-item>
+
+              <el-form-item :label="$t('Client ID')" v-if="hasConfigField(selectedType, 'clientId')" prop="configJSON.clientId">
+                <el-input
+                  v-model="form.configJSON.clientId"></el-input>
+              </el-form-item>
+
+              <el-form-item :label="$t('Group ID')" v-if="hasConfigField(selectedType, 'groupId')" prop="configJSON.groupId">
+                <el-input
+                  v-model="form.configJSON.groupId"></el-input>
+              </el-form-item>
+
+              <el-form-item :label="$t('Multi Sub')" v-if="hasConfigField(selectedType, 'multiSubClient')" prop="configJSON.multiSubClient">
+                <el-select v-model="form.configJSON.multiSubClient">
+                  <el-option :label="$t('Enabled')" key="enabled" :value="true"></el-option>
+                  <el-option :label="$t('Disabled')" key="disabled" :value="false"></el-option>
+                </el-select>
+              </el-form-item>
+
+              <el-form-item :label="$t('Sub Offset')" v-if="hasConfigField(selectedType, 'kafkaSubOffset')" prop="configJSON.kafkaSubOffset">
+                <el-select v-model="form.configJSON.kafkaSubOffset">
+                  <el-option label="smallest" key="smallest" value="smallest"></el-option>
+                  <el-option label="earliest" key="earliest" value="earliest"></el-option>
+                  <el-option label="beginning" key="beginning" value="beginning"></el-option>
+                  <el-option label="largest" key="largest" value="largest"></el-option>
+                  <el-option label="latest" key="latest" value="latest"></el-option>
+                  <el-option label="end" key="end" value="end"></el-option>
+                </el-select>
+              </el-form-item>
+
+              <template v-if="hasConfigField(selectedType, 'topicHandlers')">
+                <el-form-item class="config-divider" :label="$t('Topic/Handler')">
+                  <el-divider></el-divider>
                 </el-form-item>
 
-                <el-form-item v-if="data.isBuiltin">
-                  <InfoBlock type="error" :title="$t('This is a built-in Connector, please contact the admin to change the config')" />
-                </el-form-item>
+                <template v-for="(topicHandler, index) in form.configJSON.topicHandlers || []">
+                  <el-form-item
+                    class="topic-handler"
+                    :label="`#${index + 1}`"
+                    :key="`topic-${index}`"
+                    :prop="`configJSON.topicHandlers.${index}.topic`"
+                    :rules="formRules_topic">
+                    <el-input :placeholder="$t('Topic')" v-model="topicHandler.topic"></el-input>
 
-                <el-form-item :label="$t('Type')" prop="type" v-if="T.setupPageMode() === 'add'">
-                  <el-select
-                    v-model="form.type"
-                    @change="switchType"
-                    filterable
-                    :filter-method="T.debounce(doFilter)">
-                    <el-option v-for="opt in selectShowOptions" :label="opt.fullName" :key="opt.key" :value="opt.key"></el-option>
-                  </el-select>
-                </el-form-item>
-                <el-form-item :label="$t('Type')" v-else>
-                  <el-select v-model="selectedType" :disabled="true">
-                    <el-option :label="C.CONNECTOR_MAP.get(selectedType).fullName" :value="selectedType"></el-option>
-                  </el-select>
-                </el-form-item>
-
-                <template v-if="selectedType">
-                  <el-form-item v-if="C.CONNECTOR_MAP.get(selectedType).logo">
-                    <el-image class="connector-logo" :class="[`logo-${selectedType}`]" :src="C.CONNECTOR_MAP.get(selectedType).logo"></el-image>
+                    <!-- 删除按钮 -->
+                    <el-link type="primary" @click.prevent="removeTopicHandler(index)">{{ $t('Delete') }}</el-link>
                   </el-form-item>
 
-                  <el-form-item v-if="C.CONNECTOR_MAP.get(selectedType).tips">
-                    <InfoBlock type="info" :title="C.CONNECTOR_MAP.get(selectedType).tips" />
+                  <el-form-item
+                    class="func-cascader-input"
+                    :key="`handler-${index}`"
+                    :prop="`configJSON.topicHandlers.${index}.funcId`"
+                    :rules="formRules_topicHandler">
+                    <el-cascader ref="funcCascader"
+                      popper-class="code-font"
+                      placeholder="--"
+                      filterable
+                      :filter-method="common.funcCascaderFilter"
+                      :placeholder="$t('Handler Func')"
+                      v-model="topicHandler.funcId"
+                      :options="funcCascader"
+                      :props="{ expandTrigger: 'hover', emitPath: false, multiple: false }"></el-cascader>
                   </el-form-item>
 
-                  <el-form-item :label="$t('Compatibility')" v-if="T.notNothing(C.CONNECTOR_MAP.get(selectedType).compatibleDBs)">
-                    <el-tag type="info" size="medium" :disable-transitions="true" v-for="db in C.CONNECTOR_MAP.get(selectedType).compatibleDBs" :key="db">{{ db }}</el-tag>
+                  <el-form-item
+                    class="recent-message">
+                    <!-- 最近消费提示 -->
+                    <InfoBlock v-if="subInfoMap[topicHandler.topic]"
+                      type="success"
+                      :title="`${$t('Recent Message:')} ${T.getDateTimeString(subInfoMap[topicHandler.topic].timestampMs, 'MM-DD HH:mm:ss')} ${'('}${T.fromNow(subInfoMap[topicHandler.topic].timestampMs)}${')'}`" />
+                    <InfoBlock v-else type="warning" :title="$t('No Recent Message')" />
                   </el-form-item>
 
-                  <el-form-item label="ID" prop="id">
-                    <el-input :disabled="T.setupPageMode() === 'setup'"
-                      maxlength="60"
-                      v-model="form.id"></el-input>
+                  <el-form-item class="config-divider">
+                    <el-divider></el-divider>
                   </el-form-item>
-
-                  <el-form-item :label="$t('Title')">
-                    <el-input :placeholder="$t('Optional')"
-                      maxlength="200"
-                      v-model="form.title"></el-input>
-                    <InfoBlock v-if="selectedType === 'guance'" type="info" :title="$t('This Title will also be displayed in Guance')" />
-                  </el-form-item>
-
-                  <el-form-item :label="$t('Description')">
-                    <el-input :placeholder="$t('Optional')"
-                      type="textarea"
-                      resize="none"
-                      :autosize="{minRows: 2}"
-                      maxlength="5000"
-                      v-model="form.description"></el-input>
-                  </el-form-item>
-
-                  <!-- 可变区域 -->
-                  <el-form-item :label="$t('Guance Node')" v-if="hasConfigField(selectedType, 'guanceNode')" prop="configJSON.guanceNode">
-                    <el-select v-model="form.configJSON.guanceNode" @change="switchGuanceNode">
-                      <el-option v-for="node in guanceNodes"
-                        :label="node[`name_${$i18n.locale}`] || node.name" :key="node.key" :value="node.key"></el-option>
-                    </el-select>
-                  </el-form-item>
-                  <el-form-item :label="$t('OpenAPI URL')" v-show="form.configJSON.guanceNode === 'private'" v-if="hasConfigField(selectedType, 'guanceOpenAPIURL')" prop="configJSON.guanceOpenAPIURL">
-                    <el-input
-                      v-model="form.configJSON.guanceOpenAPIURL"></el-input>
-                  </el-form-item>
-                  <el-form-item :label="$t('WebSocket URL')" v-show="form.configJSON.guanceNode === 'private'" v-if="hasConfigField(selectedType, 'guanceWebSocketURL')" prop="configJSON.guanceWebSocketURL">
-                    <el-input
-                      v-model="form.configJSON.guanceWebSocketURL"></el-input>
-                  </el-form-item>
-                  <el-form-item :label="$t('OpenWay URL')" v-show="form.configJSON.guanceNode === 'private'" v-if="hasConfigField(selectedType, 'guanceOpenWayURL')" prop="configJSON.guanceOpenWayURL">
-                    <el-input
-                      v-model="form.configJSON.guanceOpenWayURL"></el-input>
-                  </el-form-item>
-                  <el-form-item :label="$t('API Key ID')" v-if="hasConfigField(selectedType, 'guanceAPIKeyId')" prop="configJSON.guanceAPIKeyId">
-                    <el-input
-                      v-model="form.configJSON.guanceAPIKeyId"></el-input>
-                  </el-form-item>
-                  <el-form-item :label="$t('API Key')" v-if="hasConfigField(selectedType, 'guanceAPIKey')" prop="configJSON.guanceAPIKey">
-                    <el-input
-                      v-model="form.configJSON.guanceAPIKey" show-password></el-input>
-                    <InfoBlock v-if="T.setupPageMode() === 'setup'" type="info" :title="$t('API Key here is always required')" />
-                  </el-form-item>
-
-                  <el-form-item :label="$t('Host')" v-if="hasConfigField(selectedType, 'host')" prop="configJSON.host">
-                    <el-input @blur="unpackURL"
-                      v-model="form.configJSON.host"></el-input>
-                  </el-form-item>
-
-                  <el-form-item :label="$t('Port')" v-if="hasConfigField(selectedType, 'port')" prop="configJSON.port">
-                    <el-input
-                      v-model.number="form.configJSON.port" min="0" max="65535"></el-input>
-                  </el-form-item>
-
-                  <el-form-item :label="$t('Servers')" v-if="hasConfigField(selectedType, 'servers')" prop="configJSON.servers">
-                    <el-input
-                      type="textarea"
-                      resize="none"
-                      :autosize="{minRows: 2}"
-                      v-model="form.configJSON.servers"></el-input>
-                    <InfoBlock type="info" :title="$t('Servers to connect (e.g. host1:80,host2:81)')" />
-                  </el-form-item>
-
-                  <el-form-item :label="$t('Protocol')" v-if="hasConfigField(selectedType, 'protocol')" prop="configJSON.protocol">
-                    <el-select v-model="form.configJSON.protocol">
-                      <el-option label="HTTP" key="http" value="http"></el-option>
-                      <el-option label="HTTPS" key="https" value="https"></el-option>
-                    </el-select>
-                  </el-form-item>
-
-                  <el-form-item :label="$t('Security Protocol')" v-if="hasConfigField(selectedType, 'securityProtocol')" prop="configJSON.securityProtocol">
-                    <el-input
-                      v-model="form.configJSON.securityProtocol"></el-input>
-                  </el-form-item>
-
-                  <el-form-item :label="$t('SASL Mechanisms')" v-if="hasConfigField(selectedType, 'saslMechanisms')" prop="configJSON.saslMechanisms">
-                    <el-input
-                      v-model="form.configJSON.saslMechanisms"></el-input>
-                  </el-form-item>
-
-                  <el-form-item :label="$t('Source')" v-if="hasConfigField(selectedType, 'source')" prop="configJSON.source">
-                    <!-- DataKit专用 -->
-                    <el-input
-                      v-model="form.configJSON.source"></el-input>
-                  </el-form-item>
-
-                  <el-form-item :label="$t('Database')" v-if="hasConfigField(selectedType, 'database')" prop="configJSON.database">
-                    <el-input
-                      v-model="form.configJSON.database"></el-input>
-                  </el-form-item>
-
-                  <el-form-item :label="$t('User')" v-if="hasConfigField(selectedType, 'user')" prop="configJSON.user">
-                    <el-input
-                      v-model="form.configJSON.user"></el-input>
-                  </el-form-item>
-
-                  <el-form-item :label="$t('Password')" v-if="hasConfigField(selectedType, 'password')" prop="configJSON.password">
-                    <el-input
-                      v-model="form.configJSON.password" show-password></el-input>
-                    <InfoBlock v-if="!data.isBuiltin && T.setupPageMode() === 'setup'" type="info" :title="$t('Password here is always required when the Connector requires password to connect')" />
-                  </el-form-item>
-
-                  <el-form-item :label="$t('Auth Type')" v-if="hasConfigField(selectedType, 'authType')" prop="configJSON.authType">
-                    <el-select v-model="form.configJSON.authType">
-                      <el-option v-if="selectedType === 'redis'" :label="$t('Default')" key="default" value="default"></el-option>
-                      <el-option v-if="selectedType === 'redis'" :label="$t('Alibaba Cloud')" key="aliyun" value="aliyun"></el-option>
-                    </el-select>
-                  </el-form-item>
-
-                  <el-form-item :label="$t('Charset')" v-if="hasConfigField(selectedType, 'charset')" prop="configJSON.charset">
-                    <el-input
-                      v-model="form.configJSON.charset"></el-input>
-                  </el-form-item>
-
-                  <el-form-item label="Token" v-if="hasConfigField(selectedType, 'token')" prop="configJSON.token">
-                    <el-input
-                      v-model="form.configJSON.token"></el-input>
-                  </el-form-item>
-
-                  <el-form-item label="Access Key" v-if="hasConfigField(selectedType, 'accessKey')" prop="configJSON.accessKey">
-                    <el-input
-                      v-model="form.configJSON.accessKey"></el-input>
-                  </el-form-item>
-
-                  <el-form-item label="Secret Key" v-if="hasConfigField(selectedType, 'secretKey')" prop="configJSON.secretKey">
-                    <el-input
-                      v-model="form.configJSON.secretKey" show-password></el-input>
-                  </el-form-item>
-
-                  <el-form-item :label="$t('Client ID')" v-if="hasConfigField(selectedType, 'clientId')" prop="configJSON.clientId">
-                    <el-input
-                      v-model="form.configJSON.clientId"></el-input>
-                  </el-form-item>
-
-                  <el-form-item :label="$t('Group ID')" v-if="hasConfigField(selectedType, 'groupId')" prop="configJSON.groupId">
-                    <el-input
-                      v-model="form.configJSON.groupId"></el-input>
-                  </el-form-item>
-
-                  <el-form-item :label="$t('Multi Sub')" v-if="hasConfigField(selectedType, 'multiSubClient')" prop="configJSON.multiSubClient">
-                    <el-select v-model="form.configJSON.multiSubClient">
-                      <el-option :label="$t('Enabled')" key="enabled" :value="true"></el-option>
-                      <el-option :label="$t('Disabled')" key="disabled" :value="false"></el-option>
-                    </el-select>
-                  </el-form-item>
-
-                  <el-form-item :label="$t('Sub Offset')" v-if="hasConfigField(selectedType, 'kafkaSubOffset')" prop="configJSON.kafkaSubOffset">
-                    <el-select v-model="form.configJSON.kafkaSubOffset">
-                      <el-option label="smallest" key="smallest" value="smallest"></el-option>
-                      <el-option label="earliest" key="earliest" value="earliest"></el-option>
-                      <el-option label="beginning" key="beginning" value="beginning"></el-option>
-                      <el-option label="largest" key="largest" value="largest"></el-option>
-                      <el-option label="latest" key="latest" value="latest"></el-option>
-                      <el-option label="end" key="end" value="end"></el-option>
-                    </el-select>
-                  </el-form-item>
-
-                  <template v-if="hasConfigField(selectedType, 'topicHandlers')">
-                    <el-form-item class="config-divider" :label="$t('Topic/Handler')">
-                      <el-divider></el-divider>
-                    </el-form-item>
-
-                    <template v-for="(topicHandler, index) in form.configJSON.topicHandlers || []">
-                      <el-form-item
-                        class="topic-handler"
-                        :label="`#${index + 1}`"
-                        :key="`topic-${index}`"
-                        :prop="`configJSON.topicHandlers.${index}.topic`"
-                        :rules="formRules_topic">
-                        <el-input :placeholder="$t('Topic')" v-model="topicHandler.topic"></el-input>
-
-                        <!-- 删除按钮 -->
-                        <el-link type="primary" @click.prevent="removeTopicHandler(index)">{{ $t('Delete') }}</el-link>
-                      </el-form-item>
-
-                      <el-form-item
-                        class="func-cascader-input"
-                        :key="`handler-${index}`"
-                        :prop="`configJSON.topicHandlers.${index}.funcId`"
-                        :rules="formRules_topicHandler">
-                        <el-cascader ref="funcCascader"
-                          popper-class="code-font"
-                          placeholder="--"
-                          filterable
-                          :filter-method="common.funcCascaderFilter"
-                          :placeholder="$t('Handler Func')"
-                          v-model="topicHandler.funcId"
-                          :options="funcCascader"
-                          :props="{ expandTrigger: 'hover', emitPath: false, multiple: false }"></el-cascader>
-                      </el-form-item>
-
-                      <el-form-item
-                        class="recent-message">
-                        <!-- 最近消费提示 -->
-                        <InfoBlock v-if="subInfoMap[topicHandler.topic]"
-                          type="success"
-                          :title="`${$t('Recent Message:')} ${T.getDateTimeString(subInfoMap[topicHandler.topic].timestampMs, 'MM-DD HH:mm:ss')} ${'('}${T.fromNow(subInfoMap[topicHandler.topic].timestampMs)}${')'}`" />
-                        <InfoBlock v-else type="warning" :title="$t('No Recent Message')" />
-                      </el-form-item>
-
-                      <el-form-item class="config-divider">
-                        <el-divider></el-divider>
-                      </el-form-item>
-                    </template>
-                    <el-form-item>
-                      <el-link
-                        type="primary"
-                        @click="addTopicHandler">
-                        <i class="fa fa-fw fa-plus"></i>
-                        {{ $t('Add Topic / Handler') }}
-                      </el-link>
-                      <br>
-                      <el-link
-                        href="https://func.guance.com/doc/development-guide-connector-subscribe/"
-                        target="_blank">
-                        <i class="fa fa-fw fa-external-link"></i>
-                        {{ $t('Click here for connector subscription') }}
-                      </el-link>
-                    </el-form-item>
-                  </template>
-                  <!-- 可变区域结束 -->
                 </template>
-              </el-form>
-            </div>
-          </el-col>
-          <el-col :span="9" class="hidden-md-and-down">
-          </el-col>
-        </el-row>
-      </el-main>
+                <el-form-item>
+                  <el-link
+                    type="primary"
+                    @click="addTopicHandler">
+                    <i class="fa fa-fw fa-plus"></i>
+                    {{ $t('Add Topic / Handler') }}
+                  </el-link>
+                  <br>
+                  <el-link
+                    href="https://func.guance.com/doc/development-guide-connector-subscribe/"
+                    target="_blank">
+                    <i class="fa fa-fw fa-external-link"></i>
+                    {{ $t('Click here for connector subscription') }}
+                  </el-link>
+                </el-form-item>
+              </template>
+              <!-- 可变区域结束 -->
+            </template>
 
-      <!-- 底部栏 -->
-      <el-footer v-if="selectedType">
-        <div class="setup-footer">
-          <el-button class="delete-button" v-if="T.setupPageMode() === 'setup' && !data.isBuiltin" @click="deleteData">{{ $t('Delete') }}</el-button>
-          <el-button v-if="T.setupPageMode() === 'setup'" @click="testConnector"
-            :disabled="testConnectorResult === 'running'">
-            <i class="fa fa-fw fa-check text-good" v-if="testConnectorResult === 'ok'"></i>
-            <i class="fa fa-fw fa-times text-bad" v-else-if="testConnectorResult === 'ng'"></i>
-            <i class="fa fa-fw fa-circle-o-notch fa-spin" v-else-if="testConnectorResult === 'running'"></i>
-            <i class="fa fa-fw fa-question-circle" v-else></i>
-            {{ $t('Test connection') }}
-          </el-button>
-          <el-dropdown split-button v-if="!data.isBuiltin" type="primary" @click="submitData" @command="submitData"
-            :disabled="isSaving">
-            <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="isSaving"></i>
-            {{ $t('Save') }}
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item :command="{ skipTest: true }">{{ $t('Save without connection test') }}</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
+            <el-form-item class="setup-footer">
+              <el-button class="delete-button" v-if="pageMode === 'setup' && !data.isBuiltin" @click="deleteData">{{ $t('Delete') }}</el-button>
+              <el-button v-if="pageMode === 'setup'" @click="testConnector"
+                :disabled="testConnectorResult === 'running'">
+                <i class="fa fa-fw fa-check text-good" v-if="testConnectorResult === 'ok'"></i>
+                <i class="fa fa-fw fa-times text-bad" v-else-if="testConnectorResult === 'ng'"></i>
+                <i class="fa fa-fw fa-circle-o-notch fa-spin" v-else-if="testConnectorResult === 'running'"></i>
+                <i class="fa fa-fw fa-question-circle" v-else></i>
+                {{ $t('Test connection') }}
+              </el-button>
+              <el-dropdown split-button v-if="!data.isBuiltin" type="primary" @click="submitData" @command="submitData"
+                :disabled="isSaving">
+                <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="isSaving"></i>
+                {{ $t('Save') }}
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item :command="{ skipTest: true }">{{ $t('Save without connection test') }}</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </el-form-item>
+          </el-form>
         </div>
-      </el-footer>
+      </el-main>
 
       <!-- 连接器提示 -->
       <FeatureNoticeDialog
@@ -402,7 +397,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
         :image="img_noticeFuncIsJustPythonWrapper" />
 
     </el-container>
-  </transition>
+  </el-dialog>
 </template>
 
 <script>
@@ -417,23 +412,6 @@ export default {
     FeatureNoticeDialog,
   },
   watch: {
-    $route: {
-      immediate: true,
-      async handler(to, from) {
-        await this.loadData();
-
-        switch(this.T.setupPageMode()) {
-          case 'add':
-            this.T.jsonClear(this.form);
-            this.form.configJSON = {};
-            this.data = {};
-            break;
-
-          case 'setup':
-            break;
-        }
-      },
-    },
     selectedType: {
       immediate: true,
       async handler(newVal) {
@@ -557,9 +535,18 @@ export default {
 
       this.form.configJSON = nextConfigJSON;
     },
-    async loadData() {
-      if (this.T.setupPageMode() === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/connectors/do/list', this.$route.params.id);
+    async loadData(id) {
+      if (!id) {
+        this.pageMode = 'add';
+        this.T.jsonClear(this.form);
+        this.form.configJSON = {};
+        this.data = {};
+
+      } else {
+        this.pageMode = 'setup';
+        this.data.id = id;
+
+        let apiRes = await this.T.callAPI_getOne('/api/v1/connectors/do/list', this.data.id);
         if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -583,10 +570,10 @@ export default {
       this.funcCascader      = funcList.cascader;
       this.selectShowOptions = this.SUPPORTED_CONNECTORS;
 
-      this.$store.commit('updateLoadStatus', true);
+      this.show = true;
     },
     async updateSubInfo() {
-      if (!this.$route.params.id) return;
+      if (!this.data.id) return;
 
       let hasTopicHandler = false;
       try {
@@ -596,7 +583,7 @@ export default {
       }
       if (!hasTopicHandler) return;
 
-      let apiRes = await this.T.callAPI_get('/api/v1/connector-sub-info/do/list', { query: { connectorId: this.$route.params.id }});
+      let apiRes = await this.T.callAPI_get('/api/v1/connector-sub-info/do/list', { query: { connectorId: this.data.id }});
       if (!apiRes || !apiRes.ok) return;
 
       let subInfoMap = apiRes.data.reduce((acc, x) => {
@@ -614,7 +601,7 @@ export default {
 
       this.isSaving = true;
 
-      switch(this.T.setupPageMode()) {
+      switch(this.pageMode) {
         case 'add':
           await this.addData(opt);
           break;
@@ -622,7 +609,6 @@ export default {
         case 'setup':
           await this.modifyData(opt);
           break;
-
       }
 
       setTimeout(() => {
@@ -656,10 +642,8 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$router.push({
-        name: 'intro',
-      });
       this.$store.commit('updateConnectorListSyncTime');
+      this.show = false;
     },
     async modifyData(opt) {
       opt = opt || {};
@@ -669,33 +653,32 @@ export default {
       delete _formData.type;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/connectors/:id/do/modify', {
-        params: { id: this.$route.params.id },
+        params: { id: this.data.id },
         body  : { data: _formData, skipTest: !!opt.skipTest },
         alert : { okMessage: this.$t('Connector saved') },
       });
       if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateConnectorListSyncTime');
+      this.show = false;
     },
     async deleteData() {
       if (!await this.T.confirm(this.$t('Are you sure you want to delete the Connector?'))) return;
 
       let apiRes = await this.T.callAPI('/api/v1/connectors/:id/do/delete', {
-        params: { id: this.$route.params.id },
+        params: { id: this.data.id },
         alert : { okMessage: this.$t('Connector deleted') },
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$router.push({
-        name: 'intro',
-      });
       this.$store.commit('updateConnectorListSyncTime');
+      this.show = false;
     },
     async testConnector() {
       this.testConnectorResult = 'running';
 
       let apiRes = await this.T.callAPI_get('/api/v1/connectors/:id/do/test', {
-        params: { id: this.$route.params.id },
+        params: { id: this.data.id },
       });
       setTimeout(() => {
         if (apiRes.ok) {
@@ -703,7 +686,7 @@ export default {
         } else {
           this.testConnectorResult = 'ng';
         }
-      }, 1000);
+      }, 500);
     },
     hasConfigField(type, field) {
       if (!this.C.CONNECTOR_MAP.get(type) || !this.C.CONNECTOR_MAP.get(type).configFields) {
@@ -752,10 +735,10 @@ export default {
         setup: this.$t('Setup Connector'),
         add  : this.$t('Add Connector'),
       };
-      return _map[this.T.setupPageMode()];
+      return _map[this.pageMode];
     },
     selectedType() {
-      switch(this.T.setupPageMode()) {
+      switch(this.pageMode) {
         case 'add':
           return this.form.type;
 
@@ -768,6 +751,9 @@ export default {
   },
   data() {
     return {
+      show    : false,
+      pageMode: null,
+
       data        : {},
       subInfoMap  : {},
       funcMap     : {},
@@ -788,7 +774,7 @@ export default {
       formRules: {
         id: [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input ID'),
             required: true,
           },
@@ -805,7 +791,7 @@ export default {
         ],
         type: [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input Connector type'),
             required: true,
           },
@@ -813,14 +799,14 @@ export default {
 
         'configJSON.guanceNode': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please select Guance Node'),
             required: true,
           },
         ],
         'configJSON.guanceOpenAPIURL': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input OpenAPI URL'),
             required: true,
           },
@@ -832,7 +818,7 @@ export default {
         ],
         'configJSON.guanceWebSocketURL': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input Websocket URL'),
             required: true,
           },
@@ -844,7 +830,7 @@ export default {
         ],
         'configJSON.guanceOpenWayURL': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input OpenWay URL'),
             required: true,
           },
@@ -856,14 +842,14 @@ export default {
         ],
         'configJSON.guanceAPIKeyId': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input API Key ID'),
             required: true,
           },
         ],
         'configJSON.guanceAPIKey': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input API Key'),
             required: true,
           },
@@ -871,14 +857,14 @@ export default {
 
         'configJSON.host': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input host'),
             required: true,
           },
         ],
         'configJSON.port': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input port'),
             required: true,
           },
@@ -893,14 +879,14 @@ export default {
         ],
         'configJSON.servers': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input servers'),
             required: true,
           }
         ],
         'configJSON.protocol': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please select HTTP protocol'),
             required: true,
           },
@@ -913,117 +899,117 @@ export default {
         ],
         'configJSON.source': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input source'),
             required: false,
           },
         ],
         'configJSON.database': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input database'),
             required: false,
           },
         ],
         'configJSON.user': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input user'),
             required: false,
           },
         ],
         'configJSON.password': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input password'),
             required: false,
           },
         ],
         'configJSON.authType': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input auth type'),
             required: false,
           },
         ],
         'configJSON.charset': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input charset'),
             required: false,
           },
         ],
         'configJSON.token': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input token'),
             required: false,
           },
         ],
         'configJSON.accessKey': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input Access Key'),
             required: false,
           },
         ],
         'configJSON.secretKey': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input Secret Key'),
             required: false,
           },
         ],
         'configJSON.clientId': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input client ID'),
             required: false,
           },
         ],
         'configJSON.groupId': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input group ID'),
             required: false,
           },
         ],
         'configJSON.securityProtocol': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input security protocol'),
             required: false,
           },
         ],
         'configJSON.saslMechanisms': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input SASL Mechanisms'),
             required: false,
           },
         ],
         'configJSON.multiSubClient': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please select if Multi Sub allowed'),
             required: false,
           },
         ],
         'configJSON.kafkaSubOffset': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input Sub Offset'),
             required: false,
           },
         ],
       },
       formRules_topic: {
-        trigger: 'change',
+        trigger: 'blur',
         message : this.$t('Please input topic'),
         required: true,
       },
       formRules_topicHandler: {
-        trigger: 'change',
+        trigger: 'blur',
         message : this.$t('Please select handler Func'),
         required: true,
       },

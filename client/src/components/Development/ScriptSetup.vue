@@ -26,86 +26,80 @@ This Script is locked by other user ({user}): 当前脚本已被其他用户（{
 </i18n>
 
 <template>
-  <transition name="fade">
-    <el-container direction="vertical" v-show="$store.state.isLoaded">
-      <!-- 标题区 -->
-      <el-header height="60px">
-        <h1>{{ pageTitle }} <code class="text-main">{{ data.title || data.id }}</code></h1>
-      </el-header>
+  <el-dialog
+    id="ScriptSet"
+    :visible.sync="show"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    width="750px">
+    <template slot="title">
+      {{ pageTitle }} <code class="text-main">{{ data.title || data.id }}</code>
+    </template>
 
-      <!-- 编辑区 -->
+    <el-container direction="vertical">
       <el-main>
-        <el-row :gutter="20">
-          <el-col :span="15">
-            <div class="setup-form">
-              <el-form ref="form" label-width="135px" :model="form" :disabled="!isEditable" :rules="formRules">
-                <el-form-item v-if="isLockedByMe">
-                  <InfoBlock type="success" :title="$t('This Script is locked by you')" />
-                </el-form-item>
-                <el-form-item v-else-if="isLockedByOther">
-                  <InfoBlock :type="isEditable ? 'warning' : 'error'" :title="$t('This Script is locked by other user ({user})', { user: lockedByUser })" />
-                </el-form-item>
+        <div class="setup-form">
+          <el-form ref="form" label-width="135px" :model="form" :disabled="!isEditable" :rules="formRules">
+            <el-form-item v-if="isLockedByMe">
+              <InfoBlock type="success" :title="$t('This Script is locked by you')" />
+            </el-form-item>
+            <el-form-item v-else-if="isLockedByOther">
+              <InfoBlock :type="isEditable ? 'warning' : 'error'" :title="$t('This Script is locked by other user ({user})', { user: lockedByUser })" />
+            </el-form-item>
 
-                <el-form-item label="ID" prop="id" class="script-set-id-field">
-                  <el-input :disabled="T.setupPageMode() === 'setup'"
-                    maxlength="60"
-                    v-model="form.id"></el-input>
-                  <InfoBlock :title="$t('Script ID will be a part of the Func ID')" />
-                </el-form-item>
+            <el-form-item label="ID" prop="id" class="script-set-id-field">
+              <el-input :disabled="pageMode === 'setup'"
+                maxlength="60"
+                v-model="form.id"></el-input>
+              <InfoBlock :title="$t('Script ID will be a part of the Func ID')" />
+            </el-form-item>
 
-                <el-form-item :label="$t('Title')">
-                  <el-input :placeholder="$t('Optional')"
-                    maxlength="200"
-                    v-model="form.title"></el-input>
-                </el-form-item>
+            <el-form-item :label="$t('Title')">
+              <el-input :placeholder="$t('Optional')"
+                maxlength="200"
+                v-model="form.title"></el-input>
+            </el-form-item>
 
-                <el-form-item :label="$t('Description')">
-                  <el-input :placeholder="$t('Optional')"
-                    type="textarea"
-                    resize="none"
-                    :autosize="{minRows: 2}"
-                    maxlength="5000"
-                    v-model="form.description"></el-input>
-                </el-form-item>
+            <el-form-item :label="$t('Description')">
+              <el-input :placeholder="$t('Optional')"
+                type="textarea"
+                resize="none"
+                :autosize="{minRows: 2}"
+                maxlength="5000"
+                v-model="form.description"></el-input>
+            </el-form-item>
 
-                <el-form-item :label="$t('Script Template')" v-if="T.setupPageMode() === 'add'">
-                  <el-select
-                    v-model="templateScriptId"
-                    @change="showScriptTemplate"
-                    filterable
-                    :filter-method="T.debounce(doFilter)">
-                    <el-option-group>
-                      <el-option :label="$t('Basic Example')" key="_basicExample" value="_basicExample"></el-option>
-                      <el-option :label="$t('Blank Script')" key="_blankScript" value="_blankScript"></el-option>
-                    </el-option-group>
-                    <el-option-group :label="$t('From Example Script')" v-if="templateScriptShowOptions.length > 0">
-                      <el-option v-for="s in templateScriptShowOptions" :label="s.label" :key="s.id" :value="s.id">
-                        <span class="example-script">{{ s.label }}</span>
-                      </el-option>
-                    </el-option-group>
-                  </el-select>
+            <el-form-item :label="$t('Script Template')" v-if="pageMode === 'add'">
+              <el-select
+                v-model="templateScriptId"
+                @change="showScriptTemplate"
+                filterable
+                :filter-method="T.debounce(doFilter)">
+                <el-option-group>
+                  <el-option :label="$t('Basic Example')" key="_basicExample" value="_basicExample"></el-option>
+                  <el-option :label="$t('Blank Script')" key="_blankScript" value="_blankScript"></el-option>
+                </el-option-group>
+                <el-option-group :label="$t('From Example Script')" v-if="templateScriptShowOptions.length > 0">
+                  <el-option v-for="s in templateScriptShowOptions" :label="s.label" :key="s.id" :value="s.id">
+                    <span class="example-script">{{ s.label }}</span>
+                  </el-option>
+                </el-option-group>
+              </el-select>
 
-                  <el-button v-if="!!templateScript" @click="showScriptTemplate" type="text">{{ $t('Show Script Template') }}</el-button>
-                </el-form-item>
-              </el-form>
-            </div>
-          </el-col>
-          <el-col :span="9" class="hidden-md-and-down">
-          </el-col>
-        </el-row>
-      </el-main>
+              <el-button v-if="!!templateScript" @click="showScriptTemplate" type="text">{{ $t('Show Script Template') }}</el-button>
+            </el-form-item>
 
-      <!-- 底部栏 -->
-      <el-footer>
-        <div class="setup-footer">
-          <el-button class="delete-button" v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
-          <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+            <el-form-item class="setup-footer">
+              <el-button class="delete-button" v-if="pageMode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+              <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+            </el-form-item>
+          </el-form>
         </div>
-      </el-footer>
+      </el-main>
 
       <LongTextDialog :title="$t('Script Template')" mode="python" ref="longTextDialog" />
     </el-container>
-  </transition>
+  </el-dialog>
 </template>
 
 <script>
@@ -117,25 +111,6 @@ export default {
     LongTextDialog,
   },
   watch: {
-    $route: {
-      immediate: true,
-      async handler(to, from) {
-        await this.loadData();
-
-        switch(this.T.setupPageMode()) {
-          case 'add':
-            this.T.jsonClear(this.form);
-            this.data = {};
-
-            // 【特殊处理】脚本 ID 格式为"<脚本集 ID>__<脚本名>"
-            this.form.id = `${this.scriptSetId}__`;
-            break;
-
-          case 'setup':
-            break;
-        }
-      },
-    },
   },
   methods: {
     doFilter(q) {
@@ -147,49 +122,56 @@ export default {
       }
     },
 
-    async loadData() {
-      let apiRes = null;
-      switch(this.T.setupPageMode()) {
-        case 'add':
-          apiRes = await this.T.callAPI_getAll('/api/v1/scripts/do/list', {
-            query: {
-              fields    : [ 'id', 'title', 'scriptSetId', 'sset_title', 'code' ],
-              _withCode : true,
-              scriptName: 'example',
-            },
-          });
-          if (!apiRes || !apiRes.ok) return;
+    async loadData(scriptSetId, id) {
+      this.scriptSetId = scriptSetId;
 
-          let templateScripts = apiRes.data;
+      if (!id) {
+        this.pageMode = 'add';
+        this.T.jsonClear(this.form);
+        this.data = {};
 
-          templateScripts.forEach(d => {
-            d.shortScriptId = d.id.split('__').slice(1).join('__');
-            d.label = `${d.sset_title || d.scriptSetId} / ${d.title || d.shortScriptId}`;
-            this.T.appendSearchFields(d, ['sset_title', 'scriptSetId', 'title', 'shortScriptId'])
-          });
+        // 【特殊处理】脚本 ID 格式为"<脚本集 ID>__<脚本名>"
+        this.form.id = `${this.scriptSetId}__`;
 
-          this.templateScripts           = templateScripts;
-          this.templateScriptShowOptions = templateScripts;
-          this.templateScriptMap = templateScripts.reduce((acc, x) => {
-            acc[x.id] = x;
-            return acc;
-          }, {});
+        // 加载示例脚本
+        let apiRes = await this.T.callAPI_getAll('/api/v1/scripts/do/list', {
+          query: {
+            fields    : [ 'id', 'title', 'scriptSetId', 'sset_title', 'code' ],
+            _withCode : true,
+            scriptName: 'example',
+          },
+        });
+        if (!apiRes || !apiRes.ok) return;
 
-          break;
+        let templateScripts = apiRes.data;
 
-        case 'setup':
-          apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId);
-          if (!apiRes || !apiRes.ok) return;
+        templateScripts.forEach(d => {
+          d.shortScriptId = d.id.split('__').slice(1).join('__');
+          d.label = `${d.sset_title || d.scriptSetId} / ${d.title || d.shortScriptId}`;
+          this.T.appendSearchFields(d, ['sset_title', 'scriptSetId', 'title', 'shortScriptId'])
+        });
 
-          this.data = apiRes.data;
+        this.templateScripts           = templateScripts;
+        this.templateScriptShowOptions = templateScripts;
+        this.templateScriptMap = templateScripts.reduce((acc, x) => {
+          acc[x.id] = x;
+          return acc;
+        }, {});
 
-          let nextForm = {};
-          Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
-          this.form = nextForm;
-          break;
+      } else {
+        this.pageMode = 'setup';
+        this.data.id = id;
+        let apiRes = await this.T.callAPI_getOne('/api/v1/scripts/do/list', this.scriptId);
+        if (!apiRes || !apiRes.ok) return;
+
+        this.data = apiRes.data;
+
+        let nextForm = {};
+        Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
+        this.form = nextForm;
       }
 
-      this.$store.commit('updateLoadStatus', true);
+      this.show = true;
     },
     async submitData() {
       try {
@@ -199,7 +181,7 @@ export default {
       }
 
       let dataId = null;
-      switch(this.T.setupPageMode()) {
+      switch(this.pageMode) {
         case 'add':
           dataId = await this.addData();
           break;
@@ -240,6 +222,7 @@ export default {
       if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateScriptListSyncTime');
+      this.show = false;
 
       this.$router.push({
         name  : 'code-editor',
@@ -259,13 +242,15 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      await this.loadData();
       this.$store.commit('updateScriptListSyncTime');
+      this.show = false;
 
       return this.scriptId;
     },
     async deleteData() {
       if (!await this.T.confirm(this.$t('Are you sure you want to delete the Script?'))) return;
+
+      this.T.jumpDeletedEntity(this.scriptId);
 
       let apiRes = await this.T.callAPI('/api/v1/scripts/:id/do/delete', {
         params: { id: this.scriptId },
@@ -273,10 +258,8 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$router.push({
-        name: 'intro',
-      });
       this.$store.commit('updateScriptListSyncTime');
+      this.show = false;
     },
     showScriptTemplate() {
       if (this.templateScript) {
@@ -290,22 +273,14 @@ export default {
         setup: this.$t('Setup Script'),
         add  : this.$t('Add Script'),
       };
-      return _map[this.T.setupPageMode()];
-    },
-    scriptSetId() {
-      switch(this.T.setupPageMode()) {
-        case 'add':
-          return this.$route.params.id;
-        case 'setup':
-          return this.data.scriptSetId;
-      }
+      return _map[this.pageMode];
     },
     scriptId() {
-      switch(this.T.setupPageMode()) {
+      switch(this.pageMode) {
         case 'add':
           return this.form.id;
         case 'setup':
-          return this.$route.params.id;
+          return this.data.id;
       }
     },
 
@@ -345,6 +320,9 @@ export default {
   },
   data() {
     return {
+      show    : false,
+      pageMode: null,
+
       data: {},
 
       templateScriptId: '_basicExample',
@@ -362,7 +340,7 @@ export default {
       formRules: {
         id: [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input ID'),
             required: true,
           },
@@ -380,7 +358,7 @@ export default {
             trigger: 'change',
             validator: (rule, value, callback) => {
               let prefix = `${this.scriptSetId}__`;
-              if (value.indexOf(prefix) < 0 || value === prefix) {
+              if (value && value.indexOf(prefix) < 0 || value === prefix) {
                 let _message = this.$t('Script ID should starts with "{prefix}"', { scriptSetId: this.scriptSetId, prefix: prefix });
                 return callback(new Error(_message));
               }

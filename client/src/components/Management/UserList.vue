@@ -125,14 +125,19 @@ lastAccess : '{t}访问'
           </el-table-column>
         </el-table>
       </el-main>
+
+      <UserSetup ref="setup" />
     </el-container>
   </transition>
 </template>
 
 <script>
+import UserSetup from '@/components/Management/UserSetup'
+
 export default {
   name: 'UserList',
   components: {
+    UserSetup,
   },
   watch: {
     $route: {
@@ -194,24 +199,14 @@ export default {
       await this.loadData();
     },
     openSetup(d, target) {
-      let nextRouteQuery = this.T.packRouteQuery();
-
       switch(target) {
         case 'add':
-          this.$router.push({
-            name: 'user-add',
-            query: nextRouteQuery,
-          });
+          this.$refs.setup.loadData();
           break;
 
         case 'setup':
           this.$store.commit('updateHighlightedTableDataId', d.id);
-
-          this.$router.push({
-            name  : 'user-setup',
-            params: { id: d.id },
-            query : nextRouteQuery,
-          });
+          this.$refs.setup.loadData(d.id);
           break;
       }
     },
@@ -230,6 +225,12 @@ export default {
         _fuzzySearch: _dataFilter._fuzzySearch,
       },
     }
+  },
+  created() {
+    this.$root.$on('reload.userList', this.loadData);
+  },
+  destroyed() {
+    this.$root.$off('reload.userList');
   },
 }
 </script>

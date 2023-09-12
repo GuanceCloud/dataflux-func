@@ -233,8 +233,8 @@ Some Script Sets have been hidden: 一些脚本集已被隐藏
                 </el-button>
               </el-button-group>
 
-              <!-- 快速查看 -->
               <el-button-group>
+                <!-- 快速查看 -->
                 <el-button v-if="data.type === 'script'"
                   size="small"
                   @click="showQuickViewWindow(data)">
@@ -279,14 +279,16 @@ Some Script Sets have been hidden: 一些脚本集已被隐藏
                 </el-button>
               </el-button-group>
 
-              <!-- 删除 -->
-              <el-button
-                class="delete-button"
-                size="small"
-                @click="deleteEntity(data)">
-                <i class="fa fa-fw fa-times"></i>
-                {{ $t('Delete') }}
-              </el-button>
+              <el-button-group>
+                <!-- 删除 -->
+                <el-button
+                  class="delete-button"
+                  size="small"
+                  @click="deleteEntity(data)">
+                  <i class="fa fa-fw fa-times"></i>
+                  {{ $t('Delete') }}
+                </el-button>
+              </el-button-group>
             </template>
 
             <!-- 关联信息 -->
@@ -327,6 +329,9 @@ Some Script Sets have been hidden: 一些脚本集已被隐藏
       :showPostExampleSimplified="true"
       :showGetExample="true"
       :showGetExampleSimplified="true"></APIExampleDialog>
+
+    <ScriptSetSetup ref="ScriptSetSetup" />
+    <ScriptSetup ref="ScriptSetup" />
 
     <el-dialog
       :visible.sync="showRelEntity"
@@ -596,11 +601,17 @@ import APIExampleDialog from '@/components/APIExampleDialog'
 
 import FileSaver from 'file-saver';
 
+import ScriptSetSetup from '@/components/Development/ScriptSetSetup'
+import ScriptSetup from '@/components/Development/ScriptSetup'
+
 export default {
   name: 'AsideScript',
   components: {
     QuickViewWindow,
     APIExampleDialog,
+
+    ScriptSetSetup,
+    ScriptSetup,
   },
   watch: {
     selectFilterText(val) {
@@ -1105,9 +1116,7 @@ export default {
 
         // 「添加脚本集」节点
         case 'addScriptSet':
-          this.$router.push({
-            name: 'script-set-add',
-          });
+          this.$refs.ScriptSetSetup.loadData();
           break;
 
         // 脚本集节点
@@ -1115,20 +1124,12 @@ export default {
           if (target === 'add') {
             // 添加脚本
             this.selectNode(data.id, { expandChildren: true });
-
-            this.$router.push({
-              name  : 'script-add',
-              params: {id: data.id},
-            });
+            this.$refs.ScriptSetup.loadData(data.id);
 
           } else if (target === 'setup') {
             // 打开脚本集配置
             this.selectNode(data.id, { expandChildren: false });
-
-            this.$router.push({
-              name  : 'script-set-setup',
-              params: {id: data.id},
-            });
+            this.$refs.ScriptSetSetup.loadData(data.id);
 
           } else if (target === 'scriptMarket') {
             // 前往脚本市场
@@ -1148,11 +1149,7 @@ export default {
           if (target === 'setup') {
             // 打开脚本配置
             this.selectNode(data.id, { expandChildren: false });
-
-            this.$router.push({
-              name  : 'script-setup',
-              params: {id: data.id},
-            });
+            this.$refs.ScriptSetup.loadData(data.id.split('__')[0], data.id);
 
           } else if ((this.$route.name === 'code-viewer' || this.$route.name === 'code-editor')
                 && data.id === this.$route.params.id) {
@@ -1225,16 +1222,16 @@ export default {
       }
       if (!await this.T.confirm(confirmText)) return;
 
+      this.T.jumpDeletedEntity(data.id);
+
       let apiRes = await this.T.callAPI(apiPath, {
         params: { id: data.id },
         alert : { okMessage: finishText },
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$router.push({
-        name: 'intro',
-      });
       this.$store.commit('updateScriptListSyncTime');
+
     },
 
     async loadRelEntityData(data) {

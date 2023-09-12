@@ -1858,6 +1858,19 @@ export function openURL(url) {
   window.open(url);
 };
 
+export function jumpDeletedEntity(id) {
+  if (id !== router.currentRoute.params.id) return;
+
+  switch(router.currentRoute.name) {
+    case 'code-editor':
+    case 'code-viewer':
+      router.push({
+        name: 'intro',
+      });
+      break;
+  }
+};
+
 export function renderMarkdown(text, options) {
   options = options || {};
 

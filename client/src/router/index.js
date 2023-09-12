@@ -46,46 +46,6 @@ const routes = [
         name: 'code-viewer',
         component: () => import('../components/Development/CodeViewer.vue'),
       },
-      {
-        path: 'script-set-add',
-        name: 'script-set-add',
-        component: () => import('../components/Development/ScriptSetSetup.vue'),
-      },
-      {
-        path: 'script-set-setup/:id',
-        name: 'script-set-setup',
-        component: () => import('../components/Development/ScriptSetSetup.vue'),
-      },
-      {
-        path: 'script-add/:id',
-        name: 'script-add',
-        component: () => import('../components/Development/ScriptSetup.vue'),
-      },
-      {
-        path: 'script-setup/:id',
-        name: 'script-setup',
-        component: () => import('../components/Development/ScriptSetup.vue'),
-      },
-      {
-        path: 'connector-add',
-        name: 'connector-add',
-        component: () => import('../components/Development/ConnectorSetup.vue'),
-      },
-      {
-        path: 'connector-setup/:id',
-        name: 'connector-setup',
-        component: () => import('../components/Development/ConnectorSetup.vue'),
-      },
-      {
-        path: 'env-variable-add',
-        name: 'env-variable-add',
-        component: () => import('../components/Development/EnvVariableSetup.vue'),
-      },
-      {
-        path: 'env-variable-setup/:id',
-        name: 'env-variable-setup',
-        component: () => import('../components/Development/EnvVariableSetup.vue'),
-      },
     ]
   },
 
@@ -94,16 +54,6 @@ const routes = [
     path: '/blueprint-list',
     name: 'blueprint-list',
     component: () => import('../components/Blueprint/BlueprintList.vue'),
-  },
-  {
-    path: '/blueprint-add',
-    name: 'blueprint-add',
-    component: () => import('../components/Blueprint/BlueprintSetup.vue'),
-  },
-  {
-    path: '/blueprint-setup/:id',
-    name: 'blueprint-setup',
-    component: () => import('../components/Blueprint/BlueprintSetup.vue'),
   },
   {
     path: '/blueprint-canvas/:id',
@@ -155,47 +105,17 @@ const routes = [
         name: 'api-auth-list',
         component: () => import('../components/Management/APIAuthList.vue'),
       },
-      {
-        path: 'api-auth-add',
-        name: 'api-auth-add',
-        component: () => import('../components/Management/APIAuthSetup.vue'),
-      },
-      {
-        path: 'api-auth-setup/:id',
-        name: 'api-auth-setup',
-        component: () => import('../components/Management/APIAuthSetup.vue'),
-      },
 
       {
         path: 'auth-link-list',
         name: 'auth-link-list',
         component: () => import('../components/Management/AuthLinkList.vue'),
       },
-      {
-        path: 'auth-link-add',
-        name: 'auth-link-add',
-        component: () => import('../components/Management/AuthLinkSetup.vue'),
-      },
-      {
-        path: 'auth-link-setup/:id',
-        name: 'auth-link-setup',
-        component: () => import('../components/Management/AuthLinkSetup.vue'),
-      },
 
       {
         path: 'crontab-config-list',
         name: 'crontab-config-list',
         component: () => import('../components/Management/CrontabConfigList.vue'),
-      },
-      {
-        path: 'crontab-config-add',
-        name: 'crontab-config-add',
-        component: () => import('../components/Management/CrontabConfigSetup.vue'),
-      },
-      {
-        path: 'crontab-config-setup/:id',
-        name: 'crontab-config-setup',
-        component: () => import('../components/Management/CrontabConfigSetup.vue'),
       },
 
       {
@@ -261,16 +181,6 @@ const routes = [
         path: 'user-list',
         name: 'user-list',
         component: () => import('../components/Management/UserList.vue'),
-      },
-      {
-        path: 'user-add',
-        name: 'user-add',
-        component: () => import('../components/Management/UserSetup.vue'),
-      },
-      {
-        path: 'user-setup/:id',
-        name: 'user-setup',
-        component: () => import('../components/Management/UserSetup.vue'),
       },
 
       {
@@ -428,10 +338,7 @@ const noAuthRoutes = [
   'dream',
 ];
 const adminOnlyRoutes = [
-  'user-add',
-  'user-setup',
   'access-key-list',
-  'access-key-add',
   'system-setting',
 ];
 

@@ -119,7 +119,7 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
                 <el-tooltip :content="$t('Script Setup')" placement="bottom" :enterable="false">
                   <el-button
                     type="text"
-                    @click.stop="$router.push({name: 'script-setup', params: {id: data.id}})">
+                    @click.stop="showSetup">
                     <i class="fa fa-fw fa-wrench"></i>
                   </el-button>
                 </el-tooltip>
@@ -309,6 +309,8 @@ Func is running. It will wait at most {seconds} for the result. If it is not res
 
           <LongTextDialog :title="$t('Diff between published and previously published')" mode="diff" ref="longTextDialog" />
           <CodeEditorSetting :codeMirror="codeMirror" ref="codeEditorSetting" />
+
+          <ScriptSetup ref="setup" />
         </el-container>
       </template>
 
@@ -342,12 +344,16 @@ import * as htmlEscaper from 'html-escaper';
 import FeatureNoticeDialog from '@/components/FeatureNoticeDialog'
 import img_noticeMonkeyPatch from '@/assets/img/notice-monkey-patch.png'
 
+import ScriptSetup from '@/components/Development/ScriptSetup'
+
 export default {
   name: 'CodeEditor',
   components: {
     FeatureNoticeDialog,
     CodeEditorSetting,
     LongTextDialog,
+
+    ScriptSetup,
   },
   watch: {
     $route: {
@@ -1011,6 +1017,9 @@ export default {
         backgroundClass: 'current-func-background highlight-code-line-blink',
       });
     },
+    showSetup() {
+      this.$refs.setup.loadData(this.scriptSetId, this.scriptId);
+    },
   },
   computed: {
     SPLIT_PANE_MAX_PERCENT  : () => 80,
@@ -1380,6 +1389,11 @@ export default {
 }
 </style>
 <style>
+.code-viewer-action-right .el-radio-group,
+.code-viewer-action-right .el-button-group {
+  position: relative;
+  top: -0.5px;
+}
 #editorContainer_CodeEditor {
   padding: 1px 0 0 5px;
   position: relative;

@@ -308,6 +308,7 @@ export default {
   width: 554px;
   background-color: #fff;
   position: relative;
+  border-radius: 10px;
 }
 .sign-in-panel .ui-extra {
   display: flex;

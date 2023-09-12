@@ -180,7 +180,7 @@ export default {
     },
     useCustomId(val) {
       if (val) {
-        this.form.id = `${this.ID_PREFIX}foobar`;
+        this.form.id = `${this.ID_PREFIX}my-batch`;
       } else {
         this.form.id = null;
       }

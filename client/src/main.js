@@ -32,10 +32,11 @@ ElementUI.Popover.props.openDelay.default         = 50;
 ElementUI.Popover.props.closeDelay.default        = 100;
 ElementUI.Link.props.underline.default            = true;
 ElementUI.Link.props.type.default                 = 'primary';
-ElementUI.Form.props.validateOnRuleChange.default = false;
 ElementUI.Dialog.props.modalAppendToBody.default  = true;
 ElementUI.Dialog.props.appendToBody.default       = true;
 ElementUI.Dialog.props.top.default                = '10vh';
+ElementUI.Dialog.props.destroyOnClose.default     = true;
+ElementUI.Form.props.validateOnRuleChange.default = false;
 Vue.use(ElementUI);
 window.ElementUI = ElementUI
 

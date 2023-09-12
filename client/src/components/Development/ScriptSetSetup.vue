@@ -16,7 +16,7 @@ Please input ID                                   : 请输入 ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
 Cannot not starts with a number                   : 不得以数字开头
 
-'ID cannot contains double underscore "__"': '脚本集 ID 不能包含"__"，"__"为脚本集 ID 与脚本 ID 的分隔标志'
+'ID cannot contains double underscore "__"': '不能包含双下划线 "__"'
 
 Script Set created : 脚本集已创建
 Script Set saved   : 脚本集已保存
@@ -29,77 +29,72 @@ This Script Set is locked by other user ({user}): 当前脚本已被其他用户
 </i18n>
 
 <template>
-  <transition name="fade">
-    <el-container direction="vertical" v-show="$store.state.isLoaded">
-      <!-- 标题区 -->
-      <el-header height="60px">
-        <h1>{{ pageTitle }} <code class="text-main">{{ data.title || data.id }}</code></h1>
-      </el-header>
+  <el-dialog
+    id="ScriptSetSetup"
+    :visible.sync="show"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    width="750px">
 
-      <!-- 编辑区 -->
+    <template slot="title">
+      {{ pageTitle }} <code class="text-main">{{ data.title || data.id }}</code>
+    </template>
+
+    <el-container direction="vertical">
       <el-main>
-        <el-row :gutter="20">
-          <el-col :span="15">
-            <div class="setup-form">
-              <el-form ref="form" label-width="135px" :model="form" :disabled="!isEditable" :rules="formRules">
-                <el-form-item v-if="isLockedByMe">
-                  <InfoBlock type="success" :title="$t('This Script Set is locked by you')" />
-                </el-form-item>
-                <el-form-item v-else-if="isLockedByOther">
-                  <InfoBlock :type="isEditable ? 'warning' : 'error'" :title="$t('This Script Set is locked by other user ({user})', { user: lockedByUser })" />
-                </el-form-item>
+        <div class="setup-form">
+          <el-form ref="form" label-width="135px" :model="form" :disabled="!isEditable" :rules="formRules">
+            <el-form-item v-if="isLockedByMe">
+              <InfoBlock type="success" :title="$t('This Script Set is locked by you')" />
+            </el-form-item>
+            <el-form-item v-else-if="isLockedByOther">
+              <InfoBlock :type="isEditable ? 'warning' : 'error'" :title="$t('This Script Set is locked by other user ({user})', { user: lockedByUser })" />
+            </el-form-item>
 
-                <el-form-item label="ID" prop="id">
-                  <el-input :disabled="T.setupPageMode() === 'setup'"
-                    maxlength="60"
-                    v-model="form.id"></el-input>
-                  <InfoBlock :title="$t('Script Set ID will be a part of the Func ID')" />
-                </el-form-item>
+            <el-form-item label="ID" prop="id">
+              <el-input :disabled="pageMode === 'setup'"
+                maxlength="60"
+                v-model="form.id"></el-input>
+              <InfoBlock :title="$t('Script Set ID will be a part of the Func ID')" />
+            </el-form-item>
 
-                <el-form-item :label="$t('Title')">
-                  <el-input :placeholder="$t('Optional')"
-                    maxlength="200"
-                    v-model="form.title"></el-input>
-                </el-form-item>
+            <el-form-item :label="$t('Title')">
+              <el-input :placeholder="$t('Optional')"
+                maxlength="200"
+                v-model="form.title"></el-input>
+            </el-form-item>
 
-                <el-form-item :label="$t('Description')">
-                  <el-input :placeholder="$t('Optional')"
-                    type="textarea"
-                    resize="none"
-                    :autosize="{minRows: 2}"
-                    maxlength="5000"
-                    v-model="form.description"></el-input>
-                </el-form-item>
+            <el-form-item :label="$t('Description')">
+              <el-input :placeholder="$t('Optional')"
+                type="textarea"
+                resize="none"
+                :autosize="{minRows: 2}"
+                maxlength="5000"
+                v-model="form.description"></el-input>
+            </el-form-item>
 
-                <el-form-item :label="$t('Requirements')">
-                  <el-input :placeholder="$t('Optional')"
-                    type="textarea"
-                    resize="none"
-                    :autosize="{minRows: 2}"
-                    maxlength="5000"
-                    v-model="form.requirements"></el-input>
-                  <InfoBlock :title="$t('requirementsTip')" />
-                  <div class="setup-right">
-                    <el-button v-if="requirementsLine" type="text" @click="common.goToPIPTools(requirementsLine)">{{ $t('Go to PIP tool to install') }}</el-button>
-                  </div>
-                </el-form-item>
-              </el-form>
-            </div>
-          </el-col>
-          <el-col :span="9" class="hidden-md-and-down">
-          </el-col>
-        </el-row>
-      </el-main>
+            <el-form-item :label="$t('Requirements')">
+              <el-input :placeholder="$t('Optional')"
+                type="textarea"
+                resize="none"
+                :autosize="{minRows: 2}"
+                maxlength="5000"
+                v-model="form.requirements"></el-input>
+              <InfoBlock :title="$t('requirementsTip')" />
+              <div class="setup-right">
+                <el-button v-if="requirementsLine" type="text" @click="common.goToPIPTools(requirementsLine)">{{ $t('Go to PIP tool to install') }}</el-button>
+              </div>
+            </el-form-item>
 
-      <!-- 底部栏 -->
-      <el-footer>
-        <div class="setup-footer">
-          <el-button class="delete-button" v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
-          <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+            <el-form-item class="setup-footer">
+              <el-button class="delete-button" v-if="pageMode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+              <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+            </el-form-item>
+          </el-form>
         </div>
-      </el-footer>
+      </el-main>
     </el-container>
-  </transition>
+  </el-dialog>
 </template>
 
 <script>
@@ -108,26 +103,18 @@ export default {
   components: {
   },
   watch: {
-    $route: {
-      immediate: true,
-      async handler(to, from) {
-        await this.loadData();
-
-        switch(this.T.setupPageMode()) {
-          case 'add':
-            this.T.jsonClear(this.form);
-            this.data = {};
-            break;
-
-          case 'setup':
-            break;
-        }
-      },
-    },
   },
   methods: {
-    async loadData() {
-      if (this.T.setupPageMode() === 'setup') {
+    async loadData(id) {
+      if (!id) {
+        this.pageMode = 'add';
+        this.T.jsonClear(this.form);
+        this.data = {};
+
+      } else {
+        this.pageMode = 'setup';
+        this.data.id = id;
+
         let apiRes = await this.T.callAPI_getOne('/api/v1/script-sets/do/list', this.scriptSetId);
         if (!apiRes || !apiRes.ok) return;
 
@@ -138,7 +125,7 @@ export default {
         this.form = nextForm;
       }
 
-      this.$store.commit('updateLoadStatus', true);
+      this.show = true;
     },
     async submitData() {
       try {
@@ -148,7 +135,7 @@ export default {
       }
 
       let dataId = null;
-      switch(this.T.setupPageMode()) {
+      switch(this.pageMode) {
         case 'add':
           dataId = await this.addData();
           break;
@@ -169,10 +156,8 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$router.push({
-        name: 'intro',
-      });
       this.$store.commit('updateScriptListSyncTime');
+      this.show = false;
 
       return apiRes.data.id;
     },
@@ -187,8 +172,8 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      // await this.loadData();
       this.$store.commit('updateScriptListSyncTime');
+      this.show = false;
 
       return this.scriptSetId;
     },
@@ -201,10 +186,8 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$router.push({
-        name: 'intro',
-      });
       this.$store.commit('updateScriptListSyncTime');
+      this.show = false;
     },
   },
   computed: {
@@ -213,14 +196,14 @@ export default {
         setup: this.$t('Setup Script Set'),
         add  : this.$t('Add Script Set'),
       };
-      return _map[this.T.setupPageMode()];
+      return _map[this.pageMode];
     },
     scriptSetId() {
-      switch(this.T.setupPageMode()) {
+      switch(this.pageMode) {
         case 'add':
           return this.form.id;
         case 'setup':
-          return this.$route.params.id;
+          return this.data.id;
       }
     },
 
@@ -250,6 +233,9 @@ export default {
   },
   data() {
     return {
+      show    : false,
+      pageMode: null,
+
       data: {},
       form: {
         id          : null,
@@ -260,7 +246,7 @@ export default {
       formRules: {
         id: [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input ID'),
             required: true,
           },
@@ -277,7 +263,7 @@ export default {
           {
             trigger: 'change',
             validator: (rule, value, callback) => {
-              if (value.indexOf('__') >= 0) {
+              if (value && value.indexOf('__') >= 0) {
                 let _message = this.$t('ID cannot contains double underscore "__"');
                 return callback(new Error(_message));
               }

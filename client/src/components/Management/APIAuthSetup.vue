@@ -35,160 +35,155 @@ Return True when authentication succeeds: 认证成功时，返回 True 即可
 </i18n>
 
 <template>
-  <transition name="fade">
-    <el-container direction="vertical" v-show="$store.state.isLoaded">
-      <!-- 标题区 -->
-      <el-header height="60px">
-        <h1>{{ pageTitle }} <code class="text-main" v-if="data.title">{{ data.title || C.API_AUTH_MAP.get(selectedType).name }}</code></h1>
-      </el-header>
+  <el-dialog
+    id="ScriptSetSetup"
+    :visible.sync="show"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    width="750px">
 
-      <!-- 编辑区 -->
+    <template slot="title">
+      {{ pageTitle }} <code class="text-main">{{ data.title || C.API_AUTH_MAP.get(selectedType).name }}</code>
+    </template>
+
+    <el-container direction="vertical">
       <el-main>
-        <el-row :gutter="20">
-          <el-col :span="15">
-            <div class="setup-form">
-              <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
-                <el-form-item :label="$t('Auth Type')" prop="type" v-if="T.setupPageMode() === 'add'">
-                  <el-select v-model="form.type" @change="switchType">
-                    <el-option v-for="opt in C.API_AUTH" :label="opt.name" :key="opt.key" :value="opt.key"></el-option>
-                  </el-select>
+        <div class="setup-form">
+          <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
+            <el-form-item :label="$t('Auth Type')" prop="type" v-if="pageMode === 'add'">
+              <el-select v-model="form.type" @change="switchType">
+                <el-option v-for="opt in C.API_AUTH" :label="opt.name" :key="opt.key" :value="opt.key"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item :label="$t('Auth Type')" v-else>
+              <el-select v-model="selectedType" :disabled="true">
+                <el-option :label="C.API_AUTH_MAP.get(selectedType).name" :value="selectedType"></el-option>
+              </el-select>
+            </el-form-item>
+
+            <template v-if="selectedType">
+              <el-form-item v-if="C.API_AUTH_MAP.get(selectedType).tips">
+                <InfoBlock type="info" :title="C.API_AUTH_MAP.get(selectedType).tips" />
+              </el-form-item>
+
+              <el-form-item :label="$t('Title')">
+                <el-input :placeholder="$t('Optional')"
+                  maxlength="200"
+                  v-model="form.title"></el-input>
+              </el-form-item>
+
+              <!-- 固定字段配置 -->
+              <template v-if="hasConfigField(selectedType, 'fields')">
+                <el-form-item class="config-divider" :label="$t('Fixed Fields')">
+                  <el-divider></el-divider>
                 </el-form-item>
-                <el-form-item :label="$t('Auth Type')" v-else>
-                  <el-select v-model="selectedType" :disabled="true">
-                    <el-option :label="C.API_AUTH_MAP.get(selectedType).name" :value="selectedType"></el-option>
-                  </el-select>
-                </el-form-item>
 
-                <template v-if="selectedType">
-                  <el-form-item v-if="C.API_AUTH_MAP.get(selectedType).tips">
-                    <InfoBlock type="info" :title="C.API_AUTH_MAP.get(selectedType).tips" />
+                <template v-for="(fixedField, index) in form.configJSON.fields || []">
+                  <el-form-item
+                    class="fixed-field-location"
+                    :label="`#${index + 1}`"
+                    :key="`fieldLocation-${index}`"
+                    :prop="`configJSON.fields.${index}.location`"
+                    :rules="formRules_fixedFieldLocation">
+                    <el-select
+                      v-model="fixedField.location">
+                      <el-option v-for="location in C.API_AUTH_FIXED_FIELD_LOCATION" :label="location.name" :key="location.key" :value="location.key"></el-option>
+                    </el-select>
+
+                    <!-- 删除按钮 -->
+                    <el-link type="primary" @click.prevent="removeFixedFieldItem(index)">{{ $t('Delete') }}</el-link>
                   </el-form-item>
-
-                  <el-form-item :label="$t('Title')">
-                    <el-input :placeholder="$t('Optional')"
-                      maxlength="200"
-                      v-model="form.title"></el-input>
+                  <el-form-item
+                    class="fixed-field"
+                    :key="`fieldName-${index}`"
+                    :prop="`configJSON.fields.${index}.name`"
+                    :rules="formRules_fixedFieldName">
+                    <el-input :placeholder="$t('Field Name')" v-model="fixedField.name"></el-input>
                   </el-form-item>
-
-                  <!-- 固定字段配置 -->
-                  <template v-if="hasConfigField(selectedType, 'fields')">
-                    <el-form-item class="config-divider" :label="$t('Fixed Fields')">
-                      <el-divider></el-divider>
-                    </el-form-item>
-
-                    <template v-for="(fixedField, index) in form.configJSON.fields || []">
-                      <el-form-item
-                        class="fixed-field-location"
-                        :label="`#${index + 1}`"
-                        :key="`fieldLocation-${index}`"
-                        :prop="`configJSON.fields.${index}.location`"
-                        :rules="formRules_fixedFieldLocation">
-                        <el-select
-                          v-model="fixedField.location">
-                          <el-option v-for="location in C.API_AUTH_FIXED_FIELD_LOCATION" :label="location.name" :key="location.key" :value="location.key"></el-option>
-                        </el-select>
-
-                        <!-- 删除按钮 -->
-                        <el-link type="primary" @click.prevent="removeFixedFieldItem(index)">{{ $t('Delete') }}</el-link>
-                      </el-form-item>
-                      <el-form-item
-                        class="fixed-field"
-                        :key="`fieldName-${index}`"
-                        :prop="`configJSON.fields.${index}.name`"
-                        :rules="formRules_fixedFieldName">
-                        <el-input :placeholder="$t('Field Name')" v-model="fixedField.name"></el-input>
-                      </el-form-item>
-                      <el-form-item
-                        class="fixed-field"
-                        :key="`fieldValue-${index}`"
-                        :prop="`configJSON.fields.${index}.value`"
-                        :rules="formRules_fixedFieldValue">
-                        <el-input :placeholder="$t('Field Value')" v-model="fixedField.value"></el-input>
-                      </el-form-item>
-                    </template>
-                    <el-form-item>
-                      <el-link type="primary" @click="addFixedFieldItem"><i class="fa fa-fw fa-plus"></i> {{ $t('Add Fixed Field') }}</el-link>
-                    </el-form-item>
-                  </template>
-
-                  <!-- HTTP认证配置 -->
-                  <template v-if="hasConfigField(selectedType, 'users')">
-                    <el-form-item class="config-divider" :label="$t('Users')">
-                      <el-divider></el-divider>
-                    </el-form-item>
-
-                    <template v-for="(user, index) in form.configJSON.users || []">
-                      <el-form-item
-                        class="http-auth"
-                        :label="`#${index + 1}`"
-                        :key="`username-${index}`"
-                        :prop="`configJSON.users.${index}.username`"
-                        :rules="formRules_httpAuthUsername">
-                        <el-input :placeholder="$t('Username')" v-model="user.username"></el-input>
-
-                        <!-- 删除按钮 -->
-                        <el-link type="primary" @click.prevent="removeHTTPAuthUser(index)">{{ $t('Delete') }}</el-link>
-                      </el-form-item>
-                      <el-form-item
-                        class="http-auth"
-                        :key="`password-${index}`"
-                        :prop="`configJSON.users.${index}.password`"
-                        :rules="formRules_httpAuthPassword">
-                        <el-input :placeholder="$t('Password (leave blank when not changing)')"
-                          v-model="user.password"></el-input>
-                      </el-form-item>
-                    </template>
-                    <el-form-item>
-                      <el-link type="primary" @click="addHTTPAuthUser"><i class="fa fa-fw fa-plus"></i> {{ $t('Add User') }}</el-link>
-                    </el-form-item>
-                  </template>
-
-                  <!-- 函数认证配置 -->
-                  <template v-if="hasConfigField(selectedType, 'funcId')">
-                    <el-form-item :label="$t('Func')" prop="configJSON.funcId">
-                      <el-cascader ref="funcCascader"
-                        placeholder="--"
-                        filterable
-                        :filter-method="common.funcCascaderFilter"
-                        v-model="form.configJSON.funcId"
-                        :options="funcCascader"
-                        :props="{ expandTrigger: 'hover', emitPath: false, multiple: false }"></el-cascader>
-
-                      <InfoBlock type="info" :title="$t('Func with a specific format is required')" />
-                      <el-button @click="showAuthFuncSampleCode" type="text">{{ $t('Show Sample Code') }}</el-button>
-                    </el-form-item>
-                  </template>
-
-                  <!-- 可变部分结束 -->
-
-                  <el-form-item :label="$t('Note')">
-                    <el-input :placeholder="$t('Optional')"
-                      type="textarea"
-                      resize="none"
-                      :autosize="{minRows: 2}"
-                      maxlength="5000"
-                      v-model="form.note"></el-input>
+                  <el-form-item
+                    class="fixed-field"
+                    :key="`fieldValue-${index}`"
+                    :prop="`configJSON.fields.${index}.value`"
+                    :rules="formRules_fixedFieldValue">
+                    <el-input :placeholder="$t('Field Value')" v-model="fixedField.value"></el-input>
                   </el-form-item>
                 </template>
-              </el-form>
-            </div>
-          </el-col>
-          <el-col :span="9" class="hidden-md-and-down">
-          </el-col>
-        </el-row>
-      </el-main>
+                <el-form-item>
+                  <el-link type="primary" @click="addFixedFieldItem"><i class="fa fa-fw fa-plus"></i> {{ $t('Add Fixed Field') }}</el-link>
+                </el-form-item>
+              </template>
 
-      <!-- 底部栏 -->
-      <el-footer v-if="selectedType">
-        <div class="setup-footer">
-          <el-button class="delete-button" v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
-          <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+              <!-- HTTP认证配置 -->
+              <template v-if="hasConfigField(selectedType, 'users')">
+                <el-form-item class="config-divider" :label="$t('Users')">
+                  <el-divider></el-divider>
+                </el-form-item>
+
+                <template v-for="(user, index) in form.configJSON.users || []">
+                  <el-form-item
+                    class="http-auth"
+                    :label="`#${index + 1}`"
+                    :key="`username-${index}`"
+                    :prop="`configJSON.users.${index}.username`"
+                    :rules="formRules_httpAuthUsername">
+                    <el-input :placeholder="$t('Username')" v-model="user.username"></el-input>
+
+                    <!-- 删除按钮 -->
+                    <el-link type="primary" @click.prevent="removeHTTPAuthUser(index)">{{ $t('Delete') }}</el-link>
+                  </el-form-item>
+                  <el-form-item
+                    class="http-auth"
+                    :key="`password-${index}`"
+                    :prop="`configJSON.users.${index}.password`"
+                    :rules="formRules_httpAuthPassword">
+                    <el-input :placeholder="$t('Password (leave blank when not changing)')"
+                      v-model="user.password"></el-input>
+                  </el-form-item>
+                </template>
+                <el-form-item>
+                  <el-link type="primary" @click="addHTTPAuthUser"><i class="fa fa-fw fa-plus"></i> {{ $t('Add User') }}</el-link>
+                </el-form-item>
+              </template>
+
+              <!-- 函数认证配置 -->
+              <template v-if="hasConfigField(selectedType, 'funcId')">
+                <el-form-item :label="$t('Func')" prop="configJSON.funcId">
+                  <el-cascader ref="funcCascader"
+                    placeholder="--"
+                    filterable
+                    :filter-method="common.funcCascaderFilter"
+                    v-model="form.configJSON.funcId"
+                    :options="funcCascader"
+                    :props="{ expandTrigger: 'hover', emitPath: false, multiple: false }"></el-cascader>
+
+                  <InfoBlock type="info" :title="$t('Func with a specific format is required')" />
+                  <el-button @click="showAuthFuncSampleCode" type="text">{{ $t('Show Sample Code') }}</el-button>
+                </el-form-item>
+              </template>
+
+              <!-- 可变部分结束 -->
+
+              <el-form-item :label="$t('Note')">
+                <el-input :placeholder="$t('Optional')"
+                  type="textarea"
+                  resize="none"
+                  :autosize="{minRows: 2}"
+                  maxlength="5000"
+                  v-model="form.note"></el-input>
+              </el-form-item>
+            </template>
+
+            <el-form-item class="setup-footer">
+              <el-button class="delete-button" v-if="pageMode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+              <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+            </el-form-item>
+          </el-form>
         </div>
-      </el-footer>
+      </el-main>
 
       <LongTextDialog :title="$t('Sample Code')" mode="python" ref="longTextDialog" />
     </el-container>
-  </transition>
+  </el-dialog>
 </template>
 
 <script>
@@ -200,22 +195,10 @@ export default {
     LongTextDialog,
   },
   watch: {
-    $route: {
-      immediate: true,
-      async handler(to, from) {
-        await this.loadData();
-
-        switch(this.T.setupPageMode()) {
-          case 'add':
-            this.T.jsonClear(this.form);
-            this.form.configJSON = {};
-            this.data = {};
-            break;
-
-          case 'setup':
-            break;
-        }
-      },
+    show(val) {
+      if (!val) {
+        this.$root.$emit('reload.apiAuthList');
+      }
     },
   },
   methods: {
@@ -257,9 +240,18 @@ export default {
       this.fillDefault(type);
       this.updateValidator(type);
     },
-    async loadData() {
-      if (this.T.setupPageMode() === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/api-auth/do/list', this.$route.params.id);
+    async loadData(id) {
+      if (!id) {
+        this.pageMode = 'add';
+        this.T.jsonClear(this.form);
+        this.form.configJSON = {};
+        this.data = {};
+
+      } else {
+        this.pageMode = 'setup';
+        this.data.id = id;
+
+        let apiRes = await this.T.callAPI_getOne('/api/v1/api-auth/do/list', this.data.id);
         if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -276,7 +268,8 @@ export default {
 
       this.funcMap      = funcList.map;
       this.funcCascader = funcList.cascader;
-      this.$store.commit('updateLoadStatus', true);
+
+      this.show = true;
     },
     async submitData() {
       try {
@@ -285,7 +278,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.T.setupPageMode()) {
+      switch(this.pageMode) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -312,13 +305,8 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$store.commit('updateTableList_scrollY');
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
-
-      this.$router.push({
-        name : 'api-auth-list',
-        query: this.T.getPrevQuery(),
-      });
+      this.show = false;
     },
     async modifyData() {
       let _formData = this._getFromData();
@@ -326,32 +314,25 @@ export default {
       delete _formData.type;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/api-auth/:id/do/modify', {
-        params: { id: this.$route.params.id },
+        params: { id: this.data.id },
         body  : { data: _formData },
         alert : { okMessage: this.$t('API Auth saved') },
       });
       if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
-
-      this.$router.push({
-        name : 'api-auth-list',
-        query: this.T.getPrevQuery(),
-      });
+      this.show = false;
     },
     async deleteData() {
       if (!await this.T.confirm(this.$t('Are you sure you want to delete the API Auth?'))) return;
 
       let apiRes = await this.T.callAPI('/api/v1/api-auth/:id/do/delete', {
-        params: { id: this.$route.params.id },
+        params: { id: this.data.id },
         alert : { okMessage: this.$t('API Auth deleted') },
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$router.push({
-        name : 'api-auth-list',
-        query: this.T.getPrevQuery(),
-      });
+      this.show = false;
     },
     hasConfigField(type, field) {
       if (!this.C.API_AUTH_MAP.get(type) || !this.C.API_AUTH_MAP.get(type).configFields) {
@@ -409,10 +390,10 @@ def my_auth_func():
         setup: this.$t('Setup API Auth'),
         add  : this.$t('Add API Auth'),
       };
-      return _map[this.T.setupPageMode()];
+      return _map[this.pageMode];
     },
     selectedType() {
-      switch(this.T.setupPageMode()) {
+      switch(this.pageMode) {
         case 'add':
           return this.form.type;
 
@@ -425,6 +406,9 @@ def my_auth_func():
   },
   data() {
     return {
+      show    : false,
+      pageMode: null,
+
       data        : {},
       funcMap     : {},
       funcCascader: [],
@@ -438,41 +422,41 @@ def my_auth_func():
       formRules: {
         type: [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input API Auth type'),
             required: true,
           },
         ],
         funcId: [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please select Func'),
             required: true,
           },
         ],
       },
       formRules_fixedFieldLocation: {
-        trigger: 'change',
+        trigger: 'blur',
         message : this.$t('Please input location'),
         required: true,
       },
       formRules_fixedFieldName: {
-        trigger: 'change',
+        trigger: 'blur',
         message : this.$t('Please input field name'),
         required: true,
       },
       formRules_fixedFieldValue: {
-        trigger: 'change',
+        trigger: 'blur',
         message : this.$t('Please input field value'),
         required: true,
       },
       formRules_httpAuthUsername: {
-        trigger: 'change',
+        trigger: 'blur',
         message : this.$t('Please input HTTP Auth username'),
         required: true,
       },
       formRules_httpAuthPassword: {
-        trigger: 'change',
+        trigger: 'blur',
         message : this.$t('Please input HTTP Auth password'),
         required: false,
       },

@@ -77,20 +77,6 @@ export default {
   computed: {
     SPLIT_PANE_MAX_PERCENT: () => 35,
     SPLIT_PANE_MIN_PERCENT: () => 10,
-    currentTabFromRoute() {
-      switch(this.$route.name) {
-        case 'connector-add':
-        case 'connector-setup':
-          return 'aside-connector';
-
-        case 'env-variable-add':
-        case 'env-variable-setup':
-          return 'aside-env-variable';
-
-        default:
-          return 'aside-script';
-      }
-    },
     currentTabIcon() {
       let c = ['fa', 'fa-fw', 'icon-bg'];
       switch(this.currentTab) {
@@ -114,15 +100,13 @@ export default {
   },
   data() {
     return {
-      currentTab: null,
+      currentTab: 'aside-script',
     }
   },
   created() {
     this.debouncedUpdatePanePercent = this.T.debounce((store, nextPercent) => {
       store.commit('updateEditor_splitPanePercent', nextPercent);
     }, 100);
-
-    this.currentTab = this.currentTabFromRoute;
   },
   mounted() {
     // 加载分割位置

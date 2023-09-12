@@ -130,15 +130,6 @@ Go to Recent Task Record: 前往最近任务记录
               {{ $t('Simple Debug') }}
             </el-button>
 
-            <!-- 置顶 -->
-            <el-button
-              size="small"
-              :class="data.isPinned ? 'aside-on-button' : ''"
-              v-prevent-re-click @click="pinData(data.type, data.id, !data.isPinned)">
-              <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
-              {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
-            </el-button>
-
             <!-- 配置/查看 -->
             <el-button
               size="small"
@@ -148,14 +139,27 @@ Go to Recent Task Record: 前往最近任务记录
             </el-button>
           </el-button-group>
 
-          <!-- 删除 -->
-          <el-button
-            class="delete-button"
-            size="small"
-            @click="deleteEntity(data)">
-            <i class="fa fa-fw fa-times"></i>
-            {{ $t('Delete') }}
-          </el-button>
+          <el-button-group>
+            <!-- 置顶 -->
+            <el-button
+              size="small"
+              :class="data.isPinned ? 'aside-on-button' : ''"
+              v-prevent-re-click @click="pinData(data.type, data.id, !data.isPinned)">
+              <i class="fa fa-fw" :class="[data.isPinned ? 'fa-thumb-tack fa-rotate-270' : 'fa-thumb-tack']"></i>
+              {{ data.isPinned ? $t('Unpin') : $t('Pin') }}
+            </el-button>
+          </el-button-group>
+
+          <el-button-group>
+            <!-- 删除 -->
+            <el-button
+              class="delete-button"
+              size="small"
+              @click="deleteEntity(data)">
+              <i class="fa fa-fw fa-times"></i>
+              {{ $t('Delete') }}
+            </el-button>
+          </el-button-group>
 
           <!-- 关联配置 -->
           <div class="goto-links" v-if="data.connectorType">
@@ -171,16 +175,21 @@ Go to Recent Task Record: 前往最近任务记录
     </el-tree>
 
     <SimpleDebugWindow ref="simpleDebugWindow"></SimpleDebugWindow>
+    <ConnectorSetup ref="setup" />
   </div>
 </template>
 
 <script>
 import SimpleDebugWindow from '@/components/Development/SimpleDebugWindow'
 
+import ConnectorSetup from '@/components/Development/ConnectorSetup'
+
 export default {
   name: 'AsideConnector',
   components: {
     SimpleDebugWindow,
+
+    ConnectorSetup,
   },
   watch: {
     selectFilterText(val) {
@@ -334,19 +343,13 @@ export default {
 
         // 「添加连接器」节点
         case 'addConnector':
-          this.$router.push({
-            name: 'connector-add',
-          });
+          this.$refs.setup.loadData();
           break;
 
         // 连接器节点
         case 'connector':
           this.selectNode(data.id);
-
-          this.$router.push({
-            name  : 'connector-setup',
-            params: {id: data.id},
-          });
+          this.$refs.setup.loadData(data.id);
           break;
 
         default:
@@ -363,9 +366,6 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$router.push({
-        name: 'intro',
-      });
       this.$store.commit('updateConnectorListSyncTime');
     },
   },

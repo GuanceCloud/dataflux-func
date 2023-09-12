@@ -590,7 +590,8 @@ ul {
 
 .delete-button {
   color: #FF0000 !important;
-  border-color: #FF000077 !important;
+  border-color: #FF000055 !important;
+  float: left;
 }
 .aside-on-button {
   color: #FF6600 !important
@@ -599,18 +600,21 @@ ul {
   color: #FF6600 !important
 }
 .setup-footer {
-  width: 620px;
   text-align: right;
   padding-top: 15px;
-  border-top: 1px dashed #dddfe6;
+  margin-bottom: 0 !important;
 }
 .setup-footer .el-button+.el-button,
 .setup-footer .el-button+.el-dropdown
  {
   margin-left: 10px;
 }
-.setup-footer .delete-button {
-  float: left;
+
+.setup-page-footer {
+  width: 620px;
+  text-align: right;
+  padding-top: 15px;
+  border-top: 1px dashed #dddfe6;
 }
 
 p.form-item {
@@ -645,7 +649,6 @@ p.form-item {
 .setup-form .el-upload-dragger > .image-preview > img {
   max-width: 100%;
 }
-
 .common-table {
   width: 100%;
 }
@@ -717,9 +720,9 @@ p.form-item {
   float: right;
 }
 .press-esc-to-close-tip {
-  font-size: 14px;
+  font-size: 18px;
   position: absolute;
-  right: 45px;
+  right: 55px;
   top: 21px;
 }
 tr.hl-row td {
@@ -891,14 +894,6 @@ kbd {
 .el-form--inline .el-form-item__content {
   vertical-align: unset !important;
 }
-.el-form--inline .el-form-item__content .el-radio-group {
-  position: relative;
-  top: -1px;
-}
-.el-form--inline .el-form-item__content .el-button-group {
-  position: relative;
-  top: -1px;
-}
 .el-form-item__error {
   word-break: break-all;
 }
@@ -1059,8 +1054,15 @@ kbd {
   overflow-y: auto;
 }
 
+.el-dialog {
+  border-radius: 10px !important;
+}
 .el-dialog__header {
   min-height: 20px !important;
+}
+.el-dialog__close {
+  font-size: 28px !important;
+  font-weight: bold !important;
 }
 .el-dialog__body {
   padding: 5px 20px 20px 20px !important;
