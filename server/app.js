@@ -10,7 +10,6 @@ var childProcess = require('child_process');
 
 /* 3rd-party Modules */
 var express          = require('express');
-var favicon          = require('serve-favicon');
 var expressUseragent = require('express-useragent');
 var bodyParser       = require('body-parser');
 var cookieParser     = require('cookie-parser');
@@ -64,10 +63,6 @@ function startApplication() {
     return res.redirect(CONFIG._WEB_CLIENT_APP_PATH);
   });
 
-  // Favicon
-  var faviconPath = 'statics/favicon.ico';
-  app.use(favicon(path.join(__dirname, faviconPath)));
-
   // Logger
   app.use(logHelper.requestLoggerInitialize);
 
@@ -113,6 +108,9 @@ function startApplication() {
 
   // Initialize
   app.use(require('./utils/responseInitialize'));
+
+  // Favicon
+  app.use('/favicon.ico', require('./utils/favicon'));
 
   // Body paser
   app.use(function(req, res, next) {

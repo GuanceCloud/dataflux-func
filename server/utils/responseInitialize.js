@@ -20,8 +20,11 @@ var routeLoader   = require('./routeLoader');
 var auth          = require('./auth');
 var appInit       = require('../appInit');
 
-/* Configure */
-var STATIC_RENDER_LRU = new LRU();
+var systemSettingMod = require('../models/systemSettingMod');
+
+/* Init */
+var STATIC_RENDER_LRU  = new LRU();
+var SYSTEM_SETTING_LRU = new LRU({ maxAge: 3 * 1000 });
 
 var CLIENT_CONFIG = {
   _WEB_CLIENT_ID_COOKIE      : CONFIG._WEB_CLIENT_ID_COOKIE,
@@ -91,7 +94,7 @@ router.all('*', function addServerInfo(req, res, next) {
  * @return {String} res.locals.clientTerritory
  * @return {String} res.locals.clientTimeZone
  */
-router.all('*', function basicClientInformation(req, res, next) {
+router.all('*', function prepareBasicClientInfo(req, res, next) {
   // traceId
   var upstreamTraceId = req.get(CONFIG._WEB_TRACE_ID_HEADER);
   if (upstreamTraceId) {
@@ -179,9 +182,52 @@ router.all('*', function basicClientInformation(req, res, next) {
 });
 
 /**
- * Warp response functions
+ * Prepare DB / Cache / User access.
+ * @return {Object} res.locals.db
+ * @return {Object} res.locals.cacheDB
+ * @return {Object} res.locals.getQueryOptions
  */
-router.all('*', function warpResponseFunctions(req, res, next) {
+router.all('*', function prepareDBCacheUserAccess(req, res, next) {
+  var reqLogger = res.locals.logger;
+
+  res.locals.db          = require('./extraHelpers/mysqlHelper').createHelper(reqLogger);
+  res.locals.cacheDB     = require('./extraHelpers/redisHelper').createHelper(reqLogger);
+  res.locals.fileStorage = require('./extraHelpers/fileSystemHelper').createHelper(reqLogger);
+
+  if (CONFIG.MODE === 'prod') {
+    res.locals.db.skipLog      = true;
+    res.locals.cacheDB.skipLog = true;
+  }
+
+  if (toolkit.toBoolean(req.get(CONFIG._WEB_DRY_RUN_MODE_HEADER))) {
+    res.locals.db.isDryRun          = true;
+    res.locals.cacheDB.isDryRun     = true;
+    res.locals.fileStorage.isDryRun = true;
+  }
+
+  // Init user handler
+  res.locals.user = auth.createUserHandler();
+
+  return next();
+});
+
+/**
+ * Prepare functional components.
+ * @return {Object} res.locals.getSystemSettings
+ * @return {Object} res.locals.getDateTimeRange
+ * @return {Object} res.locals.getFulfilledDateTimeRange
+ * @return {Object} res.locals.getDateTimeRangeFilter
+ * @return {Object} res.locals.sendJSON
+ * @return {Object} res.locals.redirect
+ * @return {Object} res.locals.render
+ * @return {Object} res.locals.sendHTML
+ * @return {Object} res.locals.sendLocalFile
+ * @return {Object} res.locals.sendFile
+ * @return {Object} res.locals.sendText
+ * @return {Object} res.locals.sendRaw
+ * @return {Object} res.locals.sendData
+ */
+router.all('*', function prepareFunctionalComponents(req, res, next) {
   function _appendReqInfo() {
     // 请求附带信息
     var now = new Date();
@@ -265,6 +311,44 @@ router.all('*', function warpResponseFunctions(req, res, next) {
         ], asyncCallback);
       },
     ]);
+  };
+
+  res.locals.getSystemSettings = function(keys, callback) {
+    keys = toolkit.asArray(keys);
+
+    // 优先从 LRU 中获取
+    var systemSettings = {}
+    var nonLRUIds      = [];
+    keys.forEach(function(key) {
+      var v = SYSTEM_SETTING_LRU.get(key);
+      if (toolkit.notNothing(v)) {
+        systemSettings[key] = v;
+      } else {
+        nonLRUIds.push(key);
+      }
+    });
+
+    if (nonLRUIds.length <= 0) return callback(null, systemSettings);
+
+    // 存在未取得的，从数据库中读取
+    var systemSettingModel = systemSettingMod.createModel(res.locals);
+
+    systemSettingModel.get(nonLRUIds, function(err, dbRes) {
+      if (err) return callback(err);
+
+      for (var key in dbRes) {
+        var v = dbRes[key];
+
+        if (toolkit.endsWith(key, '_IMAGE_SRC') && 'string' === typeof v) {
+          v = new Buffer.from(v.split(',')[1], 'base64');
+        }
+
+        SYSTEM_SETTING_LRU.set(key, v);
+        systemSettings[key] = v;
+      }
+
+      return callback(null, systemSettings);
+    });
   };
 
   res.locals.getQueryOptions = function getQueryOptions() {
@@ -613,14 +697,14 @@ router.all('*', function warpResponseFunctions(req, res, next) {
     return res.send(text);
   };
 
-  res.locals.sendRaw = function(raw, contentType) {
-    res.locals.logger.debug('[RESPONSE] RAW: `{0}`', contentType);
+  res.locals.sendRaw = function(rawData, contentType) {
+    res.locals.logger.debug('[RESPONSE] RAW: `{0}`', contentType || `js:${typeof rawData}`);
 
     // 请求附带信息
     var reqInfo = _appendReqInfo();
 
     if ('function' === typeof appInit.beforeReponse) {
-      appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, raw, 'raw');
+      appInit.beforeReponse(req, res, reqInfo.reqCost, res.locals.responseStatus, rawData, 'raw');
     }
 
     if (contentType) {
@@ -629,8 +713,8 @@ router.all('*', function warpResponseFunctions(req, res, next) {
 
     _recordAbnormalReq();
 
-    if ('number' === typeof raw) raw = '' + raw;
-    return res.send(raw);
+    if ('number' === typeof rawData) rawData = '' + rawData;
+    return res.send(rawData);
   };
 
   res.locals.sendData = function(ret) {
@@ -653,35 +737,5 @@ router.all('*', function warpResponseFunctions(req, res, next) {
 // Dump request
 router.all('*', require('./requestDumper').dumpRequest);
 router.all('*', require('./requestDumper').dumpRequestFrom);
-
-/**
- * Prepare functional components.
- *
- * @return {Object} res.locals.db
- * @return {Object} res.locals.cacheDB
- */
-router.all('*', function functionalComponents(req, res, next) {
-  var reqLogger = res.locals.logger;
-
-  res.locals.db          = require('./extraHelpers/mysqlHelper').createHelper(reqLogger);
-  res.locals.cacheDB     = require('./extraHelpers/redisHelper').createHelper(reqLogger);
-  res.locals.fileStorage = require('./extraHelpers/fileSystemHelper').createHelper(reqLogger);
-
-  if (CONFIG.MODE === 'prod') {
-    res.locals.db.skipLog      = true;
-    res.locals.cacheDB.skipLog = true;
-  }
-
-  if (toolkit.toBoolean(req.get(CONFIG._WEB_DRY_RUN_MODE_HEADER))) {
-    res.locals.db.isDryRun          = true;
-    res.locals.cacheDB.isDryRun     = true;
-    res.locals.fileStorage.isDryRun = true;
-  }
-
-  // Init user handler
-  res.locals.user = auth.createUserHandler();
-
-  return next();
-});
 
 module.exports = router;
