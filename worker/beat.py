@@ -42,7 +42,7 @@ CRONTAB_MAP = {
     },
 
     # 缓存数据刷入数据库
-    'sync-cache': {
+    'flush-data-buffer': {
         'task'   : FlushDataBuffer,
         'crontab': CONFIG['_CRONTAB_FLUSH_DATA_BUFFER'],
     },
@@ -62,8 +62,8 @@ CRONTAB_MAP = {
     # 重新加载数据 MD5 缓存
     'reload-data-md5-cache': {
         'task'   : ReloadDataMD5Cache,
-        'kwargs' : { 'lockTime': 15, 'all': True },
         'crontab': CONFIG['_CRONTAB_RELOAD_DATA_MD5_CACHE'],
+        'kwargs' : { 'lockTime': 15, 'all': True },
     },
 }
 

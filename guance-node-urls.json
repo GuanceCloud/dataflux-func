@@ -1,0 +1,106 @@
+{
+  "urls": {
+    "default": {
+      "name"      : "中国区1（杭州）",
+      "console"   : "https://console.guance.com",
+      "console_api": "https://console-api.guance.com",
+      "open_api"   : "https://openapi.guance.com",
+      "static_res" : "https://static-res.guance.com",
+      "func" : "https://func2.guance.com",
+      "websocket" : "https://websocket.guance.com",
+      "openway"   : "https://openway.guance.com",
+      "auth": "https://auth.guance.com/",
+      "auth_api": "https://auth-api.guance.com/"
+    },
+    "aws": {
+      "name"     : "中国区2（宁夏）",
+      "console"   : "https://aws-console.guance.com",
+      "console_api": "https://aws-console-api.guance.com",
+      "open_api"   : "https://aws-openapi.guance.com",
+      "static_res" : "https://aws-static-res.guance.com",
+      "func" : "https://aws-func2.guance.com",
+      "websocket": "https://aws-websocket.guance.com",
+      "openway"  : "https://aws-openway.guance.com",
+      "auth": "https://aws-auth.guance.com/",
+      "auth_api": "https://aws-auth-api.guance.com/"
+    },
+    "cn3": {
+      "name"     : "中国区3（张家口）",
+      "console"   : "https://cn3-console.guance.com",
+      "console_api": "https://cn3-console-api.guance.com",
+      "open_api"   : "https://cn3-openapi.guance.com",
+      "static_res" : "https://cn3-static-res.guance.com",
+      "func" : "https://cn3-func2.guance.com",
+      "openapi"  : "https://cn3-openapi.guance.com",
+      "websocket": "https://cn3-websocket.guance.com",
+      "openway"  : "https://cn3-openway.guance.com",
+      "auth": "https://cn3-auth.guance.com/",
+      "auth_api": "https://cn3-auth-api.guance.com/"
+    },
+    "cn4": {
+      "name"     : "中国区4（广州）",
+      "console"   : "https://cn4-console.guance.com",
+      "console_api": "https://cn4-console-api.guance.com",
+      "open_api"   : "https://cn4-openapi.guance.com",
+      "static_res" : "https://cn4-static-res.guance.com",
+      "func" : "https://cn4-func2.guance.com",
+      "openapi"  : "https://cn4-openapi.guance.com",
+      "websocket": "https://cn4-websocket.guance.com",
+      "openway"  : "https://cn4-openway.guance.com",
+      "auth": "https://cn4-auth.guance.com/",
+      "auth_api": "https://cn4-auth-api.guance.com/"
+    },
+    "cn5": {
+      "name"     : "中国区5（世纪互联）",
+      "console"   : "https://cn5-console.guance.com",
+      "console_api": "https://cn5-console-api.guance.com",
+      "open_api"   : "https://cn5-openapi.guance.com",
+      "static_res" : "https://cn5-static-res.guance.com",
+      "func" : "https://cn5-func2.guance.com",
+      "openapi"  : "https://cn5-openapi.guance.com",
+      "websocket": "https://cn5-websocket.guance.com",
+      "openway"  : "https://cn5-openway.guance.com",
+      "auth": "https://cn5-auth.guance.com/",
+      "auth_api": "https://cn5-auth-api.guance.com/"
+    },
+    "us1": {
+      "name"     : "海外区1（俄勒冈）",
+      "console"   : "https://us1-console.guance.com",
+      "console_api": "https://us1-console-api.guance.com",
+      "open_api"   : "https://us1-openapi.guance.com",
+      "static_res" : "https://us1-static-res.guance.com",
+      "func" : "https://us1-func2.guance.com",
+      "openapi"  : "https://us1-openapi.guance.com",
+      "websocket": "https://us1-websocket.guance.com",
+      "openway"  : "https://us1-openway.guance.com",
+      "auth": "https://us1-auth.guance.com/",
+      "auth_api": "https://us1-auth-api.guance.com/"
+    },
+    "eu1": {
+      "name"     : "eu1（Frankfurt）",
+      "console"   : "https://eu1-console.guance.one",
+      "console_api": "https://eu1-console-api.guance.one",
+      "open_api"   : "https://eu1-openapi.guance.one",
+      "static_res" : "https://eu1-static-res.guance.one",
+      "func" : "https://eu1-func2.guance.one",
+      "openapi"  : "https://eu1-openapi.guance.one",
+      "websocket": "https://eu1-websocket.guance.one",
+      "openway"  : "https://eu1-openway.guance.one",
+      "auth": "https://eu1-auth.guance.com/",
+      "auth_api": "https://eu1-auth-api.guance.com/"
+    },
+    "ap1": {
+      "name"     : "ap1（Singapore）",
+      "console"   : "https://ap1-console.guance.one",
+      "console_api": "https://ap1-console-api.guance.one",
+      "open_api"   : "https://ap1-openapi.guance.one",
+      "static_res" : "https://ap1-static-res.guance.one",
+      "func" : "https://ap1-func2.guance.one",
+      "openapi"  : "https://ap1-openapi.guance.one",
+      "websocket": "https://ap1-websocket.guance.one",
+      "openway"  : "https://ap1-openway.guance.one",
+      "auth": "https://ap1-auth.guance.com/",
+      "auth_api": "https://ap1-auth-api.guance.com/"
+    }
+  }
+}

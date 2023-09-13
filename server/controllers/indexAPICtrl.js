@@ -428,18 +428,11 @@ exports.systemInfo = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 获取观测云节点列表
-    function(asyncCallback) {
-      common.getGuanceNodes(function(err, guanceNodes) {
-        if (err) return asyncCallback(err);
-
-        systemInfo.GUANCE_NODES = guanceNodes;
-
-        return asyncCallback();
-      });
-    },
   ], function(err) {
     if (err) return next(err);
+
+    // 获取观测云节点列表
+    systemInfo.GUANCE_NODES = common.getGuanceNodes();
 
     var ret = toolkit.initRet(systemInfo);
     return res.locals.sendJSON(ret);

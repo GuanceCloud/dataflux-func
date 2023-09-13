@@ -125,23 +125,16 @@ function _doSetup(userConfig, callback) {
       }
       if (setupErrorWrap.has('guance')) return asyncCallback();
 
-      var guanceNode = null;
+      var guanceNode = common.getGuanceNodes().filter(function(node) {
+        return node.key === userConfig.GUANCE_NODE;
+      })[0];
+
+      if (!guanceNode) {
+        setupErrorWrap.set('guance', 'No such Guance Node');
+        return asyncCallback();
+      }
+
       async.series([
-        // 检查观测云节点存在性
-        function(innerCallback) {
-          common.getGuanceNodes(function(err, guanceNodes) {
-            guanceNode = guanceNodes.filter(function(node) {
-              return node.key === userConfig.GUANCE_NODE;
-            })[0];
-
-            if (!guanceNode) {
-              setupErrorWrap.set('guance', 'No such Guance Node');
-              return innerCallback(true);
-            }
-
-            return innerCallback();
-          });
-        },
         // 检查观测云 API Key 有效性
         function(innerCallback) {
           common.checkGuanceAPIKey(guanceNode.key, userConfig.GUANCE_API_KEY_ID, userConfig.GUANCE_API_KEY, function(err) {
@@ -503,29 +496,14 @@ function runSetupServer() {
     defaultConfig['ADMIN_PASSWORD']        = ADMIN_DEFUALT_PASSWORD;
     defaultConfig['ADMIN_PASSWORD_REPEAT'] = ADMIN_DEFUALT_PASSWORD;
 
-    var GUANCE_NODES = [];
-    async.series([
-      // 查询所有观测云节点
-      function(asyncCallback) {
-        common.getGuanceNodes(function(err, guanceNodes) {
-          if (err) {
-            console.log('Get Guance Nodes failed', err);
-            return asyncCallback(err);
-          }
+    var GUANCE_NODES = common.getGuanceNodes();
 
-          GUANCE_NODES = guanceNodes;
-
-          return asyncCallback();
-        });
-      },
-    ], function(err) {
-      var pageData = {
-        CONFIG      : defaultConfig,
-        IMAGE_INFO  : IMAGE_INFO,
-        GUANCE_NODES: GUANCE_NODES,
-      }
-      res.render('setup', pageData);
-    });
+    var pageData = {
+      CONFIG      : defaultConfig,
+      IMAGE_INFO  : IMAGE_INFO,
+      GUANCE_NODES: GUANCE_NODES,
+    }
+    res.render('setup', pageData);
   });
 
   // Setup handler

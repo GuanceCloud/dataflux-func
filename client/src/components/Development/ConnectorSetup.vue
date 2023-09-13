@@ -364,27 +364,27 @@ This is a built-in Connector, please contact the admin to change the config: 当
                 </el-form-item>
               </template>
               <!-- 可变区域结束 -->
-            </template>
 
-            <el-form-item class="setup-footer">
-              <el-button class="delete-button" v-if="pageMode === 'setup' && !data.isBuiltin" @click="deleteData">{{ $t('Delete') }}</el-button>
-              <el-button v-if="pageMode === 'setup'" @click="testConnector"
-                :disabled="testConnectorResult === 'running'">
-                <i class="fa fa-fw fa-check text-good" v-if="testConnectorResult === 'ok'"></i>
-                <i class="fa fa-fw fa-times text-bad" v-else-if="testConnectorResult === 'ng'"></i>
-                <i class="fa fa-fw fa-circle-o-notch fa-spin" v-else-if="testConnectorResult === 'running'"></i>
-                <i class="fa fa-fw fa-question-circle" v-else></i>
-                {{ $t('Test connection') }}
-              </el-button>
-              <el-dropdown split-button v-if="!data.isBuiltin" type="primary" @click="submitData" @command="submitData"
-                :disabled="isSaving">
-                <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="isSaving"></i>
-                {{ $t('Save') }}
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item :command="{ skipTest: true }">{{ $t('Save without connection test') }}</el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
-            </el-form-item>
+              <el-form-item class="setup-footer">
+                <el-button class="delete-button" v-if="pageMode === 'setup' && !data.isBuiltin" @click="deleteData">{{ $t('Delete') }}</el-button>
+                <el-button v-if="pageMode === 'setup'" @click="testConnector"
+                  :disabled="testConnectorResult === 'running'">
+                  <i class="fa fa-fw fa-check text-good" v-if="testConnectorResult === 'ok'"></i>
+                  <i class="fa fa-fw fa-times text-bad" v-else-if="testConnectorResult === 'ng'"></i>
+                  <i class="fa fa-fw fa-circle-o-notch fa-spin" v-else-if="testConnectorResult === 'running'"></i>
+                  <i class="fa fa-fw fa-question-circle" v-else></i>
+                  {{ $t('Test connection') }}
+                </el-button>
+                <el-dropdown split-button v-if="!data.isBuiltin" type="primary" @click="submitData" @command="submitData"
+                  :disabled="isSaving">
+                  <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="isSaving"></i>
+                  {{ $t('Save') }}
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item :command="{ skipTest: true }">{{ $t('Save without connection test') }}</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </el-form-item>
+            </template>
           </el-form>
         </div>
       </el-main>

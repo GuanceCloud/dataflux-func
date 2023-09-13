@@ -111,7 +111,7 @@ def after_app_created():
 
         REDIS.put_task({
             'name'  : ReloadDataMD5Cache.name,
-            'kwargs': { 'lockTime': 15, 'all': True }
+            'kwargs': { 'lockTime': 15, 'all': True },
         })
 
         REDIS.put_task({
