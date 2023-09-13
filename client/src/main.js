@@ -25,17 +25,22 @@ Vue.component('split-pane', splitPane);
 // import '@/theme/element-#FF6600/index.css'
 import '@/theme/element-#FF6600-v2/index.css'
 import ElementUI from 'element-ui'
-ElementUI.Footer.props.height.default             = '80px';
-ElementUI.Tooltip.props.transition.default        = false;
-ElementUI.Popover.props.transition.default        = false;
-ElementUI.Popover.props.openDelay.default         = 50;
-ElementUI.Popover.props.closeDelay.default        = 100;
-ElementUI.Link.props.underline.default            = true;
-ElementUI.Link.props.type.default                 = 'primary';
-ElementUI.Dialog.props.modalAppendToBody.default  = true;
-ElementUI.Dialog.props.appendToBody.default       = true;
-ElementUI.Dialog.props.top.default                = '10vh';
-ElementUI.Dialog.props.destroyOnClose.default     = true;
+ElementUI.Footer.props.height.default = '80px';
+
+ElementUI.Tooltip.props.transition.default = false;
+
+ElementUI.Popover.props.transition.default = false;
+ElementUI.Popover.props.openDelay.default  = 50;
+ElementUI.Popover.props.closeDelay.default = 100;
+
+ElementUI.Link.props.underline.default = true;
+ElementUI.Link.props.type.default      = 'primary';
+
+ElementUI.Dialog.props.modalAppendToBody.default = true;
+ElementUI.Dialog.props.appendToBody.default      = true;
+ElementUI.Dialog.props.top.default               = '10vh';
+ElementUI.Dialog.props.destroyOnClose.default    = true;
+
 ElementUI.Form.props.validateOnRuleChange.default = false;
 Vue.use(ElementUI);
 window.ElementUI = ElementUI

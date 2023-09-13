@@ -9,53 +9,42 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
 </i18n>
 
 <template>
-  <transition name="fade">
-    <el-container direction="vertical" v-show="$store.state.isLoaded">
-      <!-- 标题区 -->
-      <el-header height="60px">
-        <div class="common-page-header">
-          <h1>{{ $t('Script Sets Import') }}</h1>
-        </div>
-      </el-header>
+  <el-dialog
+    id="ScriptSetSetup"
+    :visible.sync="show"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    width="750px">
 
-      <!-- 编辑区 -->
+    <template slot="title">
+      {{ $t('Script Set Import') }}
+    </template>
+
+    <el-container direction="vertical">
       <el-main>
-        <el-row :gutter="20">
-          <el-col :span="15">
-            <div class="setup-form">
-              <el-form ref="form" label-width="135px">
-                <el-form-item :label="$t('Select a file')" prop="upload">
-                  <el-upload drag ref="upload" :class="uploadAreaBorderClass"
-                    :limit="2"
-                    :multiple="false"
-                    :auto-upload="false"
-                    :show-file-list="false"
-                    accept=".zip"
-                    :http-request="handleUpload"
-                    :on-change="onUploadFileChange">
-                    <i class="fa" :class="uploadAreaIconClass"></i>
-                    <div class="el-upload__text">{{ $t(uploadAreaIconText) }}</div>
-                  </el-upload>
-                  <InfoBlock type="warning" :title="$t('Imported contents do not include sensitive data (such as password), please re-entered them after import')" />
-                </el-form-item>
-              </el-form>
-            </div>
-          </el-col>
-          <el-col :span="9" class="hidden-md-and-down">
-          </el-col>
-        </el-row>
-      </el-main>
+        <div class="setup-form">
+          <el-form ref="form" label-width="135px">
+            <el-form-item :label="$t('Select a file')" prop="upload">
+              <el-upload drag ref="upload" :class="uploadAreaBorderClass"
+                :limit="2"
+                :multiple="false"
+                :auto-upload="false"
+                :show-file-list="false"
+                accept=".zip"
+                :http-request="handleUpload"
+                :on-change="onUploadFileChange">
+                <i class="fa" :class="uploadAreaIconClass"></i>
+                <div class="el-upload__text">{{ $t(uploadAreaIconText) }}</div>
+              </el-upload>
+              <InfoBlock type="warning" :title="$t('Imported contents do not include sensitive data (such as password), please re-entered them after import')" />
+            </el-form-item>
 
-      <!-- 底部栏 -->
-      <el-footer>
-        <div class="setup-footer">
-          <el-button @click="goToHistory">
-            <i class="fa fa-fw fa-history"></i>
-            {{ $t('Script Set Import History') }}
-          </el-button>
-          <el-button type="primary" :disabled="disableUpload" @click="submitData">{{ $t('Import') }}</el-button>
+            <el-form-item class="setup-footer">
+              <el-button type="primary" v-prevent-re-click :disabled="disableUpload" @click="submitData">{{ $t('Import') }}</el-button>
+            </el-form-item>
+          </el-form>
         </div>
-      </el-footer>
+      </el-main>
 
       <el-dialog
         :title="$t('Importing')"
@@ -110,7 +99,7 @@ Imported Script Set requires 3rd party packages, do you want to open PIP tool no
         </span>
       </el-dialog>
     </el-container>
-  </transition>
+  </el-dialog>
 </template>
 
 <script>
@@ -119,6 +108,11 @@ export default {
   components: {
   },
   watch: {
+    show(val) {
+      if (!val) {
+        this.$root.$emit('reload.scriptSetImportHistoryList');
+      }
+    },
     showConfirm(val) {
       if (val === false) {
         this.initFilePreview();
@@ -126,11 +120,12 @@ export default {
     },
   },
   methods: {
+    async loadData() {
+      this.show = true;
+    },
     async submitData() {
-      switch(this.T.setupPageMode()) {
-        case 'import':
-          return await this.$refs.upload.submit();
-      }
+      // 只有导入操作
+      return await this.$refs.upload.submit();
     },
     async handleUpload(req) {
       let bodyData = new FormData();
@@ -160,16 +155,12 @@ export default {
         return this.alertOnError(apiRes);
       }
 
-      if (this.T.isNothing(apiRes.data.requirements)) {
-        this.goToHistory();
+      this.showConfirm = false;
+      this.show        = false;
 
-      } else {
-        this.showConfirm = false;
-
+      if (this.T.notNothing(apiRes.data.requirements)) {
         if (await this.T.confirm(this.$t('Imported Script Set requires 3rd party packages, do you want to open PIP tool now?'))) {
           return this.common.goToPIPTools(apiRes.data.requirements);
-        } else {
-          this.goToHistory();
         }
       }
     },
@@ -200,11 +191,6 @@ export default {
         this.showFilePreview(fileList[0].name);
       }
     },
-    goToHistory() {
-      this.$router.push({
-        name: 'script-set-import-history-list',
-      });
-    },
   },
   computed: {
     DIFF_TYPE_MAP() {
@@ -224,6 +210,8 @@ export default {
   },
   data() {
     return {
+      show: false,
+
       scriptSetMap: {},
 
       uploadAreaBorderClass: [],
@@ -236,9 +224,6 @@ export default {
 
       importInfo: {},
     }
-  },
-  created() {
-    this.$store.commit('updateLoadStatus', true);
   },
 }
 </script>

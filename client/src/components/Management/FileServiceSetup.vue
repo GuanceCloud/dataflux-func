@@ -27,68 +27,63 @@ Are you sure you want to delete the File Service?: 是否确认删除此文件�
 </i18n>
 
 <template>
-  <transition name="fade">
-    <el-container direction="vertical" v-show="$store.state.isLoaded">
-      <!-- 标题区 -->
-      <el-header height="60px">
-        <h1>{{ pageTitle }} <code class="text-main">{{ data.root }}</code></h1>
-      </el-header>
+  <el-dialog
+    id="ScriptSetSetup"
+    :visible.sync="show"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    width="750px">
 
-      <!-- 编辑区 -->
+    <template slot="title">
+      {{ pageTitle }} <code class="text-main">{{ data.root }}</code>
+    </template>
+
+    <el-container direction="vertical">
       <el-main>
-        <el-row :gutter="20">
-          <el-col :span="15">
-            <div class="setup-form">
-              <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
-                <el-form-item :label="$t('Customize ID')" prop="useCustomId" v-if="T.setupPageMode() === 'add'">
-                  <el-switch v-model="useCustomId"></el-switch>
-                  <span class="text-main float-right">
-                    {{ $t('URL Preview') }}{{ $t(':') }}
-                    <code>{{ `/api/v1/fs/${useCustomId ? form.id : $t('randomIDString')}` }}</code>
-                  </span>
-                </el-form-item>
+        <div class="setup-form">
+          <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
+            <el-form-item :label="$t('Customize ID')" prop="useCustomId" v-if="pageMode === 'add'">
+              <el-switch v-model="useCustomId"></el-switch>
+              <span class="text-main float-right">
+                {{ $t('URL Preview') }}{{ $t(':') }}
+                <code>{{ `/api/v1/fs/${useCustomId ? form.id : $t('randomIDString')}` }}</code>
+              </span>
+            </el-form-item>
 
-                <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="T.setupPageMode() === 'add'">
-                  <el-input
-                    maxlength="60"
-                    v-model="form.id">
-                  </el-input>
-                  <InfoBlock :title="$t('ID is used in the access URL')" />
-                </el-form-item>
+            <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="pageMode === 'add'">
+              <el-input
+                maxlength="60"
+                v-model="form.id">
+              </el-input>
+              <InfoBlock :title="$t('ID is used in the access URL')" />
+            </el-form-item>
 
-                <el-form-item :label="$t('Root')" prop="root">
-                  <el-cascader ref="rootCascader"
-                    placeholder="--"
-                    separator=""
-                    v-model="form.root"
-                    :props="rootCascaderProps"></el-cascader>
-                </el-form-item>
+            <el-form-item :label="$t('Root')" prop="root">
+              <el-cascader ref="rootCascader"
+                placeholder="--"
+                separator=""
+                v-model="form.root"
+                :props="rootCascaderProps"></el-cascader>
+            </el-form-item>
 
-                <el-form-item :label="$t('Note')">
-                  <el-input :placeholder="$t('Optional')"
-                    type="textarea"
-                    resize="none"
-                    :autosize="{minRows: 2}"
-                    maxlength="5000"
-                    v-model="form.note"></el-input>
-                </el-form-item>
-              </el-form>
-            </div>
-          </el-col>
-          <el-col :span="9" class="hidden-md-and-down">
-          </el-col>
-        </el-row>
-      </el-main>
+            <el-form-item :label="$t('Note')">
+              <el-input :placeholder="$t('Optional')"
+                type="textarea"
+                resize="none"
+                :autosize="{minRows: 2}"
+                maxlength="5000"
+                v-model="form.note"></el-input>
+            </el-form-item>
 
-      <!-- 底部栏 -->
-      <el-footer>
-        <div class="setup-footer">
-          <el-button class="delete-button" v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
-          <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+            <el-form-item class="setup-footer">
+              <el-button class="delete-button" v-if="pageMode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+              <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+            </el-form-item>
+          </el-form>
         </div>
-      </el-footer>
+      </el-main>
     </el-container>
-  </transition>
+  </el-dialog>
 </template>
 
 <script>
@@ -97,21 +92,10 @@ export default {
   components: {
   },
   watch: {
-    $route: {
-      immediate: true,
-      async handler(to, from) {
-        await this.loadData();
-
-        switch(this.T.setupPageMode()) {
-          case 'add':
-            this.T.jsonClear(this.form);
-            this.data = {};
-            break;
-
-          case 'setup':
-            break;
-        }
-      },
+    show(val) {
+      if (!val) {
+        this.$root.$emit('reload.fileServiceList');
+      }
     },
     useCustomId(val) {
       if (val) {
@@ -122,9 +106,17 @@ export default {
     },
   },
   methods: {
-    async loadData() {
-      if (this.T.setupPageMode() === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/file-services/do/list', this.$route.params.id);
+    async loadData(id) {
+      if (!id) {
+        this.pageMode = 'add';
+        this.T.jsonClear(this.form);
+        this.data = {};
+
+      } else {
+        this.pageMode = 'setup';
+        this.data.id = id;
+
+        let apiRes = await this.T.callAPI_getOne('/api/v1/file-services/do/list', this.data.id);
         if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -134,7 +126,7 @@ export default {
         this.form = nextForm;
       }
 
-      this.$store.commit('updateLoadStatus', true);
+      this.show = true;
 
       setImmediate(() => {
         this.$refs.rootCascader.presentText = this.data.root;
@@ -147,7 +139,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.T.setupPageMode()) {
+      switch(this.pageMode) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -161,45 +153,33 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$store.commit('updateTableList_scrollY');
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
-
-      this.$router.push({
-        name : 'file-service-list',
-        query: this.T.getPrevQuery(),
-      });
+      this.show = false;
     },
     async modifyData() {
       let _formData = this.T.jsonCopy(this.form);
       delete _formData.id;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/file-services/:id/do/modify', {
-        params: { id: this.$route.params.id },
+        params: { id: this.data.id },
         body  : { data: _formData },
         alert : { okMessage: this.$t('File Service saved') },
       });
       if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
-
-      this.$router.push({
-        name : 'file-service-list',
-        query: this.T.getPrevQuery(),
-      });
+      this.show = false;
     },
     async deleteData() {
       if (!await this.T.confirm(this.$t('Are you sure you want to delete the File Service?'))) return;
 
       let apiRes = await this.T.callAPI('/api/v1/file-services/:id/do/delete', {
-        params: { id: this.$route.params.id },
+        params: { id: this.data.id },
         alert : { okMessage: this.$t('File Service deleted') },
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$router.push({
-        name : 'file-service-list',
-        query: this.T.getPrevQuery(),
-      });
+      this.show = false;
     },
   },
   computed: {
@@ -211,13 +191,16 @@ export default {
         setup: this.$t('Setup File Service'),
         add  : this.$t('Add File Service'),
       };
-      return _map[this.T.setupPageMode()];
+      return _map[this.pageMode];
     },
   },
   props: {
   },
   data() {
     return {
+      show    : false,
+      pageMode: null,
+
       data: {},
 
       useCustomId: false,
@@ -246,7 +229,7 @@ export default {
         ],
         root: [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please select root'),
             required: true,
           },

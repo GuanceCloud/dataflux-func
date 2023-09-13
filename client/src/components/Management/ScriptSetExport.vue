@@ -10,110 +10,99 @@ Data exported: 数据已导出
 </i18n>
 
 <template>
-  <transition name="fade">
-    <el-container direction="vertical" v-show="$store.state.isLoaded">
-      <!-- 标题区 -->
-      <el-header height="60px">
-        <div class="common-page-header">
-          <h1>{{ $t('Script Set Export') }}</h1>
-        </div>
-      </el-header>
+  <el-dialog
+    id="ScriptSetSetup"
+    :visible.sync="show"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    width="750px">
 
-      <!-- 编辑区 -->
+    <template slot="title">
+      {{ $t('Script Set Export') }}
+    </template>
+
+    <el-container direction="vertical">
       <el-main>
-        <el-row :gutter="20">
-          <el-col :span="15">
-            <div class="export-form">
-              <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
-                <el-form-item :label="$t('Script Set')" prop="scriptSetIds">
-                  <el-select
-                    v-model="form.scriptSetIds"
-                    multiple
-                    filterable
-                    :filter-method="T.debounce(doScriptSetFilter)"
-                    :placeholder="$t('Please select')">
-                    <el-option
-                      v-for="item in selectScriptSetOptions"
-                      :key="item.id"
-                      :label="item.title || item.id"
-                      :value="item.id">
-                      <span class="select-item-name">{{ item.title || item.id }}</span>
-                      <code class="select-item-id code-font">ID: {{ item.id }}</code>
-                    </el-option>
-                  </el-select>
-                </el-form-item>
+        <div class="export-form">
+          <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
+            <el-form-item :label="$t('Script Set')" prop="scriptSetIds">
+              <el-select
+                v-model="form.scriptSetIds"
+                multiple
+                filterable
+                :filter-method="T.debounce(doScriptSetFilter)"
+                :placeholder="$t('Please select')">
+                <el-option
+                  v-for="item in selectScriptSetOptions"
+                  :key="item.id"
+                  :label="item.title || item.id"
+                  :value="item.id">
+                  <span class="select-item-name">{{ item.title || item.id }}</span>
+                  <code class="select-item-id code-font">ID: {{ item.id }}</code>
+                </el-option>
+              </el-select>
+            </el-form-item>
 
-                <el-form-item :label="$t('Related Contents')">
-                  <el-checkbox size="medium" border v-model="form.includeAuthLinks"      :label="$t('Auth Link')"></el-checkbox>
-                  <el-checkbox size="medium" border v-model="form.includeCrontabConfigs" :label="$t('Crontab Config')"></el-checkbox>
-                  <el-checkbox size="medium" border v-model="form.includeBatches"        :label="$t('Batch')"></el-checkbox>
-                  <InfoBlock :title="$t('Exporting with related contents')" />
-                </el-form-item>
+            <el-form-item :label="$t('Related Contents')">
+              <el-checkbox size="medium" border v-model="form.includeAuthLinks"      :label="$t('Auth Link')"></el-checkbox>
+              <el-checkbox size="medium" border v-model="form.includeCrontabConfigs" :label="$t('Crontab Config')"></el-checkbox>
+              <el-checkbox size="medium" border v-model="form.includeBatches"        :label="$t('Batch')"></el-checkbox>
+              <InfoBlock :title="$t('Exporting with related contents')" />
+            </el-form-item>
 
-                <el-form-item :label="$t('Connector')" prop="connectorIds">
-                  <el-select
-                    v-model="form.connectorIds"
-                    multiple
-                    filterable
-                    :filter-method="T.debounce(doConnectorFilter)"
-                    :placeholder="$t('Please select')">
-                    <el-option
-                      v-for="item in selectConnectorOptions"
-                      :key="item.id"
-                      :label="item.title || item.id"
-                      :value="item.id">
-                      <span class="select-item-name">{{ item.title || item.id }}</span>
-                      <code class="select-item-id code-font">ID: {{ item.id }}</code>
-                    </el-option>
-                  </el-select>
-                  <InfoBlock v-if="T.notNothing(form.connectorIds)" type="warning" :title="$t('Exported Connectors will not include sensitive data (such as password), please re-entered them after import')" />
-                </el-form-item>
+            <el-form-item :label="$t('Connector')" prop="connectorIds">
+              <el-select
+                v-model="form.connectorIds"
+                multiple
+                filterable
+                :filter-method="T.debounce(doConnectorFilter)"
+                :placeholder="$t('Please select')">
+                <el-option
+                  v-for="item in selectConnectorOptions"
+                  :key="item.id"
+                  :label="item.title || item.id"
+                  :value="item.id">
+                  <span class="select-item-name">{{ item.title || item.id }}</span>
+                  <code class="select-item-id code-font">ID: {{ item.id }}</code>
+                </el-option>
+              </el-select>
+              <InfoBlock v-if="T.notNothing(form.connectorIds)" type="warning" :title="$t('Exported Connectors will not include sensitive data (such as password), please re-entered them after import')" />
+            </el-form-item>
 
-                <el-form-item :label="$t('ENV')" prop="envVariableIds">
-                  <el-select
-                    v-model="form.envVariableIds"
-                    multiple
-                    filterable
-                    :filter-method="T.debounce(doEnvVariableFilter)"
-                    :placeholder="$t('Please select')">
-                    <el-option
-                      v-for="item in selectEnvVariableOptions"
-                      :key="item.id"
-                      :label="item.title || item.id"
-                      :value="item.id">
-                      <span class="select-item-name">{{ item.title || item.id }}</span>
-                      <code class="select-item-id code-font">ID: {{ item.id }}</code>
-                    </el-option>
-                  </el-select>
-                </el-form-item>
+            <el-form-item :label="$t('ENV')" prop="envVariableIds">
+              <el-select
+                v-model="form.envVariableIds"
+                multiple
+                filterable
+                :filter-method="T.debounce(doEnvVariableFilter)"
+                :placeholder="$t('Please select')">
+                <el-option
+                  v-for="item in selectEnvVariableOptions"
+                  :key="item.id"
+                  :label="item.title || item.id"
+                  :value="item.id">
+                  <span class="select-item-name">{{ item.title || item.id }}</span>
+                  <code class="select-item-id code-font">ID: {{ item.id }}</code>
+                </el-option>
+              </el-select>
+            </el-form-item>
 
-                <el-form-item :label="$t('Note')" prop="note">
-                  <el-input
-                    type="textarea"
-                    resize="none"
-                    :autosize="{minRows: 2}"
-                    maxlength="5000"
-                    v-model="form.note"></el-input>
-                  <InfoBlock :title="$t('Meaningful notes can provide a reliable reference for the future')" />
-                </el-form-item>
-              </el-form>
-            </div>
-          </el-col>
-          <el-col :span="9" class="hidden-md-and-down">
-          </el-col>
-        </el-row>
-      </el-main>
+            <el-form-item :label="$t('Note')" prop="note">
+              <el-input
+                type="textarea"
+                resize="none"
+                :autosize="{minRows: 2}"
+                maxlength="5000"
+                v-model="form.note"></el-input>
+              <InfoBlock :title="$t('Meaningful notes can provide a reliable reference for the future')" />
+            </el-form-item>
 
-      <!-- 底部栏 -->
-      <el-footer>
-        <div class="setup-footer">
-          <el-button @click="goToHistory">
-            <i class="fa fa-fw fa-history"></i>
-            {{ $t('Script Set Export History') }}
-          </el-button>
-          <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Export') }}</el-button>
+            <el-form-item class="setup-footer">
+              <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Export') }}</el-button>
+            </el-form-item>
+          </el-form>
         </div>
-      </el-footer>
+      </el-main>
 
       <el-dialog
         :title="$t('Data exported')"
@@ -128,13 +117,13 @@ Data exported: 数据已导出
           </p>
         </div>
         <span slot="footer" class="dialog-footer">
-          <el-button type="primary" @click="goToHistory">
+          <el-button type="primary" @click="showDownloadFilename = false">
             {{ $t('Very good') }}
           </el-button>
         </span>
       </el-dialog>
     </el-container>
-  </transition>
+  </el-dialog>
 </template>
 
 <script>
@@ -145,16 +134,10 @@ export default {
   components: {
   },
   watch: {
-    $route: {
-      immediate: true,
-      async handler(to, from) {
-        await this.loadData();
-
-        switch(this.T.setupPageMode()) {
-          case 'export':
-            break;
-        }
-      },
+    show(val) {
+      if (!val) {
+        this.$root.$emit('reload.scriptSetExportHistoryList');
+      }
     },
   },
   methods: {
@@ -206,7 +189,7 @@ export default {
       this.envVariables             = envVariables;
       this.selectEnvVariableOptions = envVariables;
 
-      this.$store.commit('updateLoadStatus', true);
+      this.show = true;
     },
     async submitData() {
       try {
@@ -215,10 +198,8 @@ export default {
         return console.error(err);
       }
 
-      switch(this.T.setupPageMode()) {
-        case 'export':
-          return await this.exportData();
-      }
+      // 只有导出操作
+      return await this.exportData();
     },
     async exportData() {
       let opt = {
@@ -242,11 +223,8 @@ export default {
 
       this.downloadFilename     = fileName;
       this.showDownloadFilename = true;
-    },
-    goToHistory() {
-      this.$router.push({
-        name: 'script-set-export-history-list',
-      });
+
+      this.show = false;
     },
 
     doScriptSetFilter(q) {
@@ -278,6 +256,8 @@ export default {
   },
   data() {
     return {
+      show: false,
+
       showDownloadFilename: false,
       downloadFilename    : null,
 
@@ -301,7 +281,7 @@ export default {
       formRules: {
         scriptSetIds: [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please select at least one Script Set'),
             required: true,
             type    : 'array',
@@ -310,7 +290,7 @@ export default {
         ],
         note: [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input note'),
             required: true,
             min     : 1,

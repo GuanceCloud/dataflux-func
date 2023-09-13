@@ -86,14 +86,21 @@ Expose folders in the Resource as File Services to allow external systems to acc
         </el-table>
       </el-main>
 
+      <!-- 翻页区 -->
+      <Pager :pageInfo="pageInfo" />
+      <FileServiceSetup ref="setup" />
+
     </el-container>
   </transition>
 </template>
 
 <script>
+import FileServiceSetup from '@/components/Management/FileServiceSetup'
+
 export default {
   name: 'FileServiceList',
   components: {
+    FileServiceSetup,
   },
   watch: {
     $route: {
@@ -127,6 +134,7 @@ export default {
       });
 
       this.data = apiRes.data;
+      this.pageInfo = apiRes.pageInfo;
 
       this.$store.commit('updateLoadStatus', true);
     },
@@ -175,23 +183,14 @@ export default {
     openSetup(d, target) {
       let nextRouteQuery = this.T.packRouteQuery();
 
-      this.$store.commit('updateTableList_scrollY');
       switch(target) {
         case 'add':
-          this.$router.push({
-            name : 'file-service-add',
-            query: nextRouteQuery,
-          })
+          this.$refs.setup.loadData();
           break;
 
         case 'setup':
           this.$store.commit('updateHighlightedTableDataId', d.id);
-
-          this.$router.push({
-            name  : 'file-service-setup',
-            params: { id: d.id },
-            query : nextRouteQuery,
-          })
+          this.$refs.setup.loadData(d.id);
           break;
       }
     },
@@ -201,15 +200,23 @@ export default {
   props: {
   },
   data() {
+    let _pageInfo   = this.T.createPageInfo();
     let _dataFilter = this.T.createListQuery();
 
     return {
-      data: [],
+      data    : [],
+      pageInfo: _pageInfo,
 
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,
       },
     }
+  },
+  created() {
+    this.$root.$on('reload.fileServiceList', () => this.loadData());
+  },
+  destroyed() {
+    this.$root.$off('reload.fileServiceList');
   },
 }
 </script>

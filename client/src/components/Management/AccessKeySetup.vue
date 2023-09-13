@@ -9,48 +9,43 @@ Access Key created: Access Key 已创建
 </i18n>
 
 <template>
-  <transition name="fade">
-    <el-container direction="vertical" v-show="$store.state.isLoaded">
-      <!-- 标题区 -->
-      <el-header height="60px">
-        <h1>{{ $t('Add Access Key') }}</h1>
-      </el-header>
+  <el-dialog
+    id="ScriptSetSetup"
+    :visible.sync="show"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    width="750px">
 
-      <!-- 编辑区 -->
+    <template slot="title">
+      {{ $t('Add Access Key') }}
+    </template>
+
+    <el-container direction="vertical">
       <el-main>
-        <el-row :gutter="20">
-          <el-col :span="15">
-            <div class="setup-form">
-              <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
-                <el-form-item :label="$t('Title')" prop="title">
-                  <el-input
-                    maxlength="200"
-                    v-model="form.title"></el-input>
-                </el-form-item>
+        <div class="setup-form">
+          <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
+            <el-form-item :label="$t('Title')" prop="title">
+              <el-input
+                maxlength="200"
+                v-model="form.title"></el-input>
+            </el-form-item>
 
-                <el-form-item label="ID">
-                  <el-input :value="$t('Auto generate...')" :disabled="true"></el-input>
-                </el-form-item>
+            <el-form-item label="ID">
+              <el-input :value="$t('Auto generate...')" :disabled="true"></el-input>
+            </el-form-item>
 
-                <el-form-item label="Secret">
-                  <el-input :value="$t('Auto generate...')" :disabled="true"></el-input>
-                </el-form-item>
-              </el-form>
-            </div>
-          </el-col>
-          <el-col :span="9" class="hidden-md-and-down">
-          </el-col>
-        </el-row>
-      </el-main>
+            <el-form-item label="Secret">
+              <el-input :value="$t('Auto generate...')" :disabled="true"></el-input>
+            </el-form-item>
 
-      <!-- 底部栏 -->
-      <el-footer>
-        <div class="setup-footer">
-          <el-button type="primary" @click="submitData">{{ $t('Save') }}</el-button>
+            <el-form-item class="setup-footer">
+              <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+            </el-form-item>
+          </el-form>
         </div>
-      </el-footer>
+      </el-main>
     </el-container>
-  </transition>
+  </el-dialog>
 </template>
 
 <script>
@@ -59,34 +54,18 @@ export default {
   components: {
   },
   watch: {
-    $route: {
-      immediate: true,
-      async handler(to, from) {
-        await this.loadData();
-
-        switch(this.T.setupPageMode()) {
-          case 'add':
-            this.T.jsonClear(this.form);
-            this.data = {};
-            break;
-        }
-      },
+    show(val) {
+      if (!val) {
+        this.$root.$emit('reload.accessKeyList');
+      }
     },
   },
   methods: {
     async loadData() {
-      if (this.T.setupPageMode() === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/access-keys/do/list', this.$route.params.id);
-        if (!apiRes || !apiRes.ok) return;
+      this.T.jsonClear(this.form);
+      this.data = {};
 
-        this.data = apiRes.data;
-
-        let nextForm = {};
-        Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
-        this.form = nextForm;
-      }
-
-      this.$store.commit('updateLoadStatus', true);
+      this.show = true;
     },
     async submitData() {
       try {
@@ -95,10 +74,8 @@ export default {
         return console.error(err);
       }
 
-      switch(this.T.setupPageMode()) {
-        case 'add':
-          return await this.addData();
-      }
+      // AccessKey 只有添加
+      return await this.addData();
     },
     async addData() {
       let apiRes = await this.T.callAPI('post', '/api/v1/access-keys/do/add', {
@@ -107,14 +84,14 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$router.push({
-        name : 'access-key-list',
-        query: this.T.getPrevQuery(),
-      });
+      this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
+      this.show = false;
     },
   },
   data() {
     return {
+      show: false,
+
       data: {},
       form: {
         title: null,
@@ -122,7 +99,7 @@ export default {
       formRules: {
         title: [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input title'),
             required: true,
           }

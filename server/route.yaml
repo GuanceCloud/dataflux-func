@@ -5021,7 +5021,7 @@ fileServiceAPI:
     requireSignIn: true
     privilege    : general_r
     export       : true
-    paging       : false
+    paging       : true
     fieldSelecting: true
     orderFields:
       seq       : fsvc.seq

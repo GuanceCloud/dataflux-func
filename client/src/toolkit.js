@@ -1009,7 +1009,7 @@ export function notify(message, type) {
     type                    : type,
     position                : 'top-right',
     duration                : duration,
-    offset                  : 80,
+    offset                  : 85,
   });
 };
 
@@ -1151,10 +1151,10 @@ async function _doAxios(axiosOpt) {
         await MessageBox.alert(`${app.$t('Failed to communicate with the server, please refresh the page and try again.')}
             <br>${app.$t('If the problem continues to occur, please contact the administrator to check the status of the server.')}
             <br><small>${err.toString()}</small>`, {
-          showClose: false,
+          showClose               : false,
           dangerouslyUseHTMLString: true,
-          confirmButtonText: app.$t('OK'),
-          type: 'error',
+          confirmButtonText       : app.$t('OK'),
+          type                    : 'error',
         });
 
         IS_UNDER_NETWORK_ERROR_NOTICE = false;
@@ -1196,7 +1196,7 @@ export async function callAPI(method, pathPattern, options) {
           type                    : 'success',
           position                : 'top-right',
           duration                : 3000,
-          offset                  : 75,
+          offset                  : 85,
         });
       });
     }
@@ -1225,10 +1225,10 @@ export async function callAPI(method, pathPattern, options) {
           message = `${app.$t('Failed to access data, please refresh the page and try again.')}<br><small>${method.toUpperCase()} ${pathPattern}</small>`
         }
         MessageBox.alert(message, {
-          showClose: false,
+          showClose               : false,
           dangerouslyUseHTMLString: true,
-          confirmButtonText: app.$t('OK'),
-          type: 'error',
+          confirmButtonText       : app.$t('OK'),
+          type                    : 'error',
         });
       }
     }
@@ -1393,10 +1393,10 @@ export async function callAPI_getAll(pathPattern, options) {
             message = `${app.$t('Failed to access data, please refresh the page and try again.')}<br><small>GET ${pathPattern}</small>`
           }
           MessageBox.alert(message, {
-            showClose: false,
+            showClose               : false,
             dangerouslyUseHTMLString: true,
-            confirmButtonText: app.$t('OK'),
-            type: 'error',
+            confirmButtonText       : app.$t('OK'),
+            type                    : 'error',
           });
         }, 300);
       }

@@ -44,115 +44,110 @@ recentTaskCount: '{n} 个近期任务'
 </i18n>
 
 <template>
-  <transition name="fade">
-    <el-container direction="vertical" v-show="$store.state.isLoaded">
-      <!-- 标题区 -->
-      <el-header height="60px">
-        <h1>{{ pageTitle }} <code class="text-main">{{ data.func_title }}</code></h1>
-      </el-header>
+  <el-dialog
+    id="ScriptSetSetup"
+    :visible.sync="show"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    width="750px">
 
-      <!-- 编辑区 -->
+    <template slot="title">
+      {{ pageTitle }} <code class="text-main">{{ data.func_title }}</code>
+    </template>
+
+    <el-container direction="vertical">
       <el-main>
-        <el-row :gutter="20">
-          <el-col :span="15">
-            <div class="setup-form">
-              <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
-                <el-form-item :label="$t('Customize ID')" prop="useCustomId" v-if="T.setupPageMode() === 'add'">
-                  <el-switch v-model="useCustomId"></el-switch>
-                  <span class="text-main float-right">
-                    {{ $t('URL Preview') }}{{ $t(':') }}
-                    <code class="code-font">{{ `/api/v1/bat/${useCustomId ? form.id : $t('randomIDString')}` }}</code>
-                  </span>
-                </el-form-item>
+        <div class="setup-form">
+          <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
+            <el-form-item :label="$t('Customize ID')" prop="useCustomId" v-if="pageMode === 'add'">
+              <el-switch v-model="useCustomId"></el-switch>
+              <span class="text-main float-right">
+                {{ $t('URL Preview') }}{{ $t(':') }}
+                <code class="code-font">{{ `/api/v1/bat/${useCustomId ? form.id : $t('randomIDString')}` }}</code>
+              </span>
+            </el-form-item>
 
-                <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="T.setupPageMode() === 'add'">
-                  <el-input
-                    maxlength="60"
-                    v-model="form.id">
-                  </el-input>
-                  <InfoBlock :title="$t('ID will be a part of the calling URL')" />
-                </el-form-item>
+            <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="pageMode === 'add'">
+              <el-input
+                maxlength="60"
+                v-model="form.id">
+              </el-input>
+              <InfoBlock :title="$t('ID will be a part of the calling URL')" />
+            </el-form-item>
 
-                <el-form-item :label="$t('Execute')" prop="funcId">
-                  <el-cascader ref="funcCascader"
-                    popper-class="code-font"
-                    placeholder="--"
-                    filterable
-                    :filter-method="common.funcCascaderFilter"
-                    v-model="form.funcId"
-                    :options="funcCascader"
-                    :props="{ expandTrigger: 'hover', emitPath: false, multiple: false }"
-                    @change="autoFillFuncCallKwargsJSON">
-                    </el-cascader>
-                </el-form-item>
+            <el-form-item :label="$t('Execute')" prop="funcId">
+              <el-cascader ref="funcCascader"
+                popper-class="code-font"
+                placeholder="--"
+                filterable
+                :filter-method="common.funcCascaderFilter"
+                v-model="form.funcId"
+                :options="funcCascader"
+                :props="{ expandTrigger: 'hover', emitPath: false, multiple: false }"
+                @change="autoFillFuncCallKwargsJSON">
+                </el-cascader>
+            </el-form-item>
 
-                <el-form-item :label="$t('Arguments')" prop="funcCallKwargsJSON">
-                  <el-input
-                    type="textarea"
-                    v-model="form.funcCallKwargsJSON"
-                    resize="none"
-                    :autosize="{ minRows: 2 }"></el-input>
-                  <InfoBlock :title="$t('JSON formated arguments (**kwargs)')" />
-                  <InfoBlock :title="$t('parameterHint')" />
+            <el-form-item :label="$t('Arguments')" prop="funcCallKwargsJSON">
+              <el-input
+                type="textarea"
+                v-model="form.funcCallKwargsJSON"
+                resize="none"
+                :autosize="{ minRows: 2 }"></el-input>
+              <InfoBlock :title="$t('JSON formated arguments (**kwargs)')" />
+              <InfoBlock :title="$t('parameterHint')" />
 
-                  <InfoBlock v-if="apiCustomKwargsSupport" type="success" :title="$t('The Func accepts extra arguments not listed above')" />
-                </el-form-item>
+              <InfoBlock v-if="apiCustomKwargsSupport" type="success" :title="$t('The Func accepts extra arguments not listed above')" />
+            </el-form-item>
 
-                <el-form-item :label="$t('Tags')" prop="tagsJSON">
-                  <el-tag v-for="t in form.tagsJSON" :key="t" type="warning" size="small" closable @close="removeTag(t)">{{ t }}</el-tag>
-                  <el-input v-if="showAddTag" ref="newTag"
-                    v-model="newTag"
-                    size="mini"
-                    @keyup.enter.native="addTag"
-                    @blur="addTag"></el-input>
-                  <el-button v-else
-                    type="text"
-                    @click="openAddTagInput">{{ $t('Add Tag') }}</el-button>
-                </el-form-item>
+            <el-form-item :label="$t('Tags')" prop="tagsJSON">
+              <el-tag v-for="t in form.tagsJSON" :key="t" type="warning" size="small" closable @close="removeTag(t)">{{ t }}</el-tag>
+              <el-input v-if="showAddTag" ref="newTag"
+                v-model="newTag"
+                size="mini"
+                @keyup.enter.native="addTag"
+                @blur="addTag"></el-input>
+              <el-button v-else
+                type="text"
+                @click="openAddTagInput">{{ $t('Add Tag') }}</el-button>
+            </el-form-item>
 
-                <el-form-item :label="$t('Task Record')">
-                  <span class="task-record-limit-prefix">{{ $t('Keep') }} </span>
-                  <el-input-number class="task-record-limit-input"
-                    :min="$store.getters.SYSTEM_INFO('_TASK_RECORD_LIMIT_MIN')"
-                    :max="$store.getters.SYSTEM_INFO('_TASK_RECORD_LIMIT_MAX')"
-                    :step="10"
-                    :precision="0"
-                    v-model="form.taskRecordLimit"></el-input-number>
-                  <span class="task-record-limit-unit">{{ $tc('recentTaskCount', form.taskRecordLimit, { n: '' }) }} </span>
-                  <el-link class="task-record-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH')">{{ $t('Restore Default') }}</el-link>
-                </el-form-item>
+            <el-form-item :label="$t('Task Record')">
+              <span class="task-record-limit-prefix">{{ $t('Keep') }} </span>
+              <el-input-number class="task-record-limit-input"
+                :min="$store.getters.SYSTEM_INFO('_TASK_RECORD_LIMIT_MIN')"
+                :max="$store.getters.SYSTEM_INFO('_TASK_RECORD_LIMIT_MAX')"
+                :step="10"
+                :precision="0"
+                v-model="form.taskRecordLimit"></el-input-number>
+              <span class="task-record-limit-unit">{{ $tc('recentTaskCount', form.taskRecordLimit, { n: '' }) }} </span>
+              <el-link class="task-record-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH')">{{ $t('Restore Default') }}</el-link>
+            </el-form-item>
 
-                <el-form-item :label="$t('API Auth')" prop="apiAuthId">
-                  <el-select v-model="form.apiAuthId">
-                    <el-option v-for="opt in apiAuthList" :label="opt.label" :key="opt.id" :value="opt.id"></el-option>
-                  </el-select>
-                </el-form-item>
+            <el-form-item :label="$t('API Auth')" prop="apiAuthId">
+              <el-select v-model="form.apiAuthId">
+                <el-option v-for="opt in apiAuthList" :label="opt.label" :key="opt.id" :value="opt.id"></el-option>
+              </el-select>
+            </el-form-item>
 
-                <el-form-item :label="$t('Note')">
-                  <el-input :placeholder="$t('Optional')"
-                    type="textarea"
-                    resize="none"
-                    :autosize="{minRows: 2}"
-                    maxlength="5000"
-                    v-model="form.note"></el-input>
-                </el-form-item>
-              </el-form>
-            </div>
-          </el-col>
-          <el-col :span="9" class="hidden-md-and-down">
-          </el-col>
-        </el-row>
-      </el-main>
+            <el-form-item :label="$t('Note')">
+              <el-input :placeholder="$t('Optional')"
+                type="textarea"
+                resize="none"
+                :autosize="{minRows: 2}"
+                maxlength="5000"
+                v-model="form.note"></el-input>
+            </el-form-item>
 
-      <!-- 底部栏 -->
-      <el-footer>
-        <div class="setup-footer">
-          <el-button class="delete-button" v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
-          <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+            <el-form-item class="setup-footer">
+              <el-button class="delete-button" v-if="pageMode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+              <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
+            </el-form-item>
+          </el-form>
         </div>
-      </el-footer>
+      </el-main>
     </el-container>
-  </transition>
+  </el-dialog>
 </template>
 
 <script>
@@ -161,22 +156,10 @@ export default {
   components: {
   },
   watch: {
-    $route: {
-      immediate: true,
-      async handler(to, from) {
-        await this.loadData();
-
-        switch(this.T.setupPageMode()) {
-          case 'add':
-            this.T.jsonClear(this.form);
-            this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH');
-            this.data = {};
-            break;
-
-          case 'setup':
-            break;
-        }
-      },
+    show(val) {
+      if (!val) {
+        this.$root.$emit('reload.batchList');
+      }
     },
     useCustomId(val) {
       if (val) {
@@ -187,9 +170,18 @@ export default {
     },
   },
   methods: {
-    async loadData() {
-      if (this.T.setupPageMode() === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/batches/do/list', this.$route.params.id);
+    async loadData(id) {
+      if (!id) {
+        this.pageMode = 'add';
+        this.T.jsonClear(this.form);
+        this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH');
+        this.data = {};
+
+      } else {
+        this.pageMode = 'setup';
+        this.data.id = id;
+
+        let apiRes = await this.T.callAPI_getOne('/api/v1/batches/do/list', this.data.id);
         if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -218,7 +210,7 @@ export default {
 
       this.apiAuthList = apiAuthList;
 
-      this.$store.commit('updateLoadStatus', true);
+      this.show = true;
     },
     async submitData() {
       try {
@@ -227,7 +219,7 @@ export default {
         return console.error(err);
       }
 
-      switch(this.T.setupPageMode()) {
+      switch(this.pageMode) {
         case 'add':
           return await this.addData();
         case 'setup':
@@ -251,20 +243,15 @@ export default {
       let apiRes = await this.T.callAPI('post', '/api/v1/batches/do/add', opt);
       if (!apiRes || !apiRes.ok) return;
 
-      this.$store.commit('updateTableList_scrollY');
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
-
-      this.$router.push({
-        name: 'batch-list',
-        query: this.T.getPrevQuery(),
-      });
+      this.show = false;
     },
     async modifyData() {
       let _formData = this.T.jsonCopy(this.form);
       delete _formData.id;
 
       let opt = {
-        params: { id: this.$route.params.id },
+        params: { id: this.data.id },
         body  : { data: _formData },
         alert : { okMessage: this.$t('Batch saved') },
       };
@@ -280,25 +267,18 @@ export default {
       if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
-
-      this.$router.push({
-        name: 'batch-list',
-        query: this.T.getPrevQuery(),
-      });
+      this.show = false;
     },
     async deleteData() {
       if (!await this.T.confirm(this.$t(`Are you sure you want to delete the Batch?`))) return;
 
       let apiRes = await this.T.callAPI('/api/v1/batches/:id/do/delete', {
-        params: { id: this.$route.params.id },
+        params: { id: this.data.id },
         alert : { okMessage: this.$t('Batch deleted') },
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$router.push({
-        name: 'batch-list',
-        query: this.T.getPrevQuery(),
-      });
+      this.show = false;
     },
     autoFillFuncCallKwargsJSON(funcId) {
       // 自动填充调用参数
@@ -346,7 +326,7 @@ export default {
         setup: this.$t('Setup Batch'),
         add  : this.$t('Add Batch'),
       };
-      return _map[this.T.setupPageMode()];
+      return _map[this.pageMode];
     },
     apiCustomKwargsSupport() {
       let funcId = this.form.funcId;
@@ -363,6 +343,9 @@ export default {
     let errorMessage_funcCallKwargsJSON = this.$t('Please input arguments, input "{}" when no argument');
 
     return {
+      show    : false,
+      pageMode: null,
+
       data        : {},
       funcMap     : {},
       funcCascader: [],
@@ -400,14 +383,14 @@ export default {
         ],
         funcId: [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please select Func'),
             required: true,
           },
         ],
         funcCallKwargsJSON: [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : errorMessage_funcCallKwargsJSON,
             required: true,
           },
@@ -415,9 +398,11 @@ export default {
             trigger  : 'change',
             validator: (rule, value, callback) => {
               try {
-                let j = JSON.parse(value);
-                if (Array.isArray(j)) {
-                  return callback(new Error(errorMessage_funcCallKwargsJSON));
+                if (value) {
+                  let j = JSON.parse(value);
+                  if (Array.isArray(j)) {
+                    return callback(new Error(errorMessage_funcCallKwargsJSON));
+                  }
                 }
                 return callback();
 

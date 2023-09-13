@@ -10,10 +10,6 @@ Exporting Script Sets for backup or sharing Script Sets: 使用脚本集导出�
         <div class="common-page-header">
           <h1>{{ $t('Script Set Export History') }}</h1>
           <div class="header-control">
-            <el-button @click="openSetup(null, 'export')" size="small">
-              <i class="fa fa-fw fa-cloud-download"></i>
-              {{ $t('Script Set Export') }}
-            </el-button>
           </div>
         </div>
       </el-header>
@@ -67,14 +63,29 @@ Exporting Script Sets for backup or sharing Script Sets: 使用脚本集导出�
         </template>
       </el-main>
 
+      <!-- 底部栏 -->
+      <el-footer>
+        <div class="setup-page-footer">
+          <el-button @click="openSetup(null, 'export')">
+            <i class="fa fa-fw fa-cloud-download"></i>
+            {{ $t('Script Set Export') }}
+          </el-button>
+        </div>
+      </el-footer>
+
+      <ScriptSetExport ref="setup" />
+
     </el-container>
   </transition>
 </template>
 
 <script>
+import ScriptSetExport from '@/components/Management/ScriptSetExport'
+
 export default {
   name: 'ScriptSetExportHistoryList',
   components: {
+    ScriptSetExport,
   },
   watch: {
     $route: {
@@ -110,9 +121,7 @@ export default {
     openSetup(d, target) {
       switch(target) {
         case 'export':
-          this.$router.push({
-            name: 'script-set-export',
-          })
+          this.$refs.setup.loadData();
           break;
       }
     },
@@ -126,6 +135,12 @@ export default {
       data: [],
     }
   },
+  created() {
+    this.$root.$on('reload.scriptSetExportHistoryList', () => this.loadData());
+  },
+  destroyed() {
+    this.$root.$off('reload.scriptSetExportHistoryList');
+  },
 }
 </script>
 
@@ -134,7 +149,7 @@ export default {
   font-size: x-large;
 }
 .history-card {
-  width: 620px;
+  width: 550px;
 }
 .history-summary {
   font-size: 16px;

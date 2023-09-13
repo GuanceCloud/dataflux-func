@@ -65,13 +65,13 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item index="/management/script-set-export">
+            <el-menu-item index="/management/script-set-export-history-list">
               <span>
                 <i class="fa fa-fw fa-cloud-download"></i>
                 {{ $t('Script Set Export') }}
               </span>
             </el-menu-item>
-            <el-menu-item index="/management/script-set-import">
+            <el-menu-item index="/management/script-set-import-history-list">
               <span>
                 <i class="fa fa-fw fa-cloud-upload"></i>
                 {{ $t('Script Sets Import') }}

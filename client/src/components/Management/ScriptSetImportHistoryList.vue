@@ -10,10 +10,6 @@ Add external Script Sets by importing Script Sets: 使用脚本集导入功能�
         <div class="common-page-header">
           <h1>{{ $t('Script Set Import History') }}</h1>
           <div class="header-control">
-            <el-button @click="openSetup(null, 'import')" size="small">
-              <i class="fa fa-fw fa-cloud-upload"></i>
-              {{ $t('Script Sets Import') }}
-            </el-button>
           </div>
         </div>
       </el-header>
@@ -67,14 +63,29 @@ Add external Script Sets by importing Script Sets: 使用脚本集导入功能�
         </template>
       </el-main>
 
+      <!-- 底部栏 -->
+      <el-footer>
+        <div class="setup-page-footer">
+          <el-button @click="openSetup(null, 'import')">
+            <i class="fa fa-fw fa-cloud-upload"></i>
+            {{ $t('Script Sets Import') }}
+          </el-button>
+        </div>
+      </el-footer>
+
+      <ScriptSetImport ref="setup" />
+
     </el-container>
   </transition>
 </template>
 
 <script>
+import ScriptSetImport from '@/components/Management/ScriptSetImport'
+
 export default {
   name: 'ScriptSetImportHistoryList',
   components: {
+    ScriptSetImport,
   },
   watch: {
     $route: {
@@ -110,9 +121,7 @@ export default {
     openSetup(d, target) {
       switch(target) {
         case 'import':
-          this.$router.push({
-            name: 'script-set-import',
-          })
+          this.$refs.setup.loadData();
           break;
       }
     },
@@ -126,6 +135,12 @@ export default {
       data: [],
     }
   },
+  created() {
+    this.$root.$on('reload.scriptSetImportHistoryList', () => this.loadData());
+  },
+  destroyed() {
+    this.$root.$off('reload.scriptSetImportHistoryList');
+  },
 }
 </script>
 
@@ -134,7 +149,7 @@ export default {
   font-size: x-large;
 }
 .history-card {
-  width: 620px;
+  width: 550px;
 }
 .history-summary {
   font-size: 16px;

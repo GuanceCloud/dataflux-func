@@ -164,6 +164,7 @@ Using Batches, you can execute long and time-consuming Python functions: 使用�
 
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo" />
+      <BatchSetup ref="setup" />
 
       <APIExampleDialog ref="apiExampleDialog"
         :showExecModeOption="false"
@@ -176,11 +177,13 @@ Using Batches, you can execute long and time-consuming Python functions: 使用�
 </template>
 
 <script>
+import BatchSetup from '@/components/Management/BatchSetup'
 import APIExampleDialog from '@/components/APIExampleDialog'
 
 export default {
   name: 'BatchList',
   components: {
+    BatchSetup,
     APIExampleDialog,
   },
   watch: {
@@ -197,7 +200,9 @@ export default {
     },
   },
   methods: {
-    async loadData() {
+    async loadData(options) {
+      options = options || {};
+
       // 默认过滤条件
       let _listQuery = this.dataFilter = this.T.createListQuery();
       if (this.T.isNothing(this.$route.query)) {
@@ -215,7 +220,7 @@ export default {
       this.$store.commit('updateLoadStatus', true);
 
       // 获取统计信息
-      if (this.isLocalFuncTaskRecordEnabled) {
+      if (this.isLocalFuncTaskRecordEnabled && !options.skipStatistic) {
         this.isStatisticLoaded = false;
         setTimeout(async () => {
           this.statisticMap = await this.common.loadStatistic('originId', this.data.map(d => d.id));
@@ -263,28 +268,17 @@ export default {
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
-      await this.loadData();
+      await this.loadData({ skipStatistic: true });
     },
     openSetup(d, target) {
-      let nextRouteQuery = this.T.packRouteQuery();
-
-      this.$store.commit('updateTableList_scrollY');
       switch(target) {
         case 'add':
-          this.$router.push({
-            name: 'batch-add',
-            query: nextRouteQuery,
-          });
+          this.$refs.setup.loadData();
           break;
 
         case 'setup':
           this.$store.commit('updateHighlightedTableDataId', d.id);
-
-          this.$router.push({
-            name  : 'batch-setup',
-            params: { id: d.id },
-            query : nextRouteQuery,
-          });
+          this.$refs.setup.loadData(d.id);
           break;
       }
     },
@@ -336,6 +330,12 @@ export default {
         origin      : _dataFilter.origin,
       },
     }
+  },
+  created() {
+    this.$root.$on('reload.batchList', () => this.loadData({ skipStatistic: true }));
+  },
+  destroyed() {
+    this.$root.$off('reload.batchList');
   },
 }
 </script>

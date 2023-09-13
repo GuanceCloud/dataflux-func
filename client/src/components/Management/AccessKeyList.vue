@@ -84,14 +84,19 @@ Add Access Key to allow external systems to call the Open APIs of this system: �
 
       <!-- 翻页区 -->
       <Pager :pageInfo="pageInfo" />
+      <AccessKeySetup ref="setup" />
+
     </el-container>
   </transition>
 </template>
 
 <script>
+import AccessKeySetup from '@/components/Management/AccessKeySetup'
+
 export default {
   name: 'AccessKeyList',
   components: {
+    AccessKeySetup,
   },
   watch: {
     $route: {
@@ -141,14 +146,9 @@ export default {
       await this.loadData();
     },
     openSetup(d, target) {
-      let nextRouteQuery = this.T.packRouteQuery();
-
       switch(target) {
         case 'add':
-          this.$router.push({
-            name: 'access-key-add',
-            query: nextRouteQuery,
-          });
+          this.$refs.setup.loadData();
           break;
       }
     },
@@ -174,6 +174,12 @@ export default {
 
       showSecretMap: {},
     }
+  },
+  created() {
+    this.$root.$on('reload.accessKeyList', () => this.loadData());
+  },
+  destroyed() {
+    this.$root.$off('reload.accessKeyList');
   },
 }
 </script>

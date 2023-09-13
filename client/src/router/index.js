@@ -123,16 +123,6 @@ const routes = [
         name: 'batch-list',
         component: () => import('../components/Management/BatchList.vue'),
       },
-      {
-        path: 'batch-add',
-        name: 'batch-add',
-        component: () => import('../components/Management/BatchSetup.vue'),
-      },
-      {
-        path: 'batch-setup/:id',
-        name: 'batch-setup',
-        component: () => import('../components/Management/BatchSetup.vue'),
-      },
 
       {
         path: 'task-record-func-list',
@@ -149,11 +139,6 @@ const routes = [
         path: 'script-set-export-history-list',
         name: 'script-set-export-history-list',
         component: () => import('../components/Management/ScriptSetExportHistoryList.vue'),
-      },
-      {
-        path: 'script-set-export',
-        name: 'script-set-export',
-        component: () => import('../components/Management/ScriptSetExport.vue'),
       },
       {
         path: 'script-set-import-history-list',
@@ -217,16 +202,6 @@ const routes = [
         path: 'file-service-list',
         name: 'file-service-list',
         component: () => import('../components/Management/FileServiceList.vue'),
-      },
-      {
-        path: 'file-service-add',
-        name: 'file-service-add',
-        component: () => import('../components/Management/FileServiceSetup.vue'),
-      },
-      {
-        path: 'file-service-setup/:id',
-        name: 'file-service-setup',
-        component: () => import('../components/Management/FileServiceSetup.vue'),
       },
       {
         path: 'func-cache-manage',
