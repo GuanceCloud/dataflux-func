@@ -19,10 +19,6 @@ Recover Points can also be created manually.                                    
         <div class="common-page-header">
           <h1>{{ $t('Script Lib Recover') }}</h1>
           <div class="header-control">
-            <el-button @click="openSetup(null, 'add')" size="small">
-              <i class="fa fa-fw fa-camera"></i>
-              {{ $t('Create Recover Point') }}
-            </el-button>
           </div>
         </div>
       </el-header>
@@ -64,14 +60,30 @@ Recover Points can also be created manually.                                    
           </el-timeline-item>
         </el-timeline>
       </el-main>
+
+      <!-- 底部栏 -->
+      <el-footer>
+        <div class="setup-page-footer">
+          <el-button @click="openSetup(null, 'add')">
+            <i class="fa fa-fw fa-camera"></i>
+            {{ $t('Create Recover Point') }}
+          </el-button>
+        </div>
+      </el-footer>
+
+      <ScriptRecoverPointAdd ref="setup" />
+
     </el-container>
   </transition>
 </template>
 
 <script>
+import ScriptRecoverPointAdd from '@/components/Management/ScriptRecoverPointAdd'
+
 export default {
   name: 'ScriptRecoverPointList',
   components: {
+    ScriptRecoverPointAdd,
   },
   watch: {
     $route: {
@@ -90,7 +102,6 @@ export default {
       if (!apiRes || !apiRes.ok) return;
 
       this.data = apiRes.data;
-
       this.$store.commit('updateLoadStatus', true);
     },
     async quickSubmitData(d, operation) {
@@ -116,9 +127,7 @@ export default {
     openSetup(d, target) {
       switch(target) {
         case 'add':
-          this.$router.push({
-            name: 'script-recover-point-add',
-          })
+          this.$refs.setup.loadData();
           break;
       }
     },
@@ -130,6 +139,12 @@ export default {
       data: [],
     }
   },
+  created() {
+    this.$root.$on('reload.scriptRecoverPointList', () => this.loadData());
+  },
+  destroyed() {
+    this.$root.$off('reload.scriptRecoverPointList');
+  },
 }
 </script>
 
@@ -138,7 +153,7 @@ export default {
   font-size: x-large;
 }
 .recover-point-card {
-  width: 620px;
+  width: 550px;
 }
 .recover-point-note {
   padding: 10px 0 0 10px;

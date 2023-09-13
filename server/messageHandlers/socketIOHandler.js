@@ -193,9 +193,7 @@ module.exports = function(app, server) {
                   break;
 
                 case 'script-set-import-history-list':
-                case 'script-set-import':
                 case 'script-recover-point-list':
-                case 'script-recover-point-add':
                   conflictSource = [
                     'routeName', data.routeName,
                   ]

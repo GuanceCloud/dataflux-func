@@ -12,50 +12,39 @@ Script Lib Recover Point created: 脚本库还原点已创建
 </i18n>
 
 <template>
-  <transition name="fade">
-    <el-container direction="vertical" v-show="$store.state.isLoaded">
-      <!-- 标题区 -->
-      <el-header height="60px">
-        <div class="common-page-header">
-          <h1>{{ $t('Create Recover Point') }}</h1>
-        </div>
-      </el-header>
+  <el-dialog
+    id="ScriptSetSetup"
+    :visible.sync="show"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    width="750px">
 
-      <!-- 编辑区 -->
+    <template slot="title">
+      {{ $t('Create Recover Point') }}
+    </template>
+
+    <el-container direction="vertical">
       <el-main>
-        <el-row :gutter="20">
-          <el-col :span="15">
-            <div class="setup-form">
-              <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
-                <el-form-item :label="$t('Note')" prop="note">
-                  <el-input
-                    type="textarea"
-                    resize="none"
-                    :autosize="{minRows: 5}"
-                    maxlength="5000"
-                    v-model="form.note"></el-input>
-                  <InfoBlock :title="$t('Meaningful notes can provide a reliable reference for the future')" />
-                </el-form-item>
-              </el-form>
-            </div>
-          </el-col>
-          <el-col :span="9" class="hidden-md-and-down">
-          </el-col>
-        </el-row>
-      </el-main>
+        <div class="setup-form">
+          <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
+            <el-form-item :label="$t('Note')" prop="note">
+              <el-input
+                type="textarea"
+                resize="none"
+                :autosize="{minRows: 5}"
+                maxlength="5000"
+                v-model="form.note"></el-input>
+              <InfoBlock :title="$t('Meaningful notes can provide a reliable reference for the future')" />
+            </el-form-item>
 
-      <!-- 底部栏 -->
-      <el-footer>
-        <div class="setup-footer">
-          <el-button @click="goToHistory">
-            <i class="fa fa-fw fa-history"></i>
-            {{ $t('Script Lib Recover Points' )}}
-          </el-button>
-          <el-button type="primary" @click="submitData">{{ $t('Create') }}</el-button>
+            <el-form-item class="setup-footer">
+              <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Create') }}</el-button>
+            </el-form-item>
+          </el-form>
         </div>
-      </el-footer>
+      </el-main>
     </el-container>
-  </transition>
+  </el-dialog>
 </template>
 
 <script>
@@ -64,8 +53,16 @@ export default {
   components: {
   },
   watch: {
+    show(val) {
+      if (!val) {
+        this.$root.$emit('reload.scriptRecoverPointList');
+      }
+    },
   },
   methods: {
+    async loadData() {
+      this.show = true;
+    },
     async submitData() {
       try {
         await this.$refs.form.validate();
@@ -73,10 +70,8 @@ export default {
         return console.error(err);
       }
 
-      switch(this.T.setupPageMode()) {
-        case 'add':
-          return await this.addData();
-      }
+      // 只有创建操作
+      return await this.addData();
     },
     async addData() {
       let apiRes = await this.T.callAPI('post', '/api/v1/script-recover-points/do/add', {
@@ -85,12 +80,7 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.goToHistory();
-    },
-    goToHistory() {
-      this.$router.push({
-        name: 'script-recover-point-list',
-      });
+      this.show = false;
     },
   },
   props: {
@@ -98,14 +88,17 @@ export default {
   data() {
     let userName = this.$store.state.userProfile.name || this.$store.state.userProfile.username;
     let defaultNote = this.$t('Recover Point created by {userName}', { userName: userName });
+
     return {
+      show: false,
+
       form: {
         note: defaultNote,
       },
       formRules: {
         note: [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input note'),
             required: true,
             min     : 1,

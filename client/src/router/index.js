@@ -145,11 +145,6 @@ const routes = [
         name: 'script-set-import-history-list',
         component: () => import('../components/Management/ScriptSetImportHistoryList.vue'),
       },
-      {
-        path: 'script-set-import',
-        name: 'script-set-import',
-        component: () => import('../components/Management/ScriptSetImport.vue'),
-      },
 
       {
         path: 'script-recover-point-list',
