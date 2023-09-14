@@ -67,16 +67,7 @@ const routes = [
     name: 'script-market-list',
     component: () => import('../components/ScriptMarket/ScriptMarketList.vue'),
   },
-  {
-    path: '/script-market-add',
-    name: 'script-market-add',
-    component: () => import('../components/ScriptMarket/ScriptMarketSetup.vue'),
-  },
-  {
-    path: '/script-market-setup/:id',
-    name: 'script-market-setup',
-    component: () => import('../components/ScriptMarket/ScriptMarketSetup.vue'),
-  },
+
   {
     path: '/script-market-contents/:id',
     name: 'script-market-contents',

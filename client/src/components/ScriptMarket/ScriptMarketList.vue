@@ -214,14 +214,19 @@ After adding the Script Market, you can install Script Sets from the Script Mark
           </el-table-column>
         </el-table>
       </el-main>
+
+      <ScriptMarketSetup ref="setup" />
     </el-container>
   </transition>
 </template>
 
 <script>
+import ScriptMarketSetup from '@/components/ScriptMarket/ScriptMarketSetup'
+
 export default {
   name: 'ScriptMarketList',
   components: {
+    ScriptMarketSetup,
   },
   watch: {
     $route: {
@@ -331,25 +336,14 @@ export default {
       this.isProcessing = false;
     },
     openSetup(d, target) {
-      let nextRouteQuery = this.T.packRouteQuery();
-
-      this.$store.commit('updateTableList_scrollY');
       switch(target) {
         case 'add':
-          this.$router.push({
-            name : 'script-market-add',
-            query: nextRouteQuery,
-          })
+          this.$refs.setup.loadData();
           break;
 
         case 'setup':
           this.$store.commit('updateHighlightedTableDataId', d.id);
-
-          this.$router.push({
-            name  : 'script-market-setup',
-            params: { id: d.id },
-            query : nextRouteQuery,
-          })
+          this.$refs.setup.loadData(d.id);
           break;
       }
     },
@@ -432,6 +426,12 @@ export default {
       isProcessing: false,
       processingText: null,
     }
+  },
+  created() {
+    this.$root.$on('reload.scriptMarketList', this.loadData);
+  },
+  destroyed() {
+    this.$root.$off('reload.scriptMarketList');
   },
 }
 </script>

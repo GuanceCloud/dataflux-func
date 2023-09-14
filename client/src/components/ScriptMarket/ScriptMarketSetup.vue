@@ -29,148 +29,143 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
 </i18n>
 
 <template>
-  <transition name="fade">
-    <el-container direction="vertical" v-show="$store.state.isLoaded">
-      <!-- 标题区 -->
-      <el-header height="60px">
-        <h1>{{ pageTitle }} <code class="text-main" v-if="data.title">{{ data.title || C.API_AUTH_MAP.get(selectedType).name }}</code></h1>
-      </el-header>
+  <el-dialog
+    id="ScriptSetSetup"
+    :visible.sync="show"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    width="750px">
 
-      <!-- 编辑区 -->
+    <template slot="title">
+      {{ pageTitle }} <code class="text-main">{{ data.title || C.API_AUTH_MAP.get(selectedType).name }}</code>
+    </template>
+
+    <el-container direction="vertical">
       <el-main>
-        <el-row :gutter="20">
-          <el-col :span="15">
-            <div class="setup-form">
-              <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
-                <!-- Fake user/password -->
-                <el-form-item style="height: 0; overflow: hidden">
-                  <input tabindex="-1" type="text" name="username" />
-                  <input tabindex="-1" type="password" name="password" />
-                </el-form-item>
+        <div class="setup-form">
+          <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
+            <!-- Fake user/password -->
+            <el-form-item style="height: 0; overflow: hidden">
+              <input tabindex="-1" type="text" name="username" />
+              <input tabindex="-1" type="password" name="password" />
+            </el-form-item>
 
-                <el-form-item :label="$t('Type')" prop="type" v-if="T.setupPageMode() === 'add'">
-                  <el-select v-model="form.type" @change="switchType">
-                    <el-option v-for="opt in C.SCRIPT_MARKET_TYPE" :label="opt.name" :key="opt.key" :value="opt.key"></el-option>
-                  </el-select>
-                </el-form-item>
-                <el-form-item :label="$t('Type')" v-else>
-                  <el-select v-model="selectedType" :disabled="true">
-                    <el-option :label="C.SCRIPT_MARKET_TYPE_MAP.get(selectedType).name" :value="selectedType"></el-option>
-                  </el-select>
-                </el-form-item>
+            <el-form-item :label="$t('Type')" prop="type" v-if="pageMode === 'add'">
+              <el-select v-model="form.type" @change="switchType">
+                <el-option v-for="opt in C.SCRIPT_MARKET_TYPE" :label="opt.name" :key="opt.key" :value="opt.key"></el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item :label="$t('Type')" v-else>
+              <el-select v-model="selectedType" :disabled="true">
+                <el-option :label="C.SCRIPT_MARKET_TYPE_MAP.get(selectedType).name" :value="selectedType"></el-option>
+              </el-select>
+            </el-form-item>
 
-                <template v-if="selectedType">
-                  <el-form-item v-if="C.SCRIPT_MARKET_TYPE_MAP.get(selectedType).logo">
-                    <el-image class="script-market-logo" :class="common.getScriptMarketClass(form)" :src="common.getScriptMarketLogo(form)"></el-image>
-                  </el-form-item>
+            <template v-if="selectedType">
+              <el-form-item v-if="C.SCRIPT_MARKET_TYPE_MAP.get(selectedType).logo">
+                <el-image class="script-market-logo" :class="common.getScriptMarketClass(form)" :src="common.getScriptMarketLogo(form)"></el-image>
+              </el-form-item>
 
-                  <el-form-item>
-                    <InfoBlock type="warning" :title="C.SCRIPT_MARKET_TYPE_MAP.get(selectedType).tip" />
-                  </el-form-item>
+              <el-form-item>
+                <InfoBlock type="warning" :title="C.SCRIPT_MARKET_TYPE_MAP.get(selectedType).tip" />
+              </el-form-item>
 
-                  <el-form-item :label="$t('Title')">
-                    <el-input :placeholder="$t('Optional')"
-                      maxlength="200"
-                      v-model="form.title"></el-input>
-                  </el-form-item>
+              <el-form-item :label="$t('Title')">
+                <el-input :placeholder="$t('Optional')"
+                  maxlength="200"
+                  v-model="form.title"></el-input>
+              </el-form-item>
 
-                  <el-form-item :label="$t('Description')">
-                    <el-input :placeholder="$t('Optional')"
-                      type="textarea"
-                      resize="none"
-                      :autosize="{minRows: 2}"
-                      maxlength="5000"
-                      v-model="form.description"></el-input>
-                  </el-form-item>
+              <el-form-item :label="$t('Description')">
+                <el-input :placeholder="$t('Optional')"
+                  type="textarea"
+                  resize="none"
+                  :autosize="{minRows: 2}"
+                  maxlength="5000"
+                  v-model="form.description"></el-input>
+              </el-form-item>
 
-                  <!-- 可变区域 -->
-                  <el-form-item label="URL" v-if="hasConfigField(selectedType, 'url')" prop="configJSON.url">
-                    <el-input
-                      type="textarea"
-                      resize="none"
-                      :autosize="{minRows: 2}"
-                      maxlength="5000"
-                      v-model="form.configJSON.url"></el-input>
-                  </el-form-item>
+              <!-- 可变区域 -->
+              <el-form-item label="URL" v-if="hasConfigField(selectedType, 'url')" prop="configJSON.url">
+                <el-input
+                  type="textarea"
+                  resize="none"
+                  :autosize="{minRows: 2}"
+                  maxlength="5000"
+                  v-model="form.configJSON.url"></el-input>
+              </el-form-item>
 
-                  <el-form-item :label="$t('Branch')" v-if="hasConfigField(selectedType, 'branch')" prop="configJSON.branch">
-                    <el-input :placeholder="$t('Default')"
-                      v-model="form.configJSON.branch"></el-input>
-                  </el-form-item>
+              <el-form-item :label="$t('Branch')" v-if="hasConfigField(selectedType, 'branch')" prop="configJSON.branch">
+                <el-input :placeholder="$t('Default')"
+                  v-model="form.configJSON.branch"></el-input>
+              </el-form-item>
 
-                  <el-form-item :label="$t('User')" v-if="hasConfigField(selectedType, 'user')" prop="configJSON.user">
-                    <el-input
-                      v-model="form.configJSON.user"></el-input>
-                  </el-form-item>
+              <el-form-item :label="$t('User')" v-if="hasConfigField(selectedType, 'user')" prop="configJSON.user">
+                <el-input
+                  v-model="form.configJSON.user"></el-input>
+              </el-form-item>
 
-                  <el-form-item :label="$t('Password')" v-if="hasConfigField(selectedType, 'password')" prop="configJSON.password">
-                    <el-input
-                      v-model="form.configJSON.password" show-password></el-input>
-                    <InfoBlock v-if="T.setupPageMode() === 'setup'" type="info" :title="$t('Password here is always required when the Script Market requires password')" />
-                  </el-form-item>
+              <el-form-item :label="$t('Password')" v-if="hasConfigField(selectedType, 'password')" prop="configJSON.password">
+                <el-input
+                  v-model="form.configJSON.password" show-password></el-input>
+                <InfoBlock v-if="pageMode === 'setup'" type="info" :title="$t('Password here is always required when the Script Market requires password')" />
+              </el-form-item>
 
-                  <el-form-item :label="$t('Endpoint')" v-if="hasConfigField(selectedType, 'endpoint')" prop="configJSON.endpoint">
-                    <el-input
-                      v-model="form.configJSON.endpoint"></el-input>
-                  </el-form-item>
+              <el-form-item :label="$t('Endpoint')" v-if="hasConfigField(selectedType, 'endpoint')" prop="configJSON.endpoint">
+                <el-input
+                  v-model="form.configJSON.endpoint"></el-input>
+              </el-form-item>
 
-                  <el-form-item label="Bucket" v-if="hasConfigField(selectedType, 'bucket')" prop="configJSON.bucket">
-                    <el-input
-                      v-model="form.configJSON.bucket"></el-input>
-                  </el-form-item>
+              <el-form-item label="Bucket" v-if="hasConfigField(selectedType, 'bucket')" prop="configJSON.bucket">
+                <el-input
+                  v-model="form.configJSON.bucket"></el-input>
+              </el-form-item>
 
-                  <el-form-item :label="$t('Folder')" v-if="hasConfigField(selectedType, 'folder')" prop="configJSON.folder">
-                    <el-input
-                      v-model="form.configJSON.folder"></el-input>
-                  </el-form-item>
+              <el-form-item :label="$t('Folder')" v-if="hasConfigField(selectedType, 'folder')" prop="configJSON.folder">
+                <el-input
+                  v-model="form.configJSON.folder"></el-input>
+              </el-form-item>
 
-                  <el-form-item label="AK ID" v-if="hasConfigField(selectedType, 'accessKeyId')" prop="configJSON.accessKeyId">
-                    <el-input
-                      v-model="form.configJSON.accessKeyId"></el-input>
-                  </el-form-item>
+              <el-form-item label="AK ID" v-if="hasConfigField(selectedType, 'accessKeyId')" prop="configJSON.accessKeyId">
+                <el-input
+                  v-model="form.configJSON.accessKeyId"></el-input>
+              </el-form-item>
 
-                  <el-form-item label="AK Secret" v-if="hasConfigField(selectedType, 'accessKeySecret')" prop="configJSON.accessKeySecret">
-                    <el-input
-                      v-model="form.configJSON.accessKeySecret" show-password></el-input>
-                    <InfoBlock v-if="T.setupPageMode() === 'setup'" type="info" :title="$t('AK Secret here is always required when the Script Market requires password')" />
-                  </el-form-item>
+              <el-form-item label="AK Secret" v-if="hasConfigField(selectedType, 'accessKeySecret')" prop="configJSON.accessKeySecret">
+                <el-input
+                  v-model="form.configJSON.accessKeySecret" show-password></el-input>
+                <InfoBlock v-if="pageMode === 'setup'" type="info" :title="$t('AK Secret here is always required when the Script Market requires password')" />
+              </el-form-item>
 
-                  <el-form-item v-if="T.setupPageMode() === 'add' && !C.SCRIPT_MARKET_TYPE_MAP.get(selectedType).isReadonly">
-                    <el-switch
-                      v-model="setAdmin"
-                      :active-text="$t('Manage this Script Market')">
-                    </el-switch>
-                  </el-form-item>
+              <el-form-item v-if="pageMode === 'add' && !C.SCRIPT_MARKET_TYPE_MAP.get(selectedType).isReadonly">
+                <el-switch
+                  v-model="setAdmin"
+                  :active-text="$t('Manage this Script Market')">
+                </el-switch>
+              </el-form-item>
 
-                  <el-form-item v-if="T.setupPageMode() === 'setup' && data.isAdmin">
-                    <div class="manage-this-script-market-tip">
-                      <i class="fa fa-fw fa-check text-main fa-2x"></i>
-                      <span>{{ $t('Manage this Script Market') }}</span>
-                    </div>
-                  </el-form-item>
-                  <!-- 可变部分结束 -->
-                </template>
-              </el-form>
-            </div>
-          </el-col>
-          <el-col :span="9" class="hidden-md-and-down">
-          </el-col>
-        </el-row>
-      </el-main>
+              <el-form-item v-if="pageMode === 'setup' && data.isAdmin">
+                <div class="manage-this-script-market-tip">
+                  <i class="fa fa-fw fa-check text-main fa-2x"></i>
+                  <span>{{ $t('Manage this Script Market') }}</span>
+                </div>
+              </el-form-item>
+              <!-- 可变部分结束 -->
 
-      <!-- 底部栏 -->
-      <el-footer v-if="selectedType">
-        <div class="setup-footer">
-          <el-button class="delete-button" v-if="T.setupPageMode() === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
-          <el-button type="primary" @click="submitData"
-            :disabled="isSaving">
-            <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="isSaving"></i>
-            {{ $t('Save') }}
-          </el-button>
+              <el-form-item class="setup-footer">
+                <el-button class="delete-button" v-if="pageMode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+                <el-button type="primary" @click="submitData"
+                  :disabled="isSaving">
+                  <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="isSaving"></i>
+                  {{ $t('Save') }}
+                </el-button>
+              </el-form-item>
+            </template>
+          </el-form>
         </div>
-      </el-footer>
+      </el-main>
     </el-container>
-  </transition>
+  </el-dialog>
 </template>
 
 <script>
@@ -179,22 +174,10 @@ export default {
   components: {
   },
   watch: {
-    $route: {
-      immediate: true,
-      async handler(to, from) {
-        await this.loadData();
-
-        switch(this.T.setupPageMode()) {
-          case 'add':
-            this.T.jsonClear(this.form);
-            this.form.configJSON = {};
-            this.data = {};
-            break;
-
-          case 'setup':
-            break;
-        }
-      },
+    show(val) {
+      if (!val) {
+        this.$root.$emit('reload.scriptMarketList');
+      }
     },
   },
   methods: {
@@ -243,9 +226,18 @@ export default {
       this.fillDefault(type);
       this.updateValidator(type);
     },
-    async loadData() {
-      if (this.T.setupPageMode() === 'setup') {
-        let apiRes = await this.T.callAPI_getOne('/api/v1/script-markets/do/list', this.$route.params.id);
+    async loadData(id) {
+      if (!id) {
+        this.pageMode = 'add';
+        this.T.jsonClear(this.form);
+        this.form.configJSON = {};
+        this.data = {};
+
+      } else {
+        this.pageMode = 'setup';
+        this.data.id = id;
+
+        let apiRes = await this.T.callAPI_getOne('/api/v1/script-markets/do/list', this.data.id);
         if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -257,7 +249,7 @@ export default {
         this.updateValidator(this.data.type);
       }
 
-      this.$store.commit('updateLoadStatus', true);
+      this.show = true;
     },
     async submitData() {
       try {
@@ -268,7 +260,7 @@ export default {
 
       this.isSaving = true;
 
-      switch(this.T.setupPageMode()) {
+      switch(this.pageMode) {
         case 'add':
           await this.addData();
           break;
@@ -276,7 +268,6 @@ export default {
         case 'setup':
           await this.modifyData();
           break;
-
       }
 
       setTimeout(() => {
@@ -308,13 +299,8 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$store.commit('updateTableList_scrollY');
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
-
-      this.$router.push({
-        name : 'script-market-list',
-        query: this.T.getPrevQuery(),
-      });
+      this.show = false;
     },
     async modifyData() {
       let _formData = this._getFromData();
@@ -322,18 +308,14 @@ export default {
       delete _formData.type;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/script-markets/:id/do/modify', {
-        params: { id: this.$route.params.id },
+        params: { id: this.data.id },
         body  : { data: _formData },
         alert : { okMessage: this.$t('Script Market saved') },
       });
       if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
-
-      this.$router.push({
-        name : 'script-market-list',
-        query: this.T.getPrevQuery(),
-      });
+      this.show = false;
     },
     async deleteData() {
       if (this.data.type === 'git'
@@ -343,15 +325,12 @@ export default {
       if (!await this.T.confirm(this.$t('Are you sure you want to delete the Script Market?'))) return;
 
       let apiRes = await this.T.callAPI('/api/v1/script-markets/:id/do/delete', {
-        params: { id: this.$route.params.id },
+        params: { id: this.data.id },
         alert : { okMessage: this.$t('Script Market removed') },
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.$router.push({
-        name : 'script-market-list',
-        query: this.T.getPrevQuery(),
-      });
+      this.show = false;
     },
     hasConfigField(type, field) {
       if (!this.C.SCRIPT_MARKET_TYPE_MAP.get(type) || !this.C.SCRIPT_MARKET_TYPE_MAP.get(type).configFields) {
@@ -362,7 +341,7 @@ export default {
   },
   computed: {
     isUserPasswordRequired() {
-      let configJSON = this.T.setupPageMode() === 'setup'
+      let configJSON = this.pageMode === 'setup'
                     ? this.data.configJSON
                     : this.form.configJSON;
       configJSON = configJSON || {};
@@ -373,10 +352,10 @@ export default {
         setup: this.$t('Setup Script Market'),
         add  : this.$t('Add Script Market'),
       };
-      return _map[this.T.setupPageMode()];
+      return _map[this.pageMode];
     },
     selectedType() {
-      switch(this.T.setupPageMode()) {
+      switch(this.pageMode) {
         case 'add':
           return this.form.type;
 
@@ -389,6 +368,9 @@ export default {
   },
   data() {
     return {
+      show    : false,
+      pageMode: null,
+
       data: {},
 
       setAdmin: false,
@@ -402,14 +384,14 @@ export default {
       formRules: {
         type: [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input Script Market type'),
             required: true,
           },
         ],
         'configJSON.url': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input URL'),
             required: false,
           },
@@ -421,28 +403,28 @@ export default {
         ],
         'configJSON.branch': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input Branch'),
             required: false,
           },
         ],
         'configJSON.user': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input user'),
             required: this.isUserPasswordRequired,
           },
         ],
         'configJSON.password': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input password'),
             required: this.isUserPasswordRequired,
           },
         ],
         'configJSON.endpoint': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input endpoint'),
             required: true,
           },
@@ -454,28 +436,28 @@ export default {
         ],
         'configJSON.bucket': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input bucket'),
             required: true,
           },
         ],
         'configJSON.folder': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input folder'),
             required: true,
           },
         ],
         'configJSON.accessKeyId': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input AK Id'),
             required: true,
           },
         ],
         'configJSON.accessKeySecret': [
           {
-            trigger : 'change',
+            trigger : 'blur',
             message : this.$t('Please input AK Secret'),
             required: true,
           },
