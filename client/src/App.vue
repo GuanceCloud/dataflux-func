@@ -1095,18 +1095,6 @@ kbd {
 }
 
 /*动画效果*/
-@keyframes highlight-code-line-blink {
-  from, to {
-    opacity: 1.0;
-  }
-  50% {
-    opacity: 0.3;
-  }
-}
-.highlight-code-line-blink {
-  animation: highlight-code-line-blink .25s ease-in-out 0.3s 3;
-}
-
 @keyframes error-input-shake {
   from, to {
     transform: translate3d(0, 0, 0);
@@ -1118,7 +1106,6 @@ kbd {
     transform: translate3d(20px, 0, 0);
   }
 }
-
 .error-input-shake {
   animation: error-input-shake .65s ease-out 0.2s;
 }

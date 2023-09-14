@@ -6,7 +6,12 @@
   Zoom In : 放大
   Zoom Out: 缩小
   Fit View: 适合大小
-  Drag to add: 拖拽添加节点
+
+  Drag to add    : 拖拽以添加
+  Basic Node     : 基础节点
+  Built-in Node  : 内置节点
+  Featured Node  : 功能节点
+  Comming soon...: 敬请期待...
 
   Selected: 已选中
   Open Setting Panel: 打开设置面板
@@ -145,79 +150,103 @@
 
         <!-- 拖拽面板 -->
         <div id="logicFlowDnd">
-          <div class="dnd-title">{{ $t('Drag to add') }}</div>
-
-          <div class="dnd-node">
-            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'CodeNode' })">
-              <div class="node-icon"><i class="fa fa-fw fa-code"></i></div>
-              <div class="node-text">{{ $t('Code Node') }}</div>
-            </div>
+          <div class="tip text-info">
+            {{ $t('Drag to add') }}
+            <span class="fa-stack tip-icon tip-icon-move-right-fade">
+              <i class="fa fa-stack-1x fa-mouse-pointer"></i>
+              <i class="fa fa-stack-1x fa-square-o"></i>
+            </span>
           </div>
+          <el-collapse accordion value="basic-node">
+            <el-collapse-item name="basic-node">
+              <template slot="title">
+                <span class="dnd-title">{{ $t('Basic Node') }}</span>
+              </template>
 
-          <div class="dnd-node">
-            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'FuncNode' })">
-              <div class="node-icon code-font text-info">def</div>
-              <div class="node-text">{{ $t('Func Node') }}</div>
-            </div>
-          </div>
+              <div class="dnd-node">
+                <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'CodeNode' })">
+                  <div class="node-icon"><i class="fa fa-fw fa-code"></i></div>
+                  <div class="node-text">{{ $t('Code Node') }}</div>
+                </div>
+              </div>
 
-          <div class="dnd-node">
-            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'SwitchNode' })">
-              <div class="node-icon"><i class="fa fa-fw fa-sitemap fa-rotate-270"></i></div>
-              <div class="node-text">{{ $t('Switch Node') }}</div>
-            </div>
-          </div>
+              <div class="dnd-node">
+                <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'FuncNode' })">
+                  <div class="node-icon code-font text-info">def</div>
+                  <div class="node-text">{{ $t('Func Node') }}</div>
+                </div>
+              </div>
 
-          <div class="dnd-title">{{ $t('Built-in') }}</div>
+              <div class="dnd-node">
+                <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'SwitchNode' })">
+                  <div class="node-icon"><i class="fa fa-fw fa-sitemap fa-rotate-270"></i></div>
+                  <div class="node-text">{{ $t('Switch Node') }}</div>
+                </div>
+              </div>
+            </el-collapse-item>
 
-          <div class="dnd-node">
-            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinHashNode' })">
-              <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
-              <div class="node-text">{{ $t('Hash') }}</div>
-            </div>
-          </div>
+            <el-collapse-item name="built-in-featured-node">
+              <template slot="title">
+                <span class="dnd-title">{{ $t('Built-in Node') }}</span>
+              </template>
 
-          <div class="dnd-node">
-            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinBase64Node' })">
-              <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
-              <div class="node-text">{{ $t('Base64') }}</div>
-            </div>
-          </div>
+              <div class="dnd-node">
+                <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinHashNode' })">
+                  <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
+                  <div class="node-text">{{ $t('Hash') }}</div>
+                </div>
+              </div>
 
-          <div class="dnd-node">
-            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinRandomNode' })">
-              <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
-              <div class="node-text">{{ $t('Random') }}</div>
-            </div>
-          </div>
+              <div class="dnd-node">
+                <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinBase64Node' })">
+                  <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
+                  <div class="node-text">{{ $t('Base64') }}</div>
+                </div>
+              </div>
 
-          <div class="dnd-node">
-            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinJSONNode' })">
-              <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
-              <div class="node-text">{{ $t('JSON') }}</div>
-            </div>
-          </div>
+              <div class="dnd-node">
+                <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinRandomNode' })">
+                  <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
+                  <div class="node-text">{{ $t('Random') }}</div>
+                </div>
+              </div>
 
-          <div class="dnd-node">
-            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinYAMLNode' })">
-              <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
-              <div class="node-text">{{ $t('YAML') }}</div>
-            </div>
-          </div>
+              <div class="dnd-node">
+                <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinJSONNode' })">
+                  <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
+                  <div class="node-text">{{ $t('JSON') }}</div>
+                </div>
+              </div>
 
-          <div class="dnd-node">
-            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinHTTPNode' })">
-              <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
-              <div class="node-text">{{ $t('HTTP Request') }}</div>
-            </div>
-          </div>
+              <div class="dnd-node">
+                <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinYAMLNode' })">
+                  <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
+                  <div class="node-text">{{ $t('YAML') }}</div>
+                </div>
+              </div>
 
-          <div class="dnd-node">
-            <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinDingTalkNode' })">
-              <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
-              <div class="node-text">{{ $t('DingTalk Robot') }}</div>
-            </div>
-          </div>
+              <div class="dnd-node">
+                <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinHTTPNode' })">
+                  <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
+                  <div class="node-text">{{ $t('HTTP Request') }}</div>
+                </div>
+              </div>
+
+              <div class="dnd-node">
+                <div class="node" @mousedown="canvasAction('dragAddNode', { type: 'BuiltinDingTalkNode' })">
+                  <div class="node-icon"><i class="fa fa-fw fa-magic"></i></div>
+                  <div class="node-text">{{ $t('DingTalk Robot') }}</div>
+                </div>
+              </div>
+            </el-collapse-item>
+
+            <el-collapse-item name="func-featured-node">
+              <template slot="title">
+                <span class="dnd-title">{{ $t('Featured Node') }}</span>
+              </template>
+              <div style="text-align: center" class="text-info">{{ $t('Comming soon...') }}</div>
+            </el-collapse-item>
+          </el-collapse>
         </div>
       </div>
 
@@ -316,11 +345,6 @@
             <!-- 输入字段 -->
             <el-form-item :label="$t('Input Field')" v-if="selectedElementHasProp('inputField')">
               <el-input v-model="form.inputField"></el-input>
-            </el-form-item>
-
-            <!-- 输出字段 -->
-            <el-form-item :label="$t('Output Field')" v-if="selectedElementHasProp('outputField')">
-              <el-input v-model="form.outputField"></el-input>
             </el-form-item>
 
             <!-- 编码 / 解码 -->
@@ -461,6 +485,11 @@
                 </template>
               </p>
             </el-form-item>
+
+            <!-- 输出字段 -->
+            <el-form-item :label="$t('Output Field')" v-if="selectedElementHasProp('outputField')">
+              <el-input v-model="form.outputField"></el-input>
+            </el-form-item>
           </el-form>
         </div>
         <div slot="footer">
@@ -494,7 +523,6 @@ import BuiltinJSONNode from '@/components/Blueprint/Nodes/BuiltinJSONNode.js';
 import BuiltinYAMLNode from '@/components/Blueprint/Nodes/BuiltinYAMLNode.js';
 import BuiltinHTTPNode from '@/components/Blueprint/Nodes/BuiltinHTTPNode.js';
 import BuiltinDingTalkNode from '@/components/Blueprint/Nodes/BuiltinDingTalkNode.js';
-
 
 export default {
   name: 'BlueprintCanvas',
@@ -567,11 +595,6 @@ export default {
         alert : { okMessage: this.$t('Blueprint deployed') },
       });
       if (!apiRes || !apiRes.ok) return;
-
-      this.$router.push({
-        name  : 'code-viewer',
-        params: { id: apiRes.data.scriptId },
-      });
     },
 
     initCanvas() {
@@ -1188,6 +1211,29 @@ export default {
 }
 .switch-item-delete {
 }
+
+@keyframes tip-icon-move-right-fade {
+  from {
+    opacity: 1.0;
+    left: 0px;
+  }
+  10% {
+    opacity: 1.0;
+    left: 0px;
+  }
+  80% {
+    opacity: 1.0;
+    left: 30px;
+  }
+  to {
+    opacity: 0;
+    left: 30px;
+  }
+}
+.tip-icon-move-right-fade {
+  position: relative;
+  animation: tip-icon-move-right-fade 1.5s ease-in-out 0s 3;
+}
 </style>
 
 <style>
@@ -1252,6 +1298,19 @@ export default {
   max-height: calc(100% - 40px);
   overflow-y: auto;
 
+  .tip {
+    text-align: left;
+    font-size: 12px;
+    margin: 10px;
+  }
+  .tip-icon .fa-mouse-pointer {
+    top: 3px;
+    left: 4px;
+  }
+  .tip-icon .fa-square-o {
+    top: -2px;
+  }
+
   .node {
     width: 130px;
     height: 28px;
@@ -1266,11 +1325,19 @@ export default {
     font-size: 12px;
     width: 150px;
   }
-  .dnd-title, .dnd-node {
-    margin: 5px 10px;
+
+  .dnd-title {
+    display: block;
+    margin: 5px 30px 5px 10px;
+    cursor: pointer;
   }
   .dnd-node {
+    margin: 5px 10px;
     cursor: copy;
+  }
+
+  .el-collapse-item__content {
+    padding-bottom: 5px !important;
   }
 }
 

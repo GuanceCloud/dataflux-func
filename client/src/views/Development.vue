@@ -164,4 +164,17 @@ export default {
   padding: 12px !important;
   max-width: 650px;
 }
+
+@keyframes highlight-code-line-blink {
+  from, to {
+    opacity: 1.0;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+.highlight-code-line-blink {
+  animation: highlight-code-line-blink .25s ease-in-out 0s 3;
+  animation-fill-mode: forwards;
+}
 </style>
