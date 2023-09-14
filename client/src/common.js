@@ -155,8 +155,9 @@ export async function getFuncList(options) {
       // 加入映射表
       // 蓝图
       if (!options.scriptLibOnly && d.origin === 'blueprint') {
+        let blueprintId = d.id.replace(/^_bp_/g, '');
         blueprints.push({
-          label: d.title || d.id,
+          label: d.title || blueprintId,
           value: `${d.id}__main.run`,
           title: d.title,
           tip  : d.id,
