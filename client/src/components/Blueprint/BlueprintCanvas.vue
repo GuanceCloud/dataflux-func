@@ -525,7 +525,7 @@ export default {
       this.data = apiRes.data;
 
       // 获取函数列表
-      let funcList = await this.common.getFuncList();
+      let funcList = await this.common.getFuncList({ scriptLibOnly: true });
 
       this.funcMap      = funcList.map;
       this.funcCascader = funcList.cascader;

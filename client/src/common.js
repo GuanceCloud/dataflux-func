@@ -111,7 +111,9 @@ export async function getAPIAuthList() {
   return apiAuthList;
 }
 
-export async function getFuncList() {
+export async function getFuncList(options) {
+  options = options || {};
+
   // 获取关联数据
   let scriptSetMap = {};
   let scriptMap    = {};
@@ -152,14 +154,14 @@ export async function getFuncList() {
 
       // 加入映射表
       // 蓝图
-      if (d.origin === 'blueprint') {
+      if (!options.scriptLibOnly && d.origin === 'blueprint') {
         blueprints.push({
           label: d.title || d.id,
           value: `${d.id}__main.run`,
           title: d.title,
           tip  : d.id,
         });
-      }
+        }
 
       // 脚本集
       if (!shouldScriptSetHidden(d)) {
@@ -231,9 +233,11 @@ export async function getFuncList() {
   let scriptSets = Object.values(scriptSetMap);
   scriptSets.sort(T.scriptSetSorter);
 
-  let result = {
-    map     : funcMap,
-    cascader: [
+  let result = { map: funcMap };
+  if (options.scriptLibOnly) {
+    result.cascader = scriptSets;
+  } else {
+    result.cascader = [
       {
         label: app.$t('Script Lib'),
         children: scriptSets,
