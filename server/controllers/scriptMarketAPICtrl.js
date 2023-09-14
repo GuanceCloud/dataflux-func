@@ -524,6 +524,10 @@ SCRIPT_MARKET_INIT_FUNC_MAP.httpService = SCRIPT_MARKET_INIT_FUNC_MAP.aliyunOSS;
 var SCRIPT_MARKET_RESET_FUNC_MAP = {
   git: function(locals, scriptMarket, callback) {
     var localPath = _getLocalAbsPath(scriptMarket);
+    if (!fs.existsSync(localPath)) {
+      return callback(new Error('Local git folder not exists'))
+    }
+
     var git = toolkit.createGitHandler(localPath);
 
     var prevCommitId = null;
@@ -715,6 +719,10 @@ var SCRIPT_MARKET_DOWNLOAD_FUNC_MAP = {
 var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
   git: function(locals, scriptMarket, pushContent, callback) {
     var localPath = _getLocalAbsPath(scriptMarket);
+    if (!fs.existsSync(localPath)) {
+      return callback(new Error('Local git folder not exists'))
+    }
+
     var git = toolkit.createGitHandler(localPath);
 
     var prevCommitId = null;
@@ -785,7 +793,11 @@ var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
   aliyunOSS: function(locals, scriptMarket, pushContent, callback) {
     if (toolkit.isNothing(pushContent)) return callback();
 
-    var localPath   = _getLocalAbsPath(scriptMarket);
+    var localPath = _getLocalAbsPath(scriptMarket);
+    if (!fs.existsSync(localPath)) {
+      return callback(new Error('Local data folder not exists'))
+    }
+
     var ossPath     = `oss://${scriptMarket.configJSON.bucket}/${scriptMarket.configJSON.folder}/`;
     var ossEndpoint = scriptMarket.configJSON.endpoint;
 
