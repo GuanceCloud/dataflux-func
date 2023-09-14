@@ -272,8 +272,8 @@ function _doSetup(userConfig, callback) {
             // 检查版本号
             if (redisInfo['redis_version'] !== null) {
               var redisMajorVer = parseInt(redisInfo['redis_version'].split('.')[0]);
-              if (redisMajorVer < 4) {
-                setupErrorWrap.set('redis', 'Redis 4.0 or above is required', `redis_version: ${redisInfo['redis_version']}`);
+              if (redisMajorVer < 5) {
+                setupErrorWrap.set('redis', 'Redis 5.0 or above is required', `redis_version: ${redisInfo['redis_version']}`);
               }
             }
 
