@@ -524,8 +524,8 @@ SCRIPT_MARKET_INIT_FUNC_MAP.httpService = SCRIPT_MARKET_INIT_FUNC_MAP.aliyunOSS;
 var SCRIPT_MARKET_RESET_FUNC_MAP = {
   git: function(locals, scriptMarket, callback) {
     var localPath = _getLocalAbsPath(scriptMarket);
-    if (!fs.existsSync(localPath)) {
-      return callback(new Error('Local git folder not exists'))
+    if (!fs.existsSync(path.join(localPath, '.git/config'))) {
+      return callback(new Error('Local git folder is broken, please delete the Script Market and add it again'))
     }
 
     var git = toolkit.createGitHandler(localPath);
@@ -719,8 +719,8 @@ var SCRIPT_MARKET_DOWNLOAD_FUNC_MAP = {
 var SCRIPT_MARKET_UPLOAD_REPO_FUNC_MAP = {
   git: function(locals, scriptMarket, pushContent, callback) {
     var localPath = _getLocalAbsPath(scriptMarket);
-    if (!fs.existsSync(localPath)) {
-      return callback(new Error('Local git folder not exists'))
+    if (!fs.existsSync(path.join(localPath, '.git/config'))) {
+      return callback(new Error('Local git folder is broken, please delete the Script Market and add it again'))
     }
 
     var git = toolkit.createGitHandler(localPath);
