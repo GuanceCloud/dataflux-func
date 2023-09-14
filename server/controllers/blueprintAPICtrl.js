@@ -490,8 +490,9 @@ function _genImportBlock(blueprint) {
     if (node.type !== 'FuncNode') return;
 
     var props = node.properties;
-    var scriptId = props.funcId.split('.')[0];
+    if (toolkit.isNothing(props)) return;
 
+    var scriptId = props.funcId.split('.')[0];
     importScriptIdMap[scriptId] = true;
   });
 
@@ -524,7 +525,7 @@ function _genNodeFuncDefBlock(blueprint) {
     var funcDefLine = `def ${_genFuncName(node.id)}(data):`;
 
     // 函数体
-    funcDefBody = funcDefBody.toString('\n').trim();
+    funcDefBody = funcDefBody.toString('\n').trim() || 'pass';
     funcDefBody = _indentCodeBlock(funcDefBody);
 
     codeBlock.append(funcDefLine);
@@ -539,7 +540,7 @@ function _genRunFunc(blueprint) {
   var codeBlock = toolkit.createStringBuilder();
 
   codeBlock.append(`@DFF.API(${JSON.stringify(blueprint.title || blueprint.id)})`);
-  codeBlock.append(`def run():`)
+  codeBlock.append(`def run(**data):`)
 
   // 调用映射
   var callMap = {};
@@ -566,7 +567,7 @@ function _genRunFunc(blueprint) {
 
   // 根据映射表循环调用
   codeBlock.append(`
-    data = {}
+    data = data or {}
 
     next_node = 'entry'
     for i in range(1000):

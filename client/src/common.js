@@ -161,10 +161,10 @@ export async function getFuncList(options) {
           title: d.title,
           tip  : d.id,
         });
-        }
+      }
 
       // 脚本集
-      if (!shouldScriptSetHidden(d)) {
+      if (!shouldScriptSetHidden(d) && d.origin !== 'blueprint') {
         scriptSetMap[d.id] = {
           label   : d.title || d.id,
           value   : d.id,
