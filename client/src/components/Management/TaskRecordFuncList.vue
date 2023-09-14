@@ -7,23 +7,24 @@ batch      : Batch
 connector  : Connector
 </i18n>
 <i18n locale="zh-CN" lang="yaml">
-Exec Mode   : 执行模式
-Trigger Time: 触发时间
-Start Time  : 启动时间
-End Time    : 结束时间
-Task        : 任务
-Func ID     : 函数 ID
-Func Name   : 函数名
-Func Title  : 函数标题
-Main Task   : 主任务
-Sub Task    : 子任务
-Delay       : 延迟执行
-Queue       : 所属队列
-Wait Cost   : 排队耗时
-Run Cost    : 执行耗时
-Log Lines   : 日志行数
-Task Type   : 任务类型
-Task Status : 任务状态
+Exec Mode      : 执行模式
+Trigger Time   : 触发时间
+Start Time     : 启动时间
+End Time       : 结束时间
+Task           : 任务
+Func Title     : 函数标题
+Func ID        : 函数 ID
+Blueprint Title: 蓝图标题
+Blueprint ID   : 蓝图 ID
+Main Task      : 主任务
+Sub Task       : 子任务
+Delay          : 延迟执行
+Queue          : 所属队列
+Wait Cost      : 排队耗时
+Run Cost       : 执行耗时
+Log Lines      : 日志行数
+Task Type      : 任务类型
+Task Status    : 任务状态
 
 Print Log   : Print 日志
 Traceback   : 调用堆栈
@@ -297,32 +298,56 @@ export default {
     showDetail(d) {
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
+      let origin = 'scriptLib';
+      let id     = d.funcId;
+      if (this.T.startsWith(d.funcId, '_bp_')) {
+        origin = 'blueprint';
+        id     = d.funcId.replace(/^_bp_/g, '').split('__')[0];
+      }
+
       let contentLines = [];
       contentLines.push(`===== ${this.$t('Task')} =====`);
-      contentLines.push(`${this.$t('Func ID')} : ${this.$t(d.funcId)}`);
-      contentLines.push(`${this.$t('Func Title')}: ${this.$t(d.func_title)}`);
+      if (origin === 'scriptLib') {
+        // 脚本
+        contentLines.push(`${this.$t('Func ID')} : ${this.$t(id)}`);
+        contentLines.push(`${this.$t('Func Title')}: ${this.$t(d.func_title)}`);
+      } else {
+        // 蓝图
+        contentLines.push(`${this.$t('Blueprint ID')} : ${this.$t(id)}`);
+        contentLines.push(`${this.$t('Blueprint Title')}: ${this.$t(d.func_title)}`);
+      }
+
+      // 队列
       contentLines.push(`${this.$t('Queue')}: #${d.queue}`);
 
+      // 时间
       contentLines.push('');
       contentLines.push(`${this.$t('Trigger Time')}: ${this.T.getDateTimeString(d.triggerTimeMs)} ${this.$t('(')}${this.T.fromNow(d.triggerTimeMs)}${this.$t(')')}`);
       contentLines.push(`${this.$t('Start Time')}: ${this.T.getDateTimeString(d.startTimeMs)} ${this.$t('(')}${this.T.fromNow(d.startTimeMs)}${this.$t(')')}`);
       contentLines.push(`${this.$t('End Time')}: ${this.T.getDateTimeString(d.endTimeMs)} ${this.$t('(')}${this.T.fromNow(d.endTimeMs)}${this.$t(')')}`);
 
+      // 延迟
       if (d.delay > 0) {
         contentLines.push(`${this.$t('Delay')}: ${d.delay} ${this.$t('s')}`);
       } else {
         contentLines.push(`${this.$t('Delay')}: -`);
       }
 
+      // 耗时
       if (d.waitCostMs > 1000) {
         contentLines.push(`${this.$t('Wait Cost')}: ${d.waitCostMs} ${this.$t('ms')}`);
       } else {
         contentLines.push(`${this.$t('Wait Cost')}: -`);
       }
       contentLines.push(`${this.$t('Run Cost')}: ${d.runCostMs} ${this.$t('ms')}`);
+
+      // 任务类型
       contentLines.push(`${this.$t('Task Type')}: ${d.rootTaskId === 'ROOT' ? this.$t('Main Task') : this.$t('Sub Task')}`);
+
+      // 任务状态
       contentLines.push(`${this.$t('Task Status')}: ${this.$t(d.status)}`);
 
+      // 日志
       contentLines.push('');
       contentLines.push(`===== ${this.$t('Print Log')} =====`);
       if (d.printLogsTEXT) {
@@ -331,6 +356,7 @@ export default {
         contentLines.push(this.$t('No Print Log'));
       }
 
+      // 堆栈
       contentLines.push('');
       contentLines.push(`===== ${this.$t('Traceback')} =====`);
       if (d.tracebackTEXT) {
@@ -342,7 +368,7 @@ export default {
       let contentTEXT = contentLines.join('\n');
 
       let createTimeStr = this.M(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
-      let fileName = `${d.funcId}.log.${createTimeStr}`;
+      let fileName = `${origin}-${id}.log.${createTimeStr}`;
       this.$refs.longTextDialog.update(contentTEXT, fileName);
     },
   },
