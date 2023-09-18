@@ -262,9 +262,9 @@ common.getGuanceNodes = function() {
       'key'      : 'testing',
       'name'     : '测试环境',
       'name_en'  : 'Testing',
-      'openapi'  : 'http://testing-ft2x-open-api.cloudcare.cn',
-      'websocket': 'http://testing-ft2x-websocket.cloudcare.cn',
-      'openway'  : 'http://testing-openway.cloudcare.cn',
+      'openapi'  : 'http://testing-ft2x-open-api.dataflux.cn',
+      'websocket': 'http://testing-ft2x-websocket.dataflux.cn',
+      'openway'  : 'http://testing-openway.dataflux.cn',
     });
   }
 
