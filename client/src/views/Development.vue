@@ -136,6 +136,22 @@ export default {
 </style>
 
 <style>
+.aside-content .aside-inner-content {
+  padding-top: 15px;
+}
+.aside-content .jump-to-select-wrap {
+  z-index: 1;
+  width: calc(100% - 3px);
+  height: 50px;
+  position: absolute;
+  left: 0;
+  top: 1px;
+  padding-top: 8px;
+  background: linear-gradient(to bottom, #FFF 50%, #22222200 100%);
+}
+.aside-content .el-tabs__header {
+  z-index: 1;
+}
 .aside-content > .el-tabs > .el-tabs__content > .el-tab-pane {
   height: 100%;
 }
@@ -145,9 +161,9 @@ export default {
   overflow-y: auto;
 }
 .aside-content > .el-tabs > .el-tabs__content {
-  padding: 5px 1px 10px 5px;
+  padding: 0px 0px 10px 5px;
   position: absolute;
-  top: 40px;
+  top: 38px;
   left: 0;
   right: 0;
   bottom: 0;

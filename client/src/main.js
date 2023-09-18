@@ -42,6 +42,11 @@ ElementUI.Dialog.props.top.default               = '10vh';
 ElementUI.Dialog.props.destroyOnClose.default    = true;
 
 ElementUI.Form.props.validateOnRuleChange.default = false;
+
+if (store.getters.uiColorSchema === 'dark') {
+  ElementUI.Progress.props.defineBackColor.default = '#555';
+}
+
 Vue.use(ElementUI);
 window.ElementUI = ElementUI
 

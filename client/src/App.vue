@@ -720,10 +720,10 @@ p.form-item {
   float: right;
 }
 .press-esc-to-close-tip {
-  font-size: 18px;
+  font-size: 14px;
   position: absolute;
   right: 55px;
-  top: 21px;
+  line-height: 26px;
 }
 tr.hl-row td {
   background-color: #ffefe480;
@@ -1119,7 +1119,7 @@ kbd {
   display: none;
 }
 ::-webkit-scrollbar-thumb:vertical {
-  background: #FF6600;
+  background: #E1E1E1;
   min-height: 30%;
   /* background-image: linear-gradient(to top, rgb(255, 102, 0, 0), rgb(255, 102, 0) 40%, rgb(255, 102, 0) 60%, rgb(255, 102, 0, 0)); */
 }

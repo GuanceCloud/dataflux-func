@@ -15,26 +15,28 @@ Are you sure you want to delete the ENV?<br><strong class="text-bad">{label}</st
 </i18n>
 
 <template>
-  <div id="aside-env-variable-content">
-    <el-select class="jump-to-select"
-      :placeholder="$t('Jump to...')"
-      :no-data-text="$t('No Data')"
-      size="small"
-      clearable
-      filterable
-      :filter-method="T.debounce(doFilter)"
-      v-model="selectFilterText">
-      <el-option
-        v-for="item in selectShowOptions"
-        :key="item.id"
-        :label="item.label"
-        :value="item.id">
-        <span class="select-item-name">
-          {{ item.label }}
-        </span>
-        <code class="select-item-id code-font">ID: {{ item.id }}</code>
-      </el-option>
-    </el-select>
+  <div id="aside-env-variable-content" class="aside-inner-content">
+    <div class="jump-to-select-wrap">
+      <el-select class="jump-to-select"
+        :placeholder="$t('Jump to...')"
+        :no-data-text="$t('No Data')"
+        size="small"
+        clearable
+        filterable
+        :filter-method="T.debounce(doFilter)"
+        v-model="selectFilterText">
+        <el-option
+          v-for="item in selectShowOptions"
+          :key="item.id"
+          :label="item.label"
+          :value="item.id">
+          <span class="select-item-name">
+            {{ item.label }}
+          </span>
+          <code class="select-item-id code-font">ID: {{ item.id }}</code>
+        </el-option>
+      </el-select>
+    </div>
 
     <el-tree class="aside-tree"
       v-loading="loading"

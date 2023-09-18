@@ -1,3 +1,7 @@
+::-webkit-scrollbar-thumb:vertical {
+  background: #555 !important;
+}
+
 body {
   background-color: #222 !important;
   color: #bbb !important;
@@ -349,6 +353,9 @@ input:disabled {
   border-right-color: #333 !important;
 }
 
+.aside-content .jump-to-select-wrap {
+  background: linear-gradient(to bottom, #222 50%, #22222200 100%) !important;
+}
 .aside-content .el-menu,
 .aside-content .el-menu-item,
 .aside-content .el-submenu,
@@ -367,6 +374,10 @@ input:disabled {
 .navi-content .el-submenu__title {
   background-color: #3c3c3c !important;
   color: #fff !important;
+}
+
+.setup-page-footer {
+  border-color: #555 !important;
 }
 
 .el-menu-item:focus,

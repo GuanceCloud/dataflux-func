@@ -19,29 +19,31 @@ Go to Recent Task Record: 前往最近任务记录
 </i18n>
 
 <template>
-  <div id="aside-connector-content">
-    <el-select class="jump-to-select"
-      :placeholder="$t('Jump to...')"
-      :no-data-text="$t('No Data')"
-      size="small"
-      clearable
-      filterable
-      :filter-method="T.debounce(doFilter)"
-      v-model="selectFilterText">
-      <el-option
-        v-for="item in selectShowOptions"
-        :key="item.id"
-        :label="item.label"
-        :value="item.id">
-        <span class="select-item-name">
-          <el-tag class="aside-tree-node-tag"
-            :type="C.CONNECTOR_MAP.get(item.connectorType).tagType"
-            size="mini">{{ C.CONNECTOR_MAP.get(item.connectorType).name }}</el-tag>
-          {{ item.label }}
-        </span>
-        <code class="select-item-id code-font">ID: {{ item.id }}</code>
-      </el-option>
-    </el-select>
+  <div id="aside-connector-content" class="aside-inner-content">
+    <div class="jump-to-select-wrap">
+      <el-select class="jump-to-select"
+        :placeholder="$t('Jump to...')"
+        :no-data-text="$t('No Data')"
+        size="small"
+        clearable
+        filterable
+        :filter-method="T.debounce(doFilter)"
+        v-model="selectFilterText">
+        <el-option
+          v-for="item in selectShowOptions"
+          :key="item.id"
+          :label="item.label"
+          :value="item.id">
+          <span class="select-item-name">
+            <el-tag class="aside-tree-node-tag"
+              :type="C.CONNECTOR_MAP.get(item.connectorType).tagType"
+              size="mini">{{ C.CONNECTOR_MAP.get(item.connectorType).name }}</el-tag>
+            {{ item.label }}
+          </span>
+          <code class="select-item-id code-font">ID: {{ item.id }}</code>
+        </el-option>
+      </el-select>
+    </div>
 
     <el-tree class="aside-tree"
       v-loading="loading"

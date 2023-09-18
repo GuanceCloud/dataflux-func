@@ -80,29 +80,31 @@ Some Script Sets have been hidden: 一些脚本集已被隐藏
 </i18n>
 
 <template>
-  <div id="aside-script-content">
-    <el-select class="jump-to-select"
-      :placeholder="$t('Jump to...')"
-      :no-data-text="$t('No Data')"
-      size="small"
-      clearable
-      filterable
-      :filter-method="T.debounce(doFilter)"
-      v-model="selectFilterText">
-      <el-option
-        v-for="item in selectShowOptions"
-        :key="item.id"
-        :label="item.label"
-        :value="item.id">
-        <span class="select-item-name">
-          <i v-if="item.type === 'scriptSet'" class="fa fa-fw fa-folder"></i>
-          <i v-else-if="item.type === 'script'" class="fa fa-fw fa-file-code-o"></i>
-          <el-tag v-else-if="item.type === 'func'" type="info" size="mini"><code>def</code></el-tag>
-          {{ item.label }}
-        </span>
-        <code class="select-item-id code-font">ID: {{ item.id }}</code>
-      </el-option>
-    </el-select>
+  <div id="aside-script-content" class="aside-inner-content">
+    <div class="jump-to-select-wrap">
+      <el-select class="jump-to-select"
+        :placeholder="$t('Jump to...')"
+        :no-data-text="$t('No Data')"
+        size="small"
+        clearable
+        filterable
+        :filter-method="T.debounce(doFilter)"
+        v-model="selectFilterText">
+        <el-option
+          v-for="item in selectShowOptions"
+          :key="item.id"
+          :label="item.label"
+          :value="item.id">
+          <span class="select-item-name">
+            <i v-if="item.type === 'scriptSet'" class="fa fa-fw fa-folder"></i>
+            <i v-else-if="item.type === 'script'" class="fa fa-fw fa-file-code-o"></i>
+            <el-tag v-else-if="item.type === 'func'" type="info" size="mini"><code>def</code></el-tag>
+            {{ item.label }}
+          </span>
+          <code class="select-item-id code-font">ID: {{ item.id }}</code>
+        </el-option>
+      </el-select>
+    </div>
 
     <el-tree class="aside-tree"
       v-loading="loading"
@@ -1352,12 +1354,6 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.press-esc-to-close-tip {
-  font-size: 14px;
-  position: absolute;
-  right: 45px;
-  top: 20px;
-}
 .goto-links {
   display: flex;
   flex-direction: column;
