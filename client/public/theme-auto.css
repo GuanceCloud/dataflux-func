@@ -543,7 +543,7 @@ input:disabled {
 }
 
 .aside-content .jump-to-select-wrap {
-  background: linear-gradient(to bottom, #222 50%, #22222200 100%) !important;
+  background: linear-gradient(to bottom, rgb(34, 34, 34) 50%, rgba(34, 34, 34, 0) 100%) !important;
 }
 .aside-content .el-menu,
 .aside-content .el-menu-item,
