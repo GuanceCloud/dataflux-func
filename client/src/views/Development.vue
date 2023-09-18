@@ -147,7 +147,7 @@ export default {
   left: 0;
   top: 1px;
   padding-top: 8px;
-  background: linear-gradient(to bottom, #FFF 50%, #22222200 100%);
+  background: linear-gradient(to bottom, #FFF 50%, #FFFFFF00 100%);
 }
 .aside-content .el-tabs__header {
   z-index: 1;
