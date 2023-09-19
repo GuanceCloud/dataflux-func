@@ -350,8 +350,8 @@ otherPortableFile_dev:
     - pip install -r tools/requirements.txt
     - python tools/cdn-refresh-tool.py
       Directory ${CDN_REFRESH_BASE_PATH}/portable-dev/
-      -i ${ZY_STATIC_OSS_AK_ID}
-      -k ${ZY_STATIC_OSS_AK_SECRET}
+      -i ${ZY_STATIC_CDN_AK_ID}
+      -k ${ZY_STATIC_CDN_AK_SECRET}
   tags:
     - cloudcare-multiarch
 
@@ -375,8 +375,8 @@ otherPortableFile_singleton:
     - pip install -r tools/requirements.txt
     - python tools/cdn-refresh-tool.py
       Directory ${CDN_REFRESH_BASE_PATH}/portable/
-      -i ${ZY_STATIC_OSS_AK_ID}
-      -k ${ZY_STATIC_OSS_AK_SECRET}
+      -i ${ZY_STATIC_CDN_AK_ID}
+      -k ${ZY_STATIC_CDN_AK_SECRET}
 
   tags:
     - cloudcare-multiarch
@@ -400,8 +400,8 @@ otherPortableFile_singleton_GSE:
     - pip install -r tools/requirements.txt
     - python tools/cdn-refresh-tool.py
       Directory ${CDN_REFRESH_BASE_PATH}/portable-GSE/
-      -i ${ZY_STATIC_OSS_AK_ID}
-      -k ${ZY_STATIC_OSS_AK_SECRET}
+      -i ${ZY_STATIC_CDN_AK_ID}
+      -k ${ZY_STATIC_CDN_AK_SECRET}
   tags:
     - cloudcare-multiarch
 
@@ -417,8 +417,8 @@ otherResourceFile:
     - pip install -r tools/requirements.txt
     - python tools/cdn-refresh-tool.py
       Directory ${CDN_REFRESH_BASE_PATH}/${SDK_DIR}
-      -i ${ZY_STATIC_OSS_AK_ID}
-      -k ${ZY_STATIC_OSS_AK_SECRET}
+      -i ${ZY_STATIC_CDN_AK_ID}
+      -k ${ZY_STATIC_CDN_AK_SECRET}
 
 # ========== 部署 ==========
 
