@@ -105,6 +105,12 @@ exports.beforeAppCreate = function(callback) {
         switch(timezone) {
           case 'UTC':
           case 'GMT':
+          case '0:00':
+          case '00:00':
+          case '-0:00':
+          case '-00:00':
+          case '+0:00':
+          case '+00:00':
             timezone = '+00:00';
             break;
 
@@ -117,6 +123,11 @@ exports.beforeAppCreate = function(callback) {
         conn.end();
 
         if (timezone) {
+          var m = timezone.match(/^(\+|\-)(\d{1}:\d{2})$/);
+          if (m) {
+            timezone = `${m[1]}0${m[2]}`;
+          }
+
           yamlResources.set('CONFIG', '_MYSQL_TIMEZONE', timezone);
         }
         console.log('Database Timezone: ' + timezone);

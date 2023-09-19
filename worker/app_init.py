@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Built-in Modules
+import re
 
 # 3rd-party Modules
 import pymysql
@@ -91,13 +92,18 @@ def before_app_create():
             if not timezone or timezone.upper() == 'SYSTEM':
                 timezone = system_timezone
 
-            if timezone in ('UTC', 'GMT'):
+            if timezone in ('UTC', 'GMT', '0:00', '00:00', '-0:00', '-00:00', '+0:00', '+00:00'):
                 timezone = '+00:00'
             elif timezone in ('CST', 'Asia/Shanghai'):
                 timezone = '+08:00'
 
             if timezone:
+                m = re.match(r'^(\+|\-)(\d{1}:\d{2})$', timezone)
+                if m:
+                    timezone = f'{m[1]}0{m[2]}'
+
                 yaml_resources.set_value('CONFIG', '_MYSQL_TIMEZONE', timezone)
+
             print(f'Database Timezone: {timezone}');
 
 def after_app_created():
