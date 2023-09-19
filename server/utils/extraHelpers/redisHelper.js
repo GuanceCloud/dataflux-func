@@ -3,7 +3,7 @@
 /* 3rd-party Modules */
 var redis  = require('redis');
 var async  = require('async');
-var moment = require('moment');
+var moment = require('moment-timezone');
 
 /* Project Modules */
 var CONFIG    = require('../yamlResources').get('CONFIG');

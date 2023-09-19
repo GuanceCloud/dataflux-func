@@ -8,7 +8,7 @@ var fs            = require('fs-extra');
 var async         = require('async');
 var LRU           = require('lru-cache');
 var sortedJSON    = require('sorted-json');
-var moment        = require('moment');
+var moment        = require('moment-timezone');
 var byteSize      = require('byte-size');
 var HTTPAuthUtils = require('http-auth-utils');
 

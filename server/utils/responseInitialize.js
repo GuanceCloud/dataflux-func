@@ -6,7 +6,7 @@ var path = require('path');
 /* 3rd-party Modules */
 var router     = require('express').Router();
 var async      = require('async');
-var moment     = require('moment');
+var moment     = require('moment-timezone');
 var sortedJSON = require('sorted-json');
 var LRU        = require('lru-cache');
 

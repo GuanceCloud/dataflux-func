@@ -6,7 +6,7 @@ var os = require('os');
 /* 3rd-party Modules */
 var async   = require('async');
 var mysql   = require('mysql2');
-var moment  = require('moment');
+var moment  = require('moment-timezone');
 
 /* Project Modules */
 var E             = require('./utils/serverError');
@@ -84,6 +84,8 @@ exports.beforeAppCreate = function(callback) {
     function(asyncCallback) {
       var conn = getDBConnection();
       conn.query("SHOW VARIABLES LIKE '%time_zone%'", function(err, dbRes) {
+        conn.end();
+
         // 无法连接数据库也不要报错
         if (err) {
           console.log('Cannot detect database Timezone, skip');
@@ -102,34 +104,38 @@ exports.beforeAppCreate = function(callback) {
           timezone = systemTimezone;
         }
 
-        switch(timezone) {
-          case 'UTC':
-          case 'GMT':
-          case '0:00':
-          case '00:00':
-          case '-0:00':
-          case '-00:00':
-          case '+0:00':
-          case '+00:00':
-            timezone = '+00:00';
-            break;
+        if (!timezone) {
+          timezone = '+00:00';
 
-          case 'CST':
-          case 'Asia/Shanghai':
-            timezone = '+08:00';
-            break;
-        }
+        } else {
+          switch(timezone) {
+            case 'UTC':
+            case 'GMT':
+            case '0:00':
+            case '00:00':
+            case '-0:00':
+            case '-00:00':
+            case '+0:00':
+            case '+00:00':
+              timezone = '+00:00';
+              break;
 
-        conn.end();
+            case 'CST':
+              timezone = '+08:00';
+              break;
 
-        if (timezone) {
-          var m = timezone.match(/^(\+|\-)(\d{1}:\d{2})$/);
-          if (m) {
-            timezone = `${m[1]}0${m[2]}`;
+            default:
+              var m = timezone.match(/^(\+|\-)(\d{1}:\d{2})$/);
+              if (m) {
+                timezone = `${m[1]}0${m[2]}`;
+              }
+              break;
           }
 
-          yamlResources.set('CONFIG', '_MYSQL_TIMEZONE', timezone);
+          timezone = moment().tz(timezone).format('Z');
         }
+
+        yamlResources.set('CONFIG', '_MYSQL_TIMEZONE', timezone);
         console.log('Database Timezone: ' + timezone);
 
         return asyncCallback();

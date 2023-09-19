@@ -4,6 +4,7 @@
 import re
 
 # 3rd-party Modules
+import arrow
 import pymysql
 from pymysql.cursors import DictCursor
 
@@ -92,18 +93,24 @@ def before_app_create():
             if not timezone or timezone.upper() == 'SYSTEM':
                 timezone = system_timezone
 
-            if timezone in ('UTC', 'GMT', '0:00', '00:00', '-0:00', '-00:00', '+0:00', '+00:00'):
+            if not timezone:
                 timezone = '+00:00'
-            elif timezone in ('CST', 'Asia/Shanghai'):
-                timezone = '+08:00'
 
-            if timezone:
-                m = re.match(r'^(\+|\-)(\d{1}:\d{2})$', timezone)
-                if m:
-                    timezone = f'{m[1]}0{m[2]}'
+            else:
+                if timezone in ('UTC', 'GMT', '0:00', '00:00', '-0:00', '-00:00', '+0:00', '+00:00'):
+                    timezone = '+00:00'
 
-                yaml_resources.set_value('CONFIG', '_MYSQL_TIMEZONE', timezone)
+                elif timezone == 'CST':
+                    timezone = '+08:00'
 
+                else:
+                    m = re.match(r'^(\+|\-)(\d{1}:\d{2})$', timezone)
+                    if m:
+                        timezone = f'{m[1]}0{m[2]}'
+
+                timezone = arrow.get().to(timezone).format('ZZ')
+
+            yaml_resources.set_value('CONFIG', '_MYSQL_TIMEZONE', timezone)
             print(f'Database Timezone: {timezone}');
 
 def after_app_created():

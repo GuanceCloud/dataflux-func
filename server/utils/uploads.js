@@ -7,7 +7,7 @@ var path = require('path');
 
 /* 3rd-part Modules */
 var multer = require('multer');
-var moment = require('moment');
+var moment = require('moment-timezone');
 
 /* Project Modules */
 var E       = require('./serverError');

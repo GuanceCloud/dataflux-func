@@ -6,7 +6,7 @@ var util = require('util');
 /* 3rd-party Modules */
 var mysql     = require('mysql2');
 var sqlstring = require('sqlstring');
-var moment    = require('moment');
+var moment    = require('moment-timezone');
 
 /* Project Modules */
 var CONFIG    = require('../yamlResources').get('CONFIG');

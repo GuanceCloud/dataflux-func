@@ -6,7 +6,7 @@ var path = require('path');
 /* 3rd-party Modules */
 var fs     = require('fs-extra');
 var async  = require('async');
-var moment = require('moment');
+var moment = require('moment-timezone');
 var AdmZip = require("adm-zip");
 var yaml   = require('js-yaml');
 
