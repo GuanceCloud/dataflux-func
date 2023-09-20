@@ -152,7 +152,7 @@ connector  : 连接器
                 :id="scope.row.func_id"
                 :title="scope.row.func_title" />
               <InfoBlock v-if="scope.row.exceptionTEXT"
-                :title="scope.row.exceptionTEXT"
+                :title="T.limitText(scope.row.exceptionTEXT, 1000, { showLength: 'newLine' })"
                 type="error"  />
             </template>
           </el-table-column>
