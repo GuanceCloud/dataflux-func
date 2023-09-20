@@ -166,7 +166,7 @@ File already existed                                                            
                   @click="openInstallWheel(scope.row.name)">{{ $t('Install') }}</el-link>
               </template>
 
-              <el-dropdown @command="resourceOperationCmd">
+              <el-dropdown @command="resourceOperationCmd" trigger="click">
                 <el-link :underline="false">
                   {{ $t('More') }}
                   <i class="el-icon-arrow-down el-icon--right"></i>

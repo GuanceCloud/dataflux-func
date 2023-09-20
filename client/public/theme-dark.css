@@ -85,7 +85,7 @@ img {
   text-shadow: none !important;
 }
 .CodeMirror .current-func-background,
-.CodeMirror .error-line-background {
+.CodeMirror .exception-line-background {
   background-image: none !important;
 }
 .CodeMirror-dialog-top {
@@ -453,6 +453,13 @@ input:disabled {
 .el-dropdown-menu__item:not(.is-disabled):hover {
   background-color: #333 !important;
   color: #fff !important;
+}
+
+.el-dropdown-menu__item--divided:before {
+  background-color: #111 !important;
+}
+.el-dropdown-menu__item--divided {
+  border-top-color: #777 !important;
 }
 
 .el-time-spinner__item:hover:not(.disabled):not(.active) {

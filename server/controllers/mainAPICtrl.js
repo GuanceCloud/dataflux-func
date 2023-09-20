@@ -177,6 +177,9 @@ function createFuncRunnerTaskReq(locals, options, callback) {
         // 来源
         origin  : options.origin   || 'UNKNOWN',
         originId: options.originId || 'UNKNOWN',
+
+        // HTTP 请求信息
+        httpRequest: options.httpRequest || {},
       },
 
       // ETA / 延迟执行
@@ -525,6 +528,7 @@ function callFuncDebugger(locals, options, callback) {
     kwargs: {
       funcId        : options.funcId         || options.scriptId,
       funcCallKwargs: options.funcCallKwargs || {},
+      httpRequest   : options.httpRequest    || {},
     },
     queue  : CONFIG._FUNC_TASK_QUEUE_DEBUGGER,
     timeout: CONFIG._FUNC_TASK_TIMEOUT_DEBUGGER,
@@ -1437,6 +1441,10 @@ exports.callFuncDraft = function(req, res, next) {
     funcId        : funcId,
     funcCallKwargs: funcCallKwargs,
   }
+
+  // 添加 HTTP 请求信息
+  opt.httpRequest = _getHTTPRequestInfo(req);
+
   return callFuncDebugger(res.locals, opt, function(err, taskResp) {
     if (err) return next(err);
 
