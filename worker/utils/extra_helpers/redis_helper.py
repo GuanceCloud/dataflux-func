@@ -302,9 +302,9 @@ class RedisHelper(object):
     def hincrby(self, key, field, increment):
         return self.run('hincrby', key, field, amount=increment)
 
-    def hdel(self, key, fields):
-        fields = toolkit.as_array(fields)
-        return self.run('hdel', key, *fields)
+    def hdel(self, key, field):
+        field = toolkit.as_array(field)
+        return self.run('hdel', key, *field)
 
     def lpush(self, key, value):
         return self.run('lpush', key, value)

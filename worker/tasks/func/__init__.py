@@ -542,7 +542,8 @@ class FuncCacheHelper(object):
 
     def hdel(self, key, field, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('hdel', key, field)
+        field = toolkit.as_array(field)
+        return self.__task.cache_db.run('hdel', key, *field)
 
     def lpush(self, key, value, scope=None):
         key = self._get_cache_key(key, scope)
