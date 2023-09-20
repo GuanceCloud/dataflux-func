@@ -353,10 +353,11 @@ exports.publish = function(req, res, next) {
 
           if (!onScriptPublish) return;
 
+          var funcId = `${id}.${func.name}`;
           var opt = {
-            funcId         : `${id}.${func.name}`,
+            funcId         : funcId,
             origin         : 'integration',
-            originId       : 'autoRun.onScriptPublish',
+            originId       : `autoRun.onScriptPublish-${funcId}`,
             taskRecordLimit: CONFIG._TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_INTEGRATION,
             ignoreResult   : true,
           }

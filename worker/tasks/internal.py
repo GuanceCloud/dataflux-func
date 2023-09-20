@@ -867,7 +867,7 @@ class AutoRun(BaseInternalTask):
                 'kwargs': {
                     'funcId'  : f['id'],
                     'origin'  : 'integration',
-                    'originId': 'autoRun.onSystemLaunch',
+                    'originId': f"autoRun.onSystemLaunch-{f['id']}",
                 },
                 'queue'  : CONFIG['_FUNC_TASK_QUEUE_DEFAULT'],
                 'timeout': timeout,

@@ -59,7 +59,7 @@ class CrontabStarter(BaseTask):
 
         for c in crontab_configs:
             # 集成 Crontab 使用函数 ID 作为自动触发配置 ID
-            c['id']  = f"integration-{c['funcId']}"
+            c['id']  = f"autoRun.crontab-{c['funcId']}"
 
         crontab_configs = map(self.prepare_contab_config, crontab_configs)
         crontab_configs = filter(self.filter_crontab_config, crontab_configs)
@@ -161,7 +161,7 @@ class CrontabStarter(BaseTask):
         ### 集成函数自动触发 ###
         for c in self.get_integration_crontab_configs():
             # 发送任务
-            self.put_task(crontab_config=c, origin='integration', origin_id='autoRun.crontab')
+            self.put_task(crontab_config=c, origin='integration', origin_id=c['id'])
 
         ### 自动触发配置 ###
         next_seq      = 0
