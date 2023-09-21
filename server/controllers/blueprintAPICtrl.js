@@ -294,8 +294,10 @@ var NODE_FUNC_DEF_BODY_GENERATOR_MAP = {
       case 'put':
       case 'patch':
         codeBlock.append(`headers = { 'Content-Type': '${props.httpContentType}' }`);
-        codeBlock.append(`payload = ${JSON.stringify(props.httpBody)}`);
-        codeBlock.append(`resp = requests.${props.httpMethod}('${props.url}', headers=headers, data=payload)`);
+        codeBlock.append(`payload = ${props.httpBody}`);
+
+        var payloadParam = props.httpContentType === 'application/json' ? 'json' : 'data';
+        codeBlock.append(`resp = requests.${props.httpMethod}('${props.url}', headers=headers, ${payloadParam}=payload)`);
         break;
 
       default:
