@@ -6,6 +6,7 @@ clickhouse-driver==0.1.5
 croniter==1.4.1
 cx-Oracle==7.3.0
 DBUtils==1.4
+func-timeout==4.3.5
 funcsigs==1.0.2
 httpie==3.2.1
 influxdb==5.3.1
@@ -30,6 +31,7 @@ requests==2.28.1
 retry2==0.9.4
 simplejson==3.17.6
 six==1.16.0
+timeout-decorator==0.5.0
 toml==0.10.2
 tomli-w==1.0.0
 tomli==2.0.1
