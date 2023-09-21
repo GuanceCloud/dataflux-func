@@ -1090,6 +1090,13 @@ kbd {
   padding-right: 5px;
   font-family: "Iosevka","PingFang SC","Microsoft YaHei","微软雅黑","Arial","sans-serif" !important;
 }
+.CodeMirror-wrap {
+  border: 1px solid #DCDFE6;
+  border-radius: 3px;
+}
+.CodeMirror-wrap:hover {
+  border-color: #C0C4CC;
+}
 .CodeMirror-wrap pre.CodeMirror-line {
   word-break: break-all;
 }

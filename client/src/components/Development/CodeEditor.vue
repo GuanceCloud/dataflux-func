@@ -1405,6 +1405,9 @@ export default {
   left: 5px;
   right: 0;
 }
+#editorContainer_CodeViewer .CodeMirror-wrap {
+  border: none !important;
+}
 .CodeMirror .highlight-text {
   text-shadow: 1px 1px 3px #b3b3b3;
 }

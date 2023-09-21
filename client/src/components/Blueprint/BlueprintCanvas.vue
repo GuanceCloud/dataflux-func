@@ -1341,10 +1341,6 @@ export default {
   }
 }
 
-#codeContainer_BlueprintCanvas {
-  border: 1px solid #DCDFE6;
-  border-radius: 3px;
-}
 #codeContainer_BlueprintCanvas .CodeMirror {
   height: 420px;
   width: auto;

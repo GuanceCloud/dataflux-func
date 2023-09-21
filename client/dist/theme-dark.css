@@ -480,9 +480,12 @@ input:disabled {
 .el-picker-panel__sidebar,
 .el-picker-panel__body,
 .el-picker-panel__footer,
+.el-collapse-item__header,
+.el-collapse-item__content,
+.el-collapse-item__wrap,
 .el-time-panel {
   color: #ccc !important;
-  border-color: #777 !important;
+  border-color: #555 !important;
   background-color: #111 !important;
 }
 .el-popper[x-placement^=top] .popper__arrow::after {
@@ -515,6 +518,11 @@ input:disabled {
 .el-transfer-panel__item:hover {
   background-color: #333 !important;
   color: #fff !important;
+}
+
+.el-collapse {
+  border-top-color: #555 !important;
+  border-bottom-color: #555 !important;
 }
 
 .el-slider__runway {
@@ -939,12 +947,14 @@ CodeMirror template by Jan T. Sott (https://github.com/idleberg), adapted by Bra
   color: #9C9E9E !important;
 }
 
+.CodeMirror-wrap {
+  border-color: #555 !important;
+}
 
 /* Blueprint */
 #logicFlow,
 #logicFlowDnd {
-  .code-node,
-  .func-node {
+  .node {
     background-color: #222 !important;
   }
 }
