@@ -3,9 +3,9 @@
 # Built-in Modules
 import os
 import time
-import signal
 
 # 3rd-party Modules
+import timeout_decorator
 
 # Disable InsecureRequestWarning
 import requests
@@ -67,9 +67,6 @@ CRONTAB_MAP = {
     },
 }
 
-class TickTimeoutException(Exception):
-    pass
-
 def get_matched_crontab_task_instances(t):
     result = []
     for item in CRONTAB_MAP.values():
@@ -79,6 +76,10 @@ def get_matched_crontab_task_instances(t):
 
     return result
 
+class TickTimeoutException(Exception):
+    pass
+
+@timeout_decorator.timeout(60, timeout_exception=TickTimeoutException)
 def tick():
     '''
     定时触发器（每秒触发）
@@ -86,9 +87,6 @@ def tick():
     1. 获取已注册的，当前时间满足 Crontab 表达式的任务
     2. 到达执行时间的延迟任务进入工作队列
     '''
-    # 限制执行时长
-    signal.alarm(60)
-
     # 计算等待时长
     interval = 1
     wait_time = interval - toolkit.get_timestamp() % interval
@@ -129,14 +127,7 @@ def tick():
             if not cache_res:
                 break
 
-def handle_sigalarm(self, signum, frame):
-    e = TickTimeoutException(f'Tick Timeout')
-    raise e
-
 if __name__ == '__main__':
-    # 注册 SIGALRM 处理函数
-    signal.signal(signal.SIGALRM, handle_sigalarm)
-
     # 打印提示信息
     pid = os.getpid()
 

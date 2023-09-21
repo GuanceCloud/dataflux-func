@@ -3,12 +3,12 @@
 # Built-in Modules
 import os
 import sys
-import signal
 import socket
 import ssl
 import urllib
 
 # 3rd-party Modules
+import timeout_decorator
 
 # Disable InsecureRequestWarning
 import requests
@@ -62,9 +62,6 @@ def consume():
     '''
     消费队列中任务
     '''
-    # 取消执行时长
-    signal.alarm(0)
-
     # 获取任务
     cache_keys = list(map(lambda q: toolkit.get_worker_queue(q), LISTINGING_QUEUES))
     cache_res = REDIS.brpop(cache_keys, timeout=CONFIG['_WORKER_FETCH_TASK_TIMEOUT'])
@@ -83,20 +80,14 @@ def consume():
 
     task_inst = task_cls.from_task_request(task_req)
 
-    # 限制执行时长
-    signal.alarm(task_inst.timeout)
-
     # 执行任务
-    task_inst.start()
+    @timeout_decorator.timeout(task_inst.timeout, timeout_exception=TaskTimeoutException)
+    def run_task():
+        task_inst.start()
 
-def handle_sigalarm(signum, frame):
-    e = TaskTimeoutException(f'Task Timeout')
-    raise e
+    run_task()
 
 if __name__ == '__main__':
-    # 注册 SIGALRM 处理函数
-    signal.signal(signal.SIGALRM, handle_sigalarm)
-
     # 打印提示信息
     queues = ', '.join(map(lambda q: f'#{q}', LISTINGING_QUEUES))
     pid = os.getpid()
