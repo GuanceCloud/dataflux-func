@@ -582,16 +582,10 @@ export default {
 .CodeMirror .highlight-text {
   text-shadow: 1px 1px 3px #b3b3b3;
 }
-/*.CodeMirror .current-func-background {
-  background-color: lightyellow;
-  border: 2px solid orange;
-  border-radius: 5px;
-  box-shadow: 3px 3px 3px lightgrey;
-}
-*/
+
 .CodeMirror .current-func-background {
   border: 2px solid;
-  border-image: linear-gradient(to right, rgb(255,165,0,1) 0, rgb(255,165,0,0) 75%) 1 1;
+  border-image: linear-gradient(to right, rgb(255,165,0,1) 30%, rgb(255,165,0,0) 100%) 1 1;
   background-image: linear-gradient(to right, rgba(255,255,224,1) 0, rgba(255,255,224,0) 75%);
   border-right: none;
 }

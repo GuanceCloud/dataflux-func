@@ -1408,7 +1408,7 @@ export default {
   left: 5px;
   right: 0;
 }
-#editorContainer_CodeViewer .CodeMirror-wrap {
+#editorContainer_CodeEditor .CodeMirror-wrap {
   border: none !important;
 }
 .CodeMirror .highlight-text {
@@ -1425,15 +1425,16 @@ export default {
   display: block;
   padding: 0 5px;
 }
+
 .CodeMirror .current-func-background {
   border: 2px solid;
-  border-image: linear-gradient(to right, rgb(255,165,0,1) 0, rgb(255,165,0,0) 75%) 1 1;
+  border-image: linear-gradient(to right, rgb(255,165,0,1) 30%, rgb(255,165,0,0) 100%) 1 1;
   background-image: linear-gradient(to right, rgba(255,255,224,1) 0, rgba(255,255,224,0) 75%);
   border-right: none;
 }
 .CodeMirror .exception-line-background {
   border: 2px solid;
-  border-image: linear-gradient(to left, rgb(255,0,0,1) 0, rgb(255,0,0,0) 75%) 1 1;
+  border-image: linear-gradient(to left, rgb(255,0,0,1) 10%, rgb(255,0,0,0) 100%) 1 1;
   background-image: linear-gradient(to left, rgba(255,214,220,1) 0, rgba(255,214,220,0) 75%);
   border-left: none;
 }
