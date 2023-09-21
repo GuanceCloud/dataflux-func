@@ -5,6 +5,7 @@ import traceback
 import pprint
 
 # 3rd-party Modules
+import timeout_decorator
 import arrow
 
 # Project Modules
@@ -391,6 +392,7 @@ class BaseTask(object):
                             task_record_limit=task_req.get('taskRecordLimit'))
         return task_inst
 
+    @timeout_decorator.timeout(timeout_exception=TaskTimeoutException)
     def start(self):
         # 任务信息
         self.status     = 'pending'

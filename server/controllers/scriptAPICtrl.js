@@ -292,8 +292,10 @@ exports.publish = function(req, res, next) {
       mainAPICtrl.callFuncDebugger(res.locals, opt, function(err, taskResp) {
         if (err) return asyncCallback(err);
 
-        if (taskResp.result.status === 'failure') {
-          return asyncCallback(new E('EScriptPublishFailed', 'Script publishing failed. Please check your code', taskResp));
+        switch (taskResp.result.status) {
+          case 'failure':
+          case 'timeout':
+            return asyncCallback(new E('EScriptPublishFailed', 'Script publishing failed. Please check your code', taskResp));
         }
 
         nextAPIFuncs = taskResp.result.apiFuncs;

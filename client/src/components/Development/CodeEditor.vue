@@ -595,9 +595,13 @@ export default {
       this.fullScreenLoading = false;
       this.workerRunning     = false;
 
-      if (!apiRes.ok) {
-        // 输出结果
+      // 输出结果
+      if (apiRes.detail && apiRes.detail.result) {
         this.outputResult('publish', this.scriptId, apiRes.detail.result);
+      }
+
+      // 错误弹框
+      if (!apiRes.ok) {
         this.alertOnError(apiRes);
         return;
       }
@@ -607,19 +611,6 @@ export default {
 
       // 同步已发布 / 草稿
       this.data.code = this.data.codeDraft;
-    },
-    async resetScript() {
-      if (!this.isEditable) return;
-      if (!this.codeMirror) return;
-
-      if (!await this.T.confirm(this.$t('Are you sure you want to reset the Script?'))) return;
-
-      this.updateHighlightLineConfig('exceptionLine', null);
-
-      await this.loadData({codeField: 'code'});
-
-      // 弹框提示
-      this.T.notify(this.$t('Script has been reset to previous version'));
     },
     async callFuncDraft() {
       if (!this.codeMirror) return;
@@ -693,33 +684,45 @@ export default {
       }
 
       // 输出结果
-      let argParts = [];
-      for (let k in funcCallKwargs) if (funcCallKwargs.hasOwnProperty(k)) {
-        let v = funcCallKwargs[k];
-        if (v === null) {
-          v = 'None';
-        } else if (v === true) {
-          v = 'True';
-        } else if (v === false) {
-          v = 'False';
-        } else {
-          v = JSON.stringify(v);
+      if (apiRes.data && apiRes.data.result) {
+        let argParts = [];
+        for (let k in funcCallKwargs) if (funcCallKwargs.hasOwnProperty(k)) {
+          let v = funcCallKwargs[k];
+          if (v === null) {
+            v = 'None';
+          } else if (v === true) {
+            v = 'True';
+          } else if (v === false) {
+            v = 'False';
+          } else {
+            v = JSON.stringify(v);
+          }
+
+          argParts.push(`${k}=${v}`);
         }
-
-        argParts.push(`${k}=${v}`);
+        let argStr = argParts.join(', ');
+        this.outputResult('execute', `${this.selectedItemId}(${argStr})`, apiRes.data.result);
       }
-      let argStr = argParts.join(', ');
-      this.outputResult('execute', `${this.selectedItemId}(${argStr})`, apiRes.data.result);
 
-      // 标记运行的函数
-      if (apiRes.ok) {
-        // 等待输出栏弹出后执行
-        setImmediate(() => {
-          this.highlightQuickSelectItem();
-        });
-      }
+      // 标记运行的函数（等待输出栏弹出后执行）
+      setImmediate(() => {
+        this.highlightQuickSelectItem();
+      });
 
       this.alertOnError(apiRes);
+    },
+    async resetScript() {
+      if (!this.isEditable) return;
+      if (!this.codeMirror) return;
+
+      if (!await this.T.confirm(this.$t('Are you sure you want to reset the Script?'))) return;
+
+      this.updateHighlightLineConfig('exceptionLine', null);
+
+      await this.loadData({codeField: 'code'});
+
+      // 弹框提示
+      this.T.notify(this.$t('Script has been reset to previous version'));
     },
     clearHighlight() {
       this.updateHighlightLineConfig('selectedFuncLine', null);

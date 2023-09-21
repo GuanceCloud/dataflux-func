@@ -8,7 +8,6 @@ import ssl
 import urllib
 
 # 3rd-party Modules
-import timeout_decorator
 
 # Disable InsecureRequestWarning
 import requests
@@ -81,11 +80,7 @@ def consume():
     task_inst = task_cls.from_task_request(task_req)
 
     # 执行任务
-    @timeout_decorator.timeout(task_inst.timeout, timeout_exception=TaskTimeoutException)
-    def run_task():
-        task_inst.start()
-
-    run_task()
+    task_inst.start(timeout=task_inst.timeout)
 
 if __name__ == '__main__':
     # 打印提示信息

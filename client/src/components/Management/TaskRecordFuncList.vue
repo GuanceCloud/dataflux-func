@@ -29,7 +29,7 @@ Task Status    : 任务状态
 Print Log   : Print 日志
 Traceback   : 调用堆栈
 No Print Log: 无 Print 日志
-No Exception: 未发生异常
+No Traceback: 无调用堆栈信息
 
 Recent Task Record        : 近期任务记录
 Related Task Record       : 相关任务记录
@@ -362,7 +362,7 @@ export default {
       if (d.tracebackTEXT) {
         contentLines.push(d.tracebackTEXT);
       } else {
-        contentLines.push(this.$t('No Exception'))
+        contentLines.push(this.$t('No Traceback'))
       }
 
       let contentTEXT = contentLines.join('\n');

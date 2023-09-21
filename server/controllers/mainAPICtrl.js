@@ -534,19 +534,23 @@ function callFuncDebugger(locals, options, callback) {
     timeout: CONFIG._FUNC_TASK_TIMEOUT_DEBUGGER,
 
     onResponse(taskResp) {
-      // 失败处理
-      if (taskResp.status === 'noResponse') {
+      switch(taskResp.status) {
         // 无响应
-        return callback(new E('EWorkerNoResponse', 'Worker no response, please check the status of this system'));
+        case 'noResponse':
+          return callback(new E('EWorkerNoResponse', 'Worker no response, please check the status of this system'));
 
-      } else if (taskResp.status === 'success' && taskResp.result) {
-        // Func.Debugger 任务本身永远不会失败，且必然有返回数据
+        // 执行超时
+        case 'timeout':
+          return callback(new E('EFuncTimeout', 'Func task timeout', taskResp));
 
-      } else {
-        return callback(new E('EAssert', 'Unexpected result.'));
+        // 成功
+        case 'success':
+          return callback(null, taskResp);
+
+        // 预期外情况
+        default:
+          return callback(new E('EAssert', 'Unexpected result.'));
       }
-
-      return callback(null, taskResp);
     }
   }
   return locals.cacheDB.putTask(taskReq);
