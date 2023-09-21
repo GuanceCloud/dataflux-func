@@ -338,16 +338,14 @@ var NODE_FUNC_DEF_BODY_GENERATOR_MAP = {
         break;
 
       case 'markdown':
-        var title = (props.content || '').split('\n')[0].replace(/^#+/g, '').trim();
-        codeBlock.append(`title   = ${JSON.stringify(title)}`);
         codeBlock.append(`content = ${JSON.stringify(props.content || '')}`);
         codeBlock.append(`content = jinja2.Template(content).render(**data)`);
+        codeBlock.append(`title   = content.splitlines()[0]`);
         codeBlock.append(`payload = { "msgtype": "markdown", "markdown": { "title": title, "text": content } }`);
         break;
 
       case 'json':
-        codeBlock.append(`payload = ${JSON.stringify(props.httpBody)}`);
-        codeBlock.append(`payload = jinja2.Template(payload).render(**data)`);
+        codeBlock.append(`payload = ${props.httpBody}`);
         break;
     }
 
