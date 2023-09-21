@@ -86,6 +86,9 @@ def tick():
     1. 获取已注册的，当前时间满足 Crontab 表达式的任务
     2. 到达执行时间的延迟任务进入工作队列
     '''
+    # 限制执行时长
+    signal.alarm(60)
+
     # 计算等待时长
     interval = 1
     wait_time = interval - toolkit.get_timestamp() % interval
@@ -93,9 +96,6 @@ def tick():
 
     # 触发时间
     tick_time = toolkit.get_timestamp()
-
-    # 默认限制执行时长
-    signal.alarm(60)
 
     # 记录运行时间
     REDIS.incr(toolkit.get_cache_key('beat', 'tick'))

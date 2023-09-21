@@ -315,14 +315,14 @@ class RedisHelper(object):
     def lpop(self, key, count=1):
         return self.run('lpop', key, count)
 
-    def blpop(self, key):
-        return self.run('blpop', key)
+    def blpop(self, key, timeout=0):
+        return self.run('blpop', key, timeout=timeout)
 
     def rpop(self, key, count=1):
         return self.run('rpop', key, count)
 
-    def brpop(self, key):
-        return self.run('brpop', key)
+    def brpop(self, key, timeout=0):
+        return self.run('brpop', key, timeout=timeout)
 
     def llen(self, key):
         return self.run('llen', key)

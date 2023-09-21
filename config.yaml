@@ -263,6 +263,7 @@ _WEB_LOCALHOST_AUTH_TOKEN_PATH  : /data/localhost-auth-token
 # Worker 模块一般作为常量的配置
 _WORKER_CONCURRENCY          : 5
 _WORKER_QUEUE_COUNT          : 10
+_WORKER_FETCH_TASK_TIMEOUT   : 15
 _WORKER_PROCESS_CONSUME_LIMIT: 3000
 
 # 监控模块一般作为常量的配置

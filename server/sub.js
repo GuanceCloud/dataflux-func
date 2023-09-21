@@ -260,10 +260,10 @@ exports.runListener = function runListener(app) {
 
         // 无可用工作队列 / 无订阅对象时，跳过本轮处理
         if (subWorkerCount <= 0) {
-          app.locals.logger.debug('[SUB] No worker available, skip');
+          // app.locals.logger.debug('[SUB] No worker available, skip');
           skip = true;
         } else if (toolkit.isNothing(CONNECTOR_TOPIC_FUNC_MAP)) {
-          app.locals.logger.debug('[SUB] No topic func, skip');
+          // app.locals.logger.debug('[SUB] No topic func, skip');
           skip = true;
         }
 

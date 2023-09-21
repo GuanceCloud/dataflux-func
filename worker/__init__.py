@@ -10,6 +10,7 @@ import time
 
 # 3rd-party Modules
 import psutil
+import redis
 
 # Project Modules
 from worker.utils import yaml_resources, toolkit
@@ -118,7 +119,7 @@ def run_background(func, pool_size, max_tasks):
 
         # SIGTERM 信号
         def sigterm_handler(signum, frame):
-            print('Received SIGTERM')
+            LOGGER.warning('Received SIGTERM')
             shutdown_event.set()
 
         signal.signal(signal.SIGTERM, sigterm_handler)
@@ -132,6 +133,10 @@ def run_background(func, pool_size, max_tasks):
                     func()
 
                 except KeyboardInterrupt as e:
+                    shutdown_event.set()
+
+                except redis.exceptions.ConnectionError as e:
+                    LOGGER.error('Redis Connection error, Shutting down...')
                     shutdown_event.set()
 
                 except Exception as e:
@@ -162,8 +167,12 @@ def run_background(func, pool_size, max_tasks):
         for p in pool:
             p.join()
 
-        print('Shutdown')
+        LOGGER.warning('Shutdown')
+
+    except redis.exceptions.ConnectionError as e:
+        LOGGER.error('Redis Connection error, Shutting down...')
+        shutdown_event.set()
 
     except KeyboardInterrupt as e:
-        print('Interrupted by Ctrl + C')
+        LOGGER.warning('Interrupted by Ctrl + C')
         shutdown_event.set()

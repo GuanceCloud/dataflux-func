@@ -67,8 +67,12 @@ def consume():
 
     # 获取任务
     cache_keys = list(map(lambda q: toolkit.get_worker_queue(q), LISTINGING_QUEUES))
-    _, task_req = map(lambda s: s.decode(), REDIS.brpop(cache_keys))
-    task_req = toolkit.json_loads(task_req)
+    cache_res = REDIS.brpop(cache_keys, timeout=CONFIG['_WORKER_FETCH_TASK_TIMEOUT'])
+    if not cache_res:
+        return
+
+    worker_queue, task_req_dumps = map(lambda s: s.decode(), cache_res)
+    task_req = toolkit.json_loads(task_req_dumps)
 
     # 生成任务对象
     task_name = task_req['name']

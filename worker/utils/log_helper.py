@@ -23,6 +23,7 @@ REDIS = None
 
 RUN_UP_TIME = int(time.time())
 HOSTNAME    = socket.gethostname()
+MAIN_PID    = os.getpid()
 
 LOG_LEVELS = {
     'levels': {
@@ -45,6 +46,7 @@ LOG_TEXT_FIELDS = [
     # 'appName',
     # 'subAppName',
     'subAppNameShort',
+    'processType',
     'pid',
     # 'upTime',
     # 'level',
@@ -71,6 +73,7 @@ LOG_TEXT_COLOR_MAP = {
     'appName'           : True,
     'subAppName'        : True,
     'subAppNameShort'   : True,
+    'processType'       : True,
     'pid'               : True,
     'upTime'            : True,
     'level'             : True,
@@ -98,6 +101,7 @@ LOG_JSON_FIELD_MAP = {
     'appName'           : 'app',
     'subAppName'        : 'sub_app',
     # 'subAppNameShort'   : 'sub_app_short',
+    'processType'       : 'process_type',
     'pid'               : 'pid',
     'upTime'            : 'up_time',
     'level'             : 'level',
@@ -209,7 +213,6 @@ class LogHelper(object):
     Logger helper
     '''
     def __init__(self, task=None):
-        self.pid  = os.getpid()
         self.task = task or toolkit.FakeTask()
 
         self.level = CONFIG['LOG_LEVEL']
@@ -232,15 +235,19 @@ class LogHelper(object):
         now_str   = arrow.get(now).to(CONFIG['TIMEZONE']).format('YYYY-MM-DD HH:mm:ss')
         now_short = now_str[5:]
 
+        pid = os.getpid()
+        process_type = 'MAIN' if pid == MAIN_PID else 'SUB'
+
         message = toolkit.mask_auth_url(f'{message}')
 
         log_line = {
             'message': message,
             'meta': {
-                'pid'               : self.pid,
+                'pid'               : pid,
                 'appName'           : CONFIG['APP_NAME'],
-                'subAppName'        : 'Worker',
-                'subAppNameShort'   : 'WKR',
+                'subAppName'        : f'Worker',
+                'subAppNameShort'   : f'WKR',
+                'processType'       : process_type,
                 'upTime'            : now - RUN_UP_TIME,
                 'level'             : level,
                 'levelShort'        : level[0],

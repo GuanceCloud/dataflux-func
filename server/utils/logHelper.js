@@ -239,7 +239,6 @@ var LOGGER = new winston.Logger(winstonOpt);
  * @param {Object} req - `Express.js` request object
  */
 var LoggerHelper = function(locals, req) {
-  this.pid    = process.pid;
   this.locals = locals;
   this.req    = req;
 
@@ -313,7 +312,7 @@ LoggerHelper.prototype._log = function() {
     message     : fixedMessage,
     isFixWinston: fixedMessage !== message,
     meta: {
-      pid               : this.pid,
+      pid               : process.pid,
       appName           : CONFIG.APP_NAME,
       subAppName        : 'Server',
       subAppNameShort   : 'SVR',

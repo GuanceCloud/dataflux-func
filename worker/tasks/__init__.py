@@ -408,7 +408,7 @@ class BaseTask(object):
         except TaskInLockedException as e:
             # 任务重复运行错误，警告即可
             self.status = 'skip'
-            self.exception  = e
+            self.exception = e
             self.logger.warning(self.exception)
 
         except TaskTimeoutException as e:
