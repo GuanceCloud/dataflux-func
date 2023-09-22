@@ -1,7 +1,6 @@
 <i18n locale="en" lang="yaml">
 lastSucceeded : 'Succeeded {t}'
 lastFailed    : 'Failed {t}'
-lastRan       : 'Ran {t}'
 successCount  : 'Success {n}'
 failureCount  : 'Failure {n}'
 </i18n>
@@ -23,7 +22,6 @@ Are you sure you want to delete the Batch?: 是否确认删除此批处理？
 
 lastSucceeded : '{t}调用成功'
 lastFailed    : '{t}调用失败'
-lastRan       : '{t}调用'
 successCount  : '成功 {n}'
 failureCount  : '失败 {n}'
 
@@ -120,11 +118,8 @@ Using Batches, you can execute long and time-consuming Python functions: 使用�
                 <span v-if="statisticMap[scope.row.id].lastStatus === 'success'" class="text-good">
                   <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(statisticMap[scope.row.id].lastStartTime) }) }}
                 </span>
-                <span v-else-if="statisticMap[scope.row.id].lastStatus === 'failure'" class="text-bad">
+                <span v-else class="text-bad">
                   <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(statisticMap[scope.row.id].lastStartTime) }) }}
-                </span>
-                <span v-else class="text-main">
-                  <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(statisticMap[scope.row.id].lastStartTime) }) }}
                 </span>
 
                 <br>

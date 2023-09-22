@@ -1,7 +1,6 @@
 <i18n locale="en" lang="yaml">
 lastSucceeded : 'Succeeded {t}'
 lastFailed    : 'Failed {t}'
-lastRan       : 'Ran {t}'
 successCount  : 'Success {n}'
 failureCount  : 'Failure {n}'
 </i18n>
@@ -29,7 +28,6 @@ Are you sure you want to run the Crontab Config manually?: 是否确认手动执
 
 lastSucceeded : '{t}执行成功'
 lastFailed    : '{t}执行失败'
-lastRan       : '{t}执行'
 successCount  : '成功 {n}'
 failureCount  : '失败 {n}'
 
@@ -141,11 +139,8 @@ Using Crontab Config, you can have functions executed at regular intervals: 使�
                 <span v-if="statisticMap[scope.row.id].lastStatus === 'success'" class="text-good">
                   <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(statisticMap[scope.row.id].lastStartTime) }) }}
                 </span>
-                <span v-else-if="statisticMap[scope.row.id].lastStatus === 'failure'" class="text-bad">
+                <span v-else class="text-bad">
                   <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(statisticMap[scope.row.id].lastStartTime) }) }}
-                </span>
-                <span v-else class="text-main">
-                  <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(statisticMap[scope.row.id].lastStartTime) }) }}
                 </span>
 
                 <br>

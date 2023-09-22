@@ -84,11 +84,11 @@ EntityModel.prototype.getStatistics = function(groupField, groupIds, callback) {
   sql.append('  ,a.exceptionTEXT AS lastExceptionTEXT');
   sql.append('FROM biz_main_task_record_func AS a');
   sql.append('JOIN (SELECT');
-  sql.append('         ??                                     AS groupId');
-  sql.append('        ,MAX(seq)                               AS seq');
-  sql.append('        ,COUNT(*)                               AS taskRecordCount');
-  sql.append("        ,COUNT(IF(status = 'success', 1, NULL)) AS recentSuccessCount");
-  sql.append("        ,COUNT(IF(status = 'failure', 1, NULL)) AS recentFailureCount");
+  sql.append('         ??                                      AS groupId');
+  sql.append('        ,MAX(seq)                                AS seq');
+  sql.append('        ,COUNT(*)                                AS taskRecordCount');
+  sql.append("        ,COUNT(IF(status =  'success', 1, NULL)) AS recentSuccessCount");
+  sql.append("        ,COUNT(IF(status != 'success', 1, NULL)) AS recentFailureCount");
   sql.append('      FROM biz_main_task_record_func');
   sql.append('      WHERE');
   sql.append('        ?? IN (?)');
