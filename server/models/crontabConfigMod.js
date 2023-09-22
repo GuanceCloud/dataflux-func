@@ -22,7 +22,6 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   objectFields: {
     funcCallKwargsJSON  : 'json',
     tagsJSON            : 'json',
-    saveResult          : 'boolean',
     isDisabled          : 'boolean',
     func_extraConfigJSON: 'json',
     func_tagsJSON       : 'json',

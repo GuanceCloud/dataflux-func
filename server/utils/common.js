@@ -79,6 +79,13 @@ common.convertImportExportDataSchema = function(data) {
     data.version = 2;
   }
 
+  // 去除 SaveResult
+  if (data.crontabConfigs) {
+    data.crontabConfigs.forEach(function(c) {
+      delete c.saveResult;
+    });
+  }
+  
   return data;
 };
 
