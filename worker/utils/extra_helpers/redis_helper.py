@@ -117,6 +117,7 @@ class RedisHelper(object):
 
     def check(self):
         try:
+            _t = toolkit.get_timestamp_ms()
             self.client.info()
 
         except Exception as e:
@@ -125,45 +126,65 @@ class RedisHelper(object):
 
             raise Exception(str(e))
 
+        else:
+            if not self.skip_log:
+                self.logger.debug(f'[REDIS] INFO (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+
     def query(self, *args, **options):
         command      = args[0]
         command_args = args[1:]
 
-        if not self.skip_log:
-            key = ''
-            if len(command_args) > 1:
-                key = command_args[0] + ' ...'
-            elif len(command_args) > 0:
-                key = command_args[0]
+        key = ''
+        if len(command_args) > 1:
+            key = command_args[0] + ' ...'
+        elif len(command_args) > 0:
+            key = command_args[0]
 
-            options_dump = ''
-            if options:
-                options_dump = 'options=' + toolkit.json_dumps(options)
+        options_dump = ''
+        if options:
+            options_dump = 'options=' + toolkit.json_dumps(options)
 
-            self.logger.debug('[REDIS] Query `{} {}` {}'.format(command.upper(), key, options_dump))
+        try:
+            _t = toolkit.get_timestamp_ms()
+            return self.client.execute_command(*args, **options)
 
-        return self.client.execute_command(*args, **options)
+        except Exception as e:
+            self.logger.error(f'[REDIS] Query `{command.upper()} {key}` {options_dump} (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+            raise
+
+        else:
+            if not self.skip_log:
+                self.logger.debug(f'[REDIS] Query `{command.upper()} {key}` {options_dump} (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
 
     def run(self, *args, **kwargs):
         command      = args[0]
         command_args = args[1:]
 
-        if not self.skip_log:
-            key = ''
-            if len(command_args) > 0:
-                key = command_args[0]
-                if isinstance(key, (list, tuple)):
-                    key = ', '.join([str(k) for k in key])
-                elif isinstance(key, dict):
-                    key = ', '.join(key.keys())
+        key = ''
+        if len(command_args) > 0:
+            key = command_args[0]
+            if isinstance(key, (list, tuple)):
+                key = ', '.join([str(k) for k in key])
+            elif isinstance(key, dict):
+                key = ', '.join(key.keys())
 
-            dumps = ' '.join([
-                ' '.join([ str(x) for x in command_args[1:]]),
-                ' '.join([ f'{k}={v}' for k, v in kwargs.items()])
-            ]).strip()
-            self.logger.debug(f'[REDIS] Run `{command.upper()} {key} {dumps}`'.strip())
+        dumps = ' '.join([
+            ' '.join([ str(x) for x in command_args[1:]]),
+            ' '.join([ f'{k}={v}' for k, v in kwargs.items()])
+        ]).strip()
 
-        return getattr(self.client, command)(*command_args, **kwargs)
+
+        try:
+            _t = toolkit.get_timestamp_ms()
+            return getattr(self.client, command)(*command_args, **kwargs)
+
+        except Exception as e:
+            self.logger.error(f'[REDIS] Run `{command.upper()} {key} {dumps} (Cost: {toolkit.get_timestamp_ms() - _t} ms)`')
+            raise
+
+        else:
+            if not self.skip_log:
+                self.logger.debug(f'[REDIS] Run `{command.upper()} {key} {dumps} (Cost: {toolkit.get_timestamp_ms() - _t} ms)`')
 
     def publish(self, topic, message):
         return self.run('publish', topic, message)

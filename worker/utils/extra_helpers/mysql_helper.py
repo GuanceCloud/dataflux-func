@@ -2,6 +2,7 @@
 
 # Built-in Modules
 import re
+import time
 import datetime
 import traceback
 
@@ -103,48 +104,72 @@ class MySQLHelper(object):
             raise Exception(str(e))
 
     def start_trans(self):
-        if not self.skip_log:
-            self.logger.debug('[MYSQL] Trans START')
+        try:
+            _t = toolkit.get_timestamp_ms()
 
-        conn = self.client.connection()
-        cur  = conn.cursor()
+            conn = self.client.connection()
+            cur  = conn.cursor()
 
-        trans_conn = {
-            'conn': conn,
-            'cur' : cur,
-        }
+            trans_conn = {
+                'conn': conn,
+                'cur' : cur,
+            }
 
-        return trans_conn
+            return trans_conn
+
+        except Exception as e:
+            self.logger.error(f'[MYSQL] Trans START (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+            raise
+
+        else:
+            if not self.skip_log:
+                self.logger.debug(f'[MYSQL] Trans START (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
 
     def commit(self, trans_conn):
         if not trans_conn:
             return
 
-        if not self.skip_log:
-            self.logger.debug('[MYSQL] Trans COMMIT')
-
         conn = trans_conn.get('conn')
         cur  = trans_conn.get('cur')
 
-        conn.commit()
+        try:
+            _t = toolkit.get_timestamp_ms()
 
-        cur.close()
-        conn.close()
+            conn.commit()
+
+            cur.close()
+            conn.close()
+
+        except Exception as e:
+            self.logger.error(f'[MYSQL] Trans COMMIT (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+            raise
+
+        else:
+            if not self.skip_log:
+                self.logger.debug(f'[MYSQL] Trans COMMIT (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
 
     def rollback(self, trans_conn):
         if not trans_conn:
             return
 
-        if not self.skip_log:
-            self.logger.debug('[MYSQL] Trans ROLLBACK')
-
         conn = trans_conn.get('conn')
         cur  = trans_conn.get('cur')
 
-        conn.rollback()
+        try:
+            _t = toolkit.get_timestamp_ms()
 
-        cur.close()
-        conn.close()
+            conn.rollback()
+
+            cur.close()
+            conn.close()
+
+        except Exception as e:
+            self.logger.error(f'[MYSQL] Trans ROLLBACK (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+            raise
+
+        else:
+            if not self.skip_log:
+                self.logger.debug(f'[MYSQL] Trans ROLLBACK (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
 
     def _convert_timezone(self, db_res):
         if not self.config.get('timezone'):
@@ -161,9 +186,7 @@ class MySQLHelper(object):
 
     def _trans_execute(self, trans_conn, sql, sql_params=None):
         formatted_sql = format_sql(sql, sql_params)
-
-        if not self.skip_log:
-            self.logger.debug('[MYSQL] Trans Query `{}`'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
+        one_line_sql  = re.sub('\s+', ' ', formatted_sql, flags=re.M)
 
         if not trans_conn:
             raise Exception('Transaction not started')
@@ -171,23 +194,35 @@ class MySQLHelper(object):
         conn = trans_conn['conn']
         cur  = trans_conn['cur']
 
-        count  = cur.execute(formatted_sql)
-        db_res = cur.fetchall()
+        try:
+            _t = toolkit.get_timestamp_ms()
 
-        db_res = list(db_res)
-        db_res = self._convert_timezone(db_res)
-        return db_res, count
+            count  = cur.execute(formatted_sql)
+            db_res = cur.fetchall()
+
+        except Exception as e:
+            self.logger.error(f'[MYSQL] Trans Query `{one_line_sql}` (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+            raise
+
+        else:
+            if not self.skip_log:
+                self.logger.debug(f'[MYSQL] Trans Query `{one_line_sql}` (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+
+            db_res = list(db_res)
+            db_res = self._convert_timezone(db_res)
+
+            return db_res, count
 
     def _execute(self, sql, sql_params=None):
         formatted_sql = format_sql(sql, sql_params)
-
-        if not self.skip_log:
-            self.logger.debug('[MYSQL] Query `{}`'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
+        one_line_sql  = re.sub('\s+', ' ', formatted_sql, flags=re.M)
 
         conn = None
         cur  = None
 
         try:
+            _t = toolkit.get_timestamp_ms()
+
             conn = self.client.connection()
             cur  = conn.cursor()
 
@@ -201,13 +236,18 @@ class MySQLHelper(object):
             if conn:
                 conn.rollback()
 
+            self.logger.error(f'[MYSQL] Query `{one_line_sql}` (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
             raise
 
         else:
             conn.commit()
 
+            if not self.skip_log:
+                self.logger.debug(f'[MYSQL] Query `{one_line_sql}` (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+
             db_res = list(db_res)
             db_res = self._convert_timezone(db_res)
+
             return db_res, count
 
         finally:

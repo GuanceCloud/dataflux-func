@@ -1067,6 +1067,21 @@ class FuncBaseTask(BaseTask):
         self.script       = None
         self.script_scope = None
 
+        log_attrs = [
+            'func_id',
+            'script_id',
+            'func_name',
+            'script_set_id',
+            'script_name',
+            'origin',
+            'origin_id',
+            'root_task_id',
+            'call_chain',
+            'cache_result',
+            'cache_result_key',
+        ]
+        self.logger.debug(f"[INIT] {', '.join([f'{a}: `{getattr(self, a)}`' for a in log_attrs])}")
+
     def _get_func_defination(self, F):
         f_co   = six.get_function_code(F)
         f_name = f_co.co_name
@@ -1452,7 +1467,7 @@ class FuncBaseTask(BaseTask):
         self.cache_db.put_task(task_req)
 
     def run(self, **kwargs):
-        self.logger.info(f'{self.name} Task launched. Func ID: `{self.func_id}`')
+        self.logger.info(f'[RUN] Func ID: `{self.func_id}`')
 
     def load_script(self, script_id, draft=False):
         '''
@@ -1530,7 +1545,7 @@ class FuncBaseTask(BaseTask):
         script = script[0]
 
         # 从 DB 获取脚本
-        self.logger.debug(f"[LOAD SCRIPT] load `{script_id}`{ '(DRAFT)' if draft else '' } from DB")
+        self.logger.debug(f"[LOAD SCRIPT] load `{script_id}`{ ' (DRAFT)' if draft else '' } from DB")
 
         # 获取函数额外配置
         sql = '''
@@ -1699,30 +1714,34 @@ class FuncBaseTask(BaseTask):
         safe_scope['__builtins__']['print']      = __print
         safe_scope['__builtins__']['print_var']  = __print_var
 
+        self.logger.debug('[SAFE SCOPE] Created')
+
         return safe_scope
 
     def safe_exec(self, script_code_obj, globals=None, locals=None):
         safe_scope = globals or self.create_safe_scope()
         exec(script_code_obj, safe_scope)
 
+        self.logger.debug('[SAFE EXEC] Finished')
+
         return safe_scope
 
     def apply(self, use_code_draft=False):
+        self.logger.debug(f"[APPLY SCRIPT] `{self.script_id}`{ ' (DRAFT)' if use_code_draft else '' }")
+
         # 目标脚本
         self.script = self.load_script(self.script_id, draft=use_code_draft)
         if not self.script:
             e = NotFoundException(f'Script not found: `{self.script_id}`')
             raise e
 
-        # 加载入口脚本
-        self.logger.info(f'[ENTRY SCRIPT] `{self.script_id}`')
-
+        # 执行脚本
         debug = use_code_draft
         script_script_scope = self.create_safe_scope(self.script_id, debug=debug)
         self.script_scope   = self.safe_exec(self.script['codeObj'], globals=script_script_scope)
 
-        # 执行脚本
-        func_resp = None
+        # 执行函数
+        func_return = None
         if self.func_name:
             entry_func = self.script_scope.get(self.func_name)
             if not entry_func:
@@ -1731,15 +1750,16 @@ class FuncBaseTask(BaseTask):
 
             # 执行函数
             self.logger.info(f'[RUN FUNC] `{self.func_id}`')
-            func_resp = entry_func(**self.func_call_kwargs)
+            func_return = entry_func(**self.func_call_kwargs)
 
-            if not isinstance(func_resp, BaseFuncResponse):
-                func_resp = FuncResponse(func_resp)
+            if not isinstance(func_return, BaseFuncResponse):
+                func_return = FuncResponse(func_return)
 
-            if isinstance(func_resp.data, Exception):
-                raise func_resp.data
+            if isinstance(func_return.data, Exception):
+                raise func_return.data
 
-        return func_resp
+        self.logger.debug(f'[FUNC RETURN] `{func_return}`')
+        return func_return
 
     def get_traceback(self, only_in_script=True):
         try:

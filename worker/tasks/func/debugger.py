@@ -28,6 +28,8 @@ class FuncDebugger(FuncBaseTask):
 
         super().__init__(*args, **kwargs)
 
+        self.logger.debug('[INIT] Func Debugger')
+
     def run(self, **kwargs):
         super().run(**kwargs)
 

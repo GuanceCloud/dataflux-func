@@ -5,7 +5,6 @@ import traceback
 import pprint
 
 # 3rd-party Modules
-import timeout_decorator
 import arrow
 
 # Project Modules
@@ -121,6 +120,18 @@ class BaseTask(object):
         self.db           = MySQLHelper(self.logger)
         self.cache_db     = RedisHelper(self.logger)
         self.file_storage = FileSystemHelper(self.logger)
+
+        log_attrs = [
+            'trigger_time',
+            'eta',
+            'delay',
+            'queue',
+            'timeout',
+            'expires',
+            'ignore_result',
+            'task_record_limit',
+        ]
+        self.logger.debug(f"[INIT] {', '.join([f'{a}: `{getattr(self, a)}`' for a in log_attrs])}")
 
     @property
     def trigger_time_ms(self):
@@ -244,9 +255,12 @@ class BaseTask(object):
         self._lock_key   = lock_key
         self._lock_value = lock_value
 
+        self.logger.debug(f'[LOCK] Task Locked: `{lock_key}`')
+
     def unlock(self):
         if self._lock_key and self._lock_value:
             self.cache_db.unlock(self._lock_key, self._lock_value)
+            self.logger.debug(f'[LOCK] Task Unlocked')
 
         self._lock_key   = None
         self._lock_value = None
@@ -314,10 +328,14 @@ class BaseTask(object):
             cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecord')
             self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
 
+            self.logger.debug(f'[TASK RECORD] Buffered: `{cache_key}`')
+
         data = self.create_task_record_guance_data(task_resp)
         if data:
             cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordGuance')
             self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
+
+            self.logger.debug(f'[TASK RECORD] Buffered: `{cache_key}`')
 
     def upload_guance_data(self, category, data):
         if not self.guance_data_upload_url:
@@ -360,6 +378,8 @@ class BaseTask(object):
 
         self.cache_db.publish(cache_key, task_resp_dumps)
 
+        self.logger.debug(f'[TASK RESP] Published to: `{cache_key}`')
+
     def create_task_request(self):
         task_req = {
             'name'  : self.name,
@@ -392,15 +412,11 @@ class BaseTask(object):
                             task_record_limit=task_req.get('taskRecordLimit'))
         return task_inst
 
-    @timeout_decorator.timeout(timeout_exception=TaskTimeoutException)
     def start(self):
         # 任务信息
         self.status     = 'pending'
         self.start_time = toolkit.get_timestamp(3)
-
-        if CONFIG['MODE'] == 'prod':
-            self.db.skip_log       = True
-            self.cache_db.skip_log = True
+        self.logger.debug(f'[START TIME] `{self.start_time}` ({toolkit.to_cn_time_str(self.start_time)})')
 
         # 调用子类 run() 函数
         try:
@@ -438,9 +454,12 @@ class BaseTask(object):
         else:
             # 正常
             self.status = 'success'
+            self.logger.debug(f'[RESULT] `{self.result}`')
 
         finally:
             self.end_time = toolkit.get_timestamp(3)
+            self.logger.debug(f'[END TIME] `{self.end_time}` ({toolkit.to_cn_time_str(self.start_time)})')
+            self.logger.debug(f'[STATUS] `{self.status}`')
 
             # 任务响应
             task_resp = {
@@ -469,4 +488,4 @@ class BaseTask(object):
             self.unlock()
 
     def run(self, **kwargs):
-        self.logger.info(f'{self.name} Task launched.')
+        self.logger.info(f'[RUN] Task Name: `{self.name}`')
