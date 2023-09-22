@@ -1080,7 +1080,7 @@ class FuncBaseTask(BaseTask):
             'cache_result',
             'cache_result_key',
         ]
-        self.logger.debug(f"[INIT] {', '.join([f'{a}: `{getattr(self, a)}`' for a in log_attrs])}")
+        self.logger.debug(f"[INIT FUNC TASK] {', '.join([f'{a}: `{getattr(self, a)}`' for a in log_attrs])}")
 
     def _get_func_defination(self, F):
         f_co   = six.get_function_code(F)
@@ -1500,7 +1500,7 @@ class FuncBaseTask(BaseTask):
 
                 # MD5 未变化时，延长本地缓存，并返回缓存值
                 if script['codeMD5'] == remote_md5:
-                    self.logger.debug(f'[LOAD SCRIPT] load `{script_id}` from Cache')
+                    self.logger.debug(f'[LOAD SCRIPT] loaded `{script_id}` from Cache')
 
                     # 延长本地缓存
                     SCRIPT_LOCAL_CACHE.refresh(script_id)
@@ -1545,7 +1545,7 @@ class FuncBaseTask(BaseTask):
         script = script[0]
 
         # 从 DB 获取脚本
-        self.logger.debug(f"[LOAD SCRIPT] load `{script_id}`{ ' (DRAFT)' if draft else '' } from DB")
+        self.logger.debug(f"[LOAD SCRIPT] loaded `{script_id}`{ ' (DRAFT)' if draft else '' } from DB")
 
         # 获取函数额外配置
         sql = '''
@@ -1559,6 +1559,8 @@ class FuncBaseTask(BaseTask):
             '''
         sql_params = [ script_id ]
         funcs = self.db.query(sql, sql_params)
+
+        self.logger.debug(f"[LOAD FUNC EXTRA CONFIG] loaded `{script_id}`{ ' (DRAFT)' if draft else '' } from DB")
 
         # 编译脚本
         script_code = script.get('code') or ''
@@ -1749,7 +1751,7 @@ class FuncBaseTask(BaseTask):
                 raise e
 
             # 执行函数
-            self.logger.info(f'[RUN FUNC] `{self.func_id}`')
+            self.logger.info(f'[CALL ENTRY FUNC] `{self.func_id}`')
             func_return = entry_func(**self.func_call_kwargs)
 
             if not isinstance(func_return, BaseFuncResponse):

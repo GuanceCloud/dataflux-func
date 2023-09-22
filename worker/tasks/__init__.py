@@ -131,7 +131,7 @@ class BaseTask(object):
             'ignore_result',
             'task_record_limit',
         ]
-        self.logger.debug(f"[INIT] {', '.join([f'{a}: `{getattr(self, a)}`' for a in log_attrs])}")
+        self.logger.debug(f"[INIT TASK] {', '.join([f'{a}: `{getattr(self, a)}`' for a in log_attrs])}")
 
     @property
     def trigger_time_ms(self):
@@ -420,7 +420,7 @@ class BaseTask(object):
 
         # 调用子类 run() 函数
         try:
-            self.logger.info(f'[CALL] {self.name}')
+            self.logger.info(f'[START] {self.name}')
             self.result = self.run(**self.kwargs)
 
         except TaskInLockedException as e:
