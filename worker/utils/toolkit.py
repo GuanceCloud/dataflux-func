@@ -408,26 +408,35 @@ def get_days_from_now(d):
     days = float(ts - get_timestamp(3)) / 3600 / 24
     return days
 
+def _str_to_hash(s):
+    if isinstance(s, (tuple, dict, list, OrderedDict)):
+        s = json.dumps(s, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
+    return s
+
 def get_md5(s):
     h = hashlib.md5()
+    s = _str_to_hash(s)
     h.update(six.ensure_binary(s))
 
     return h.hexdigest()
 
 def get_sha1(s):
     h = hashlib.sha1()
+    s = _str_to_hash(s)
     h.update(six.ensure_binary(s))
 
     return h.hexdigest()
 
 def get_sha256(s):
     h = hashlib.sha256()
+    s = _str_to_hash(s)
     h.update(six.ensure_binary(s))
 
     return h.hexdigest()
 
 def get_sha512(s):
     h = hashlib.sha512()
+    s = _str_to_hash(s)
     h.update(six.ensure_binary(s))
 
     return h.hexdigest()
@@ -787,3 +796,27 @@ def is_match_crontab(crontab, t, tz):
     crontab = to_croniter_style(crontab)
     at = arrow.get(t).to(tz)
     return croniter.match(crontab, at.datetime)
+
+class DiffTimer(object):
+    def __init__(self):
+        self.prev_timestamp = time.monotonic()
+
+    def tick(self, unit='ms'):
+        prev = self.prev_timestamp
+        curr = time.monotonic()
+
+        self.prev_timestamp = curr
+
+        diff = curr - prev
+        if unit == 'ms':
+            return int((curr - prev) * 1000)
+        elif unit == 's':
+            return int(curr - prev)
+        elif unit == 'm':
+            return int((curr - prev) / 60)
+        elif unit == 'h':
+            return int((curr - prev) / 60 / 60)
+        elif unit == 'd':
+            return int((curr - prev) / 60 / 60 / 24)
+        else:
+            return curr - prev

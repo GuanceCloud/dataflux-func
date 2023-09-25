@@ -117,7 +117,7 @@ class RedisHelper(object):
 
     def check(self):
         try:
-            _t = toolkit.get_timestamp_ms()
+            dt = toolkit.DiffTimer()
             self.client.info()
 
         except Exception as e:
@@ -128,7 +128,7 @@ class RedisHelper(object):
 
         else:
             if not self.skip_log:
-                self.logger.debug(f'[REDIS] INFO (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+                self.logger.debug(f'[REDIS] INFO (Cost: {dt.tick()} ms)')
 
     def query(self, *args, **options):
         command      = args[0]
@@ -145,16 +145,16 @@ class RedisHelper(object):
             options_dump = 'options=' + toolkit.json_dumps(options)
 
         try:
-            _t = toolkit.get_timestamp_ms()
+            dt = toolkit.DiffTimer()
             return self.client.execute_command(*args, **options)
 
         except Exception as e:
-            self.logger.error(f'[REDIS] Query `{command.upper()} {key}` {options_dump} (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+            self.logger.error(f'[REDIS] Query `{command.upper()} {key}` {options_dump} (Cost: {dt.tick()} ms)')
             raise
 
         else:
             if not self.skip_log:
-                self.logger.debug(f'[REDIS] Query `{command.upper()} {key}` {options_dump} (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+                self.logger.debug(f'[REDIS] Query `{command.upper()} {key}` {options_dump} (Cost: {dt.tick()} ms)')
 
     def run(self, *args, **kwargs):
         command      = args[0]
@@ -175,16 +175,16 @@ class RedisHelper(object):
 
 
         try:
-            _t = toolkit.get_timestamp_ms()
+            dt = toolkit.DiffTimer()
             return getattr(self.client, command)(*command_args, **kwargs)
 
         except Exception as e:
-            self.logger.error(f'[REDIS] Run `{command.upper()} {key} {dumps} (Cost: {toolkit.get_timestamp_ms() - _t} ms)`')
+            self.logger.error(f'[REDIS] Run `{command.upper()} {key} {dumps} (Cost: {dt.tick()} ms)`')
             raise
 
         else:
             if not self.skip_log:
-                self.logger.debug(f'[REDIS] Run `{command.upper()} {key} {dumps} (Cost: {toolkit.get_timestamp_ms() - _t} ms)`')
+                self.logger.debug(f'[REDIS] Run `{command.upper()} {key} {dumps} (Cost: {dt.tick()} ms)`')
 
     def publish(self, topic, message):
         return self.run('publish', topic, message)

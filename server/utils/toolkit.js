@@ -9,17 +9,18 @@ var querystring  = require('querystring');
 var childProcess = require('child_process');
 
 /* 3rd-party Modules */
-var fs        = require('fs-extra');
-var yaml      = require('js-yaml');
-var uuid      = require('uuid');
-var iconv     = require('iconv-lite');
-var babyparse = require('babyparse');
-var async     = require('async');
-var nanoid    = require('nanoid').customAlphabet('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 12);
-var moment    = require('moment-timezone');
-var Base64    = require('js-base64').Base64;
-var byteSize  = require('byte-size');
-var simpleGit = require('simple-git');
+var fs         = require('fs-extra');
+var yaml       = require('js-yaml');
+var uuid       = require('uuid');
+var iconv      = require('iconv-lite');
+var babyparse  = require('babyparse');
+var async      = require('async');
+var nanoid     = require('nanoid').customAlphabet('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', 12);
+var moment     = require('moment-timezone');
+var Base64     = require('js-base64').Base64;
+var byteSize   = require('byte-size');
+var simpleGit  = require('simple-git');
+var sortedJSON = require('sorted-json');
 
 var toolkit = exports;
 
@@ -935,6 +936,10 @@ var getISO8601 = toolkit.getISO8601 = function getISO8601(d) {
  * @return {String}                      - Hash result
  */
 var getHash = toolkit.getHash = function getHash(str, algorithm) {
+  if ('string' !== typeof str) {
+    str = sortedJSON.sortify(str, { stringify: true, sortArray: false});
+  }
+
   algorithm = algorithm || 'sha256';
 
   var c = crypto.createHash(algorithm);

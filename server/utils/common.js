@@ -85,7 +85,7 @@ common.convertImportExportDataSchema = function(data) {
       delete c.saveResult;
     });
   }
-  
+
   return data;
 };
 
@@ -128,8 +128,8 @@ common.flattenImportExportData = function(data) {
       script.codeMD5 = script.codeMD5 || toolkit.getMD5(script.code) // 计算 MD5 值
 
       if (script.codeDraft) {
-        script.codeDraft    = script.codeDraft || '';                              // 保证 codeDraft 字段不为 NULL
-        script.codeDraftMD5 = script.codeDraft || toolkit.getMD5(script.codeDraft) // 计算 MD5 值
+        script.codeDraft    = script.codeDraft    || '';                              // 保证 codeDraft 字段不为 NULL
+        script.codeDraftMD5 = script.codeDraftMD5 || toolkit.getMD5(script.codeDraft) // 计算 MD5 值
       } else {
         script.codeDraft    = script.code;
         script.codeDraftMD5 = script.codeMD5;

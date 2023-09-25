@@ -217,9 +217,9 @@ class LogHelper(object):
 
         self.level = CONFIG['LOG_LEVEL']
 
-        self._task_start_time = int(time.time() * 1000)
-        self._prev_log_time   = None
-        self._staged_logs     = []
+        self._base_time     = int(time.time() * 1000)
+        self._prev_log_time = None
+        self._staged_logs   = []
 
     def log(self, level, message):
         if not isinstance(level, str) or level.upper() not in LOG_LEVELS['levels']:
@@ -262,8 +262,8 @@ class LogHelper(object):
                 'taskId'            : self.task.task_id,
                 'taskIdShort'       : toolkit.get_short_id(self.task.task_id),
                 'task'              : self.task.name,
-                'diffTime'          : now_ms - (self._prev_log_time or self._task_start_time),
-                'costTime'          : now_ms - self._task_start_time,
+                'diffTime'          : now_ms - (self._prev_log_time or self._base_time),
+                'costTime'          : now_ms - self._base_time,
                 # 'userId'            : meta_extra.get('userId'),
                 # 'userIdShort'       : toolkit.get_short_id(meta_extra.get('userId', '')) or None,
                 # 'username'          : meta_extra.get('username'),

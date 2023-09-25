@@ -5,6 +5,7 @@ import re
 
 # 3rd-party Modules
 import arrow
+from dateutil import zoneinfo
 import pymysql
 from pymysql.cursors import DictCursor
 
@@ -107,6 +108,12 @@ def before_app_create():
                     m = re.match(r'^(\+|\-)(\d{1}:\d{2})$', timezone)
                     if m:
                         timezone = f'{m[1]}0{m[2]}'
+
+                if not re.match(r'^(\+|\-)(\d{2}:\d{2})$', timezone) and not zoneinfo.gettz(timezone):
+                    print('Time zone abbreviations are not part of the ISO standard. A format such as +08:00 is recommended to specify the time zone.')
+                    print('时区缩写并不是 ISO 标准的一部分。建议使用类似 +08:00 格式指定时区。')
+                    e = Exception('Cannot parse timezone: {timezone}')
+                    raise e
 
                 timezone = arrow.get().to(timezone).format('ZZ')
 

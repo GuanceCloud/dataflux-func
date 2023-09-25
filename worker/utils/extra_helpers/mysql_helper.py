@@ -105,7 +105,7 @@ class MySQLHelper(object):
 
     def start_trans(self):
         try:
-            _t = toolkit.get_timestamp_ms()
+            dt = toolkit.DiffTimer()
 
             conn = self.client.connection()
             cur  = conn.cursor()
@@ -118,12 +118,12 @@ class MySQLHelper(object):
             return trans_conn
 
         except Exception as e:
-            self.logger.error(f'[MYSQL] Trans START (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+            self.logger.error(f'[MYSQL] Trans START (Cost: {dt.tick()} ms)')
             raise
 
         else:
             if not self.skip_log:
-                self.logger.debug(f'[MYSQL] Trans START (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+                self.logger.debug(f'[MYSQL] Trans START (Cost: {dt.tick()} ms)')
 
     def commit(self, trans_conn):
         if not trans_conn:
@@ -133,7 +133,7 @@ class MySQLHelper(object):
         cur  = trans_conn.get('cur')
 
         try:
-            _t = toolkit.get_timestamp_ms()
+            dt = toolkit.DiffTimer()
 
             conn.commit()
 
@@ -141,12 +141,12 @@ class MySQLHelper(object):
             conn.close()
 
         except Exception as e:
-            self.logger.error(f'[MYSQL] Trans COMMIT (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+            self.logger.error(f'[MYSQL] Trans COMMIT (Cost: {dt.tick()} ms)')
             raise
 
         else:
             if not self.skip_log:
-                self.logger.debug(f'[MYSQL] Trans COMMIT (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+                self.logger.debug(f'[MYSQL] Trans COMMIT (Cost: {dt.tick()} ms)')
 
     def rollback(self, trans_conn):
         if not trans_conn:
@@ -156,7 +156,7 @@ class MySQLHelper(object):
         cur  = trans_conn.get('cur')
 
         try:
-            _t = toolkit.get_timestamp_ms()
+            dt = toolkit.DiffTimer()
 
             conn.rollback()
 
@@ -164,12 +164,12 @@ class MySQLHelper(object):
             conn.close()
 
         except Exception as e:
-            self.logger.error(f'[MYSQL] Trans ROLLBACK (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+            self.logger.error(f'[MYSQL] Trans ROLLBACK (Cost: {dt.tick()} ms)')
             raise
 
         else:
             if not self.skip_log:
-                self.logger.debug(f'[MYSQL] Trans ROLLBACK (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+                self.logger.debug(f'[MYSQL] Trans ROLLBACK (Cost: {dt.tick()} ms)')
 
     def _convert_timezone(self, db_res):
         if not self.config.get('timezone'):
@@ -195,18 +195,18 @@ class MySQLHelper(object):
         cur  = trans_conn['cur']
 
         try:
-            _t = toolkit.get_timestamp_ms()
+            dt = toolkit.DiffTimer()
 
             count  = cur.execute(formatted_sql)
             db_res = cur.fetchall()
 
         except Exception as e:
-            self.logger.error(f'[MYSQL] Trans Query `{one_line_sql}` (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+            self.logger.error(f'[MYSQL] Trans Query `{one_line_sql}` (Cost: {dt.tick()} ms)')
             raise
 
         else:
             if not self.skip_log:
-                self.logger.debug(f'[MYSQL] Trans Query `{one_line_sql}` (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+                self.logger.debug(f'[MYSQL] Trans Query `{one_line_sql}` (Cost: {dt.tick()} ms)')
 
             db_res = list(db_res)
             db_res = self._convert_timezone(db_res)
@@ -221,7 +221,7 @@ class MySQLHelper(object):
         cur  = None
 
         try:
-            _t = toolkit.get_timestamp_ms()
+            dt = toolkit.DiffTimer()
 
             conn = self.client.connection()
             cur  = conn.cursor()
@@ -236,14 +236,14 @@ class MySQLHelper(object):
             if conn:
                 conn.rollback()
 
-            self.logger.error(f'[MYSQL] Query `{one_line_sql}` (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+            self.logger.error(f'[MYSQL] Query `{one_line_sql}` (Cost: {dt.tick()} ms)')
             raise
 
         else:
             conn.commit()
 
             if not self.skip_log:
-                self.logger.debug(f'[MYSQL] Query `{one_line_sql}` (Cost: {toolkit.get_timestamp_ms() - _t} ms)')
+                self.logger.debug(f'[MYSQL] Query `{one_line_sql}` (Cost: {dt.tick()} ms)')
 
             db_res = list(db_res)
             db_res = self._convert_timezone(db_res)

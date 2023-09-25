@@ -132,6 +132,13 @@ exports.beforeAppCreate = function(callback) {
               break;
           }
 
+          if (!timezone.match(/^(\+|\-)(\d{2}:\d{2})$/) && !moment.tz.zone(timezone)) {
+            console.log('Time zone abbreviations are not part of the ISO standard. A format such as +08:00 is recommended to specify the time zone.');
+            console.log('时区缩写并不是 ISO 标准的一部分。建议使用类似 +08:00 格式指定时区。');
+            var e = new Error(`Cannot parse timezone: ${timezone}`);
+            throw e;
+          }
+
           timezone = moment().tz(timezone).format('Z');
         }
 
