@@ -907,18 +907,40 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
         var _dataSet = importData[_rule.name];
         if (toolkit.isNothing(_dataSet)) return eachCallback();
 
-        async.eachSeries(_dataSet, function(_data, innerEachCallback) {
-          var _data = _prepareTableDataToImport(_data);
+        var tableFields = [];
+        async.series([
+          // 获取当前表字段
+          function(innerCallback) {
+              var sql = toolkit.createStringBuilder();
+              sql.append('SHOW COLUMNS FROM ??');
 
-          var sql = toolkit.createStringBuilder();
-          sql.append('REPLACE INTO ??');
-          sql.append('SET');
-          sql.append('  ?');
+              var sqlParams = [_rule.table];
+              self.db.query(sql, sqlParams, function(err, dbRes) {
+                if (err) return innerCallback(err);
 
-          var sqlParams = [_rule.table, _data];
+                dbRes.forEach(function(col) {
+                  tableFields.push(col.Field);
+                });
 
-          self.db.query(sql, sqlParams, innerEachCallback);
-        }, eachCallback);
+                return innerCallback();
+              });
+          },
+          // 执行插入
+          function(innerCallback) {
+            async.eachSeries(_dataSet, function(_data, innerEachCallback) {
+              var _data = _prepareTableDataToImport(_data, tableFields);
+
+              var sql = toolkit.createStringBuilder();
+              sql.append('REPLACE INTO ??');
+              sql.append('SET');
+              sql.append('  ?');
+
+              var sqlParams = [_rule.table, _data];
+
+              self.db.query(sql, sqlParams, innerEachCallback);
+            }, innerCallback);
+          }
+        ], eachCallback)
       }, asyncCallback);
     },
     // 记录导入历史
@@ -975,30 +997,37 @@ function _prepareData(data) {
   return data;
 };
 
-function _prepareTableDataToImport(data) {
+function _prepareTableDataToImport(data, tableFields) {
   data = toolkit.jsonCopy(data);
 
   for (var f in data) {
-    var v = data[f];
+    // 跳过不存在的字段
+    if (tableFields.indexOf(f) < 0) {
+      delete data[f];
+    }
 
-    // 删除 "_" 开头的字段
+    // 跳过 "_" 开头的字段
     if (toolkit.startsWith(f, '_')) {
       delete data[f];
     }
 
-    // NULL值不转换
-    if (v === null) continue;
+    // 字段值转换
+    var v = data[f];
+    if (toolkit.isNullOrUndefined(v)) {
+      continue;
+    }
 
+    // JSON字段序列化
     if (toolkit.endsWith(f, 'JSON')
       && 'string' !== typeof v) {
-      // JSON字段序列化
       data[f] = JSON.stringify(v);
+    }
 
-    } else if (toolkit.endsWith(f, 'Time')
-      // 时间类字段
+    // 时间类字段转换
+    if (toolkit.endsWith(f, 'Time')
       && 'string' === typeof v
       && validator.isISO8601(v, { strict: true, strictSeparator: true })) {
-          data[f] = new Date(v);
+      data[f] = new Date(v);
     }
   }
 

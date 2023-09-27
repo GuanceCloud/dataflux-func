@@ -47,9 +47,9 @@ common.convertImportExportDataSchema = function(data) {
 
   // v1 => v2
   if (data.version === 1) {
-    // scriptSets[#]._exportUser 字段位置改为 _extra.exportUser
-    // scriptSets[#]._exportTime 字段位置改为 _extra.exportTime
-    // scriptSets[#]._note       字段位置改为 _extra.note
+    // data.scriptSets[#]._exportUser 字段位置改为 data.scriptSets[#]._extra.exportUser
+    // data.scriptSets[#]._exportTime 字段位置改为 data.scriptSets[#]._extra.exportTime
+    // data.scriptSets[#]._note       字段位置改为 data.scriptSets[#]._extra.note
     if (toolkit.notNothing(data.scriptSets)) {
       data.scriptSets.forEach(function(scriptSet) {
         scriptSet._extra = scriptSet._extra || {};
@@ -63,9 +63,9 @@ common.convertImportExportDataSchema = function(data) {
       })
     }
 
-    // exportUser 字段位置改为 extra.exportUser
-    // exportTime 字段位置改为 extra.exportTime
-    // note       字段位置改为 extra.note
+    // data.exportUser 字段位置改为 data.extra.exportUser
+    // data.exportTime 字段位置改为 data.extra.exportTime
+    // data.note       字段位置改为 data.extra.note
     data.extra = data.extra || {};
     if ('exportUser' in data) data.extra.exportUser = data.exportUser;
     if ('exportTime' in data) data.extra.exportTime = data.exportTime;
@@ -77,13 +77,6 @@ common.convertImportExportDataSchema = function(data) {
 
     // 更新版本
     data.version = 2;
-  }
-
-  // 去除 SaveResult
-  if (data.crontabConfigs) {
-    data.crontabConfigs.forEach(function(c) {
-      delete c.saveResult;
-    });
   }
 
   return data;
