@@ -5,7 +5,6 @@ import re
 import traceback
 
 # 3rd-party Modules
-from DBUtils.PersistentDB import PersistentDB
 from DBUtils.PooledDB import PooledDB
 
 # Project Modules
@@ -19,6 +18,8 @@ def get_config(c):
         'user'    : c.get('user')     or 'default',
         'password': c.get('password') or '',
         'database': c.get('database') or 'default',
+
+        'maxconnections': c.get('maxconnections') or 1,
     }
     return config
 
@@ -38,10 +39,7 @@ class ClickHouseHelper(object):
             config['maxconnections'] = pool_size
 
         self.config = config
-        if pool_size:
-            self.client = PooledDB(ClickHouse, **get_config(config))
-        else:
-            self.client = PersistentDB(ClickHouse, **get_config(config))
+        self.client = PooledDB(ClickHouse, **get_config(config))
 
         self.driver = Client(**get_config(self.config))
 

@@ -11,7 +11,6 @@ import arrow
 import pymysql
 from pymysql.cursors import DictCursor
 from pymysql.constants import CLIENT as CLIENT_FLAG
-from DBUtils.PersistentDB import PersistentDB
 from DBUtils.PooledDB import PooledDB
 
 # Project Modules
@@ -35,6 +34,8 @@ def get_config(c):
         'init_command': 'SET NAMES "{0}"'.format(_charset),
 
         'client_flag': CLIENT_FLAG.MULTI_STATEMENTS,
+
+        'maxconnections': c.get('maxconnections') or 1,
     }
     return config
 
@@ -55,10 +56,7 @@ class MySQLHelper(object):
                 config['maxconnections'] = pool_size
 
             self.config = config
-            if pool_size:
-                self.client = PooledDB(pymysql, **get_config(config))
-            else:
-                self.client = PersistentDB(pymysql, **get_config(config))
+            self.client = PooledDB(pymysql, **get_config(config))
 
         else:
             global CLIENT_CONFIG
@@ -74,7 +72,7 @@ class MySQLHelper(object):
                     'charset' : CONFIG['_MYSQL_CHARSET'],
                     'timezone': CONFIG['_MYSQL_TIMEZONE'],
                 }
-                CLIENT = PersistentDB(pymysql, **get_config(CLIENT_CONFIG))
+                CLIENT = PooledDB(pymysql, **get_config(CLIENT_CONFIG))
 
             self.config = CLIENT_CONFIG
             self.client = CLIENT

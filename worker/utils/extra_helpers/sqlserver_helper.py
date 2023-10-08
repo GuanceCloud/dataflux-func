@@ -5,7 +5,6 @@ import re
 import traceback
 
 # 3rd-party Modules
-from DBUtils.PersistentDB import PersistentDB
 from DBUtils.PooledDB import PooledDB
 
 # Project Modules
@@ -21,6 +20,8 @@ def get_config(c):
         'password': c.get('password'),
         'database': c.get('database'),
         'charset' : c.get('charset') or 'utf8',
+
+        'maxconnections': c.get('maxconnections') or 1,
     }
     return config
 
@@ -39,10 +40,7 @@ class SQLServerHelper(object):
             config['maxconnections'] = pool_size
 
         self.config = config
-        if pool_size:
-            self.client = PooledDB(pymssql, **get_config(config))
-        else:
-            self.client = PersistentDB(pymssql, **get_config(config))
+        self.client = PooledDB(pymssql, **get_config(config))
 
     def __del__(self):
         if not self.client or not isinstance(self.client, PooledDB):
