@@ -5,7 +5,7 @@ import re
 import traceback
 
 # 3rd-party Modules
-from DBUtils.PooledDB import PooledDB
+from dbutils.pooled_db import PooledDB
 
 # Project Modules
 from worker.utils import toolkit
@@ -23,7 +23,7 @@ def get_config(c):
         'password' : c.get('password'),
         'dsn'      : dsn,
         'nencoding': c.get('charset') or 'utf8',
-        
+
         'maxconnections': c.get('maxconnections') or 1,
     }
     return config

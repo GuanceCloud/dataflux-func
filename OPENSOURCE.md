@@ -84,7 +84,7 @@
 | clickhouse-driver | 0.1.5  | MIT License (MIT)                                                              | https://github.com/mymarilyn/clickhouse-driver |
 | croniter          | 1.3.5  | MIT License (MIT License)                                                      | http://github.com/kiorky/croniter              |
 | cx-Oracle         | 7.3.0  | BSD License (BSD License)                                                      | https://oracle.github.io/python-cx_Oracle      |
-| DBUtils           | 1.4    | MIT License (MIT License)                                                      | https://webwareforpython.github.io/DBUtils/    |
+| DBUtils           | 3.0.3  | MIT License (MIT License)                                                      | https://webwareforpython.github.io/DBUtils/    |
 | funcsigs          | 1.0.2  | Apache Software License (ASL)                                                  | http://funcsigs.readthedocs.org/               |
 | influxdb          | 5.3.1  | MIT License (MIT License)                                                      | https://github.com/influxdb/influxdb-python    |
 | nanoid            | 2.0.0  | MIT License (MIT)                                                              | https://github.com/puyuan/py-nanoid            |

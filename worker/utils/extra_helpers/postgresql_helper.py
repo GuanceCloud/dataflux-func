@@ -5,7 +5,7 @@ import re
 import traceback
 
 # 3rd-party Modules
-from DBUtils.PooledDB import PooledDB
+from dbutils.pooled_db import PooledDB
 
 # Project Modules
 from worker.utils import toolkit
