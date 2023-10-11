@@ -4,6 +4,7 @@ installCost: (Cost {n} s)
 <i18n locale="zh-CN" lang="yaml">
 PIP Tool                         : PIP 工具
 Mirror                           : 镜像源
+Use --upgrade option             : 使用 --upgrade 选项
 Install Python Package           : 安装 Python 包
 Installed Python Packages        : 已安装的 Python 包
 Package                          : 包
@@ -47,32 +48,57 @@ installCost: （耗时 {n} 秒）
           style="width: 500px"
           v-model="packageToInstall">
         </el-input>
+
         <el-button type="primary" @click="installPackages" :disabled="!isInstallable">
           <span v-if="isInstalling">
             <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
             {{ $t('Installing') }}
           </span>
-          <span v-else>{{ $t('Install') }}</span>
+          <span v-else>
+            {{ $t('Install') }}
+          </span>
         </el-button>
 
-        <p class="pip-install-tips">
-          <template v-if="isInstallable">
-            {{ $t('You can also install the package by following command') }}{{ $t(':') }}
-            <br>
-            <CopyButton :content="getPIPCommand()" tip-placement="left" />
-            <code class="text-main" v-html="getPIPCommand({ pretty: true })"></code>
-          </template>
-        </p>
+        <template v-if="isInstallable">
+          <div class="pip-install-option">
+            <el-switch
+              v-model="useUpgrade"
+              :active-text="$t('Use --upgrade option')">
+            </el-switch>
+          </div>
+
+          <br>
+          <div class="pip-install-tips">
+            <p>
+              {{ $t('You can also install the package by following command') }}{{ $t(':') }}
+            </p>
+            <el-row :gutter="20">
+              <el-col :span="22">
+                <el-input
+                  type="textarea"
+                  autosize
+                  resize="none"
+                  :value="getPIPCommand({ pretty: true })">
+                </el-input>
+              </el-col>
+              <el-col :span="2">
+                <CopyButton :content="getPIPCommand()" tip-placement="right" />
+              </el-col>
+            </el-row>
+          </div>
+        </template>
 
         <el-divider content-position="left"><h1>{{ $t('Installed Python Packages') }}</h1></el-divider>
 
-        <el-button @click="loadInstalledPackages" :disabled="isLoadingInstalldPackages">
-          <span v-if="isLoadingInstalldPackages">
-            <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
-            {{ $t('Loading Installed Python Packages') }}
-          </span>
-          <span v-else>{{ $t('Load Installed Python Packages') }}</span>
-        </el-button>
+        <div>
+          <el-button @click="loadInstalledPackages" :disabled="isLoadingInstalldPackages" type="text">
+            <span v-if="isLoadingInstalldPackages">
+              <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
+              {{ $t('Loading Installed Python Packages') }}
+            </span>
+            <span v-else>{{ $t('Load Installed Python Packages') }}</span>
+          </el-button>
+        </div>
 
         <el-table class="common-table" :data="installedPackages" v-if="installedPackages.length > 0">
           <el-table-column :label="$t('Package')" sortable sort-by="name">
@@ -176,14 +202,30 @@ export default {
       let containerId = this.$store.getters.SYSTEM_INFO('_HOSTNAME') || this.$t('{Func Container ID}');
       let targetOpt   = `-t ${this.$store.getters.SYSTEM_INFO('_PIP_INSTALL_DIR')}`;
       let indexOpt    = this.pypiMirror ? `-i ${this.pypiMirror}` : '';
+      let upgradeOpt  = this.useUpgrade ? `--upgrade` : '';
 
-      let cmd = `sudo docker exec ${containerId} pip install ${targetOpt} ${indexOpt} `;
+      let joinSep = ' ';
       if (opt.pretty) {
-        cmd = `${cmd} \\<br>&#12288;&#12288;&#12288;${this.packageToInstall.trim().split(/\s+/).join(' \\<br>&#12288;&#12288;&#12288;')}`;
-      } else {
-        cmd = `${cmd} ${this.packageToInstall}`.trim();
+        joinSep = ' \\\n  ';
       }
 
+      let cmdParts = [
+        `sudo docker exec ${containerId}`,
+        `pip install`,
+        targetOpt,
+      ]
+
+      if (this.pypiMirror) {
+        cmdParts.push(`-i ${this.pypiMirror}`);
+      }
+
+      if (this.useUpgrade) {
+        cmdParts.push(`--upgrade`);
+      }
+
+      cmdParts.push(`${this.packageToInstall.trim().split(/\s+/).join(joinSep)}`);
+
+      let cmd = cmdParts.join(joinSep).replace(/\s+/, ' ').trim();
       return cmd;
     },
     async loadData() {
@@ -223,6 +265,7 @@ export default {
         body: {
           mirror  : this.pypiMirror,
           packages: this.packageToInstall,
+          upgrade : this.useUpgrade,
         },
       });
       if (!apiRes || !apiRes.ok) return;
@@ -288,6 +331,7 @@ export default {
     return {
       pypiMirror      : '',
       packageToInstall: '',
+      useUpgrade      : false,
 
       showInstallStatus: false,
       nowMs            : Date.now(),
@@ -325,11 +369,15 @@ export default {
 </script>
 
 <style scoped>
+.pip-install-option,
 .pip-install-tips {
-  margin-left: 10px;
+  margin-top: 10px;
+  width: 810px;
 }
-.pip-install-tips code {
+.pip-install-tips textarea {
   font-size: 14px;
+  text-indent: -2em;
+  padding-left: 2em;
 }
 .installing-dialog-content {
   display: flex;

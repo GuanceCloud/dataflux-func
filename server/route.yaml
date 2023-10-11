@@ -1240,6 +1240,9 @@ pythonPackageAPI:
       mirror:
         $desc: PIP Mirror (e.g. https://pypi.douban.com/simple/)
         $type: string
+      upgrade:
+        $desc: Use upgrade flag
+        $type: boolean
       packages:
         $desc      : Python Packages (e.g. prettytable requests==1.0.0)
         $isRequired: true

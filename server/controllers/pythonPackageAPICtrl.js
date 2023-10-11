@@ -96,6 +96,7 @@ exports.clearInstallStatus = function(req, res, next) {
 
 exports.install = function(req, res, next) {
   var mirror   = req.body.mirror;
+  var upgrade  = req.body.upgrade;
   var packages = req.body.packages.trim().split(/\s+/);
 
   // 安装进度
@@ -184,6 +185,11 @@ exports.install = function(req, res, next) {
         // 启用镜像源
         if (toolkit.notNothing(mirror)) {
           cmdArgs.push('-i', mirror);
+        }
+
+        // 启用 upgrade 标记
+        if (upgrade) {
+          cmdArgs.push('--upgrade');
         }
 
         if (toolkit.endsWith(packageInfo.package, '.whl')) {
