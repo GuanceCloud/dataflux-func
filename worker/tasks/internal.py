@@ -25,8 +25,6 @@ CONFIG     = yaml_resources.get('CONFIG')
 IMAGE_INFO = yaml_resources.get('IMAGE_INFO')
 
 class BaseInternalTask(BaseTask):
-    default_timeout = 60
-
     def safe_call(self, func, *args, **kwargs):
         try:
             func(*args, **kwargs)
@@ -741,7 +739,7 @@ class ReloadDataMD5Cache(BaseInternalTask):
 class CheckConnector(BaseInternalTask):
     name = 'Internal.CheckConnector'
 
-    default_timeout = 15
+    default_timeout = CONFIG['_CONNECTOR_CHECK_TASK_TIMEOUT']
 
     def run(self, **kwargs):
         connector_type   = kwargs.get('type')
@@ -760,7 +758,7 @@ class CheckConnector(BaseInternalTask):
 class QueryConnector(BaseInternalTask):
     name = 'Internal.QueryConnector'
 
-    default_timeout = 15
+    default_timeout = CONFIG['_CONNECTOR_QUERY_TASK_TIMEOUT']
 
     def run(self, **kwargs):
         connector_id   = kwargs.get('id')

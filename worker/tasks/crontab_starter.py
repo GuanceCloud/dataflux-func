@@ -18,6 +18,9 @@ CONFIG = yaml_resources.get('CONFIG')
 class CrontabStarter(BaseTask):
     name = 'Crontab.Starter'
 
+    default_expires = CONFIG['_CRONTAB_STARTER_TASK_TIMEOUT']
+    default_timeout = CONFIG['_CRONTAB_STARTER_TASK_TIMEOUT']
+
     def filter_crontab_config(self, crontab_config):
         crontab = crontab_config.get('crontab')
         if not crontab or not toolkit.is_valid_crontab(crontab):
@@ -85,14 +88,15 @@ class CrontabStarter(BaseTask):
             WHERE
                     `cron`.`seq`        > ?
                 AND `cron`.`isDisabled` = FALSE
+                AND `func`.`id`         IS NOT NULL
                 AND IFNULL(UNIX_TIMESTAMP(`cron`.`expireTime`) > UNIX_TIMESTAMP(), TRUE)
 
             ORDER BY
                 `cron`.`seq` ASC
 
-            LIMIT 100
+            LIMIT ?
             '''
-        sql_params = [ next_seq ]
+        sql_params = [ next_seq, CONFIG['_CRONTAB_STARTER_FETCH_COUNT'] ]
         crontab_configs = self.db.query(sql, sql_params)
 
         # 获取游标
