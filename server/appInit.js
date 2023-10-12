@@ -126,9 +126,14 @@ exports.beforeAppCreate = function(callback) {
 
             default:
               var m = timezone.match(/^(\+|\-)(\d{1}:\d{2})$/);
-              if (m) {
-                timezone = `${m[1]}0${m[2]}`;
-              }
+              if (m) timezone = `${m[1]}0${m[2]}`;
+
+              var m = timezone.match(/^(\+|\-)(\d{1})$/);
+              if (m) timezone = `${m[1]}0${m[2]}:00`;
+
+              var m = timezone.match(/^(\+|\-)(\d{2})$/);
+              if (m) timezone = `${m[1]}${m[2]}:00`;
+
               break;
           }
 
