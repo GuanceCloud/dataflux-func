@@ -4,7 +4,7 @@ installCost: (Cost {n} s)
 <i18n locale="zh-CN" lang="yaml">
 PIP Tool                         : PIP 工具
 Mirror                           : 镜像源
-Use --upgrade option             : 使用 --upgrade 选项
+Add --upgrade option             : 添加 --upgrade 选项
 Install Python Package           : 安装 Python 包
 Installed Python Packages        : 已安装的 Python 包
 Package                          : 包
@@ -62,8 +62,8 @@ installCost: （耗时 {n} 秒）
         <template v-if="isInstallable">
           <div class="pip-install-option">
             <el-switch
-              v-model="useUpgrade"
-              :active-text="$t('Use --upgrade option')">
+              v-model="addUpgradeOption"
+              :active-text="$t('Add --upgrade option')">
             </el-switch>
           </div>
 
@@ -201,8 +201,6 @@ export default {
       opt = opt || {};
       let containerId = this.$store.getters.SYSTEM_INFO('_HOSTNAME') || this.$t('{Func Container ID}');
       let targetOpt   = `-t ${this.$store.getters.SYSTEM_INFO('_PIP_INSTALL_DIR')}`;
-      let indexOpt    = this.pypiMirror ? `-i ${this.pypiMirror}` : '';
-      let upgradeOpt  = this.useUpgrade ? `--upgrade` : '';
 
       let joinSep = ' ';
       if (opt.pretty) {
@@ -219,7 +217,7 @@ export default {
         cmdParts.push(`-i ${this.pypiMirror}`);
       }
 
-      if (this.useUpgrade) {
+      if (this.addUpgradeOption) {
         cmdParts.push(`--upgrade`);
       }
 
@@ -265,7 +263,7 @@ export default {
         body: {
           mirror  : this.pypiMirror,
           packages: this.packageToInstall,
-          upgrade : this.useUpgrade,
+          upgrade : this.addUpgradeOption,
         },
       });
       if (!apiRes || !apiRes.ok) return;
@@ -331,7 +329,7 @@ export default {
     return {
       pypiMirror      : '',
       packageToInstall: '',
-      useUpgrade      : false,
+      addUpgradeOption      : false,
 
       showInstallStatus: false,
       nowMs            : Date.now(),
