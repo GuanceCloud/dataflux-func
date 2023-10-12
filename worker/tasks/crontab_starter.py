@@ -128,18 +128,6 @@ class CrontabStarter(BaseTask):
             delay_list = toolkit.as_array(delay_list)
 
             for delay in delay_list:
-                # 定时任务锁
-                crontab_lock_key = toolkit.get_cache_key('lock', 'CrontabConfig', tags=[
-                        'crontabConfigId', crontab_config['id'],
-                        'funcId',          crontab_config['funcId'],
-                        'crontabDelay',    delay])
-
-                crontab_lock_value = toolkit.gen_uuid()
-                if not self.cache_db.lock(crontab_lock_key, crontab_lock_value, timeout):
-                    # 触发任务前上锁，失败则跳过
-                    self.logger.warning('Crontab Config in lock, skip...')
-                    continue
-
                 # 任务请求
                 task_reqs.append({
                     'name': 'Func.Runner',
