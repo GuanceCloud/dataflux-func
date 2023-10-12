@@ -91,9 +91,6 @@ class CrontabStarter(BaseTask):
                 AND `func`.`id`         IS NOT NULL
                 AND IFNULL(UNIX_TIMESTAMP(`cron`.`expireTime`) > UNIX_TIMESTAMP(), TRUE)
 
-            ORDER BY
-                `cron`.`seq` ASC
-
             LIMIT ?
             '''
         sql_params = [ next_seq, CONFIG['_CRONTAB_STARTER_FETCH_COUNT'] ]
