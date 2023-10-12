@@ -173,6 +173,7 @@ class RedisHelper(object):
             ' '.join([ f'{k}={v}' for k, v in kwargs.items()])
         ]).strip()
 
+        dumps = toolkit.limit_text(dumps, max_length=100)
 
         try:
             dt = toolkit.DiffTimer()
@@ -563,7 +564,13 @@ class RedisHelper(object):
 
         # 发送任务
         for worker_queue, elements in worker_queue_element_map.items():
+            if not self.skip_log:
+                self.logger.debug(f'[REDIS] Put Task {worker_queue} <= {len(elements)} Tasks')
+
             self.lpush(worker_queue, *elements)
 
         for delay_queue, elements in delay_queue_element_map.items():
+            if not self.skip_log:
+                self.logger.debug(f'[REDIS] Put Task {delay_queue} <= {len(elements)} Tasks')
+
             self.zadd(delay_queue, elements)
