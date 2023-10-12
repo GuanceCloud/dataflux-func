@@ -249,11 +249,5 @@ class FuncRunner(FuncBaseTask):
             return result
 
         finally:
-            # 定时任务解锁
-            crontab_lock_key   = kwargs.get('crontabLockKey')
-            crontab_lock_value = kwargs.get('crontabLockValue')
-            if crontab_lock_key and crontab_lock_value:
-                self.cache_db.unlock(crontab_lock_key, crontab_lock_value)
-
             # 清理资源
             self.clean_up()

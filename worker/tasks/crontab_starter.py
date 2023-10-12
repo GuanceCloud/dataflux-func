@@ -138,8 +138,6 @@ class CrontabStarter(BaseTask):
                         'originId'        : origin_id,
                         'crontab'         : crontab_config['crontab'],
                         'crontabDelay'    : delay,
-                        'crontabLockKey'  : crontab_lock_key,
-                        'crontabLockValue': crontab_lock_value,
                         'crontabExecMode' : exec_mode,
                     },
 
