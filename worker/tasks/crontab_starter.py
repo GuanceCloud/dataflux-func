@@ -130,6 +130,15 @@ class CrontabStarter(BaseTask):
             delay_list = toolkit.as_array(delay_list)
 
             for delay in delay_list:
+                # 定时任务锁
+                crontab_lock_key = toolkit.get_cache_key('lock', 'CrontabConfig', tags=[
+                        'crontabConfigId', crontab_config['id'],
+                        'funcId',          crontab_config['funcId'],
+                        'execMode',        exec_mode,
+                        'crontabDelay',    delay])
+
+                crontab_lock_value = toolkit.gen_uuid()
+
                 # 任务请求
                 task_reqs.append({
                     'name': 'Func.Runner',
@@ -140,6 +149,8 @@ class CrontabStarter(BaseTask):
                         'originId'        : origin_id,
                         'crontab'         : crontab_config['crontab'],
                         'crontabDelay'    : delay,
+                        'crontabLockKey'  : crontab_lock_key,   # 后续在 Func.Runner 中锁定 / 解锁
+                        'crontabLockValue': crontab_lock_value, # 后续在 Func.Runner 中锁定 / 解锁
                         'crontabExecMode' : exec_mode,
                     },
 
