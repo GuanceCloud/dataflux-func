@@ -567,18 +567,16 @@ class RedisHelper(object):
         # 发送任务
         pipe = self.client.pipeline()
 
-        groups = toolkit.group_by_count(task_reqs, count=CONFIG['_PUT_TASK_BULK_COUNT'])
-        for group in groups:
-            for worker_queue, elements in worker_queue_element_map.items():
-                if not self.skip_log:
-                    self.logger.debug(f'[REDIS] Put Task {worker_queue} <= {len(elements)} Tasks')
+        for worker_queue, elements in worker_queue_element_map.items():
+            if not self.skip_log:
+                self.logger.debug(f'[REDIS] Put Task {worker_queue} <= {len(elements)} Tasks')
 
-                pipe.lpush(worker_queue, *elements)
+            pipe.lpush(worker_queue, *elements)
 
-            for delay_queue, elements in delay_queue_element_map.items():
-                if not self.skip_log:
-                    self.logger.debug(f'[REDIS] Put Task {delay_queue} <= {len(elements)} Tasks')
+        for delay_queue, elements in delay_queue_element_map.items():
+            if not self.skip_log:
+                self.logger.debug(f'[REDIS] Put Task {delay_queue} <= {len(elements)} Tasks')
 
-                pipe.zadd(delay_queue, elements)
+            pipe.zadd(delay_queue, elements)
 
         pipe.execute()
