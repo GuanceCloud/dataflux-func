@@ -81,23 +81,58 @@
 
     // Add DataFlux Func @DFF.API hint
     if ('dff'.indexOf(_lowCurLine) === 0 || '@dff'.indexOf(_lowCurLine) === 0) {
-      list.push("@DFF.API('函数名称', category=None, tags=[], cache_result=None)");
+      list.push("@DFF.API(");
     }
 
     // Add DataFlux DFF.* hint
     if ('dff'.indexOf(_lowCurWord) === 0) {
+      list.push("DFF.LOG(");
+
       if (window._DFF_connectorIds) {
+        list.push("DFF.CONN(");
         window._DFF_connectorIds.forEach(function(id) {
           list.push("DFF.CONN('" + id + "')");
         });
       }
 
       if (window._DFF_envVariableIds) {
+        list.push("DFF.ENV(");
         window._DFF_envVariableIds.forEach(function(id) {
           list.push("DFF.ENV('" + id + "')");
         });
       }
+
+      list.push("DFF.STORE(");
+      list.push("DFF.CACHE(");
+      list.push("DFF.RSRC(");
+      list.push("DFF.RESP(");
+      list.push("DFF.REDIRECT(");
     };
+
+    // Add DataFlux _DFF_* hint
+    if ('_dff_'.indexOf(_lowCurWord) === 0) {
+      list.push("_DFF_DEBUG");
+      list.push("_DFF_TASK_ID");
+      list.push("_DFF_ROOT_TASK_ID");
+      list.push("_DFF_SCRIPT_SET_ID");
+      list.push("_DFF_SCRIPT_ID");
+      list.push("_DFF_FUNC_ID");
+      list.push("_DFF_FUNC_NAME");
+      list.push("_DFF_FUNC_CHAIN");
+      list.push("_DFF_ORIGIN");
+      list.push("_DFF_ORIGIN_ID");
+      list.push("_DFF_TRIGGER_TIME");
+      list.push("_DFF_TRIGGER_TIME_MS");
+      list.push("_DFF_START_TIME");
+      list.push("_DFF_START_TIME_MS");
+      list.push("_DFF_ETA");
+      list.push("_DFF_DELAY");
+      list.push("_DFF_CRONTAB");
+      list.push("_DFF_CRONTAB_DELAY");
+      list.push("_DFF_CRONTAB_EXEC_MODE");
+      list.push("_DFF_QUEUE");
+      list.push("_DFF_HTTP_REQUEST");
+    }
 
     // Add DataFlux Func import script hint
     var currentScriptId = location.href.split('/').pop();
