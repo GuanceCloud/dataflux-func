@@ -522,6 +522,8 @@ class RedisHelper(object):
 
     def put_tasks(self, task_reqs):
         task_reqs = toolkit.as_array(task_reqs)
+        if not task_reqs:
+            return
 
         worker_queue_element_map = {}
         delay_queue_element_map  = {}
@@ -563,14 +565,20 @@ class RedisHelper(object):
                 delay_queue_element_map[delay_queue][task_req_dumps] = run_time
 
         # 发送任务
-        for worker_queue, elements in worker_queue_element_map.items():
-            if not self.skip_log:
-                self.logger.debug(f'[REDIS] Put Task {worker_queue} <= {len(elements)} Tasks')
+        pipe = self.client.pipeline()
 
-            self.lpush(worker_queue, *elements)
+        groups = toolkit.group_by_count(task_reqs, count=CONFIG['_PUT_TASK_BULK_COUNT'])
+        for group in groups:
+            for worker_queue, elements in worker_queue_element_map.items():
+                if not self.skip_log:
+                    self.logger.debug(f'[REDIS] Put Task {worker_queue} <= {len(elements)} Tasks')
 
-        for delay_queue, elements in delay_queue_element_map.items():
-            if not self.skip_log:
-                self.logger.debug(f'[REDIS] Put Task {delay_queue} <= {len(elements)} Tasks')
+                pipe.lpush(worker_queue, *elements)
 
-            self.zadd(delay_queue, elements)
+            for delay_queue, elements in delay_queue_element_map.items():
+                if not self.skip_log:
+                    self.logger.debug(f'[REDIS] Put Task {delay_queue} <= {len(elements)} Tasks')
+
+                pipe.zadd(delay_queue, elements)
+
+        pipe.execute()

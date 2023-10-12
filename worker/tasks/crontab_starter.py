@@ -107,8 +107,10 @@ class CrontabStarter(BaseTask):
 
     def put_tasks(self, tasks):
         tasks = toolkit.as_array(tasks)
-        task_reqs = []
+        if not tasks:
+            return
 
+        task_reqs = []
         for t in tasks:
             crontab_config = t.get('crontabConfig')
             origin         = t.get('origin')
@@ -150,9 +152,8 @@ class CrontabStarter(BaseTask):
                     'taskRecordLimit': crontab_config.get('taskRecordLimit'),
                 })
 
-        groups = toolkit.group_by_count(task_reqs, count=CONFIG['_CRONTAB_STARTER_PUT_TASK_BULK_COUNT'])
-        for group in groups:
-            self.cache_db.put_tasks(group)
+        if task_reqs:
+            self.cache_db.put_tasks(task_reqs)
 
     def run(self, **kwargs):
         # 上锁
@@ -175,9 +176,9 @@ class CrontabStarter(BaseTask):
         next_seq      = 0
         crontab_count = 0
         while next_seq is not None:
-            tasks = []
-
             crontab_configs, next_seq = self.fetch_crontab_configs(next_seq)
+
+            tasks = []
             for c in crontab_configs:
                 # 平均分布任务触发事件点
                 delay = 0
