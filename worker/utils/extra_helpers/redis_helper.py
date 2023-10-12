@@ -120,15 +120,14 @@ class RedisHelper(object):
             dt = toolkit.DiffTimer()
             self.client.info()
 
+            if not self.skip_log:
+                self.logger.debug(f'[REDIS] INFO (Cost: {dt.tick()} ms)')
+
         except Exception as e:
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
             raise Exception(str(e))
-
-        else:
-            if not self.skip_log:
-                self.logger.debug(f'[REDIS] INFO (Cost: {dt.tick()} ms)')
 
     def query(self, *args, **options):
         command      = args[0]
@@ -146,15 +145,16 @@ class RedisHelper(object):
 
         try:
             dt = toolkit.DiffTimer()
-            return self.client.execute_command(*args, **options)
+            result = self.client.execute_command(*args, **options)
+
+            if not self.skip_log:
+                self.logger.debug(f'[REDIS] Query `{command.upper()} {key}` {options_dump} (Cost: {dt.tick()} ms)')
+
+            return result
 
         except Exception as e:
             self.logger.error(f'[REDIS] Query `{command.upper()} {key}` {options_dump} (Cost: {dt.tick()} ms)')
             raise
-
-        else:
-            if not self.skip_log:
-                self.logger.debug(f'[REDIS] Query `{command.upper()} {key}` {options_dump} (Cost: {dt.tick()} ms)')
 
     def run(self, *args, **kwargs):
         command      = args[0]
@@ -176,15 +176,16 @@ class RedisHelper(object):
 
         try:
             dt = toolkit.DiffTimer()
-            return getattr(self.client, command)(*command_args, **kwargs)
+            result = getattr(self.client, command)(*command_args, **kwargs)
+
+            if not self.skip_log:
+                self.logger.debug(f'[REDIS] Run `{command.upper()} {key} {dumps} (Cost: {dt.tick()} ms)`')
+
+            return result
 
         except Exception as e:
             self.logger.error(f'[REDIS] Run `{command.upper()} {key} {dumps} (Cost: {dt.tick()} ms)`')
             raise
-
-        else:
-            if not self.skip_log:
-                self.logger.debug(f'[REDIS] Run `{command.upper()} {key} {dumps} (Cost: {dt.tick()} ms)`')
 
     def publish(self, topic, message):
         return self.run('publish', topic, message)
@@ -327,11 +328,11 @@ class RedisHelper(object):
         field = toolkit.as_array(field)
         return self.run('hdel', key, *field)
 
-    def lpush(self, key, value):
-        return self.run('lpush', key, value)
+    def lpush(self, key, *value):
+        return self.run('lpush', key, *value)
 
-    def rpush(self, key, value):
-        return self.run('rpush', key, value)
+    def rpush(self, key, *value):
+        return self.run('rpush', key, *value)
 
     def lpop(self, key, count=1):
         return self.run('lpop', key, count)
@@ -509,8 +510,8 @@ class RedisHelper(object):
 
         return ts_data
 
-    def zadd(self, key, score, value):
-        return self.run('zadd', key, { value: score })
+    def zadd(self, key, data):
+        return self.run('zadd', key, data)
 
     def zpop_below_lpush(self, key, dest_key, score):
         return self.run('eval', LUA_ZPOP_BELOW_LPUSH_SCRIPT, LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT, key, dest_key, score)
@@ -518,38 +519,51 @@ class RedisHelper(object):
     def zpop_above_lpush(self, key, dest_key, score):
         return self.run('eval', LUA_ZPOP_ABOVE_LPUSH_SCRIPT, LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT, key, dest_key, score)
 
-    def put_task(self, task_req):
-        task_req = task_req or {}
+    def put_tasks(self, task_reqs):
+        task_reqs = toolkit.as_array(task_reqs)
 
-        if not task_req.get('name'):
-            raise Exception("task_req['name'] is required")
+        worker_queue_element_map = {}
+        delay_queue_element_map  = {}
 
-        # Put task
-        task_req['id']          = task_req.get('id')          or toolkit.gen_task_id()
-        task_req['triggerTime'] = task_req.get('triggerTime') or toolkit.get_timestamp(3)
+        for task_req in task_reqs:
+            task_req = task_req or {}
 
-        if toolkit.is_none_or_whitespace(task_req.get('queue')):
-            task_req['queue'] = CONFIG['_TASK_QUEUE_DEFAULT']
+            if not task_req.get('name'):
+                raise Exception("task_req['name'] is required")
 
-        task_req_dumps = toolkit.json_dumps(task_req)
+            task_req['id']          = task_req.get('id')          or toolkit.gen_task_id()
+            task_req['triggerTime'] = task_req.get('triggerTime') or toolkit.get_timestamp(3)
 
-        # 计算执行时间
-        run_time = 0
-        if task_req.get('eta') or task_req.get('delay'):
-            if task_req.get('eta'):
-                # 优先使用 eta
-                run_time = arrow.get(task_req['eta']).timestamp
-                task_req.pop('delay', None)
+            if toolkit.is_none_or_whitespace(task_req.get('queue')):
+                task_req['queue'] = CONFIG['_TASK_QUEUE_DEFAULT']
 
-            elif task_req.get('delay'):
-                run_time = task_req['triggerTime'] + task_req['delay']
-                task_req.pop('eta', None)
+            task_req_dumps = toolkit.json_dumps(task_req)
+
+            # 计算执行时间
+            run_time = 0
+            if task_req.get('eta') or task_req.get('delay'):
+                if task_req.get('eta'):
+                    # 优先使用 eta
+                    run_time = arrow.get(task_req['eta']).timestamp
+                    task_req.pop('delay', None)
+
+                elif task_req.get('delay'):
+                    run_time = task_req['triggerTime'] + task_req['delay']
+                    task_req.pop('eta', None)
+
+            if run_time <= arrow.get().timestamp:
+                worker_queue = toolkit.get_worker_queue(task_req['queue'])
+                worker_queue_element_map[worker_queue] = worker_queue_element_map.get(worker_queue) or []
+                worker_queue_element_map[worker_queue].append(task_req_dumps)
+
+            else:
+                delay_queue = toolkit.get_delay_queue(task_req['queue'])
+                delay_queue_element_map[delay_queue] = delay_queue_element_map.get(delay_queue) or {}
+                delay_queue_element_map[delay_queue][task_req_dumps] = run_time
 
         # 发送任务
-        if run_time <= arrow.get().timestamp:
-            worker_queue = toolkit.get_worker_queue(task_req['queue'])
-            return self.lpush(worker_queue, task_req_dumps)
+        for worker_queue, elements in worker_queue_element_map.items():
+            self.lpush(worker_queue, *elements)
 
-        else:
-            delay_queue = toolkit.get_delay_queue(task_req['queue'])
-            return self.zadd(delay_queue, run_time, task_req_dumps)
+        for delay_queue, elements in delay_queue_element_map.items():
+            self.zadd(delay_queue, elements)

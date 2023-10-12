@@ -110,7 +110,7 @@ def tick():
             # 延迟任务
             delay_queue = toolkit.get_delay_queue(task_req['queue'])
             eta = task_req['triggerTime'] + task_req['delay']
-            REDIS.zadd(delay_queue, eta, task_req_dumps)
+            REDIS.zadd(delay_queue, { task_req_dumps: eta })
 
         else:
             # 立即任务

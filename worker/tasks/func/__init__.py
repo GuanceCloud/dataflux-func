@@ -1464,7 +1464,7 @@ class FuncBaseTask(BaseTask):
             'expires'        : expires,
             'taskRecordLimit': self.task_record_limit,
         }
-        self.cache_db.put_task(task_req)
+        self.cache_db.put_tasks(task_req)
 
     def run(self, **kwargs):
         self.logger.info(f'[RUN] Func ID: `{self.func_id}`')

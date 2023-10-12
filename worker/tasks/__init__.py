@@ -291,6 +291,13 @@ class BaseTask(object):
         if not self.guance_data_upload_url:
             return None
 
+        log_data = [ f"[{line['meta']['timestampShort']}] [+{line['meta']['diffTime']}] [{line['meta']['costTime']}] {line['message']}" for line in self.logger._staged_logs ]
+        if self.traceback:
+            log_data.append(' Traceback '.center(30, '-'))
+            log_data.append(self.traceback)
+        
+        log_text = '\n'.join(log_data)
+        
         data = {
             'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD'],
             'tags': {
@@ -300,6 +307,7 @@ class BaseTask(object):
                 'task_status': self.status,
             },
             'fields': {
+                'message'         : log_text,
                 'kwargs'          : toolkit.json_dumps(self.kwargs),
                 'eta'             : self.eta,
                 'delay'           : self.delay,

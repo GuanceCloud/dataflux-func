@@ -93,7 +93,7 @@ class CrontabStarter(BaseTask):
 
             LIMIT ?
             '''
-        sql_params = [ next_seq, CONFIG['_CRONTAB_STARTER_FETCH_COUNT'] ]
+        sql_params = [ next_seq, CONFIG['_CRONTAB_STARTER_FETCH_BULK_COUNT'] ]
         crontab_configs = self.db.query(sql, sql_params)
 
         # 获取游标
@@ -105,69 +105,92 @@ class CrontabStarter(BaseTask):
         crontab_configs = filter(self.filter_crontab_config, crontab_configs)
         return crontab_configs, latest_seq
 
-    def put_task(self, crontab_config, origin, origin_id, delay=None, exec_mode='crontab'):
-        # 超时时间 / 过期时间
-        timeout = crontab_config['funcExtraConfig'].get('timeout') or CONFIG['_FUNC_TASK_TIMEOUT_DEFAULT']
-        expires = timeout
+    def put_tasks(self, tasks):
+        tasks = toolkit.as_array(tasks)
+        task_reqs = []
 
-        # 确定执行队列
-        queue = crontab_config['funcExtraConfig'].get('queue') or CONFIG['_FUNC_TASK_QUEUE_CRONTAB']
+        for t in tasks:
+            crontab_config = t.get('crontabConfig')
+            origin         = t.get('origin')
+            origin_id      = t.get('originId')
+            delay          = t.get('delay')
+            exec_mode      = t.get('execMode', 'crontab')
 
-        # 多次执行
-        delay_list = crontab_config['funcExtraConfig'].get('delayedCrontab') or delay or 0
-        delay_list = toolkit.as_array(delay_list)
+            # 超时时间 / 过期时间
+            timeout = crontab_config['funcExtraConfig'].get('timeout') or CONFIG['_FUNC_TASK_TIMEOUT_DEFAULT']
+            expires = timeout
 
-        for delay in delay_list:
-            # 定时任务锁
-            crontab_lock_key = toolkit.get_cache_key('lock', 'CrontabConfig', tags=[
-                    'crontabConfigId', crontab_config['id'],
-                    'funcId',          crontab_config['funcId'],
-                    'crontabDelay',    delay])
+            # 确定执行队列
+            queue = crontab_config['funcExtraConfig'].get('queue') or CONFIG['_FUNC_TASK_QUEUE_CRONTAB']
 
-            crontab_lock_value = toolkit.gen_uuid()
-            if not self.cache_db.lock(crontab_lock_key, crontab_lock_value, timeout):
-                # 触发任务前上锁，失败则跳过
-                self.logger.warning('Crontab Config in lock, skip...')
-                continue
+            # 多次执行
+            delay_list = crontab_config['funcExtraConfig'].get('delayedCrontab') or delay or 0
+            delay_list = toolkit.as_array(delay_list)
 
-            # 任务请求
-            task_req = {
-                'name': 'Func.Runner',
-                'kwargs': {
-                    'funcId'          : crontab_config['funcId'],
-                    'funcCallKwargs'  : crontab_config['funcCallKwargs'],
-                    'origin'          : origin,
-                    'originId'        : origin_id,
-                    'crontab'         : crontab_config['crontab'],
-                    'crontabDelay'    : delay,
-                    'crontabLockKey'  : crontab_lock_key,
-                    'crontabLockValue': crontab_lock_value,
-                    'crontabExecMode' : exec_mode,
-                },
+            for delay in delay_list:
+                # 定时任务锁
+                crontab_lock_key = toolkit.get_cache_key('lock', 'CrontabConfig', tags=[
+                        'crontabConfigId', crontab_config['id'],
+                        'funcId',          crontab_config['funcId'],
+                        'crontabDelay',    delay])
 
-                'triggerTime': self.trigger_time,
+                crontab_lock_value = toolkit.gen_uuid()
+                if not self.cache_db.lock(crontab_lock_key, crontab_lock_value, timeout):
+                    # 触发任务前上锁，失败则跳过
+                    self.logger.warning('Crontab Config in lock, skip...')
+                    continue
 
-                'queue'          : queue,
-                'delay'          : delay,
-                'timeout'        : timeout,
-                'expires'        : expires,
-                'taskRecordLimit': crontab_config.get('taskRecordLimit'),
-            }
-            self.cache_db.put_task(task_req)
+                # 任务请求
+                task_reqs.append({
+                    'name': 'Func.Runner',
+                    'kwargs': {
+                        'funcId'          : crontab_config['funcId'],
+                        'funcCallKwargs'  : crontab_config['funcCallKwargs'],
+                        'origin'          : origin,
+                        'originId'        : origin_id,
+                        'crontab'         : crontab_config['crontab'],
+                        'crontabDelay'    : delay,
+                        'crontabLockKey'  : crontab_lock_key,
+                        'crontabLockValue': crontab_lock_value,
+                        'crontabExecMode' : exec_mode,
+                    },
+
+                    'triggerTime': self.trigger_time,
+
+                    'queue'          : queue,
+                    'delay'          : delay,
+                    'timeout'        : timeout,
+                    'expires'        : expires,
+                    'taskRecordLimit': crontab_config.get('taskRecordLimit'),
+                })
+
+        groups = toolkit.group_by_count(task_reqs, count=CONFIG['_CRONTAB_STARTER_PUT_TASK_BULK_COUNT'])
+        for group in groups:
+            self.cache_db.put_tasks(group)
 
     def run(self, **kwargs):
         # 上锁
         self.lock(max_age=60)
 
         ### 集成函数自动触发 ###
+        tasks = []
         for c in self.get_integration_crontab_configs():
-            # 发送任务
-            self.put_task(crontab_config=c, origin='integration', origin_id=c['id'])
+            tasks.append({
+                'crontabConfig': c,
+                'origin'       : 'integration',
+                'originId'     : c['id']
+            })
+
+        # 发送任务
+        if tasks:
+            self.put_tasks(tasks)
 
         ### 自动触发配置 ###
         next_seq      = 0
         crontab_count = 0
         while next_seq is not None:
+            tasks = []
+
             crontab_configs, next_seq = self.fetch_crontab_configs(next_seq)
             for c in crontab_configs:
                 # 平均分布任务触发事件点
@@ -175,14 +198,19 @@ class CrontabStarter(BaseTask):
                 if CONFIG['_FUNC_TASK_DISTRIBUTION_RANGE'] > 0:
                     delay = crontab_count % CONFIG['_FUNC_TASK_DISTRIBUTION_RANGE']
 
-                # 发送任务
-                self.put_task(crontab_config=c,
-                              origin='crontab',
-                              origin_id=c['id'],
-                              delay=delay)
+                tasks.append({
+                    'crontabConfig': c,
+                    'origin'       : 'crontab',
+                    'originId'     : c['id'],
+                    'delay'        : delay,
+                })
 
                 # 自动触发配置记述
                 crontab_count += 1
+
+            # 发送任务
+            if tasks:
+                self.put_tasks(tasks)
 
 class CrontabManualStarter(CrontabStarter):
     name = 'Crontab.ManualStarter'
@@ -225,7 +253,10 @@ class CrontabManualStarter(CrontabStarter):
         crontab_config = self.get_crontab_config(crontab_config_id)
 
         # 发送任务
-        self.put_task(crontab_config=crontab_config,
-                      origin='crontab',
-                      origin_id=crontab_config['id'],
-                      exec_mode='manual')
+        task = {
+            'crontabConfig': crontab_config,
+            'origin'       : 'crontab',
+            'originId'     : crontab_config['id'],
+            'execMode'     : 'manual',
+        }
+        self.put_tasks(task)

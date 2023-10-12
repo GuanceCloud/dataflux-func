@@ -43,15 +43,15 @@ class FuncRunner(FuncBaseTask):
         if not print_logs and not self.traceback:
             return None
 
-        data = []
+        log_data = []
         if print_logs:
-            data.append('\n'.join(print_logs))
+            log_data.append('\n'.join(print_logs))
 
         if self.traceback:
-            data.append(' Traceback '.center(30, '-'))
-            data.append(self.traceback)
+            log_data.append(' Traceback '.center(30, '-'))
+            log_data.append(self.traceback)
 
-        return '\n'.join(data)
+        return '\n'.join(log_data)
 
     @property
     def reduced_print_logs(self):

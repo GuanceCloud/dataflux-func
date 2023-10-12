@@ -553,6 +553,21 @@ def _get_delay_queue(name):
 
     return f'delayQueue@{name}'
 
+def group_by_count(arr, count=1):
+    '''
+    按照`count`对数组进行拆分多个小数组
+    '''
+    count = int(max(count, 1))
+
+    grouped_arr = []
+    for d in arr:
+        if not grouped_arr or len(grouped_arr[-1]) >= count:
+            grouped_arr.append([])
+
+        grouped_arr[-1].append(d)
+
+    return grouped_arr
+
 def as_array(o):
     if o is None:
         return o

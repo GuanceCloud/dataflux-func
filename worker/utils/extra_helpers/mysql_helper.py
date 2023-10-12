@@ -113,15 +113,14 @@ class MySQLHelper(object):
                 'cur' : cur,
             }
 
+            if not self.skip_log:
+                self.logger.debug(f'[MYSQL] Trans START (Cost: {dt.tick()} ms)')
+
             return trans_conn
 
         except Exception as e:
             self.logger.error(f'[MYSQL] Trans START (Cost: {dt.tick()} ms)')
             raise
-
-        else:
-            if not self.skip_log:
-                self.logger.debug(f'[MYSQL] Trans START (Cost: {dt.tick()} ms)')
 
     def commit(self, trans_conn):
         if not trans_conn:
@@ -138,13 +137,12 @@ class MySQLHelper(object):
             cur.close()
             conn.close()
 
+            if not self.skip_log:
+                self.logger.debug(f'[MYSQL] Trans COMMIT (Cost: {dt.tick()} ms)')
+
         except Exception as e:
             self.logger.error(f'[MYSQL] Trans COMMIT (Cost: {dt.tick()} ms)')
             raise
-
-        else:
-            if not self.skip_log:
-                self.logger.debug(f'[MYSQL] Trans COMMIT (Cost: {dt.tick()} ms)')
 
     def rollback(self, trans_conn):
         if not trans_conn:
@@ -161,13 +159,12 @@ class MySQLHelper(object):
             cur.close()
             conn.close()
 
+            if not self.skip_log:
+                self.logger.debug(f'[MYSQL] Trans ROLLBACK (Cost: {dt.tick()} ms)')
+
         except Exception as e:
             self.logger.error(f'[MYSQL] Trans ROLLBACK (Cost: {dt.tick()} ms)')
             raise
-
-        else:
-            if not self.skip_log:
-                self.logger.debug(f'[MYSQL] Trans ROLLBACK (Cost: {dt.tick()} ms)')
 
     def _convert_timezone(self, db_res):
         if not self.config.get('timezone'):
@@ -198,11 +195,6 @@ class MySQLHelper(object):
             count  = cur.execute(formatted_sql)
             db_res = cur.fetchall()
 
-        except Exception as e:
-            self.logger.error(f'[MYSQL] Trans Query `{one_line_sql}` (Cost: {dt.tick()} ms)')
-            raise
-
-        else:
             if not self.skip_log:
                 self.logger.debug(f'[MYSQL] Trans Query `{one_line_sql}` (Cost: {dt.tick()} ms)')
 
@@ -210,6 +202,10 @@ class MySQLHelper(object):
             db_res = self._convert_timezone(db_res)
 
             return db_res, count
+
+        except Exception as e:
+            self.logger.error(f'[MYSQL] Trans Query `{one_line_sql}` (Cost: {dt.tick()} ms)')
+            raise
 
     def _execute(self, sql, sql_params=None):
         formatted_sql = format_sql(sql, sql_params)
@@ -227,17 +223,6 @@ class MySQLHelper(object):
             count  = cur.execute(formatted_sql)
             db_res = cur.fetchall()
 
-        except Exception as e:
-            for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
-
-            if conn:
-                conn.rollback()
-
-            self.logger.error(f'[MYSQL] Query `{one_line_sql}` (Cost: {dt.tick()} ms)')
-            raise
-
-        else:
             conn.commit()
 
             if not self.skip_log:
@@ -247,6 +232,16 @@ class MySQLHelper(object):
             db_res = self._convert_timezone(db_res)
 
             return db_res, count
+
+        except Exception as e:
+            for line in traceback.format_exc().splitlines():
+                self.logger.error(line)
+
+            if conn:
+                conn.rollback()
+
+            self.logger.error(f'[MYSQL] Query `{one_line_sql}` (Cost: {dt.tick()} ms)')
+            raise
 
         finally:
             if cur:

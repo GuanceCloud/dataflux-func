@@ -125,21 +125,21 @@ def after_app_created():
 
     # 启动时自动执行
     if not CONFIG['_DISABLE_STARTUP_TASKS']:
-        REDIS.put_task({
+        REDIS.put_tasks({
             'name': AutoBackupDB.name,
         })
 
-        REDIS.put_task({
+        REDIS.put_tasks({
             'name'  : ReloadDataMD5Cache.name,
             'kwargs': { 'lockTime': 15, 'all': True },
         })
 
-        REDIS.put_task({
+        REDIS.put_tasks({
             'name' : AutoRun.name,
             'delay': 5,
         })
 
-        REDIS.put_task({
+        REDIS.put_tasks({
             'name' : AutoClean.name,
             'delay': 15,
         })

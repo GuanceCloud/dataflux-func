@@ -871,4 +871,4 @@ class AutoRun(BaseInternalTask):
                 'timeout': timeout,
                 'expires': expires,
             }
-            self.cache_db.put_task(task_req)
+            self.cache_db.put_tasks(task_req)
