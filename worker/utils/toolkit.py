@@ -17,6 +17,7 @@ import binascii
 import base64
 import math
 import pprint
+import functools
 
 try:
     from urllib import urlencode
@@ -803,11 +804,16 @@ def to_croniter_style(crontab):
 
     return ' '.join(parts)
 
+@functools.lru_cache(maxsize=128)
 def is_valid_crontab(crontab):
     crontab = to_croniter_style(crontab)
     return croniter.is_valid(crontab)
 
+@functools.lru_cache(maxsize=128)
 def is_match_crontab(crontab, t, tz):
+    if t is None:
+        raise Exception(f'This function use @functools.lru_cache, so parameter `t` should not be `None`')
+
     crontab = to_croniter_style(crontab)
     at = arrow.get(t).to(tz)
     return croniter.match(crontab, at.datetime)
