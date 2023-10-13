@@ -380,7 +380,7 @@ export default {
 .installing-dialog-content {
   display: flex;
   flex-direction: column;
-  font-size: 18px;
+  font-size: 14px;
 }
 .install-list-item {
   display: flex;
