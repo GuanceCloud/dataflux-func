@@ -116,62 +116,6 @@ exports.install = function(req, res, next) {
         packageInfo.status      = 'installing';
         return res.locals.cacheDB.hset(installStatusCacheKey, packageInfo.package, JSON.stringify(packageInfo), asyncCallback);
       },
-      // 清空之前安装的内容
-      function(asyncCallback) {
-        // Wheel 包无需删除原始目录
-        if (toolkit.endsWith(packageInfo.package, '.whl')) return asyncCallback();
-
-        var packageName = packageInfo.package.split('=')[0].replace(/-/g, '_');
-
-        var cmd = 'rm';
-        var cmdArgs = [ '-rf' ];
-
-        // 读取需要删除的目录
-        fs.readdirSync(packageInstallPath).forEach(function(folderName) {
-          var absFolderPath   = path.join(packageInstallPath, folderName);
-          var absMetaPath     = path.join(absFolderPath, 'METADATA');
-          var absTopLevelPath = path.join(absFolderPath, 'top_level.txt');
-
-          // 非dist-info目录，跳过
-          if (!toolkit.startsWith(folderName, packageName + '-') || !toolkit.endsWith(folderName, '.dist-info')) return;
-          // 不存在METADATA文件，跳过
-          if (!fs.existsSync(absMetaPath)) return;
-
-          // 提取METADATA中名称
-          var metaName = null;
-          var metaLines = fs.readFileSync(absMetaPath).toString().split('\n');
-          for (var i = 0; i < metaLines.length; i++) {
-            if (toolkit.startsWith(metaLines[i], 'Name: ')) {
-              metaName = metaLines[i].split(':')[1].trim();
-              break;
-            }
-          }
-
-          // METADATA中名称与包名不同，跳过
-          if (metaName !== packageName) return;
-
-          // 需要删除的目录
-          cmdArgs.push(absFolderPath);
-
-          // 提取top_level.txt内容
-          // 不存在top_level.txt文件，跳过
-          if (!fs.existsSync(absTopLevelPath)) return;
-          var topLevelName = fs.readFileSync(absTopLevelPath).toString().trim();
-
-          // 需要删除的目录
-          var absTopLevelFolderPath = path.join(packageInstallPath, topLevelName);
-          cmdArgs.push(absTopLevelFolderPath);
-        });
-        toolkit.childProcessSpawn(cmd, cmdArgs, null, function(err) {
-          if (err) {
-            return asyncCallback(new E('ESys', 'Preparing Python package failed', {
-              package: packageInfo.package,
-              message: err.toString(),
-            }));
-          }
-          return asyncCallback();
-        });
-      },
       // 执行 PIP 命令
       function(asyncCallback) {
         var cmd = 'pip';
