@@ -130,25 +130,15 @@ installCost: （耗时 {n} 秒）
         </template>
         <div class="installing-dialog-content">
           <div v-for="info in installStatus" class="install-list-item">
-            <div>
-              <span v-if="info.status === 'success'" class="text-good">
-                <i class="fa fa-fw fa-check-circle"></i>
-                <code>{{ info.package }}</code>
-              </span>
-              <span v-else-if="info.status === 'failure'" class="text-bad">
-                <i class="fa fa-fw fa-times-circle"></i>
-                <code>{{ info.package }}</code>
-              </span>
-              <span v-else-if="info.status === 'installing'" class="text-main">
-                <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
-                <code>{{ info.package }}</code>
-              </span>
-              <span v-else>
-                <i class="fa fa-fw"></i>
-                <code>{{ info.package }}</code>
-              </span>
+            <div :class="(INSTALL_ITEM_STATUS[info.status] || {}).text">
+              <i class="fa fa-fw" :class="(INSTALL_ITEM_STATUS[info.status] || {}).icon"></i>
+              <template v-for="pkg in info.package.split(',')">
+                <code>{{ pkg }}</code>
+              </template>
+            </div>
 
-              <small class="text-info">
+            <div>
+              <small class="text-info install-cost">
                 <template v-if="info.startTimeMs && info.endTimeMs">
                   {{ $tc('installCost', ((info.endTimeMs - info.startTimeMs) / 1000).toFixed(2)) }}
                 </template>
@@ -156,8 +146,6 @@ installCost: （耗时 {n} 秒）
                   {{ $tc('installCost', ((nowMs - info.startTimeMs) / 1000).toFixed(2)) }}
                 </template>
               </small>
-            </div>
-            <div>
               <el-button type="text" v-if="info.error" @click="showError(info.error)">{{ $t('Show Error') }}</el-button>
             </div>
           </div>
@@ -290,27 +278,26 @@ export default {
     },
   },
   computed: {
+    INSTALL_ITEM_STATUS() {
+      return {
+        success: {
+          text: 'text-good',
+          icon: 'fa-check-circle',
+        },
+        failure: {
+          text: 'text-bad',
+          icon: 'fa-times-circle',
+        },
+        installing: {
+          text: 'text-main',
+          icon: 'fa-circle-o-notch fa-spin'
+        }
+      }
+    },
     isInstallable() {
       // 检查空内容
       if (this.T.isNothing(this.packageToInstall)) {
         return false;
-      }
-
-      // 检查格式
-      for (let pkg of this.packageToInstall.trim().split(/\s+/)) {
-        // 指定版本时，检查格式
-        let parts = pkg.split('==');
-        if (parts.length > 2) {
-          return false;
-        }
-        // 检查包名
-        if (this.T.isNothing(parts[0])) {
-          return false;
-        }
-        // 检查版本号
-        if (parts.length > 1 && this.T.isNothing(parts[1])) {
-          return false;
-        }
       }
 
       return true;
@@ -380,19 +367,28 @@ export default {
 .installing-dialog-content {
   display: flex;
   flex-direction: column;
-  font-size: 14px;
+  font-size: 18px;
+  margin: 20px 0;
 }
 .install-list-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 10px 20px;
+  padding: 5px 20px;
+}
+.install-list-item i {
+  float: left;
+  position: relative;
+  top: 2px;
 }
 .install-list-item code {
-  margin-left: 15px;
+  margin-left: 25px;
+  display: block;
 }
 .install-list-item .el-button--text {
   padding: 0;
+}
+.install-cost {
+  white-space: nowrap;
 }
 </style>
 
