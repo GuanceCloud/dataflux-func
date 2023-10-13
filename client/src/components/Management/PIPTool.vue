@@ -316,7 +316,7 @@ export default {
     return {
       pypiMirror      : '',
       packageToInstall: '',
-      addUpgradeOption      : false,
+      addUpgradeOption: true,
 
       showInstallStatus: false,
       nowMs            : Date.now(),
