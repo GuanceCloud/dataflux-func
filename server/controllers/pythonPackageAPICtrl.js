@@ -143,7 +143,9 @@ exports.install = function(req, res, next) {
 
         } else {
           // PIP 包
-          cmdArgs.push(packageInfo.package);
+          packageInfo.package.split(',').forEach(function(_pkg) {
+            cmdArgs.push(_pkg.trim());
+          });
         }
 
         toolkit.childProcessSpawn(cmd, cmdArgs, null, function(err) {

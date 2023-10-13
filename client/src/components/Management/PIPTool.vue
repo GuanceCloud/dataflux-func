@@ -221,7 +221,7 @@ export default {
         cmdParts.push(`--upgrade`);
       }
 
-      cmdParts.push(`${this.packageToInstall.trim().split(/\s+/).join(joinSep)}`);
+      cmdParts.push(`${this.packageToInstall.replaceAll(',', ' ').trim().split(/\s+/).join(joinSep)}`);
 
       let cmd = cmdParts.join(joinSep).replace(/\s+/, ' ').trim();
       return cmd;
