@@ -724,6 +724,9 @@ function doDeploy(locals, scriptSetId, options, callback) {
     function(asyncCallback) {
       var opt = {
         scriptId: startupScriptId,
+
+        origin  : 'scriptSet',
+        originId: scriptSetId,
       }
       mainAPICtrl.callFuncDebugger(locals, opt, function(err, taskResp) {
         if (err) return asyncCallback(err);

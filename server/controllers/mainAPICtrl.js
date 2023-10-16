@@ -528,7 +528,13 @@ function callFuncDebugger(locals, options, callback) {
     kwargs: {
       funcId        : options.funcId         || options.scriptId,
       funcCallKwargs: options.funcCallKwargs || {},
-      httpRequest   : options.httpRequest    || {},
+
+      // 来源
+      origin  : options.origin   || 'UNKNOWN',
+      originId: options.originId || 'UNKNOWN',
+
+      // HTTP 请求信息
+      httpRequest: options.httpRequest || {},
     },
     queue  : CONFIG._FUNC_TASK_QUEUE_DEBUGGER,
     timeout: CONFIG._FUNC_TASK_TIMEOUT_DEBUGGER,
@@ -1444,6 +1450,9 @@ exports.callFuncDraft = function(req, res, next) {
   var opt = {
     funcId        : funcId,
     funcCallKwargs: funcCallKwargs,
+
+    origin  : 'direct',
+    originId: funcId,
   }
 
   // 添加 HTTP 请求信息

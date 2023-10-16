@@ -416,6 +416,9 @@ exports.deploy = function(req, res, next) {
     function(asyncCallback) {
       var opt = {
         scriptId: blueprintScriptId,
+
+        origin  : 'blueprint',
+        originId: blueprint.id,
       }
       mainAPICtrl.callFuncDebugger(res.locals, opt, function(err, taskResp) {
         if (err) return asyncCallback(err);

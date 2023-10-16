@@ -288,6 +288,9 @@ exports.publish = function(req, res, next) {
     function(asyncCallback) {
       var opt = {
         scriptId: id,
+
+        origin  : 'script',
+        originId: id,
       }
       mainAPICtrl.callFuncDebugger(res.locals, opt, function(err, taskResp) {
         if (err) return asyncCallback(err);
