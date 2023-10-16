@@ -46,7 +46,7 @@ function getConfig(c) {
     charset        : c.charset,
     timezone       : c.timezone,
     connectionLimit: CONFIG._MYSQL_CONNECTION_LIMIT,
-    connectTimeout : CONFIG._MYSQL_CONNECT_TIMEOUT,
+    connectTimeout : CONFIG._MYSQL_CONNECT_TIMEOUT * 1000,
 
     multipleStatements: true,
     enableKeepAlive   : true,

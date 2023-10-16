@@ -32,10 +32,10 @@ def get_config(c):
         'cursorclass' : DictCursor,
         'charset'     : _charset,
         'init_command': 'SET NAMES "{0}"'.format(_charset),
+        'client_flag' : CLIENT_FLAG.MULTI_STATEMENTS,
 
-        'client_flag': CLIENT_FLAG.MULTI_STATEMENTS,
-
-        'maxconnections': c.get('maxconnections') or 1,
+        'maxconnections' : c.get('maxconnections') or 1,
+        'connect_timeout': CONFIG['_MYSQL_CONNECT_TIMEOUT'],
     }
     return config
 
@@ -64,13 +64,14 @@ class MySQLHelper(object):
 
             if not CLIENT:
                 CLIENT_CONFIG = {
-                    'host'    : CONFIG['MYSQL_HOST'],
-                    'port'    : CONFIG['MYSQL_PORT'],
-                    'user'    : CONFIG['MYSQL_USER'],
-                    'password': CONFIG['MYSQL_PASSWORD'],
-                    'database': CONFIG['MYSQL_DATABASE'],
-                    'charset' : CONFIG['_MYSQL_CHARSET'],
-                    'timezone': CONFIG['_MYSQL_TIMEZONE'],
+                    'host'          : CONFIG['MYSQL_HOST'],
+                    'port'          : CONFIG['MYSQL_PORT'],
+                    'user'          : CONFIG['MYSQL_USER'],
+                    'password'      : CONFIG['MYSQL_PASSWORD'],
+                    'database'      : CONFIG['MYSQL_DATABASE'],
+                    'charset'       : CONFIG['_MYSQL_CHARSET'],
+                    'timezone'      : CONFIG['_MYSQL_TIMEZONE'],
+                    'maxconnections': CONFIG['_MYSQL_CONNECTION_LIMIT'],
                 }
                 CLIENT = PooledDB(pymysql, **get_config(CLIENT_CONFIG))
 
