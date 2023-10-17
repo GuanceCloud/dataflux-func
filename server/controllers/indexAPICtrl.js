@@ -64,8 +64,17 @@ function useLanguage(j, lang) {
   return _useLanguage(toolkit.jsonCopy(j));
 };
 
-function toOpenAPISchema(fieldOpt, filesOpt) {
+function toOpenAPISchema(fieldOpt, filesOpt, lang) {
   var schemaSpec = {};
+
+  // 已过时参数
+  if (fieldOpt.$isDeprecated) {
+    schemaSpec = {
+      type   : 'string',
+      example: lang === 'zh-CN' ? '<已弃用>' : '<Deprecated>',
+    };
+    return schemaSpec;
+  }
 
   fieldOpt.$_type = fieldOpt.$ ? 'array' : (fieldOpt.$type || '').toLowerCase();
   switch(fieldOpt.$_type) {
@@ -165,6 +174,10 @@ function toOpenAPISchema(fieldOpt, filesOpt) {
   if ('$maxValue' in fieldOpt) {
     schemaSpec.maximum = fieldOpt.$maxValue;
   }
+
+  if (fieldOpt.$isDeprecated) {
+    schemaSpec.example
+  }
   if (fieldOpt.$example) {
     schemaSpec.example = fieldOpt.$example;
   }
@@ -172,12 +185,12 @@ function toOpenAPISchema(fieldOpt, filesOpt) {
   for (var optKey in fieldOpt) {
     if (optKey === '$') {
       // Array
-      schemaSpec.items = toOpenAPISchema(fieldOpt.$);
+      schemaSpec.items = toOpenAPISchema(fieldOpt.$, null, lang);
 
     } else if (optKey[0] !== '$') {
       // Object
       var subFieldOpt = fieldOpt[optKey];
-      schemaSpec.properties[optKey] = toOpenAPISchema(subFieldOpt);
+      schemaSpec.properties[optKey] = toOpenAPISchema(subFieldOpt, null, lang);
     }
   }
 
@@ -192,7 +205,7 @@ function toOpenAPISchema(fieldOpt, filesOpt) {
   return schemaSpec;
 };
 
-function getOpenAPISpec(route) {
+function getOpenAPISpec(route, lang) {
   // Basic Structure
   var spec = {
     openapi: '3.0.0',
@@ -208,7 +221,7 @@ function getOpenAPISpec(route) {
         GeneralResponse: {
           content: {
             'application/json': {
-              schema: toOpenAPISchema(route.$response),
+              schema: toOpenAPISchema(route.$response, null, lang),
             },
           }
         }
@@ -254,7 +267,7 @@ function getOpenAPISpec(route) {
             name       : k,
             in         : paramType.in,
             description: paramOpt.$desc,
-            schema     : toOpenAPISchema(paramOpt),
+            schema     : toOpenAPISchema(paramOpt, null, lang),
             deprecated : !!paramOpt.$isDeprecated,
             required   : !!(paramType.in === 'path' || paramOpt.$isRequired || paramOpt.$required),
           }
@@ -274,7 +287,7 @@ function getOpenAPISpec(route) {
             required: true,
             content: {
               'multipart/form-data': {
-                schema: toOpenAPISchema(api.body, api.files)
+                schema: toOpenAPISchema(api.body, api.files, lang),
               }
             }
           }
@@ -284,7 +297,7 @@ function getOpenAPISpec(route) {
             required: true,
             content: {
               'application/json': {
-                schema: toOpenAPISchema(api.body)
+                schema: toOpenAPISchema(api.body, null, lang),
               }
             }
           }
@@ -321,7 +334,7 @@ exports.api = function(req, res, next) {
     switch (format) {
       case 'openapi':
       case 'swagger':
-        ret = getOpenAPISpec(route);
+        ret = getOpenAPISpec(route, lang);
         break;
 
       case 'raw':
