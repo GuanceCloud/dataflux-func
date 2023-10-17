@@ -117,13 +117,15 @@ def before_app_create():
                     if m:
                         timezone = f'{m[1]}{m[2]}:00'
 
-                if not re.match(r'^(\+|\-)(\d{2}:\d{2})$', timezone) and not zoneinfo.gettz(timezone):
-                    print('Time zone abbreviations are not part of the ISO standard. A format such as +08:00 is recommended to specify the time zone.')
-                    print('时区缩写并不是 ISO 标准的一部分。建议使用类似 +08:00 格式指定时区。')
-                    e = Exception('Cannot parse timezone: {timezone}')
-                    raise e
+                if not re.match(r'^(\+|\-)(\d{2}:\d{2})$', timezone):
+                    if zoneinfo.gettz(timezone):
+                        timezone = arrow.get().to(timezone).format('ZZ')
 
-                timezone = arrow.get().to(timezone).format('ZZ')
+                    else:
+                        print('Time zone abbreviations are not part of the ISO standard. A format such as +08:00 is recommended to specify the time zone.')
+                        print('时区缩写并不是 ISO 标准的一部分。建议使用类似 +08:00 格式指定时区。')
+                        e = Exception('Cannot parse timezone: {timezone}')
+                        raise e
 
             yaml_resources.set_value('CONFIG', '_MYSQL_TIMEZONE', timezone)
             print(f'Database Timezone: {timezone}');
