@@ -151,9 +151,7 @@ connector  : 连接器
                 :config-func-id="scope.row.funcId"
                 :id="scope.row.func_id"
                 :title="scope.row.func_title" />
-              <InfoBlock v-if="scope.row.exceptionTEXT"
-                :title="T.limitText(scope.row.exceptionTEXT, 1000, { showLength: 'newLine' })"
-                type="error"  />
+              <InfoBlock v-if="scope.row.exceptionType" type="error" :title="`${scope.row.exceptionType}: ${scope.row.exceptionTEXTReduced}`" />
             </template>
           </el-table-column>
 
@@ -272,6 +270,11 @@ export default {
           } else {
             d.runCostClass = 'text-good';
           }
+        }
+
+        // 错误信息
+        if (d.exceptionTEXT) {
+          d.exceptionTEXTReduced = this.T.limitText(d.exceptionTEXT, 300, { showLength: 'newLine' });
         }
       });
 
