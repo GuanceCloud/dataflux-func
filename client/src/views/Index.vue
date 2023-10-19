@@ -60,6 +60,7 @@ Sign in failed. Integration sign-in func returned `False` or empty value, please
               :maxlength="4"
               :clearable="true"
               @keyup.enter.native="submitData"
+              @focus="autoFillCaptcha"
               :placeholder="$t('Captcha')"
               v-model="form.captcha">
               <i slot="prefix" class="fth-man-icon fth-man-icon-verification-code"></i>
@@ -210,6 +211,22 @@ export default {
     refreshCaptcha() {
       this.form.captchaToken = Math.random().toString();
       this.form.captcha = '';
+    },
+    autoFillCaptcha() {
+      if (this.$store.getters.SYSTEM_INFO('MODE') === 'prod') return;
+      if (!this.form.username || !this.form.password) return;
+
+      let captchaToFill = this.form.captchaToken.slice(-4);
+      this.form.captcha = '';
+      let T = setInterval(() => {
+        this.form.captcha = captchaToFill.slice(0, this.form.captcha.length + 1);
+        if (this.form.captcha.length === 4) {
+          clearInterval(T);
+          setTimeout(() => {
+            this.submitData();
+          }, 500);
+        }
+      }, 100);
     },
   },
   computed: {

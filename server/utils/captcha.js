@@ -56,10 +56,15 @@ exports.createGetCaptchaHandler = function createGetCaptchaHandler(category) {
 
       // Generate new captcha
       function(asyncCallback) {
-        var captcha = svgCaptcha.create();
+        if (CONFIG.MODE === 'prod') {
+          var captcha = svgCaptcha.create();
+          captchaValue  = captcha.text;
+          captchaBuffer = captcha.data;
 
-        captchaValue  = captcha.text;
-        captchaBuffer = captcha.data;
+        } else {
+          captchaValue = captchaToken.slice(-4);
+          captchaBuffer = svgCaptcha(captchaValue);
+        }
 
         res.locals.logger.debug('Captcha=`{0}`, Key=`{1}`', captchaValue, cacheKey);
         res.locals.cacheDB.setex(cacheKey, CONFIG._WEB_CAPTCHA_EXPIRES, captchaValue, asyncCallback);
