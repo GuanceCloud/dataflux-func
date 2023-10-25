@@ -178,7 +178,7 @@ export default {
         content = JSON.stringify(content, null, 2);
       } catch(_) {}
 
-      let createTimeStr = this.M(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
+      let createTimeStr = this.M(d.createTime).format('YYYYMMDD_HHmmss');
       let fileName = `${d.scope}.${d.key}.${createTimeStr}`;
       this.$refs.longTextDialog.update(content, fileName);
     },

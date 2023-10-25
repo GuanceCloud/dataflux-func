@@ -193,8 +193,13 @@ KafkaHelper.prototype.consume = function(callback) {
       self.logger.debug('[KAFKA] Receive <- Topic: `{0}`, Length: {1}', _topic, _message.length);
     }
 
-    return handler(_topic, _message, null, function() {
-      return callback(null, true);
+    return handler(_topic, _message, null, function(err, funcResult) {
+      var handleInfo = {
+        message   : _message,
+        funcResult: funcResult,
+        error     : err,
+      }
+      return callback(null, handleInfo);
     });
   });
 };

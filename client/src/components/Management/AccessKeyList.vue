@@ -57,7 +57,7 @@ Add Access Key to allow external systems to call the Open APIs of this system: æ
           <el-table-column label="Access Key Secret" width="350">
             <template slot-scope="scope">
               <template v-if="!showSecretMap[scope.row.id]">
-                <el-button @click="showSecret(scope.row)" type="text">{{ $t('Show') }}</el-button>
+                <el-link type="primary" @click="showSecret(scope.row)">{{ $t('Show') }}</el-link>
               </template>
               <template v-else>
                 <code class="text-main text-small">{{ scope.row.secret }}</code>

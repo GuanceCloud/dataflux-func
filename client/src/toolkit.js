@@ -1216,8 +1216,8 @@ export async function callAPI(method, pathPattern, options) {
                     : app.$t(axiosRes.data.message);
 
         // 进一步添加小字详细信息
-        if (axiosRes.data.detail && axiosRes.data.detail.message) {
-          message += `<br><small>${app.$t(axiosRes.data.detail.message.replace(/\n/g, '<br>'))}<small>`;
+        if (axiosRes.data.detail && axiosRes.data.detail.exception) {
+          message += `<br><small>${app.$t(axiosRes.data.detail.exception.replace(/\n/g, '<br>'))}<small>`;
         }
 
         // 简单提示，不需要区分标题和内容
@@ -1384,8 +1384,8 @@ export async function callAPI_getAll(pathPattern, options) {
                       : app.$t(axiosRes.data.message);
 
           // 进一步添加小字详细信息
-          if (axiosRes.data.detail && axiosRes.data.detail.message) {
-            message += `<br><small>${axiosRes.data.detail.message}<small>`;
+          if (axiosRes.data.detail && axiosRes.data.detail.exception) {
+            message += `<br><small>${axiosRes.data.detail.exception}<small>`;
           }
 
           // 简单提示，不需要区分标题和内容

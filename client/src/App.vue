@@ -997,8 +997,11 @@ kbd {
 .el-form-item__content .el-select {
   display: block;
 }
+.el-form-item__content .el-link {
+  line-height: 1.5 !important;
+}
 .el-form .el-transfer-panel__item {
-  /*https://github.com/ElemeFE/element/issues/18228*/
+  /* https://github.com/ElemeFE/element/issues/18228 */
   margin-left: 0;
   display: block !important;
 }

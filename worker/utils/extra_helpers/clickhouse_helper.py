@@ -65,7 +65,7 @@ class ClickHouseHelper(object):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
-            raise Exception(str(e))
+            raise
 
     def query(self, sql, sql_params=None):
         formatted_sql = format_sql(sql, sql_params)

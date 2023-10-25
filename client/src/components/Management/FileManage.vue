@@ -167,7 +167,7 @@ File already existed                                                            
               </template>
 
               <el-dropdown @command="resourceOperationCmd" trigger="click">
-                <el-link :underline="false">
+                <el-link>
                   {{ $t('More') }}
                   <i class="el-icon-arrow-down el-icon--right"></i>
                 </el-link>

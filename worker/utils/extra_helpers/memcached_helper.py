@@ -52,7 +52,7 @@ class MemcachedHelper(object):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
-            raise Exception(str(e))
+            raise
 
     def query(self, *args):
         command      = args[0]

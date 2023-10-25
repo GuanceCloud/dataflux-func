@@ -67,8 +67,7 @@ class GuanceHelper(object):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
-            e = Exception(str(e))
-            raise e
+            raise
 
         else:
             if not self.client.is_api_key_match:

@@ -58,13 +58,14 @@ class KafkaHelper(object):
 
     def check(self):
         try:
-            self.publish(topic='test', message='This is a test message')
+            if not self.producer.bootstrap_connected():
+                raise Exception('The bootstrap is not connected!')
 
         except Exception as e:
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
-            raise Exception(str(e))
+            raise
 
     def publish(self, topic, message):
         try:

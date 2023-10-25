@@ -2,37 +2,45 @@
 Add Connector  : 添加连接器
 Setup Connector: 配置连接器
 
-Compatibility        : 兼容性
-Guance Node          : 观测云节点
-Name in Guance       : 观测云中名称
-OpenAPI URL          : OpenAPI 地址
-WebSocket URL        : WebSocket 地址
-OpenWay URL          : OpenWay 地址
-API Key ID           : API Key ID
-API Key              : API Key
-Host                 : 主机
-Port                 : 端口
-Servers              : 服务器列表
-Protocol             : 协议
-Source               : 源
-Database             : 数据库
-User                 : 用户
-Password             : 密码
-Auth Type            : 认证类型
-Charset              : 编码
-Client ID            : 客户端 ID
-Group ID             : 分组 ID
-Security Protocol    : 安全协议
-SASL Mechanisms      : SASL 机制
-Multi Sub            : 多订阅器
-Sub Offset           : 订阅 Offset
-'Topic/Handler'      : 主题 / 处理函数
-Topic                : 主题
-Handler Func         : 处理函数
-No Recent Message    : 无近期消息
-'Recent Message:'    : '近期消息：'
-'Add Topic / Handler': 添加主题 / 处理函数
-Test connection      : 测试连通性
+Compatibility               : 兼容性
+Connector Development Doc   : 连接器开发文档
+Python SDK used by Connector: 连接器所使用的 Python SDK
+Node SDK used by Subscriber : 订阅器所使用的 Node SDK
+Guance Node                 : 观测云节点
+Name in Guance              : 观测云中名称
+OpenAPI URL                 : OpenAPI 地址
+WebSocket URL               : WebSocket 地址
+OpenWay URL                 : OpenWay 地址
+API Key ID                  : API Key ID
+API Key                     : API Key
+Host                        : 主机
+Port                        : 端口
+Servers                     : 服务器列表
+Protocol                    : 协议
+Source                      : 源
+Database                    : 数据库
+User                        : 用户
+Password                    : 密码
+Auth Type                   : 认证类型
+Charset                     : 编码
+Client ID                   : 客户端 ID
+Group ID                    : 分组 ID
+Security Protocol           : 安全协议
+SASL Mechanisms             : SASL 机制
+Multi Sub                   : 多订阅器
+Sub Offset                  : 订阅 Offset
+'Topic/Handler'             : 主题 / 处理函数
+Topic                       : 主题
+Handler Func                : 处理函数
+No Recent Message           : 无近期消息
+Recent Message              : 近期消息
+'Add Topic / Handler'       : 添加主题 / 处理函数
+Test connection             : 测试连通性
+
+Received Time   : 接收时间
+Received Message: 接收消息
+Func Return     : 函数返回值
+Traceback       : 调用堆栈
 
 Save without connection test: 保存（忽略连通性测试）
 
@@ -78,7 +86,7 @@ Connector deleted: 连接器已删除
 
 Are you sure you want to delete the Connector?: 是否确认删除此连接器？
 
-Click here for connector subscription: 点击此处了解连接器订阅
+Learn more about subscribing using Connector: 了解通过连接器进行订阅
 This is a built-in Connector, please contact the admin to change the config: 当前连接器为内置连接器，请联系管理员调整集群配置
 </i18n>
 
@@ -134,6 +142,30 @@ This is a built-in Connector, please contact the admin to change the config: 当
 
               <el-form-item :label="$t('Compatibility')" v-if="T.notNothing(C.CONNECTOR_MAP.get(selectedType).compatibleDBs)">
                 <el-tag type="info" size="medium" :disable-transitions="true" v-for="db in C.CONNECTOR_MAP.get(selectedType).compatibleDBs" :key="db">{{ db }}</el-tag>
+              </el-form-item>
+
+              <el-form-item v-if="C.CONNECTOR_MAP.get(selectedType).links">
+                <template v-if="C.CONNECTOR_MAP.get(selectedType).links.doc">
+                  <el-link :href="C.CONNECTOR_MAP.get(selectedType).links.doc" target="_blank">
+                    <i class="fa fa-fw fa-external-link"></i>
+                    {{ $t('Connector Development Doc') }}
+                  </el-link>
+                  <br>
+                </template>
+                <template v-if="C.CONNECTOR_MAP.get(selectedType).links.pypi">
+                  <el-link :href="C.CONNECTOR_MAP.get(selectedType).links.pypi" target="_blank">
+                    <i class="fa fa-fw fa-external-link"></i>
+                    {{ $t('Python SDK used by Connector') }}
+                  </el-link>
+                  <br>
+                </template>
+                <template v-if="C.CONNECTOR_MAP.get(selectedType).links.npm">
+                  <el-link :href="C.CONNECTOR_MAP.get(selectedType).links.npm" target="_blank">
+                    <i class="fa fa-fw fa-external-link"></i>
+                    {{ $t('Node SDK used by Subscriber') }}
+                  </el-link>
+                  <br>
+                </template>
               </el-form-item>
 
               <el-form-item label="ID" prop="id">
@@ -332,15 +364,21 @@ This is a built-in Connector, please contact the admin to change the config: 当
                       v-model="topicHandler.funcId"
                       :options="funcCascader"
                       :props="{ expandTrigger: 'hover', emitPath: false, multiple: false }"></el-cascader>
-                  </el-form-item>
 
-                  <el-form-item
-                    class="recent-message">
                     <!-- 最近消费提示 -->
-                    <InfoBlock v-if="subInfoMap[topicHandler.topic]"
-                      type="success"
-                      :title="`${$t('Recent Message:')} ${T.getDateTimeString(subInfoMap[topicHandler.topic].timestampMs, 'MM-DD HH:mm:ss')} ${'('}${T.fromNow(subInfoMap[topicHandler.topic].timestampMs)}${')'}`" />
-                    <InfoBlock v-else type="warning" :title="$t('No Recent Message')" />
+                    <el-link v-if="subInfoMap[topicHandler.topic]"
+                      :type="subInfoMap[topicHandler.topic].error ? 'danger' : 'success'"
+                      @click="showDetail(subInfoMap[topicHandler.topic])">
+                      <i class="fa fa-fw" :class="subInfoMap[topicHandler.topic].error ? 'fa-times text-bad' : 'fa-check text-good'"></i>
+                      {{ $t('Recent Message') }}{{ $t(':') }}
+                      {{ T.getDateTimeString(subInfoMap[topicHandler.topic].timestampMs, 'MM-DD HH:mm:ss') }}
+                      {{ $t('(') }}{{ T.fromNow(subInfoMap[topicHandler.topic].timestampMs) }}{{ $t(')') }}
+                    </el-link>
+                    <el-link v-else
+                      type="info"
+                      :underline="false">
+                      {{ $t('No Recent Message') }}
+                    </el-link>
                   </el-form-item>
 
                   <el-form-item class="config-divider">
@@ -359,7 +397,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
                     href="https://func.guance.com/doc/development-guide-connector-subscribe/"
                     target="_blank">
                     <i class="fa fa-fw fa-external-link"></i>
-                    {{ $t('Click here for connector subscription') }}
+                    {{ $t('Learn more about subscribing using Connector') }}
                   </el-link>
                 </el-form-item>
               </template>
@@ -389,6 +427,8 @@ This is a built-in Connector, please contact the admin to change the config: 当
         </div>
       </el-main>
 
+      <LongTextDialog :showDownload="true" ref="longTextDialog" />
+
       <!-- 连接器提示 -->
       <FeatureNoticeDialog
         featureKey="connector.funcIsJustPythonWarpper"
@@ -403,12 +443,14 @@ This is a built-in Connector, please contact the admin to change the config: 当
 <script>
 import axios from 'axios';
 
+import LongTextDialog from '@/components/LongTextDialog'
 import FeatureNoticeDialog from '@/components/FeatureNoticeDialog'
 import img_noticeFuncIsJustPythonWrapper from '@/assets/img/notice-func-is-just-python-wrapper.png'
 
 export default {
   name: 'ConnectorSetup',
   components: {
+    LongTextDialog,
     FeatureNoticeDialog,
   },
   watch: {
@@ -703,6 +745,40 @@ export default {
     },
     removeTopicHandler(index) {
       this.form.configJSON.topicHandlers.splice(index, 1);
+    },
+
+    showDetail(d) {
+      let lines = [];
+
+      // 主题
+      lines.push(`===== ${this.$t('Topic')} =====`);
+      lines.push(d.topic);
+
+      // 收到时间
+      lines.push(`\n===== ${this.$t('Received Time')} =====`);
+      lines.push(this.M(d.timestampMs).format('YYYY-MM-DD HH:mm:ss Z'));
+
+      // 收到消息
+      lines.push(`\n===== ${this.$t('Received Message')} =====`);
+      lines.push(d.message);
+
+      // 函数返回
+      lines.push(`\n===== ${this.$t('Func Return')} =====`)
+      lines.push(JSON.stringify(d.funcResult, null, 2));
+
+      // 堆栈
+      lines.push(`\n===== ${this.$t('Traceback')} =====`);
+      if (d.error && d.error.detail && d.error.detail.traceback) {
+        lines.push(d.error.detail.traceback);
+      } else {
+        lines.push(this.$t('No Traceback'))
+      }
+
+      let docText = lines.join('\n');
+
+      let createTimeStr = this.M(d.timestampMs).format('YYYYMMDD_HHmmss');
+      let fileName = `connector-sub-dump.${d.connectorId}.${d.topic}.${createTimeStr}`;
+      this.$refs.longTextDialog.update(docText, fileName);
     },
   },
   computed: {

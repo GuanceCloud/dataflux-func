@@ -134,8 +134,7 @@ Are you sure you want to clear the Log and Cache?: 是否确认清空日志与�
 
               <el-form label-width="120px">
                 <el-form-item>
-                  <el-button type="text"
-                    v-prevent-re-click
+                  <el-link v-prevent-re-click
                     :disabled="isLoadingSystemInfo"
                     @click="getSystemReport">
                     <span v-if="isLoadingSystemInfo">
@@ -143,14 +142,17 @@ Are you sure you want to clear the Log and Cache?: 是否确认清空日志与�
                       {{ $t('Loading System Report') }}
                     </span>
                     <span v-else>{{ $t('Get System Report') }}</span>
-                  </el-button>
+                  </el-link>
                   <br>
-                  <el-button type="text" @click="$router.push({ name: 'system-metrics' })">{{ $t('Show System Metrics') }}</el-button>
-                  <el-button type="text" @click="$router.push({ name: 'system-logs' })">{{ $t('Show System Logs') }}</el-button>
-                  <el-button type="text" @click="$router.push({ name: 'abnormal-request-list' })">{{ $t('Show Abnormal Requests') }}</el-button>
+                  <el-link @click="$router.push({ name: 'system-metrics' })">{{ $t('Show System Metrics') }}</el-link>
+                  &#12288;
+                  <el-link @click="$router.push({ name: 'system-logs' })">{{ $t('Show System Logs') }}</el-link>
+                  &#12288;
+                  <el-link @click="$router.push({ name: 'abnormal-request-list' })">{{ $t('Show Abnormal Requests') }}</el-link>
                   <br>
-                  <el-button type="text" @click="clearWorkerQueues">{{ $t('Clear Worker Queues') }}</el-button>
-                  <el-button type="text" @click="clearLogCacheTables">{{ $t('Clear Log and Cache') }}</el-button>
+                  <el-link @click="clearWorkerQueues">{{ $t('Clear Worker Queues') }}</el-link>
+                  &#12288;
+                  <el-link @click="clearLogCacheTables">{{ $t('Clear Log and Cache') }}</el-link>
                 </el-form-item>
               </el-form>
             </div>
@@ -208,7 +210,7 @@ export default {
       let apiRes = await this.T.callAPI_get('/api/v1/system-report');
       if (apiRes.ok && this.T.notNothing(apiRes.data)) {
         var contentTEXT = JSON.stringify(apiRes.data, null, 2);
-        let createTimeStr = this.M().utcOffset(8).format('YYYYMMDD_HHmmss');
+        let createTimeStr = this.M().format('YYYYMMDD_HHmmss');
         let fileName = `system-report.${createTimeStr}`;
         this.$refs.jsonViewerDialog.update(contentTEXT, fileName);
       }
@@ -248,7 +250,7 @@ export default {
       if (this.imageInfo.releaseTimestamp > 0) {
         let releaseTimestamp = this.imageInfo.releaseTimestamp * 1000;
 
-        releaseDate    = this.M.utc(releaseTimestamp).locale(this.T.getUILocale()).utcOffset(8).format('YYYY-MM-DD HH:mm:ss');
+        releaseDate    = this.M.utc(releaseTimestamp).locale(this.T.getUILocale()).format('YYYY-MM-DD HH:mm:ss Z');
         releaseFromNow = this.M.utc(releaseTimestamp).locale(this.T.getUILocale()).fromNow();
       }
 

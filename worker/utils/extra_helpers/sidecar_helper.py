@@ -60,8 +60,7 @@ class SidecarHelper(object):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
-            e = Exception(str(e))
-            raise e
+            raise
 
     def call(self, method, path=None, query=None, body=None, timeout=None):
         if path is None:

@@ -50,8 +50,7 @@ class DataKitHelper(object):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
-            e = Exception(str(e))
-            raise e
+            raise
 
     def __getattr__(self, name):
         return self.client.__getattribute__(name)

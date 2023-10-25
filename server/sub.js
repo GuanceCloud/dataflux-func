@@ -275,10 +275,10 @@ exports.runListener = function runListener(app) {
         var isAnyConsumed = false;
         async.eachOf(CONNECTOR_TOPIC_FUNC_MAP, function(connector, ctfKey, eachCallback) {
           async.times(subWorkerCount, function(n, timesCallback) {
-            connector.client.consume(function(err, isConsumed){
+            connector.client.consume(function(err, handleInfo){
               if (err) app.locals.logger.logError(err);
 
-              if (isConsumed) {
+              if (handleInfo) {
                 app.locals.logger.debug('CONNECTOR: `{0}` -> consumed', ctfKey);
                 isAnyConsumed = true;
 
@@ -288,8 +288,13 @@ exports.runListener = function runListener(app) {
                   'connectorId', ctfKeyObj.id,
                   'topic',       ctfKeyObj.topic]);
                 var consumeInfo = JSON.stringify({
+                  connectorId: ctfKeyObj.id,
+                  topic      : ctfKeyObj.topic,
                   funcId     : ctfKeyObj.funcId,
                   timestampMs: Date.now(),
+                  message    : handleInfo.message,
+                  funcResult : handleInfo.funcResult,
+                  error      : handleInfo.error,
                 });
                 app.locals.cacheDB.setex(cacheKey, CONFIG._SUB_RECENT_CONSUME_EXPIRE, consumeInfo);
               }

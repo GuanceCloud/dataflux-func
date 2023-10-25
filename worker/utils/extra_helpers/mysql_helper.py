@@ -100,7 +100,7 @@ class MySQLHelper(object):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
-            raise Exception(str(e))
+            raise
 
     def start_trans(self):
         try:

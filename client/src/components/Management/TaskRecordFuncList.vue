@@ -308,71 +308,71 @@ export default {
         id     = d.funcId.replace(/^_bp_/g, '').split('__')[0];
       }
 
-      let contentLines = [];
-      contentLines.push(`===== ${this.$t('Task')} =====`);
+      let lines = [];
+      lines.push(`===== ${this.$t('Task')} =====`);
       if (origin === 'scriptLib') {
         // 脚本
-        contentLines.push(`${this.$t('Func ID')} : ${this.$t(id)}`);
-        contentLines.push(`${this.$t('Func Title')}: ${this.$t(d.func_title)}`);
+        lines.push(`${this.$t('Func ID')} : ${this.$t(id)}`);
+        lines.push(`${this.$t('Func Title')}: ${this.$t(d.func_title)}`);
       } else {
         // 蓝图
-        contentLines.push(`${this.$t('Blueprint ID')} : ${this.$t(id)}`);
-        contentLines.push(`${this.$t('Blueprint Title')}: ${this.$t(d.func_title)}`);
+        lines.push(`${this.$t('Blueprint ID')} : ${this.$t(id)}`);
+        lines.push(`${this.$t('Blueprint Title')}: ${this.$t(d.func_title)}`);
       }
 
       // 队列
-      contentLines.push(`${this.$t('Queue')}: #${d.queue}`);
+      lines.push(`${this.$t('Queue')}: #${d.queue}`);
 
       // 时间
-      contentLines.push('');
-      contentLines.push(`${this.$t('Trigger Time')}: ${this.T.getDateTimeString(d.triggerTimeMs)} ${this.$t('(')}${this.T.fromNow(d.triggerTimeMs)}${this.$t(')')}`);
-      contentLines.push(`${this.$t('Start Time')}: ${this.T.getDateTimeString(d.startTimeMs)} ${this.$t('(')}${this.T.fromNow(d.startTimeMs)}${this.$t(')')}`);
-      contentLines.push(`${this.$t('End Time')}: ${this.T.getDateTimeString(d.endTimeMs)} ${this.$t('(')}${this.T.fromNow(d.endTimeMs)}${this.$t(')')}`);
+      lines.push('');
+      lines.push(`${this.$t('Trigger Time')}: ${this.T.getDateTimeString(d.triggerTimeMs)} ${this.$t('(')}${this.T.fromNow(d.triggerTimeMs)}${this.$t(')')}`);
+      lines.push(`${this.$t('Start Time')}: ${this.T.getDateTimeString(d.startTimeMs)} ${this.$t('(')}${this.T.fromNow(d.startTimeMs)}${this.$t(')')}`);
+      lines.push(`${this.$t('End Time')}: ${this.T.getDateTimeString(d.endTimeMs)} ${this.$t('(')}${this.T.fromNow(d.endTimeMs)}${this.$t(')')}`);
 
       // 延迟
       if (d.delay > 0) {
-        contentLines.push(`${this.$t('Delay')}: ${d.delay} ${this.$t('s')}`);
+        lines.push(`${this.$t('Delay')}: ${d.delay} ${this.$t('s')}`);
       } else {
-        contentLines.push(`${this.$t('Delay')}: -`);
+        lines.push(`${this.$t('Delay')}: -`);
       }
 
       // 耗时
       if (d.waitCostMs > 1000) {
-        contentLines.push(`${this.$t('Wait Cost')}: ${d.waitCostMs} ${this.$t('ms')}`);
+        lines.push(`${this.$t('Wait Cost')}: ${d.waitCostMs} ${this.$t('ms')}`);
       } else {
-        contentLines.push(`${this.$t('Wait Cost')}: -`);
+        lines.push(`${this.$t('Wait Cost')}: -`);
       }
-      contentLines.push(`${this.$t('Run Cost')}: ${d.runCostMs} ${this.$t('ms')}`);
+      lines.push(`${this.$t('Run Cost')}: ${d.runCostMs} ${this.$t('ms')}`);
 
       // 任务类型
-      contentLines.push(`${this.$t('Task Type')}: ${d.rootTaskId === 'ROOT' ? this.$t('Main Task') : this.$t('Sub Task')}`);
+      lines.push(`${this.$t('Task Type')}: ${d.rootTaskId === 'ROOT' ? this.$t('Main Task') : this.$t('Sub Task')}`);
 
       // 任务状态
-      contentLines.push(`${this.$t('Task Status')}: ${this.$t(d.status)}`);
+      lines.push(`${this.$t('Task Status')}: ${this.$t(d.status)}`);
 
       // 日志
-      contentLines.push('');
-      contentLines.push(`===== ${this.$t('Print Log')} =====`);
+      lines.push('');
+      lines.push(`===== ${this.$t('Print Log')} =====`);
       if (d.printLogsTEXT) {
-        contentLines.push(d.printLogsTEXT);
+        lines.push(d.printLogsTEXT);
       } else {
-        contentLines.push(this.$t('No Print Log'));
+        lines.push(this.$t('No Print Log'));
       }
 
       // 堆栈
-      contentLines.push('');
-      contentLines.push(`===== ${this.$t('Traceback')} =====`);
+      lines.push('');
+      lines.push(`===== ${this.$t('Traceback')} =====`);
       if (d.tracebackTEXT) {
-        contentLines.push(d.tracebackTEXT);
+        lines.push(d.tracebackTEXT);
       } else {
-        contentLines.push(this.$t('No Traceback'))
+        lines.push(this.$t('No Traceback'))
       }
 
-      let contentTEXT = contentLines.join('\n');
+      let docTEXT = lines.join('\n');
 
-      let createTimeStr = this.M(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
-      let fileName = `${origin}-${id}.log.${createTimeStr}`;
-      this.$refs.longTextDialog.update(contentTEXT, fileName);
+      let createTimeStr = this.M(d.createTime).format('YYYYMMDD_HHmmss');
+      let fileName = `task-record.${origin}-${id}.log.${createTimeStr}`;
+      this.$refs.longTextDialog.update(docTEXT, fileName);
     },
   },
   computed: {

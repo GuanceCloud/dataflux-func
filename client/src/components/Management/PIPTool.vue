@@ -91,15 +91,16 @@ installCost: （耗时 {n} 秒）
         <el-divider content-position="left"><h1>{{ $t('Installed Python Packages') }}</h1></el-divider>
 
         <div>
-          <el-button @click="loadInstalledPackages" :disabled="isLoadingInstalldPackages" type="text">
+          <el-link type="primary" @click="loadInstalledPackages" :disabled="isLoadingInstalldPackages">
             <span v-if="isLoadingInstalldPackages">
               <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
               {{ $t('Loading Installed Python Packages') }}
             </span>
             <span v-else>{{ $t('Load Installed Python Packages') }}</span>
-          </el-button>
+          </el-link>
         </div>
 
+        <br>
         <el-table class="common-table" :data="installedPackages" v-if="installedPackages.length > 0">
           <el-table-column :label="$t('Package')" sortable sort-by="name">
             <template slot-scope="scope">

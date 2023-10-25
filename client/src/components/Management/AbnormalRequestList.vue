@@ -3,7 +3,6 @@ Request    : 请求
 Response   : 响应
 Status Code: 状态码
 Cost       : 耗时
-Show detail: 显示请求详情
 omitted.   : 略
 
 No Recent Abnormal Request: 尚无任何近期异常请求
@@ -97,7 +96,7 @@ All recent abnormal requests will be collected and shown here: 所有异常的�
 
           <el-table-column width="150" align="right">
             <template slot-scope="scope">
-              <el-button @click="showDetail(scope.row)" type="text">{{ $t('Show detail') }}</el-button>
+              <el-link type="primary" @click="showDetail(scope.row)">{{ $t('Show detail') }}</el-link>
             </template>
           </el-table-column>
         </el-table>
@@ -183,7 +182,7 @@ export default {
 
       let httpInfoTEXT = httpInfoLines.join('\n');
 
-      let createTimeStr = this.M(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
+      let createTimeStr = this.M(d.createTime).format('YYYYMMDD_HHmmss');
       let fileName = `http-dump.${createTimeStr}`;
       this.$refs.longTextDialog.update(httpInfoTEXT, fileName);
     },

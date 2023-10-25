@@ -1859,8 +1859,8 @@ exports.fileService = function(req, res, next) {
             };
 
             var stat = fs.statSync(path.join(absPath, x.name));
-            f.createTime = moment(stat.birthtimeMs).utcOffset('+08:00').format('YYYY-MM-DD HH:mm:ss');
-            f.updateTime = moment(stat.ctimeMs).utcOffset('+08:00').format('YYYY-MM-DD HH:mm:ss');
+            f.createTime = moment(stat.birthtimeMs).tz(CONFIG.TIMEZONE).format('YYYY-MM-DD HH:mm:ss Z');
+            f.updateTime = moment(stat.ctimeMs).tz(CONFIG.TIMEZONE).format('YYYY-MM-DD HH:mm:ss Z');
 
             if (x.isDirectory()) {
               f.type = 'folder';

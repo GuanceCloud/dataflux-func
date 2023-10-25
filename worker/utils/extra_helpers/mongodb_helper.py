@@ -54,8 +54,7 @@ class MongoDBHelper(object):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
-            e = Exception(str(e))
-            raise e
+            raise
 
     def run_method(self, method, **kwargs):
         if method == 'list_database_names':

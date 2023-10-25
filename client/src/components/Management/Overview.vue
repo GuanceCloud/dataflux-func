@@ -25,7 +25,6 @@ Data ID          : 数据 ID
 MODIFY           : 修改操作
 DELETE           : 删除操作
 Cost             : 耗时
-Show detail      : 显示请求详情
 Request          : 请求
 Response         : 响应
 Load             : 负载
@@ -161,7 +160,7 @@ Load             : 负载
 
           <el-table-column align="right" width="150">
             <template slot-scope="scope">
-              <el-button @click="showDetail(scope.row)" type="text">{{ $t('Show detail') }}</el-button>
+              <el-link type="primary" @click="showDetail(scope.row)">{{ $t('Show detail') }}</el-link>
             </template>
           </el-table-column>
 
@@ -212,35 +211,35 @@ export default {
     showDetail(d) {
       this.$store.commit('updateHighlightedTableDataId', d.id);
 
-      let httpInfoLines = [];
+      let lines = [];
 
-      httpInfoLines.push(`===== ${this.$t('Request')} =====`)
+      lines.push(`===== ${this.$t('Request')} =====`)
 
-      httpInfoLines.push(`${d.reqMethod.toUpperCase()} ${this.T.formatURL(d.reqRoute, {params: d.reqParamsJSON, query: d.reqQueryJSON})}`)
+      lines.push(`${d.reqMethod.toUpperCase()} ${this.T.formatURL(d.reqRoute, {params: d.reqParamsJSON, query: d.reqQueryJSON})}`)
 
       if (d.reqBodyJSON) {
-        httpInfoLines.push(JSON.stringify(d.reqBodyJSON, null, 2));
+        lines.push(JSON.stringify(d.reqBodyJSON, null, 2));
       }
       if (d.reqFileInfoJSON) {
-        httpInfoLines.push(`\n===== ${this.$t('Upload')} =====`)
+        lines.push(`\n===== ${this.$t('Upload')} =====`)
         d.reqFileInfoJSON.forEach(fileInfo => {
-          httpInfoLines.push(`${fileInfo.name} <${this.T.byteSizeHuman(fileInfo.size)}>`);
+          lines.push(`${fileInfo.name} <${this.T.byteSizeHuman(fileInfo.size)}>`);
         })
       }
 
-      httpInfoLines.push(`\n===== ${this.$t('Response')} =====`)
+      lines.push(`\n===== ${this.$t('Response')} =====`)
 
-      httpInfoLines.push(`Status Code: ${d.respStatusCode}`);
+      lines.push(`Status Code: ${d.respStatusCode}`);
 
       if (d.respBodyJSON) {
-        httpInfoLines.push(JSON.stringify(d.respBodyJSON, null, 2));
+        lines.push(JSON.stringify(d.respBodyJSON, null, 2));
       }
 
-      let httpInfoTEXT = httpInfoLines.join('\n');
+      let docTEXT = lines.join('\n');
 
-      let createTimeStr = this.M(d.createTime).utcOffset(8).format('YYYYMMDD_HHmmss');
+      let createTimeStr = this.M(d.createTime).format('YYYYMMDD_HHmmss');
       let fileName = `http-dump.${createTimeStr}`;
-      this.$refs.longTextDialog.update(httpInfoTEXT, fileName);
+      this.$refs.longTextDialog.update(docTEXT, fileName);
     },
     overviewCountFontSize(count, k) {
       let numberLength = ('' + count).length;

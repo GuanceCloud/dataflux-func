@@ -83,8 +83,7 @@ class NSQLookupHelper(object):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
-            e = Exception(str(e))
-            raise e
+            raise
 
     def update_producers(self):
         if self.config.get('fixedNSQNodes'):
@@ -157,4 +156,3 @@ class NSQLookupHelper(object):
         if r.status_code >= 400:
             e = Exception(r.status_code, r.text)
             raise e
-

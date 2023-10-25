@@ -63,7 +63,7 @@ class InfluxDBHelper(object):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
-            raise Exception(str(e))
+            raise
 
     def switch_database(self, database):
         self.logger.debug('[INFLUXDB] Switch DB `{}`'.format(database))

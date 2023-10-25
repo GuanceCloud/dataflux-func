@@ -27,7 +27,8 @@ IMAGE_INFO = yaml_resources.get('IMAGE_INFO')
 class BaseInternalTask(BaseTask):
     def safe_call(self, func, *args, **kwargs):
         try:
-            func(*args, **kwargs)
+            return func(*args, **kwargs)
+
         except Exception as e:
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
@@ -37,6 +38,8 @@ class FlushDataBuffer(BaseInternalTask):
     释放缓存数据
     '''
     name = 'Internal.FlushDataBuffer'
+
+    default_timeout = CONFIG['_TASK_FLUSH_DATA_TIMEOUT']
 
     TASK_RECORD_LIMIT_BY_ORIGIN_MAP = {
         'direct'     : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_DIRECT'],
@@ -65,7 +68,7 @@ class FlushDataBuffer(BaseInternalTask):
         # 搜集数据
         cache_res = self._flush_data_buffer(cache_key)
         if not cache_res:
-            return
+            return 0
 
         # 写入本地 DB 数据
         for d in cache_res:
@@ -96,7 +99,9 @@ class FlushDataBuffer(BaseInternalTask):
                     seq <= ?
             '''
             sql_params = [ expired_max_seq ]
-            self.db.query(sql, sql_params)
+            self.db.query(sql, sql_params)\
+
+        return len(cache_res)
 
     def flush_task_record_func(self):
         cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordFunc')
@@ -107,12 +112,12 @@ class FlushDataBuffer(BaseInternalTask):
 
             sql = '''TRUNCATE biz_main_task_record_func'''
             self.db.query(sql)
-            return
+            return 0
 
         # 搜集数据
         cache_res = self._flush_data_buffer(cache_key)
         if not cache_res:
-            return
+            return 0
 
         # 写入本地 DB 数据
         origin_limit_map = {}
@@ -159,20 +164,24 @@ class FlushDataBuffer(BaseInternalTask):
                 sql_params = [ expired_max_seq, origin_id ]
                 self.db.query(sql, sql_params)
 
+        return len(cache_res)
+
     def flush_task_record_guance(self):
         cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordGuance')
 
         # 未启用时，自动清空
         if not self.guance_data_upload_url:
             self.cache_db.delete(cache_key)
-            return
+            return 0
 
         # 搜集数据
         cache_res = self._flush_data_buffer(cache_key)
         if not cache_res:
-            return
+            return 0
 
         self.upload_guance_data('logging', cache_res)
+
+        return len(cache_res)
 
     def flush_func_call_count(self):
         cache_key = toolkit.get_cache_key('dataBuffer', 'funcCallCount')
@@ -180,7 +189,7 @@ class FlushDataBuffer(BaseInternalTask):
         # 搜集数据
         cache_res = self._flush_data_buffer(cache_key)
         if not cache_res:
-            return
+            return 0
 
         # 计数表
         count_map   = {}
@@ -233,18 +242,33 @@ class FlushDataBuffer(BaseInternalTask):
         if guance_data:
             self.upload_guance_data('metric', guance_data)
 
+        return len(cache_res)
+
     def run(self, **kwargs):
         # 上锁
         self.lock()
 
-        for i in range(CONFIG['_TASK_FLUSH_DATA_BUFFER_TIMES']):
-            # 任务记录刷入数据库 / 观测云
-            self.safe_call(self.flush_task_record)
-            self.safe_call(self.flush_task_record_func)
-            self.safe_call(self.flush_task_record_guance)
+        flush_finish_map = {
+            'flush_task_record'       : False,
+            'flush_task_record_func'  : False,
+            'flush_task_record_guance': False,
+            'flush_func_call_count'   : False,
+        }
 
-            # 函数调用计数刷入数据库 / 观测云
-            self.safe_call(self.flush_func_call_count)
+        for i in range(CONFIG['_TASK_FLUSH_DATA_BUFFER_TIMES']):
+            finish_set = []
+
+            for flush_func_name, is_finished in flush_finish_map.items():
+                if is_finished:
+                    continue
+
+                flush_func = getattr(self, flush_func_name)
+                flushed_count = self.safe_call(flush_func) or 0
+                if flushed_count < CONFIG['_TASK_FLUSH_DATA_BUFFER_BULK_COUNT']:
+                    flush_finish_map[flush_func_name] = True
+
+            if all(flush_finish_map.values()):
+                break
 
 class AutoClean(BaseInternalTask):
     name = 'Internal.AutoClean'
