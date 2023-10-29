@@ -1086,6 +1086,7 @@ kbd {
 }
 .cm-trailingspace {
   background-color: lightgrey;
+  opacity: .35;
   border-radius: 3px;
 }
 
