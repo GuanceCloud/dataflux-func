@@ -447,7 +447,10 @@ export default {
         l = l.replace(/\t/g, ' '.repeat(4)); // Tab 转 4 空格
         l = l.trimRight();                   // 删除行尾空格
         return l;
-      }).join('\n') + '\n'; // 添加行尾空行
+      }).join('\n');
+
+      // 添加行尾空行
+      if (codeDraft) codeDraft += '\n';
 
       let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/modify', {
         params: { id: this.scriptId },
