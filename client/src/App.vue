@@ -593,11 +593,14 @@ ul {
   border-color: #FF000055 !important;
   float: left;
 }
+.delete-button.is-disabled {
+  color: #FF000055 !important;
+}
 .aside-on-button {
   color: #FF6600 !important
 }
-.aside-on-button * {
-  color: #FF6600 !important
+.aside-on-button.is-disabled {
+  color: #FF660055 !important
 }
 .setup-footer {
   text-align: right;

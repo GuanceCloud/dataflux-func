@@ -217,10 +217,19 @@ Some Script Sets have been hidden: 一些脚本集已被隐藏
               <br>
 
               <el-button-group>
-                <!-- 添加脚本 -->
+                <!-- 添加脚本（脚本集） -->
                 <el-button v-if="data.type === 'scriptSet'"
                   size="small"
                   :disabled="!data.isEditable"
+                  @click="openEntity(data, 'add')">
+                  <i class="fa fa-fw fa-plus"></i>
+                  {{ $t('New Script') }}
+                </el-button>
+
+                <!-- 添加脚本（脚本） -->
+                <el-button v-if="data.type === 'script'"
+                  size="small"
+                  :disabled="!(scriptSetMap[data.scriptSetId] || {}).isEditable"
                   @click="openEntity(data, 'add')">
                   <i class="fa fa-fw fa-plus"></i>
                   {{ $t('New Script') }}
@@ -286,6 +295,7 @@ Some Script Sets have been hidden: 一些脚本集已被隐藏
                 <el-button
                   class="delete-button"
                   size="small"
+                  :disabled="!data.isEditable"
                   @click="deleteEntity(data)">
                   <i class="fa fa-fw fa-times"></i>
                   {{ $t('Delete') }}
@@ -978,6 +988,10 @@ export default {
       this.selectOptions     = selectOptions;
       this.selectShowOptions = selectOptions;
 
+      this.scriptSetMap = scriptSetMap;
+      this.scriptMap    = scriptMap;
+      this.funcMap      = funcMap;
+
       // 自动展开
       this.expandedNodeMap = this.$store.state.asideScript_expandedNodeMap || {};
       this.defaultExpandedNodeKeys = Object.keys(this.expandedNodeMap);
@@ -1148,7 +1162,12 @@ export default {
 
         // 脚本节点
         case 'script':
-          if (target === 'setup') {
+          if (target === 'add') {
+            // 添加脚本
+            this.selectNode(data.id, { expandChildren: true });
+            this.$refs.ScriptSetup.loadData(data.scriptSetId);
+
+          } else if (target === 'setup') {
             // 打开脚本配置
             this.selectNode(data.id, { expandChildren: false });
             this.$refs.ScriptSetup.loadData(data.id.split('__')[0], data.id);
@@ -1240,7 +1259,6 @@ export default {
       let apiRes  = null;
       let listOpt = {
         query: {
-
           origin       : 'user',
           funcId       : data.id,
           pageSize     : 20,
@@ -1327,6 +1345,10 @@ export default {
       selectFilterText : '',
       selectOptions    : [],
       selectShowOptions: [],
+
+      scriptSetMap: {},
+      scriptMap   : {},
+      funcMap     : {},
 
       // 直接修改el-tree的`default-expanded-keys`参数会导致过渡动画被跳过
       // 因此需要将初始状态单独提取且防止中途修改
