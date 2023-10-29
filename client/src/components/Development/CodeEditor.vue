@@ -440,11 +440,12 @@ export default {
       let prevCodeDraftMD5 = this.prevCodeDraftMD5;
       let codeDraft        = this.codeMirror.getValue();
 
-      // 保存时，自动去除空行的行尾空格
-      let codeDraftLines = codeDraft.split('\n').map(line => {
-        return line.trim() === '' ? '' : line;
-      });
-      codeDraft = codeDraftLines.join('\n');
+      // 保存时整理格式
+      codeDraft = codeDraft.trimRight().split('\n').map(l => {
+        l = l.replace(/\t/g, ' '.repeat(4)); // Tab 转 4 空格
+        l = l.trimRight();                   // 删除行尾空格
+        return l;
+      }).join('\n') + '\n'; // 添加行尾空行
 
       let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/modify', {
         params: { id: this.scriptId },
