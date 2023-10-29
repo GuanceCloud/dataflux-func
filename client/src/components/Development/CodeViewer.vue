@@ -401,7 +401,7 @@ export default {
       return this.T.getCodeMirrorThemeName();
     },
     scriptId() {
-      return this.T.isNothing(this.data) ? this.$route.params.id : this.data.id;
+      return this.$route.params.id;
     },
     scriptSetId() {
       return this.scriptId.split('__')[0];
