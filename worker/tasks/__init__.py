@@ -295,9 +295,9 @@ class BaseTask(object):
         if self.traceback:
             log_data.append(' Traceback '.center(30, '-'))
             log_data.append(self.traceback)
-        
+
         log_text = '\n'.join(log_data)
-        
+
         data = {
             'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD'],
             'tags': {
@@ -334,14 +334,14 @@ class BaseTask(object):
         data = self.create_task_record_data(task_resp)
         if data:
             cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecord')
-            self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
+            self.cache_db.push(cache_key, toolkit.json_dumps(data))
 
             self.logger.debug(f'[TASK RECORD] Buffered: `{cache_key}`')
 
         data = self.create_task_record_guance_data(task_resp)
         if data:
             cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordGuance')
-            self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
+            self.cache_db.push(cache_key, toolkit.json_dumps(data))
 
             self.logger.debug(f'[TASK RECORD] Buffered: `{cache_key}`')
 

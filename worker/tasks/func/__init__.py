@@ -563,6 +563,18 @@ class FuncCacheHelper(object):
         res = self.__task.cache_db.run('rpop', key)
         return self._convert_result(res)
 
+    def push(self, key, value, scope=None):
+        '''
+        lpush 别名
+        '''
+        return self.lpush(key, value, scope)
+
+    def pop(self, key, scope=None):
+        '''
+        rpop 别名
+        '''
+        return self.rpop(key, scope)
+
     def llen(self, key, scope=None):
         key = self._get_cache_key(key, scope)
         return self.__task.cache_db.run('llen', key)

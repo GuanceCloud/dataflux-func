@@ -293,7 +293,7 @@ router.all('*', function prepareFunctionalComponents(req, res, next) {
           var type = `reqCost${bucket}`;
           var cacheKey = toolkit.getMonitorCacheKey('monitor', 'abnormalRequest', ['type', type]);
           async.series([
-            function(innerCallback) { res.locals.cacheDB.lpush(cacheKey, reqInfoDumps, innerCallback) },
+            function(innerCallback) { res.locals.cacheDB.push(cacheKey, reqInfoDumps, innerCallback) },
             function(innerCallback) { res.locals.cacheDB.ltrim(cacheKey, 0, ABNORMAL_REQ_LOG_LIMIT - 1, innerCallback) },
           ], eachCallback);
         }, asyncCallback);
@@ -306,7 +306,7 @@ router.all('*', function prepareFunctionalComponents(req, res, next) {
         var cacheKey = toolkit.getMonitorCacheKey('monitor', 'abnormalRequest', ['type', type]);
 
         async.series([
-          function(innerCallback) { res.locals.cacheDB.lpush(cacheKey, reqInfoDumps, innerCallback)         },
+          function(innerCallback) { res.locals.cacheDB.push(cacheKey, reqInfoDumps, innerCallback) },
           function(innerCallback) { res.locals.cacheDB.ltrim(cacheKey, 0, ABNORMAL_REQ_LOG_LIMIT - 1, innerCallback) },
         ], asyncCallback);
       },

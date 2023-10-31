@@ -161,7 +161,7 @@ class FuncRunner(FuncBaseTask):
             'responseControlJSON': toolkit.json_dumps(self.response_control, keep_none=True),
         }
         cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordFunc')
-        self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
+        self.cache_db.push(cache_key, toolkit.json_dumps(data))
 
     def _buff_func_call_count(self, task_resp):
         data = {
@@ -179,7 +179,7 @@ class FuncRunner(FuncBaseTask):
             'workspaceUUID': toolkit.json_find_safe(self.func_call_kwargs, 'workspace_uuid'),
         }
         cache_key = toolkit.get_cache_key('dataBuffer', 'funcCallCount')
-        self.cache_db.lpush(cache_key, toolkit.json_dumps(data))
+        self.cache_db.push(cache_key, toolkit.json_dumps(data))
 
     # 完全重写父类方法
     def buff_task_record(self, task_resp):

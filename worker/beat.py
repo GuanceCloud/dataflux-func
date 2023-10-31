@@ -115,7 +115,7 @@ def tick():
         else:
             # 立即任务
             worker_queue = toolkit.get_worker_queue(task_req['queue'])
-            REDIS.lpush(worker_queue, task_req_dumps)
+            REDIS.push(worker_queue, task_req_dumps)
 
     # 延迟任务进入工作队列
     for queue in range(CONFIG['_WORKER_QUEUE_COUNT']):

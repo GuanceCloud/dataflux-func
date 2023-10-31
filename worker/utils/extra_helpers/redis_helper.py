@@ -335,17 +335,35 @@ class RedisHelper(object):
     def rpush(self, key, *value):
         return self.run('rpush', key, *value)
 
-    def lpop(self, key, count=1):
-        return self.run('lpop', key, count)
+    def lpop(self, key):
+        return self.run('lpop', key)
 
     def blpop(self, key, timeout=0):
         return self.run('blpop', key, timeout=timeout)
 
-    def rpop(self, key, count=1):
-        return self.run('rpop', key, count)
+    def rpop(self, key):
+        return self.run('rpop', key)
 
     def brpop(self, key, timeout=0):
         return self.run('brpop', key, timeout=timeout)
+
+    def push(self, key, *value):
+        '''
+        lpush 别名
+        '''
+        return self.lpush(key, *value)
+
+    def pop(self, key):
+        '''
+        rpop 别名
+        '''
+        return self.rpop(key)
+
+    def bpop(self, key, timeout=0):
+        '''
+        brpop 别名
+        '''
+        return self.brpop(key, timeout)
 
     def llen(self, key):
         return self.run('llen', key)

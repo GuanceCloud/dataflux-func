@@ -53,7 +53,7 @@ class FlushDataBuffer(BaseInternalTask):
     def _flush_data_buffer(self, cache_key):
         data = []
         for i in range(CONFIG['_TASK_FLUSH_DATA_BUFFER_BULK_COUNT']):
-            cache_res = self.cache_db.run('rpop', cache_key)
+            cache_res = self.cache_db.pop(cache_key)
             if not cache_res:
                 break
 

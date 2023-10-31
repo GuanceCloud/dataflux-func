@@ -404,6 +404,15 @@ RedisHelper.prototype.rpop = function(key, callback) {
   return this.run('rpop', key, callback);
 };
 
+/* lpush 别名 */
+RedisHelper.prototype.push = function(key, value, callback) {
+  return this.lpush(key, value, callback);
+};
+/* rpop 别名 */
+RedisHelper.prototype.pop = function(key, callback) {
+  return this.rpop(key, callback);
+};
+
 RedisHelper.prototype.llen = function(key, callback) {
   return this.run('llen', key, callback);
 };

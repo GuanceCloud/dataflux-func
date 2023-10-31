@@ -64,7 +64,7 @@ def consume():
     '''
     # 获取任务
     cache_keys = list(map(lambda q: toolkit.get_worker_queue(q), LISTINGING_QUEUES))
-    cache_res = REDIS.brpop(cache_keys, timeout=CONFIG['_WORKER_FETCH_TASK_TIMEOUT'])
+    cache_res = REDIS.bpop(cache_keys, timeout=CONFIG['_WORKER_FETCH_TASK_TIMEOUT'])
     if not cache_res:
         return
 
