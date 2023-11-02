@@ -266,10 +266,10 @@ class FuncContextHelper(object):
         return key in self.__data
 
     def get(self, key):
-        return self.__data.get(key)
+        return toolkit.json_copy(self.__data.get(key))
 
     def get_all(self):
-        return self.__data
+        return toolkit.json_copy(self.__data)
 
     def set(self, key, value):
         self.__data[key] = value
@@ -791,7 +791,7 @@ class FuncEnvVariableHelper(object):
     def get(self, env_variable_id):
         env_variable = self.__loaded_env_variable_cache[env_variable_id]
         if env_variable:
-            return env_variable['castedValue']
+            return toolkit.json_copy(env_variable['castedValue'])
 
         global ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP
         global ENV_VARIABLE_LOCAL_CACHE
@@ -815,7 +815,7 @@ class FuncEnvVariableHelper(object):
 
                 # 缓存环境变量
                 self.__loaded_env_variable_cache[env_variable_id] = env_variable
-                return env_variable['castedValue']
+                return toolkit.json_copy(env_variable['castedValue'])
 
         sql = '''
             SELECT
@@ -852,7 +852,7 @@ class FuncEnvVariableHelper(object):
         # 缓存环境变量
         self.__loaded_env_variable_cache[env_variable_id] = env_variable
 
-        return env_variable['castedValue']
+        return toolkit.json_copy(env_variable['castedValue'])
 
 class FuncConfigHelper(object):
     def __init__(self, task):
@@ -867,9 +867,9 @@ class FuncConfigHelper(object):
             raise e
 
         if config_id in CONFIG:
-            return CONFIG[config_id]
+            return toolkit.json_copy(CONFIG[config_id])
         else:
-            return default
+            return toolkit.json_copy(default)
 
     def list(self):
         return [{ 'key': k, 'value': v } for k, v in CONFIG.items() if k.startswith('CUSTOM_')]
