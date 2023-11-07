@@ -3,7 +3,7 @@ installCost: (Cost {n} s)
 </i18n>
 <i18n locale="zh-CN" lang="yaml">
 PIP Tool                         : PIP 工具
-Mirror                           : 镜像源
+Custom PIP Index URL             : 自定义 PIP Index URL
 Add --upgrade option             : 添加 --upgrade 选项
 Install Python Package           : 安装 Python 包
 Installed Python Packages        : 已安装的 Python 包
@@ -41,14 +41,21 @@ installCost: （耗时 {n} 秒）
 
         <el-select
           style="width: 235px"
-          v-model="pypiMirror">
-          <el-option v-for="mirror in C.PIP_MIRROR" :label="mirror.name" :key="mirror.key" :value="mirror.value"></el-option>
+          v-model="mirror">
+          <el-option v-for="mirror in C.PIP_MIRROR" :label="mirror.name" :key="mirror.key" :value="mirror.key"></el-option>
+          <el-option :label="$t('Custom PIP Index URL')" value="custom"></el-option>
         </el-select>
+        <template v-if="mirror === 'custom'" placeholder="https://pypi.YOUR-PIP-MIRROR.com/simple/">
+          <el-input
+            style="width: 500px; margin-bottom: 5px;"
+            v-model="customPIPIndexURL">
+          </el-input>
+          <br>
+        </template>
         <el-input :placeholder="$t('package or package==1.2.3')"
-          style="width: 500px"
+          :style="mirror === 'custom' ? 'width: 740px' : 'width: 500px'"
           v-model="packageToInstall">
         </el-input>
-
         <el-button type="primary" @click="installPackages" :disabled="!isInstallable">
           <span v-if="isInstalling">
             <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
@@ -202,8 +209,8 @@ export default {
         targetOpt,
       ]
 
-      if (this.pypiMirror) {
-        cmdParts.push(`-i ${this.pypiMirror}`);
+      if (this.mirror) {
+        cmdParts.push(`-i ${this.pipIndexURL}`);
       }
 
       if (this.addUpgradeOption) {
@@ -216,7 +223,7 @@ export default {
       return cmd;
     },
     async loadData() {
-      this.pypiMirror = this.C.PIP_MIRROR_DEFAULT.value;
+      this.mirror = this.C.PIP_MIRROR_DEFAULT.key;
 
       await this.updateInstallStatus();
 
@@ -250,9 +257,9 @@ export default {
       // 正常启动安装
       let apiRes = await this.T.callAPI('post', '/api/v1/python-packages/do/install', {
         body: {
-          mirror  : this.pypiMirror,
-          packages: this.packageToInstall,
-          upgrade : this.addUpgradeOption,
+          pipIndexURL: this.pipIndexURL,
+          packages   : this.packageToInstall,
+          upgrade    : this.addUpgradeOption,
         },
       });
       if (!apiRes || !apiRes.ok) return;
@@ -295,6 +302,10 @@ export default {
         }
       }
     },
+    pipIndexURL() {
+      let pipIndexURL = this.mirror === 'custom' ? this.customPIPIndexURL : this.C.PIP_MIRROR_MAP.get(this.mirror).value;
+      return pipIndexURL;
+    },
     isInstallable() {
       // 检查空内容
       if (this.T.isNothing(this.packageToInstall)) {
@@ -315,9 +326,10 @@ export default {
   },
   data() {
     return {
-      pypiMirror      : '',
-      packageToInstall: '',
-      addUpgradeOption: true,
+      mirror           : '',
+      customPIPIndexURL: 'https://pypi.YOUR-PIP-MIRROR.com/simple/',
+      packageToInstall : '',
+      addUpgradeOption : true,
 
       showInstallStatus: false,
       nowMs            : Date.now(),

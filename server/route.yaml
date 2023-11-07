@@ -1237,17 +1237,17 @@ pythonPackageAPI:
     requireSignIn: true
     privilege    : general_w
     body:
-      mirror:
-        $desc: PIP Mirror (e.g. https://pypi.douban.com/simple/)
+      pipIndexURL:
+        $desc: PIP Index URL (e.g. https://pypi.douban.com/simple/)
         $type: string
-      upgrade:
-        $desc: Use upgrade flag
-        $type: boolean
       packages:
         $desc      : Python Packages (e.g. prettytable requests==1.0.0)
         $isRequired: true
         $type      : string
         $minLength : 1
+      upgrade:
+        $desc: Use upgrade flag
+        $type: boolean
 
 # 资源文件 API
 resourceAPI:

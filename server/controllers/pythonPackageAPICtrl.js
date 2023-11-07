@@ -95,9 +95,9 @@ exports.clearInstallStatus = function(req, res, next) {
 };
 
 exports.install = function(req, res, next) {
-  var mirror   = req.body.mirror;
-  var upgrade  = req.body.upgrade;
-  var packages = req.body.packages.trim().split(/\s+/);
+  var pipIndexURL = req.body.pipIndexURL;
+  var packages    = req.body.packages.trim().split(/\s+/);
+  var upgrade     = req.body.upgrade;
 
   // 安装进度
   var installStatusCacheKey = toolkit.getCacheKey('cache', 'pythonPackageInstallStatus');
@@ -127,8 +127,8 @@ exports.install = function(req, res, next) {
         ];
 
         // 启用镜像源
-        if (toolkit.notNothing(mirror)) {
-          cmdArgs.push('-i', mirror);
+        if (toolkit.notNothing(pipIndexURL)) {
+          cmdArgs.push('-i', pipIndexURL);
         }
 
         // 启用 upgrade 标记

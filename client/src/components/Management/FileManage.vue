@@ -11,7 +11,7 @@ Archive in zip: 压缩为 zip
 Archive in 7z : 压缩为 7z
 Archive in tar: 压缩为 tar
 Package       : Wheel 包
-Mirror        : PIP 镜像
+PIP Mirror    : PIP 镜像
 
 File uploaded                    : 文件已上传
 'Wheel package installed: {name}': Wheel 包已安装：{name}
@@ -209,8 +209,8 @@ File already existed                                                            
               <el-input :disabled="true" :value="wheelToInstall"></el-input>
             </el-form-item>
 
-            <el-form-item :label="$t('Mirror')">
-              <el-select v-model="pypiMirror">
+            <el-form-item :label="$t('PIP Mirror')">
+              <el-select v-model="pipIndexURL">
                 <el-option v-for="mirror in C.PIP_MIRROR" :label="mirror.name" :key="mirror.key" :value="mirror.value"></el-option>
               </el-select>
             </el-form-item>
@@ -569,7 +569,7 @@ export default {
     },
     openInstallWheel(name) {
       this.wheelToInstall = name;
-      this.pypiMirror     = this.C.PIP_MIRROR_DEFAULT.value;
+      this.pipIndexURL    = this.C.PIP_MIRROR_DEFAULT.value;
 
       this.showInstallWheel = true;
     },
@@ -583,8 +583,8 @@ export default {
 
       let apiRes = await this.T.callAPI('post', '/api/v1/python-packages/do/install', {
         body : {
-          mirror  : this.pypiMirror,
-          packages: this.getPath(name),
+          pipIndexURL: this.pipIndexURL,
+          packages   : this.getPath(name),
         },
         alert: { okMessage: this.$t('Wheel package installed: {name}', { name: name }) },
       });
@@ -637,7 +637,7 @@ export default {
 
       showInstallWheel : false,
       wheelToInstall   : '',
-      pypiMirror       : '',
+      pipIndexURL      : '',
 
       isProcessing: false,
       progressTip : '',
