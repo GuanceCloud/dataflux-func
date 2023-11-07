@@ -127,22 +127,31 @@ function _isFuncArgumentPlaceholder(v) {
 };
 
 function _assignFuncCallKwargs(destFuncCallKwargs, srcFuncCallKwargs) {
-  for (var k in srcFuncCallKwargs) {
+  var allKeys = toolkit.noDuplication(Object.keys(destFuncCallKwargs).concat(Object.keys(srcFuncCallKwargs)));
+  allKeys.forEach(function(k) {
     var baseV  = destFuncCallKwargs[k];
     var inputV = srcFuncCallKwargs[k];
 
-    if (_isFuncArgumentPlaceholder(baseV) || baseV === undefined) {
-      // 占位符 /  额外参数，可以合并
+    if (baseV === undefined && inputV !== undefined) {
+      // 额外参数，合并
       destFuncCallKwargs[k] = inputV;
 
-    } else {
+    } else if (_isFuncArgumentPlaceholder(baseV) && inputV !== undefined) {
+      // 占位符，可以合并
+      destFuncCallKwargs[k] = inputV;
+
+    } else if (baseV !== undefined && inputV !== undefined) {
       // 已经指定了固定参数值的，不允许额外传递
       throw new E('EClientBadRequest', 'Cannot specify a fixed kwargs field', {
         kwargsField: k,
         kwargsValue: inputV,
       });
+
+    } else if (_isFuncArgumentPlaceholder(baseV) && inputV === undefined) {
+      // 参数未传递
+      delete destFuncCallKwargs[k];
     }
-  }
+  });
 
   return destFuncCallKwargs;
 };
