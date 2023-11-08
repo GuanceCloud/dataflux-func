@@ -1626,7 +1626,7 @@ class FuncBaseTask(BaseTask):
             '_DFF_ETA'              : self.eta,
             '_DFF_DELAY'            : self.delay,
             '_DFF_CRONTAB'          : self.kwargs.get('crontab'),
-            '_DFF_CRONTAB_DELAY'    : self.kwargs.get('crontabDelay'),
+            '_DFF_CRONTAB_DELAY'    : self.kwargs.get('crontabDelay') or 0,
             '_DFF_CRONTAB_EXEC_MODE': self.kwargs.get('crontabExecMode'),
             '_DFF_QUEUE'            : self.queue,
             '_DFF_HTTP_REQUEST'     : self.http_request,
