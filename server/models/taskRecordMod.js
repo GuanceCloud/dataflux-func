@@ -23,7 +23,7 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   },
 
   defaultOrders: [
-    {field: 'task.seq', method: 'DESC'},
+    {field: 'task.triggerTimeMs', method: 'DESC'},
   ],
 };
 

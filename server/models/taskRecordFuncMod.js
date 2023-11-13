@@ -23,7 +23,7 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   },
 
   defaultOrders: [
-    {field: 'task.seq', method: 'DESC'},
+    {field: 'task.triggerTimeMs', method: 'DESC'},
   ],
 };
 
@@ -62,7 +62,6 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('  ON func.id = task.funcId');
 
   options.baseSQL = sql.toString();
-  options.orders  = [ { field: 'task.seq', method: 'DESC' } ];
 
   if (options.filters['task.rootTaskId'] && options.filters['task.rootTaskId'].eq) {
     options.filters['task.rootTaskId'] = {
