@@ -235,19 +235,14 @@ export async function getFuncList(options) {
   scriptSets.sort(T.scriptSetSorter);
 
   let result = { map: funcMap };
-  if (options.scriptLibOnly) {
+  if (options.scriptLibOnly || blueprints.length <= 0) {
     result.cascader = scriptSets;
+
   } else {
     result.cascader = [
-      {
-        label: app.$t('Script Lib'),
-        children: scriptSets,
-      },
-      {
-        label: app.$t('Blueprint'),
-        children: blueprints,
-      }
-    ]
+      { label: app.$t('Script Lib'), children: scriptSets },
+      { label: app.$t('Blueprint'),  children: blueprints },
+    ];
   }
 
   return result;
