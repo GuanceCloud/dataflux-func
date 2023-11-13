@@ -29,10 +29,12 @@ GUANCE_DATA_STATUS_MAP = {
 }
 
 class TaskInLockedException(Exception):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__('Task In Lock')
 
 class TaskTimeoutException(Exception):
-    pass
+    def __init__(self, *args, **kwargs):
+        super().__init__('Task Timeout')
 
 class BaseTask(object):
     '''
