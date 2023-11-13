@@ -50,6 +50,7 @@
     a:focus,
     a:visited {
       color          : #ff6600;
+      font-weight    : bold;
       cursor         : pointer;
       text-decoration: none !important;
     }
@@ -139,6 +140,10 @@
     .el-message-box {
       width: 600px;
     }
+    .tip-link {
+      position: relative;
+      top: 5px;
+    }
   </style>
   <body>
     <div id="app">
@@ -178,7 +183,7 @@
               <li>
                 <span v-html="$t('Keep the option <code>innodb_large_prefix</code> <strong>ON</strong> in MySQL 5.7')"></span>
                 <br>
-                <a target="_blank" href="https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_large_prefix">{{ $t('(Official MySQL 5.7 doc)') }}</a>
+                <a href="https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_large_prefix" target="_blank">{{ $t('(Official MySQL 5.7 doc)') }}</a>
               </li>
               <li v-html="$t('Redis 5.0 or above, at least 1 GB available memory and <strong>NOT</strong> running in Cluster Mode')"></li>
             </ul>
@@ -266,6 +271,7 @@
                     <el-option :label="$t('Do not create Guance connector')" :value="null"></el-option>
                     <el-option v-for="node in GUANCE_NODES" :label="$t(node.name_en)" :value="node.key"></el-option>
                   </el-select>
+                  <a class="tip-link" href="https://func.guance.com/doc/ui-guide-development-module-guance-node/" target="_blank">{{ $t('Cannot find the Guance Node you need?') }}</a>
                 </div>
                 <p>
                   {{ $t('Provide Guance API Key to create a Guance connector automatically') }}
@@ -725,6 +731,7 @@
         'Enter the administrator password again': '请再输入一遍管理员密码',
 
         'Guance Node': '观测云节点',
+        'Cannot find the Guance Node you need?': '找不到需要的观测云节点？',
         'Do not create Guance connector': '不要创建观测云连接器',
         'Provide Guance API Key to create a Guance connector automatically': '请提供观测云 API Key 来自动创建观测云连接器',
 

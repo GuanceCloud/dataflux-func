@@ -78,8 +78,7 @@ RUN npm ci --registry=http://registry.npmmirror.com --disturl=http://npmmirror.c
 # 构建项目
 WORKDIR /usr/src/app
 COPY . .
-RUN wget https://func.guance.com/guance-node-names.json --no-use-server-timestamps -O /usr/src/app/guance-node-names.json && \
-    wget https://urls.guance.com/                       --no-use-server-timestamps -O /usr/src/app/guance-node-urls.json  && \
+RUN wget https://urls.guance.com/ --no-use-server-timestamps -O /usr/src/app/guance-node-urls.json  && \
     ln -s /usr/src/base/node_modules ./node_modules && \
     ln -s /usr/src/base/client/node_modules ./client/node_modules && \
     cd /usr/src/app/client && \

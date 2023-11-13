@@ -224,25 +224,23 @@ common.replaceImportDataOrigin = function(importData, origin, originId) {
 };
 
 common.getGuanceNodes = function() {
-  var guanceNodeNames = toolkit.safeReadFileSync(path.join(__dirname, '../../guance-node-names.json'), 'json');
-  var guanceNodeUrls  = toolkit.safeReadFileSync(path.join(__dirname, '../../guance-node-urls.json'),  'json');
+  var guanceNodeUrls = toolkit.safeReadFileSync(path.join(__dirname, '../../guance-node-urls.json'), 'json').urls || {};
 
   var guanceNodes = [];
 
   // 转换格式
-  var urls = guanceNodeUrls.urls || {};
-  for (var key in urls) {
-    var url = urls[key];
+  for (var key in guanceNodeUrls) {
+    var urlMap = guanceNodeUrls[key];
 
-    var name    = (guanceNodeNames[key] || {}).name    || url.name;
-    var name_en = (guanceNodeNames[key] || {}).name_en || url.name_en || name;
+    var name    = urlMap.name    || key;
+    var name_en = urlMap.name_en || name;
     guanceNodes.push({
       'key'      : key,
       'name'     : name,
       'name_en'  : name_en,
-      'openapi'  : url.open_api  || url.openapi || null,
-      'websocket': url.websocket || null,
-      'openway'  : url.openway   || null,
+      'openapi'  : urlMap.open_api  || urlMap.openapi || null,
+      'websocket': urlMap.websocket || null,
+      'openway'  : urlMap.openway   || null,
     });
   }
 

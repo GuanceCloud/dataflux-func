@@ -26,6 +26,54 @@ class GuanceOpenAPI(object):
         header = { 'DF-API-KEY': self.api_key_id }
         return header
 
+    @property
+    def is_api_key_valid(self):
+        try:
+            access_key_list = self.do_get(f'/api/v1/workspace/accesskey/list')['content']
+            matched_data = filter(lambda d: d['ak'] == self.api_key_id and d['sk'] == self.api_key, access_key_list)
+            return len(list(matched_data)) > 0
+
+        except Exception as e:
+            return False
+
+    @property
+    def is_api_key_match(self):
+        '''
+        兼容处理
+        '''
+        return self.is_api_key_valid()
+
+    @property
+    def workspace(self):
+        '''
+        工作空间信息
+        '''
+        if not self._workspace:
+            self._workspace = self.do_get('/api/v1/workspace/get')['content']
+
+        return self._workspace
+
+    @property
+    def workspace_uuid(self):
+        '''
+        工作空间 ID
+        '''
+        return self.workspace['uuid']
+
+    @property
+    def workspace_token(self):
+        '''
+        工作空间 Token
+        '''
+        return self.workspace['token']
+
+    @property
+    def workspace_language(self):
+        '''
+        工作空间语言
+        '''
+        return self.workspace.get('language') or 'zh'
+
     def do_get(self, path, query=None):
         '''
         发送 GET 请求
@@ -102,44 +150,3 @@ class GuanceOpenAPI(object):
             raise e
 
         return func_resp['data']['result']
-
-    @property
-    def workspace(self):
-        '''
-        工作空间信息
-        '''
-        if not self._workspace:
-            self._workspace = self.do_get('/api/v1/workspace/get')['content']
-
-        return self._workspace
-
-    @property
-    def workspace_uuid(self):
-        '''
-        工作空间 ID
-        '''
-        return self.workspace['uuid']
-
-    @property
-    def workspace_token(self):
-        '''
-        工作空间 Token
-        '''
-        return self.workspace['token']
-
-    @property
-    def is_api_key_match(self):
-        try:
-            access_key_list = self.do_get(f'/api/v1/workspace/accesskey/list')['content']
-            matched_data = filter(lambda d: d['ak'] == self.api_key_id and d['sk'] == self.api_key, access_key_list)
-            return len(list(matched_data)) > 0
-
-        except Exception as e:
-            return False
-
-    @property
-    def workspace_language(self):
-        '''
-        工作空间语言
-        '''
-        return self.workspace.get('language') or 'zh'

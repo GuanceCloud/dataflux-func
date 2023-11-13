@@ -2,40 +2,40 @@
 Add Connector  : 添加连接器
 Setup Connector: 配置连接器
 
-Compatibility               : 兼容性
-Connector Development Doc   : 连接器开发文档
-Python SDK used by Connector: 连接器所使用的 Python SDK
-Node SDK used by Subscriber : 订阅器所使用的 Node SDK
-Guance Node                 : 观测云节点
-Name in Guance              : 观测云中名称
-OpenAPI URL                 : OpenAPI 地址
-WebSocket URL               : WebSocket 地址
-OpenWay URL                 : OpenWay 地址
-API Key ID                  : API Key ID
-API Key                     : API Key
-Host                        : 主机
-Port                        : 端口
-Servers                     : 服务器列表
-Protocol                    : 协议
-Source                      : 源
-Database                    : 数据库
-User                        : 用户
-Password                    : 密码
-Auth Type                   : 认证类型
-Charset                     : 编码
-Client ID                   : 客户端 ID
-Group ID                    : 分组 ID
-Security Protocol           : 安全协议
-SASL Mechanisms             : SASL 机制
-Multi Sub                   : 多订阅器
-Sub Offset                  : 订阅 Offset
-'Topic/Handler'             : 主题 / 处理函数
-Topic                       : 主题
-Handler Func                : 处理函数
-No Recent Message           : 无近期消息
-Recent Message              : 近期消息
-'Add Topic / Handler'       : 添加主题 / 处理函数
-Test connection             : 测试连通性
+Compatibility                   : 兼容性
+Connector Development Doc       : 连接器开发文档
+Python SDK used in the Connector: 本连接器所使用的 Python SDK
+Node SDK used in the Subscriber : 本订阅器所使用的 Node SDK
+Guance Node                     : 观测云节点
+Name in Guance                  : 观测云中名称
+OpenAPI URL                     : OpenAPI 地址
+WebSocket URL                   : WebSocket 地址
+OpenWay URL                     : OpenWay 地址
+API Key ID                      : API Key ID
+API Key                         : API Key
+Host                            : 主机
+Port                            : 端口
+Servers                         : 服务器列表
+Protocol                        : 协议
+Source                          : 源
+Database                        : 数据库
+User                            : 用户
+Password                        : 密码
+Auth Type                       : 认证类型
+Charset                         : 编码
+Client ID                       : 客户端 ID
+Group ID                        : 分组 ID
+Security Protocol               : 安全协议
+SASL Mechanisms                 : SASL 机制
+Multi Sub                       : 多订阅器
+Sub Offset                      : 订阅 Offset
+'Topic/Handler'                 : 主题 / 处理函数
+Topic                           : 主题
+Handler Func                    : 处理函数
+No Recent Message               : 无近期消息
+Recent Message                  : 近期消息
+'Add Topic / Handler'           : 添加主题 / 处理函数
+Test connection                : 测试连通性
 
 Received Time   : 接收时间
 Received Message: 接收消息
@@ -61,6 +61,7 @@ Please input Websocket URL                           : 请输入 WebSocket 地�
 Please input OpenWay URL                             : 请输入 OpenWay 地址
 Please input API Key ID                              : 请输入 API Key ID
 Please input API Key                                 : 请输入 API Key
+Cannot find the Guance Node you need?                : 找不到需要的观测云节点？
 'Should start with http:// or https://'              : '必须以 http:// 或 https:// 开头'
 Please input host                                    : 请输入主机地址
 Please input port                                    : 请输入主机端口
@@ -155,14 +156,14 @@ This is a built-in Connector, please contact the admin to change the config: 当
                 <template v-if="C.CONNECTOR_MAP.get(selectedType).links.pypi">
                   <el-link :href="C.CONNECTOR_MAP.get(selectedType).links.pypi" target="_blank">
                     <i class="fa fa-fw fa-external-link"></i>
-                    {{ $t('Python SDK used by Connector') }}
+                    {{ $t('Python SDK used in the Connector') }}
                   </el-link>
                   <br>
                 </template>
                 <template v-if="C.CONNECTOR_MAP.get(selectedType).links.npm">
                   <el-link :href="C.CONNECTOR_MAP.get(selectedType).links.npm" target="_blank">
                     <i class="fa fa-fw fa-external-link"></i>
-                    {{ $t('Node SDK used by Subscriber') }}
+                    {{ $t('Node SDK used in the Subscriber') }}
                   </el-link>
                   <br>
                 </template>
@@ -196,6 +197,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
                   <el-option v-for="node in guanceNodes"
                     :label="node[`name_${$i18n.locale}`] || node.name" :key="node.key" :value="node.key"></el-option>
                 </el-select>
+                <el-link type="primary" href="https://func.guance.com/doc/ui-guide-development-module-guance-node/" target="_blank">{{ $t('Cannot find the Guance Node you need?') }}</el-link>
               </el-form-item>
               <el-form-item :label="$t('OpenAPI URL')" v-show="form.configJSON.guanceNode === 'private'" v-if="hasConfigField(selectedType, 'guanceOpenAPIURL')" prop="configJSON.guanceOpenAPIURL">
                 <el-input
