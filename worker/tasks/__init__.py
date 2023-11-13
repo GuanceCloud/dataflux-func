@@ -241,7 +241,7 @@ class BaseTask(object):
         if not self.exception:
             return None
 
-        return str(self.exception)
+        return str(self.exception) or self.exception_type
 
     def lock(self, max_age=None):
         max_age = int(max_age or 30)
