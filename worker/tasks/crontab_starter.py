@@ -105,7 +105,7 @@ class CrontabStarter(BaseTask):
         crontab_configs = filter(self.filter_crontab_config, crontab_configs)
         return crontab_configs, latest_seq
 
-    def put_tasks(self, tasks):
+    def put_tasks(self, tasks, ignore_crontab_delay=False):
         tasks = toolkit.as_array(tasks)
         if not tasks:
             return
@@ -125,17 +125,21 @@ class CrontabStarter(BaseTask):
             # 确定执行队列
             queue = crontab_config['funcExtraConfig'].get('queue') or CONFIG['_FUNC_TASK_QUEUE_CRONTAB']
 
-            # 多次执行
-            delay_list = crontab_config['funcExtraConfig'].get('delayedCrontab') or delay or 0
+            # Crontab 多次执行
+            delayed_crontab = crontab_config['funcExtraConfig'].get('delayedCrontab')
+            if ignore_crontab_delay:
+                delayed_crontab = 0
+
+            delay_list = delayed_crontab or delay or 0
             delay_list = toolkit.as_array(delay_list)
 
-            for delay in delay_list:
+            for _delay in delay_list:
                 # 定时任务锁
                 crontab_lock_key = toolkit.get_cache_key('lock', 'CrontabConfig', tags=[
                         'crontabConfigId', crontab_config['id'],
                         'funcId',          crontab_config['funcId'],
                         'execMode',        exec_mode,
-                        'crontabDelay',    delay])
+                        'crontabDelay',    _delay])
 
                 crontab_lock_value = toolkit.gen_uuid()
 
@@ -148,7 +152,7 @@ class CrontabStarter(BaseTask):
                         'origin'          : origin,
                         'originId'        : origin_id,
                         'crontab'         : crontab_config['crontab'],
-                        'crontabDelay'    : delay,
+                        'crontabDelay'    : _delay,
                         'crontabLockKey'  : crontab_lock_key,   # 后续在 Func.Runner 中锁定 / 解锁
                         'crontabLockValue': crontab_lock_value, # 后续在 Func.Runner 中锁定 / 解锁
                         'crontabExecMode' : exec_mode,
@@ -157,7 +161,7 @@ class CrontabStarter(BaseTask):
                     'triggerTime': self.trigger_time,
 
                     'queue'          : queue,
-                    'delay'          : delay,
+                    'delay'          : _delay,
                     'timeout'        : timeout,
                     'expires'        : expires,
                     'taskRecordLimit': crontab_config.get('taskRecordLimit'),
@@ -257,4 +261,4 @@ class CrontabManualStarter(CrontabStarter):
             'originId'     : crontab_config['id'],
             'execMode'     : 'manual',
         }
-        self.put_tasks(task)
+        self.put_tasks(task, ignore_crontab_delay=True)
