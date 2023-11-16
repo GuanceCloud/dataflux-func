@@ -13,7 +13,7 @@ import traceback
 
 # Project Modules
 from worker.utils import toolkit, yaml_resources
-from worker.tasks import TaskInLockedException
+from worker.tasks import PreviousTaskNotFinishedException
 from worker.tasks.func import FuncBaseTask, BaseFuncResponse, FuncResponse, FuncResponseLargeData, NotFoundException
 
 CONFIG = yaml_resources.get('CONFIG')
@@ -213,7 +213,7 @@ class FuncRunner(FuncBaseTask):
 
         if crontab_lock_key and crontab_lock_value:
             if not self.cache_db.lock(crontab_lock_key, crontab_lock_value, self.timeout):
-                raise TaskInLockedException(f'Previou task not finished.')
+                raise PreviousTaskNotFinishedException()
 
         # 用于函数缓存
         self.func_call_kwargs_md5 = kwargs.get('funcCallKwargsMD5')

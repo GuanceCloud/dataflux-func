@@ -28,13 +28,13 @@ GUANCE_DATA_STATUS_MAP = {
     'success': 'ok',
 }
 
-class TaskInLockedException(Exception):
+class PreviousTaskNotFinishedException(Exception):
     def __init__(self, *args, **kwargs):
-        super().__init__('Task In Lock')
+        super().__init__('Previous task not finished, skip current task')
 
 class TaskTimeoutException(Exception):
     def __init__(self, *args, **kwargs):
-        super().__init__('Task Timeout')
+        super().__init__('Task execution takes too much time and has been interrupted by force')
 
 class BaseTask(object):
     '''
@@ -252,7 +252,7 @@ class BaseTask(object):
         lock_value = toolkit.gen_uuid()
 
         if not self.cache_db.lock(lock_key, lock_value, max_age):
-            raise TaskInLockedException(f"Task `{self.name}` already launched.")
+            raise PreviousTaskNotFinishedException()
 
         self._lock_key   = lock_key
         self._lock_value = lock_value
@@ -433,7 +433,7 @@ class BaseTask(object):
             self.logger.info(f'[START] {self.name}')
             self.result = self.run(**self.kwargs)
 
-        except TaskInLockedException as e:
+        except PreviousTaskNotFinishedException as e:
             # 任务重复运行错误，警告即可
             self.status = 'skip'
             self.exception = e
