@@ -115,7 +115,7 @@ class CrontabStarter(BaseTask):
             crontab_config = t.get('crontabConfig')
             origin         = t.get('origin')
             origin_id      = t.get('originId')
-            delay          = t.get('delay')
+            delay          = t.get('delay') or 0
             exec_mode      = t.get('execMode', 'crontab')
 
             # 超时时间 / 过期时间
@@ -127,11 +127,11 @@ class CrontabStarter(BaseTask):
 
             # Crontab 多次执行
             delayed_crontab = crontab_config['funcExtraConfig'].get('delayedCrontab')
-            if ignore_crontab_delay:
-                delayed_crontab = 0
+            delayed_crontab = toolkit.as_array(delayed_crontab)
+            if not delayed_crontab or ignore_crontab_delay:
+                delayed_crontab = [ 0 ]
 
-            delay_list = delayed_crontab or delay or 0
-            delay_list = toolkit.as_array(delay_list)
+            delay_list = list(map(lambda x: x + delay, delayed_crontab))
 
             for _delay in delay_list:
                 # 定时任务锁

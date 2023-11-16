@@ -51,6 +51,7 @@ services:
       - datafluxfunc
     volumes:
       - "<INSTALL_DIR>/redis:/data"
+    command: --stop-writes-on-bgsave-error yes
   # REDIS END
 
   # WORKER DEFAULT START
