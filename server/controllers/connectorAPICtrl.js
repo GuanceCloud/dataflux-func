@@ -453,7 +453,7 @@ exports.query = function(req, res, next) {
           return asyncCallback();
         }
       }
-      return res.locals.cacheDB.pushTask(taskReq);
+      return res.locals.cacheDB.putTask(taskReq);
     },
   ], function(err) {
     if (err) return next(err);
