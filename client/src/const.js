@@ -764,6 +764,12 @@ kafka.publish(topic='some_topic', message='some_message')`,
         tagType: 'warning',
         icon   : 'el-icon-d-arrow-right',
       },
+      {
+        key    : 'pending',
+        name   : $t('Pending'),
+        tagType: 'info',
+        icon   : 'el-icon-loading',
+      }
     ];
   },
   get TASK_STATUS_MAP() {

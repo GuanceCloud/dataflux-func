@@ -234,6 +234,13 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
+      // 按照触发时间倒序排列（此处仅为前端观赏性排序，DB 侧不适宜基于触发时间排序）
+      apiRes.data.sort(function(a, b) {
+        if (a.triggerTimeMs < b.triggerTimeMs) return 1;
+        else if (a.triggerTimeMs > b.triggerTimeMs) return -1;
+        else return 0;
+      });
+
       apiRes.data.forEach(d => {
         // 判断是否存在主、子任务
         if (d.subTaskCount > 0 || d.rootTaskId !== 'ROOT') {
