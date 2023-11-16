@@ -143,6 +143,8 @@ class CrontabStarter(BaseTask):
 
                 crontab_lock_value = toolkit.gen_uuid()
 
+                self.logger.debug(f"[TASK REQ] funcId=`{crontab_config['funcId']}`, origin=`{origin}/{origin_id}`, queue=`{queue}`, delay=`{_delay}`")
+
                 # 任务请求
                 task_reqs.append({
                     'name': 'Func.Runner',
