@@ -285,7 +285,7 @@ export default {
     },
 
     featureNameWidth_leftSidebar() {
-      switch(this.$store.state.uiLocale) {
+      switch(this.$store.getters.uiLocale) {
         case 'en':
           return '90px';
 
@@ -295,7 +295,7 @@ export default {
       }
     },
     featureNameWidth_management() {
-      switch(this.$store.state.uiLocale) {
+      switch(this.$store.getters.uiLocale) {
         case 'en':
           return '200px';
 

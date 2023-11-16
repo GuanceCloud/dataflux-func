@@ -1,5 +1,5 @@
 <i18n locale="en" lang="yaml">
-overviewCountUnit   : ''
+overviewCountUnit   : ' '
 workerCount         : 'NO Worker | {n} Worker | {n} Workers'
 processCount        : 'NO Process | {n} Process | {n} Processes'
 taskCount           : 'NO Task | {n} Task | {n} Tasks'
@@ -194,7 +194,10 @@ export default {
 
       let _query = null;
       if (this.T.notNothing(sections)) {
-        _query = { sections: sections.join(',') };
+        _query = {
+          _lang   : this.$store.getters.uiLocale,
+          sections: sections.join(','),
+        };
       }
       let apiRes = await this.T.callAPI_get('/api/v1/func/overview', {
         query: _query,
@@ -204,6 +207,14 @@ export default {
 
       (sections || this.OVERVIEW_SECTIONS).forEach(s => {
         this[s] = apiRes.data[s];
+
+        if (s === 'latestOperations') {
+          // 提取对应语言
+          this[s].forEach(d => {
+            d.reqRouteName = d.reqRouteNames[this.$store.getters.uiLocale]
+                          || d.reqRouteNames.default;
+          });
+        }
       });
 
       this.$store.commit('updateLoadStatus', true);

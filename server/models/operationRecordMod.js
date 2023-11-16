@@ -75,7 +75,12 @@ EntityModel.prototype.list = function(options, callback) {
           // 已删除的接口忽略
           if (!route) return;
 
-          d.reqRouteName = route.name || '未知操作';
+          var rawAPIName = d.reqRouteName || `${route.reqMethod} ${route.reqRoute}`;
+          d.reqRouteNames = {
+            'en'     : route.name      || rawAPIName,
+            'zh-CN'  : route.name_zhCN || rawAPIName,
+            'default': route.name_zhCN || rawAPIName,
+          }
 
           if (!d.username) {
             d.username = route.privilege ? '系统内部调用' : '匿名用户';

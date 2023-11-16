@@ -141,6 +141,11 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
+      // 提取对应语言
+      apiRes.data.forEach(d => {
+        d.reqRouteName = d.reqRouteNames[this.$store.getters.uiLocale]
+                      || d.reqRouteNames.default;
+      });
 
       this.data = apiRes.data;
       this.pageInfo = apiRes.pageInfo;
