@@ -369,10 +369,10 @@ class RedisHelper(object):
         return self.run('llen', key)
 
     def lrange(self, key, start, stop):
-        return self.run('lrange', key, start, stop);
+        return self.run('lrange', key, start, stop)
 
     def ltrim(self, key, start, stop):
-        return self.run('ltrim', key, start, stop);
+        return self.run('ltrim', key, start, stop)
 
     def rpoplpush(self, key, dest_key=None):
         if dest_key is None:

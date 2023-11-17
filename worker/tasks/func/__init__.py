@@ -1399,10 +1399,9 @@ class FuncBaseTask(BaseTask):
         line = f'[{message_time}] [+{delta}ms] {message}'
         safe_scope['DFF'].print_logs.append(line)
 
-    def _print(self, safe_scope, *args, **kwargs):
-        if safe_scope.get('_DFF_DEBUG'):
-            print(*args, **kwargs)
+        return line
 
+    def _print(self, safe_scope, *args, **kwargs):
         try:
             value_list = []
             for arg in args:
@@ -1411,7 +1410,13 @@ class FuncBaseTask(BaseTask):
             sep = kwargs.get('sep') or ' '
             message = sep.join(value_list)
 
-            self._log(safe_scope, message)
+            log_line = self._log(safe_scope, message)
+
+            if self.origin and self.origin_id and CONFIG['_FUNC_TASK_LIVE_LOG_LIMIT'] > 0:
+                live_log_cache_key = toolkit.get_cache_key('cache', 'liveLog', ['origin', self.origin, 'originId', self.origin_id])
+                self.cache_db.push(live_log_cache_key, log_line)
+                self.cache_db.ltrim(live_log_cache_key, 0, CONFIG['_FUNC_TASK_LIVE_LOG_LIMIT'] - 1)
+                self.cache_db.expire(live_log_cache_key, CONFIG['_FUNC_TASK_LIVE_LOG_EXPIRES'])
 
         except Exception as e:
             for line in traceback.format_exc().splitlines():
