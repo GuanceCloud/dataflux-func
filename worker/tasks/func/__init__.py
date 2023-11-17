@@ -877,6 +877,43 @@ class FuncConfigHelper(object):
     def dict(self):
         return dict([(k, v) for k, v in CONFIG.items() if k.startswith('CUSTOM_')])
 
+class FuncExtraForGuanceHelper(object):
+    def __init__(self, task):
+        self.__task = task
+
+        self._tags   = {}
+        self._fields = {}
+
+    @property
+    def tags(self):
+        return toolkit.json_copy(self._tags) or {}
+
+    @property
+    def fields(self):
+        return toolkit.json_copy(self._fields) or {}
+
+    def set_tags(**data):
+        for k, v in data.items():
+            if v is None:
+                continue
+
+            self._tags[k] = str(v)
+
+    def delete_tags(*keys):
+        for k in keys:
+            self._tags.pop(k, None)
+
+    def set_fields(**data):
+        for k, v in data.items():
+            if v is None:
+                continue
+
+            self._fields[k] = v
+
+    def delete_fields(*keys):
+        for k in keys:
+            self._fields.pop(k, None)
+
 class BaseFuncResponse(object):
     def __init__(self,
                  data=None,
@@ -1078,6 +1115,9 @@ class FuncBaseTask(BaseTask):
         # 脚本 / 脚本环境
         self.script       = None
         self.script_scope = None
+
+        # 用于观测云的额外信息
+        self.extra_for_guance = FuncExtraForGuanceHelper(self)
 
         log_attrs = [
             'func_id',
@@ -1412,11 +1452,8 @@ class FuncBaseTask(BaseTask):
 
             log_line = self._log(safe_scope, message)
 
-            if self.origin and self.origin_id and CONFIG['_FUNC_TASK_LIVE_LOG_LIMIT'] > 0:
-                live_log_cache_key = toolkit.get_cache_key('cache', 'liveLog', ['origin', self.origin, 'originId', self.origin_id])
-                self.cache_db.push(live_log_cache_key, log_line)
-                self.cache_db.ltrim(live_log_cache_key, 0, CONFIG['_FUNC_TASK_LIVE_LOG_LIMIT'] - 1)
-                self.cache_db.expire(live_log_cache_key, CONFIG['_FUNC_TASK_LIVE_LOG_EXPIRES'])
+            # TODO
+            log_live_topic = toolkit.get_cache_key('topic', 'liveLog', ['origin', self.origin, 'originId', self.origin_id])
 
         except Exception as e:
             for line in traceback.format_exc().splitlines():
@@ -1703,6 +1740,9 @@ class FuncBaseTask(BaseTask):
 
             # 方便函数
             'toolkit': ToolkitWrap,
+
+            # 用于观测云的额外信息
+            'EXTRA_FOR_GUANCE': self.extra_for_guance,
         }
         safe_scope['DFF'] = DFFWraper(inject_funcs=inject_funcs)
 

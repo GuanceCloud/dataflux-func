@@ -216,7 +216,6 @@ class FlushDataBuffer(BaseInternalTask):
                 guance_data.append({
                     'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_FUNC_CALL'],
                     'tags': {
-                        'workspace_uuid': d['workspaceUUID'],
                         'script_set_id' : d['scriptSetId'],
                         'script_id'     : d['scriptId'],
                         'func_id'       : func_id,

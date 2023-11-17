@@ -97,11 +97,6 @@ class FuncRunner(FuncBaseTask):
                 'func_id'      : self.func_id,
                 'origin'       : self.origin,
                 'origin_id'    : self.origin_id,
-
-                # 观测云监控器特殊字段
-                'workspace_uuid'       : toolkit.json_find_safe(self.func_call_kwargs, 'workspace_uuid'),
-                'df_monitor_id'        : toolkit.json_find_safe(self.func_call_kwargs, 'monitor_opt.id'),
-                'df_monitor_checker_id': toolkit.json_find_safe(self.func_call_kwargs, 'checker_opt.id'),
             },
             'fields': {
                 'message': self.full_print_logs,
@@ -125,6 +120,11 @@ class FuncRunner(FuncBaseTask):
             },
             'timestamp': int(self.trigger_time),
         }
+
+        # 用于观测云的额外信息
+        data['tags'].update(self.extra_for_guance.tags)
+        data['fields'].update(self.extra_for_guance.fields)
+
         return data
 
     def _buff_task_record_func(self, task_resp):
@@ -175,8 +175,6 @@ class FuncRunner(FuncBaseTask):
             'waitCost'   : self.start_time_ms - self.trigger_time_ms,
             'runCost'    : self.end_time_ms   - self.start_time_ms,
             'totalCost'  : self.end_time_ms   - self.trigger_time_ms,
-
-            'workspaceUUID': toolkit.json_find_safe(self.func_call_kwargs, 'workspace_uuid'),
         }
         cache_key = toolkit.get_cache_key('dataBuffer', 'funcCallCount')
         self.cache_db.push(cache_key, toolkit.json_dumps(data))
