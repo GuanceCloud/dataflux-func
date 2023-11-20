@@ -339,7 +339,7 @@ otherPortableFile_dev:
     - dev
   script:
     # 输出版本号
-    - echo ${CI_COMMIT_SHORT_SHA} >> ${VERSION_FILE}
+    - echo ${CI_COMMIT_SHORT_SHA} > ${VERSION_FILE}
     # 输出完整镜像信息
     - echo DATAFLUX_FUNC_IMAGE=${IMAGE_PUBLIC}-dev:${CI_COMMIT_SHORT_SHA} >> portable/${IMAGE_LIST_FILE}-dev
     # 上传文件
