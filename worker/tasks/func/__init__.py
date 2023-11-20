@@ -1453,7 +1453,10 @@ class FuncBaseTask(BaseTask):
             log_line = self._log(safe_scope, message)
 
             # TODO
-            log_live_topic = toolkit.get_cache_key('topic', 'liveLog', ['origin', self.origin, 'originId', self.origin_id])
+            log_live_topic_flag = toolkit.get_cache_key('topic', 'liveLogFlag', ['origin', self.origin, 'originId', self.origin_id])
+            log_live_topic      = toolkit.get_cache_key('topic', 'liveLog', ['origin', self.origin, 'originId', self.origin_id])
+            if self.cache_db.get(log_live_topic_flag):
+                log_live_topic.publish(log_live_topic, log_line)
 
         except Exception as e:
             for line in traceback.format_exc().splitlines():
