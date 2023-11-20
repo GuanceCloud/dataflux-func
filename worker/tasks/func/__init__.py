@@ -892,25 +892,25 @@ class FuncExtraForGuanceHelper(object):
     def fields(self):
         return toolkit.json_copy(self._fields) or {}
 
-    def set_tags(**data):
+    def set_tags(self, **data):
         for k, v in data.items():
             if v is None:
                 continue
 
             self._tags[k] = str(v)
 
-    def delete_tags(*keys):
+    def delete_tags(self, *keys):
         for k in keys:
             self._tags.pop(k, None)
 
-    def set_fields(**data):
+    def set_fields(self, **data):
         for k, v in data.items():
             if v is None:
                 continue
 
             self._fields[k] = v
 
-    def delete_fields(*keys):
+    def delete_fields(self, *keys):
         for k in keys:
             self._fields.pop(k, None)
 
