@@ -338,7 +338,7 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
         -e "s#<MYSQL_PASSWORD>#${__MYSQL_PASSWORD}#g" \
         -e "s#<MYSQL_IMAGE>#${MYSQL_IMAGE}#g" \
         -e "s#<REDIS_IMAGE>#${REDIS_IMAGE}#g" \
-        -e "s#<DATAFLUX_FUNC_IMAGE>#${DATAFLUX_FUNC_IMAGE}#g" \
+        -e "s#<DATAFLUX_FUNC_IMAGE>#${DATAFLUX_FUNC_IMAGE}:${V}#g" \
         -e "s#<PORT>#${_PORT}#g" \
         -e "s#<INSTALL_DIR>#${_INSTALL_DIR}#g" \
         ${__DOCKER_STACK_FILE}
@@ -347,6 +347,11 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
 
 else
     log "Docker stack file already exists:"
+
+    # 更换版本号
+    sed -i -E \
+        -e "s#pubrepo.jiagouyun.com/dataflux-func/dataflux-func.+#${DATAFLUX_FUNC_IMAGE}#g" \
+        ${__DOCKER_STACK_FILE}
 
     # 为 MySQL 服务添加 TLS 版本
     if [ `grep "\-\-tls\-version" ${__DOCKER_STACK_FILE} | wc -l` -eq 0 ]; then

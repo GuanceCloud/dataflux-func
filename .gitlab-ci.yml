@@ -35,11 +35,11 @@ portable_dev:
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64
-      -t ${IMAGE_PUBLIC}-dev:latest
+      -t ${IMAGE_PUBLIC}-dev:${CI_COMMIT_SHORT_SHA}
       -f Dockerfile-singleton .
       --load
     # 导出镜像
-    - docker save ${IMAGE_PUBLIC}-dev:latest | gzip > ${IMAGE_GZIP_FILE}
+    - docker save ${IMAGE_PUBLIC}-dev:${CI_COMMIT_SHORT_SHA} | gzip > ${IMAGE_GZIP_FILE}
     # 上传至 OSS
     - tools/ossutil64 cp
       ${IMAGE_GZIP_FILE} ${OSS_WORKDIR_BASE_URL}/portable-dev/x86_64/${IMAGE_GZIP_FILE}
@@ -60,11 +60,11 @@ portable_amd64:
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/amd64
-      -t ${IMAGE_PUBLIC}:latest
+      -t ${IMAGE_PUBLIC}:${CI_COMMIT_REF_NAME}
       -f Dockerfile-singleton .
       --load
     # 导出镜像
-    - docker save ${IMAGE_PUBLIC}:latest | gzip > ${IMAGE_GZIP_FILE}
+    - docker save ${IMAGE_PUBLIC}:${CI_COMMIT_REF_NAME} | gzip > ${IMAGE_GZIP_FILE}
     # 上传至 OSS
     - tools/ossutil64 cp
       ${IMAGE_GZIP_FILE} ${OSS_WORKDIR_BASE_URL}/portable/x86_64/${IMAGE_GZIP_FILE}
@@ -85,11 +85,11 @@ portable_arm64:
     - python echo-image-info.py > image-info.json
     - docker buildx build
       --platform linux/arm64
-      -t ${IMAGE_PUBLIC}-arm64:latest
+      -t ${IMAGE_PUBLIC}-arm64:${CI_COMMIT_REF_NAME}
       -f Dockerfile-singleton .
       --load
     # 导出镜像
-    - docker save ${IMAGE_PUBLIC}-arm64:latest | gzip > ${IMAGE_GZIP_FILE}
+    - docker save ${IMAGE_PUBLIC}-arm64:${CI_COMMIT_REF_NAME} | gzip > ${IMAGE_GZIP_FILE}
     # 上传至 OSS
     - tools/ossutil64
       cp ${IMAGE_GZIP_FILE} ${OSS_WORKDIR_BASE_URL}/portable/aarch64/${IMAGE_GZIP_FILE}
@@ -114,10 +114,10 @@ portable_amd64_GSE:
     - python echo-image-info.py --edition=GSE > image-info.json
     - docker buildx build
       --platform linux/amd64
-      -t ${IMAGE_PUBLIC}-gse:latest
+      -t ${IMAGE_PUBLIC}-gse:${CI_COMMIT_REF_NAME}
       -f Dockerfile-singleton-GSE .
       --load
-    - docker save ${IMAGE_PUBLIC}-gse:latest | gzip > ${IMAGE_GZIP_FILE}
+    - docker save ${IMAGE_PUBLIC}-gse:${CI_COMMIT_REF_NAME} | gzip > ${IMAGE_GZIP_FILE}
     - tools/ossutil64 cp
       ${IMAGE_GZIP_FILE} ${OSS_WORKDIR_BASE_URL}/portable-GSE/x86_64/${IMAGE_GZIP_FILE}
       -f
@@ -140,10 +140,10 @@ portable_arm64_GSE:
     - python echo-image-info.py --edition=GSE > image-info.json
     - docker buildx build
       --platform linux/arm64
-      -t ${IMAGE_PUBLIC}-gse-arm64:latest
+      -t ${IMAGE_PUBLIC}-gse-arm64:${CI_COMMIT_REF_NAME}
       -f Dockerfile-singleton-GSE .
       --load
-    - docker save ${IMAGE_PUBLIC}-gse-arm64:latest | gzip > ${IMAGE_GZIP_FILE}
+    - docker save ${IMAGE_PUBLIC}-gse-arm64:${CI_COMMIT_REF_NAME} | gzip > ${IMAGE_GZIP_FILE}
     - tools/ossutil64
       cp ${IMAGE_GZIP_FILE} ${OSS_WORKDIR_BASE_URL}/portable-GSE/aarch64/${IMAGE_GZIP_FILE}
       -f
@@ -227,7 +227,7 @@ guanceSaaS_testing:
     - python echo-image-info.py --edition=GSE > image-info.json
     - docker buildx build
       --platform linux/amd64
-      -t ${IMAGE_PRIVATE}-gse:${CI_COMMIT_REF_NAME}
+      -t ${IMAGE_PRIVATE}-gse:dev
       -f Dockerfile-singleton-GSE .
       --push
   tags:
@@ -339,7 +339,9 @@ otherPortableFile_dev:
     - dev
   script:
     # 输出版本号
-    - echo ${CI_COMMIT_REF_NAME} > ${VERSION_FILE}
+    - echo ${CI_COMMIT_SHORT_SHA} >> ${VERSION_FILE}
+    # 输出完整镜像信息
+    - echo DATAFLUX_FUNC_IMAGE=${IMAGE_PUBLIC}-dev:${CI_COMMIT_SHORT_SHA} >> portable/${IMAGE_LIST_FILE}-dev
     # 上传文件
     - tools/ossutil64 cp portable/${RUN_PORTABLE_FILE}          ${OSS_WORKDIR_BASE_URL}/portable-dev/${RUN_PORTABLE_FILE}         -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp portable/${DOCKER_STACK_EXAMPLE_FILE}  ${OSS_WORKDIR_BASE_URL}/portable-dev/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
@@ -363,6 +365,9 @@ otherPortableFile_singleton:
   script:
     # 输出版本号
     - echo ${CI_COMMIT_REF_NAME} > ${VERSION_FILE}
+    # 输出完整镜像信息
+    - echo DATAFLUX_FUNC_IMAGE=${IMAGE_PUBLIC}:${CI_COMMIT_REF_NAME}       >> portable/${IMAGE_LIST_FILE}-x86_64
+    - echo DATAFLUX_FUNC_IMAGE=${IMAGE_PUBLIC}-arm64:${CI_COMMIT_REF_NAME} >> portable/${IMAGE_LIST_FILE}-aarch64
     # 上传文件
     - tools/ossutil64 cp portable/${DOWNLOAD_PORTABLE_FILE}     ${OSS_WORKDIR_BASE_URL}/portable/${DOWNLOAD_PORTABLE_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp portable/${RUN_PORTABLE_FILE}          ${OSS_WORKDIR_BASE_URL}/portable/${RUN_PORTABLE_FILE}         -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
@@ -389,6 +394,9 @@ otherPortableFile_singleton_GSE:
   script:
     # 输出版本号
     - echo ${CI_COMMIT_REF_NAME} > ${VERSION_FILE}
+    # 输出完整镜像信息
+    - echo DATAFLUX_FUNC_IMAGE=${IMAGE_PUBLIC}-gse:${CI_COMMIT_REF_NAME}       >> portable/${IMAGE_LIST_FILE}-GSE-x86_64
+    - echo DATAFLUX_FUNC_IMAGE=${IMAGE_PUBLIC}-gse-arm64:${CI_COMMIT_REF_NAME} >> portable/${IMAGE_LIST_FILE}-GSE-aarch64
     # 上传文件
     - tools/ossutil64 cp portable/${RUN_PORTABLE_FILE}           ${OSS_WORKDIR_BASE_URL}/portable-GSE/${RUN_PORTABLE_FILE}         -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp portable/${DOCKER_STACK_EXAMPLE_FILE}   ${OSS_WORKDIR_BASE_URL}/portable-GSE/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}

@@ -1,4 +1,3 @@
 IMAGE_ARCH=aarch64
-DATAFLUX_FUNC_IMAGE=pubrepo.jiagouyun.com/dataflux-func/dataflux-func-gse-arm64:latest
 MYSQL_IMAGE=pubrepo.jiagouyun.com/dataflux-func/mariadb-arm64:10.4.21
 REDIS_IMAGE=pubrepo.jiagouyun.com/dataflux-func/redis-arm64:5.0.7
