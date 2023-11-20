@@ -1439,8 +1439,6 @@ class FuncBaseTask(BaseTask):
         line = f'[{message_time}] [+{delta}ms] {message}'
         safe_scope['DFF'].print_logs.append(line)
 
-        return line
-
     def _print(self, safe_scope, *args, **kwargs):
         try:
             value_list = []
@@ -1450,13 +1448,7 @@ class FuncBaseTask(BaseTask):
             sep = kwargs.get('sep') or ' '
             message = sep.join(value_list)
 
-            log_line = self._log(safe_scope, message)
-
-            # TODO
-            log_live_topic_flag = toolkit.get_cache_key('topic', 'liveLogFlag', ['origin', self.origin, 'originId', self.origin_id])
-            log_live_topic      = toolkit.get_cache_key('topic', 'liveLog', ['origin', self.origin, 'originId', self.origin_id])
-            if self.cache_db.get(log_live_topic_flag):
-                self.cache_db.publish(log_live_topic, log_line)
+            self._log(safe_scope, message)
 
         except Exception as e:
             for line in traceback.format_exc().splitlines():
