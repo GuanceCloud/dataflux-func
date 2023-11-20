@@ -338,7 +338,7 @@ if [ ! -f ${__DOCKER_STACK_FILE} ]; then
         -e "s#<MYSQL_PASSWORD>#${__MYSQL_PASSWORD}#g" \
         -e "s#<MYSQL_IMAGE>#${MYSQL_IMAGE}#g" \
         -e "s#<REDIS_IMAGE>#${REDIS_IMAGE}#g" \
-        -e "s#<DATAFLUX_FUNC_IMAGE>#${DATAFLUX_FUNC_IMAGE}:${V}#g" \
+        -e "s#<DATAFLUX_FUNC_IMAGE>#${DATAFLUX_FUNC_IMAGE}#g" \
         -e "s#<PORT>#${_PORT}#g" \
         -e "s#<INSTALL_DIR>#${_INSTALL_DIR}#g" \
         ${__DOCKER_STACK_FILE}
