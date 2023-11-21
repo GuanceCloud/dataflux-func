@@ -41,7 +41,7 @@ class GuanceOpenAPI(object):
         '''
         兼容处理
         '''
-        return self.is_api_key_valid()
+        return self.is_api_key_valid
 
     @property
     def workspace(self):
