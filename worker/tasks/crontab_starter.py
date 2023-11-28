@@ -131,6 +131,7 @@ class CrontabStarter(BaseTask):
             if not delayed_crontab or ignore_crontab_delay:
                 delayed_crontab = [ 0 ]
 
+            # Crontab 每次运行都添加延迟
             delay_list = list(map(lambda x: x + delay, delayed_crontab))
 
             for _delay in delay_list:
@@ -190,17 +191,16 @@ class CrontabStarter(BaseTask):
             self.put_tasks(tasks)
 
         ### 自动触发配置 ###
-        next_seq      = 0
-        crontab_count = 0
+        next_seq = 0
         while next_seq is not None:
             crontab_configs, next_seq = self.fetch_crontab_configs(next_seq)
 
             tasks = []
             for c in crontab_configs:
-                # 平均分布任务触发事件点
+                # 使用 seq 分布任务执行时间
                 delay = 0
                 if CONFIG['_FUNC_TASK_DISTRIBUTION_RANGE'] > 0:
-                    delay = crontab_count % CONFIG['_FUNC_TASK_DISTRIBUTION_RANGE']
+                    delay = c['seq'] % CONFIG['_FUNC_TASK_DISTRIBUTION_RANGE']
 
                 tasks.append({
                     'crontabConfig': c,
@@ -208,9 +208,6 @@ class CrontabStarter(BaseTask):
                     'originId'     : c['id'],
                     'delay'        : delay,
                 })
-
-                # 自动触发配置记述
-                crontab_count += 1
 
             # 发送任务
             if tasks:
