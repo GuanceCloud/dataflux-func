@@ -191,6 +191,11 @@ export default {
   components: {
   },
   watch: {
+    'form.id'(val) {
+      if (val && (val.length < this.ID_PREFIX.length || val.indexOf(this.ID_PREFIX) < 0)) {
+        this.form.id = this.ID_PREFIX;
+      }
+    },
     show(val) {
       if (!val) {
         this.$root.$emit('reload.authLinkList');
@@ -434,6 +439,7 @@ export default {
             trigger: 'change',
             validator: (rule, value, callback) => {
               if (this.T.notNothing(value)) {
+                console.log(value)
                 if ((value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
                   return callback(new Error(this.$t('ID must starts with "{prefix}"', { prefix: this.ID_PREFIX })));
                 }

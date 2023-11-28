@@ -8,12 +8,12 @@ Basic Example       : 基础示例
 Blank Script        : 空白脚本
 From Example Script : 来自示例脚本
 
-Script ID will be a part of the Func ID: 脚本集 ID 将作为函数 ID 的一部分
+Script Set ID should be a prefix of the Script ID: 脚本集 ID 应作为脚本 ID 的前缀
 
 Please input ID: 请输入 ID
 Only alphabets, numbers and underscore are allowed: 只能包含大小写英文、数字及下划线
 Cannot not starts with a number: 不得以数字开头
-'Script ID should starts with "{prefix}"': '脚本 ID 必须以 "{prefix}" 开头'
+'This Script ID should starts with "{prefix}"': '本脚本 ID 必须以 "{prefix}" 开头'
 
 Script created : 脚本已创建
 Script saved   : 脚本已保存
@@ -50,8 +50,9 @@ This Script is locked by other user ({user}): 当前脚本已被其他用户（{
             <el-form-item label="ID" prop="id" class="script-set-id-field">
               <el-input :disabled="pageMode === 'setup'"
                 maxlength="60"
-                v-model="form.id"></el-input>
-              <InfoBlock :title="$t('Script ID will be a part of the Func ID')" />
+                v-model="form.id">
+              </el-input>
+              <InfoBlock :title="$t('Script Set ID should be a prefix of the Script ID')" />
             </el-form-item>
 
             <el-form-item :label="$t('Title')">
@@ -111,6 +112,11 @@ export default {
     LongTextDialog,
   },
   watch: {
+    'form.id'(val) {
+      if (!val || val.length < this.ID_PREFIX.length || val.indexOf(this.ID_PREFIX) < 0) {
+        this.form.id = this.ID_PREFIX;
+      }
+    }
   },
   methods: {
     doFilter(q) {
@@ -131,7 +137,7 @@ export default {
         this.data = {};
 
         // 【特殊处理】脚本 ID 格式为"<脚本集 ID>__<脚本名>"
-        this.form.id = `${this.scriptSetId}__`;
+        this.form.id = this.ID_PREFIX;
 
         // 加载示例脚本
         let apiRes = await this.T.callAPI_getAll('/api/v1/scripts/do/list', {
@@ -268,6 +274,9 @@ export default {
     },
   },
   computed: {
+    ID_PREFIX() {
+      return `${this.scriptSetId}__`;
+    },
     pageTitle() {
       const _map = {
         setup: this.$t('Setup Script'),
@@ -323,6 +332,7 @@ export default {
       show    : false,
       pageMode: null,
 
+      scriptSetId: '',
       data: {},
 
       templateScriptId: '_basicExample',
@@ -357,10 +367,14 @@ export default {
           {
             trigger: 'change',
             validator: (rule, value, callback) => {
-              let prefix = `${this.scriptSetId}__`;
-              if (value && value.indexOf(prefix) < 0 || value === prefix) {
-                let _message = this.$t('Script ID should starts with "{prefix}"', { scriptSetId: this.scriptSetId, prefix: prefix });
+              if (value && value.indexOf(this.ID_PREFIX) < 0 || value === this.ID_PREFIX) {
+                let _message = this.$t('This Script ID should starts with "{prefix}"', { scriptSetId: this.scriptSetId, prefix: this.ID_PREFIX });
                 return callback(new Error(_message));
+
+              } else if (!(value.slice(this.ID_PREFIX.length).match(/^[^0-9]/g))) {
+                let _message = this.$t('Cannot not starts with a number');
+                return callback(new Error(_message));
+
               }
               return callback();
             },

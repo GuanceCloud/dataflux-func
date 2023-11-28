@@ -7,6 +7,7 @@ shortcutDays  : '{n} day | {n} days'
 Add Crontab Config  : 添加自动触发配置
 Setup Crontab Config: 配置自动触发配置
 
+Customize ID: 定制 ID
 Execute     : 执行
 Arguments   : 参数指定
 Task Record : 任务记录
@@ -47,6 +48,8 @@ Every 30 minutes : 每 30 分钟
 'JSON formated arguments (**kwargs)': 'JSON格式的参数（**kwargs）'
 The Func accepts extra arguments not listed above: 本函数允许传递额外的自定义函数参数
 
+'ID must starts with "{prefix}"': 'ID 必须以"{prefix}"开头'
+'Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed': 只能输入数字、英文、点（.）、下划线（_）以及连字符（-）
 Please select Func: 请选择执行函数
 'Please input arguments, input "{}" when no argument': '请输入参数，无参数时填写 "{}"'
 Only date-time between 1970 and 2037 are allowed: 只能选择1970年至2037年之间的日期
@@ -80,6 +83,17 @@ shortcutDays  : '{n} 天'
       <el-main>
         <div class="setup-form">
           <el-form ref="form" label-width="135px" :model="form" :rules="formRules">
+            <el-form-item :label="$t('Customize ID')" prop="useCustomId" v-if="pageMode === 'add'">
+              <el-switch v-model="useCustomId"></el-switch>
+            </el-form-item>
+
+            <el-form-item label="ID" prop="id" v-show="useCustomId" v-if="pageMode === 'add'">
+              <el-input
+                maxlength="60"
+                v-model="form.id">
+              </el-input>
+            </el-form-item>
+
             <el-form-item :label="$t('Execute')" prop="funcId">
               <el-cascader ref="funcCascader"
                 popper-class="code-font"
@@ -262,9 +276,21 @@ export default {
   components: {
   },
   watch: {
+    'form.id'(val) {
+      if (val && (val.length < this.ID_PREFIX.length || val.indexOf(this.ID_PREFIX) < 0)) {
+        this.form.id = this.ID_PREFIX;
+      }
+    },
     show(val) {
       if (!val) {
         this.$root.$emit('reload.crontabConfigList');
+      }
+    },
+    useCustomId(val) {
+      if (val) {
+        this.form.id = `${this.ID_PREFIX}my-crontab`;
+      } else {
+        this.form.id = null;
       }
     },
   },
@@ -494,6 +520,9 @@ export default {
     },
   },
   computed: {
+    ID_PREFIX() {
+      return 'cron-';
+    },
     CRONTAB_PARTS_MAP() {
       return {
         0: 'minutes',
@@ -646,10 +675,12 @@ export default {
       funcMap     : {},
       funcCascader: [],
 
+      useCustomId: false,
       showAddTag : false,
       newTag     : '',
 
       form: {
+        id                : null,
         funcId            : null,
         funcCallKwargsJSON: null,
         tagsJSON          : [],
@@ -675,6 +706,22 @@ export default {
       },
 
       formRules: {
+        id: [
+          {
+            trigger: 'change',
+            validator: (rule, value, callback) => {
+              if (this.T.notNothing(value)) {
+                if ((value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
+                  return callback(new Error(this.$t('ID must starts with "{prefix}"', { prefix: this.ID_PREFIX })));
+                }
+                if (!value.match(/^[0-9a-zA-Z\.\-\_]+$/g)) {
+                  return callback(new Error(this.$t('Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed')));
+                }
+              }
+              return callback();
+            },
+          }
+        ],
         funcId: [
           {
             trigger : 'blur',

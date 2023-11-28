@@ -13,7 +13,7 @@ Add Batch  : 添加批处理
 Setup Batch: 修改批处理
 
 Customize ID: 定制 ID
-Func        : 执行函数
+Execute     : 执行
 Arguments   : 参数指定
 Task Record : 任务记录
 Keep        : 保留
@@ -156,6 +156,11 @@ export default {
   components: {
   },
   watch: {
+    'form.id'(val) {
+      if (val && (val.length < this.ID_PREFIX.length || val.indexOf(this.ID_PREFIX) < 0)) {
+        this.form.id = this.ID_PREFIX;
+      }
+    },
     show(val) {
       if (!val) {
         this.$root.$emit('reload.batchList');
