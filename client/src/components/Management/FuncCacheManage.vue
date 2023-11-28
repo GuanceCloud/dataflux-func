@@ -1,6 +1,6 @@
 <i18n locale="zh-CN" lang="yaml">
 Type         : 类型
-Never expires: 永不过期
+Never        : 永不过期
 Memory usage : 内存使用
 Show content : 显示内容
 
@@ -73,11 +73,12 @@ See {0} for more information: 查看 {0} 来获取更多信息
             </template>
           </el-table-column>
 
-          <el-table-column label="TTL" sortable sort-by="ttl" width="120">
+          <el-table-column label="TTL" sortable sort-by="ttl" width="180">
             <template slot-scope="scope">
-              <span v-if="scope.row.ttl === -1" class="text-bad">{{ $t('Never expires') }}</span>
+              <span v-if="scope.row.ttl === -1" class="text-bad">{{ $t('Never') }}</span>
               <template v-else>
                 <code class="text-good">{{ scope.row.ttl }}</code>
+                <small class="text-info">{{ $t('(') }}{{ scope.row.ttl * 1000 + Date.now()  | fromNow }}{{ $t(')') }}</small>
               </template>
             </template>
           </el-table-column>

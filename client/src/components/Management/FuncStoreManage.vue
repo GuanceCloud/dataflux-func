@@ -72,13 +72,12 @@ See {0} for more information: 查看 {0} 来获取更多信息
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Expires')" width="120">
+          <el-table-column :label="$t('Expires')" width="180">
             <template slot-scope="scope">
-              <span v-if="!scope.row.expireAtMs" class="text-bad">{{ $t('Never') }}</span>
+              <span v-if="!scope.row.expireAt" class="text-bad">{{ $t('Never') }}</span>
               <template v-else>
-                <span :class="T.isExpired(scope.row.expireAtMs) ? 'text-info' : 'text-good'">{{ scope.row.expireAtMs | datetime }}</span>
-                <br>
-                <span class="text-info">{{ scope.row.expireAtMs | fromNow }}</span>
+                <code :class="T.isExpired(scope.row.expireAt * 1000) ? 'text-bad' : 'text-good'">{{ scope.row.expireAt - parseInt(Date.now() / 1000) }}</code>
+                <small class="text-info">{{ $t('(') }}{{ scope.row.expireAt * 1000 | fromNow }}{{ $t(')') }}</small>
               </template>
             </template>
           </el-table-column>
@@ -135,9 +134,6 @@ export default {
       this.pageInfo = apiRes.pageInfo;
 
       this.data.forEach(d => {
-        if (d.expireAt) {
-          d.expireAtMs = d.expireAt * 1000;
-        }
         if (d.dataSize) {
           d.dataSizeHuman = this.T.byteSizeHuman(d.dataSize);
           d.isOverSized   = d.dataSize > (100 * 1024);

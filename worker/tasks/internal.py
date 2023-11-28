@@ -455,6 +455,14 @@ class AutoClean(BaseInternalTask):
         for cache in CONFIG['_DEPRECATED_CACHE_KEY_PATTERN_LIST']:
             self.clear_cache_key_pattern(toolkit.get_cache_key(**cache))
 
+    def clear_expired_func_store(self):
+        sql = '''
+            DELETE FROM biz_main_func_store
+            WHERE
+                `expireAt` < UNIX_TIMESTAMP()
+            '''
+        self.db.query(sql)
+
     def run(self, **kwargs):
         # 上锁
         self.lock()
@@ -476,6 +484,9 @@ class AutoClean(BaseInternalTask):
 
         # 清理已弃用功能的数据
         self.safe_call(self.clear_deprecated_data)
+
+        # 清理已过期的函数存储
+        self.safe_call(self.clear_expired_func_store)
 
 class AutoBackupDB(BaseInternalTask):
     name = 'Internal.AutoBackupDB'
