@@ -499,34 +499,66 @@ exports.test = function(req, res, next) {
 exports.listSubInfo = function(req, res, next) {
   var connectorId = req.query.connectorId;
 
-  var subInfoList = [];
+  var subInfoMap = {};
 
   async.series([
+    // 查询消费速率
+    function(asyncCallback) {
+      var now = parseInt(Date.now() / 1000);
+      async.times(60, function(n, timesCallback) {
+        var cacheKey = toolkit.getCacheKey('cache', 'recentSubConsumeRate', [ 'timestamp', now - (60 - n)]);
+        res.locals.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
+          if (err) return timesCallback(err);
+
+          for (var ctKey in cacheRes) {
+            subInfoMap[ctKey] = subInfoMap[ctKey] || {};
+            subInfoMap[ctKey].lastMinuteCount = subInfoMap[ctKey].lastMinuteCount || 0;
+            subInfoMap[ctKey].lastMinuteCount += parseInt(cacheRes[ctKey]);
+          }
+
+          return timesCallback();
+        });
+      }, asyncCallback);
+    },
     // 查询最近消费信息
     function(asyncCallback) {
       var cachePattern = toolkit.getCacheKey('cache', 'recentSubConsumeInfo', [
         'connectorId', connectorId || '*',
-        'topic',       '*']);
+        'topic',       '*',
+        'status',      '*']);
       res.locals.cacheDB.getByPattern(cachePattern, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         if (cacheRes) {
           for (var key in cacheRes) {
+            var consumeInfo = JSON.parse(cacheRes[key]);
+
             var parsedKey = toolkit.parseCacheKey(key);
-            subInfoList.push({
-              connectorId: parsedKey.tags.connectorId,
-              topic      : parsedKey.tags.topic,
-              consumeInfo: JSON.parse(cacheRes[key]),
-            });
+            var ctKey     = `${parsedKey.tags.connectorId}/${parsedKey.tags.topic}`;
+
+            subInfoMap[ctKey] = subInfoMap[ctKey] || {};
+            subInfoMap[ctKey].lastConsumed = subInfoMap[ctKey].lastConsumed || {};
+            subInfoMap[ctKey].lastConsumed[consumeInfo.taskResp.status] = consumeInfo;
           }
         }
 
         return asyncCallback();
       });
     },
-    // TODO 支持订阅的连接器展示最近处理结果
   ], function(err) {
     if (err) return next(err);
+
+    // 整理数据
+    var subInfoList = [];
+    for (var ctKey in subInfoMap) {
+      var subInfo = subInfoMap[ctKey];
+
+      var ctKeyParts = ctKey.split('/');
+      subInfo.connectorId = ctKeyParts.shift();
+      subInfo.topic       = ctKeyParts.join('/');
+
+      subInfoList.push(subInfo);
+    }
 
     var ret = toolkit.initRet(subInfoList);
     res.locals.sendJSON(ret);

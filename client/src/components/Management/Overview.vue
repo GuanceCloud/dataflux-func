@@ -194,10 +194,7 @@ export default {
 
       let _query = null;
       if (this.T.notNothing(sections)) {
-        _query = {
-          _lang   : this.$store.getters.uiLocale,
-          sections: sections.join(','),
-        };
+        _query = { sections: sections.join(',') };
       }
       let apiRes = await this.T.callAPI_get('/api/v1/func/overview', {
         query: _query,

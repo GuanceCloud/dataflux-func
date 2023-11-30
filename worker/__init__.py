@@ -127,7 +127,10 @@ def run_background(func, pool_size, max_tasks):
         # 函数包装
         def func_wrap():
             # 执行若干个任务后重启进程
-            for i in range(max_tasks):
+            ran_tasks = 0
+            while max_tasks <= 0 or ran_tasks <= max_tasks:
+                ran_tasks += 1
+
                 # 执行指定函数
                 try:
                     func()

@@ -154,11 +154,11 @@ MQTTHelper.prototype.consume = function(callback) {
     var handler = this.topicHandlerMap[task.handlerKey];
     if (!handler) continue;
 
-    return handler(task.topic, task.message, null, function(err, funcResult) {
+    return handler(task.topic, task.message, null, function(err, taskResp) {
       var handleInfo = {
-        message   : task.message,
-        funcResult: funcResult,
-        error     : err,
+        message : task.message,
+        taskResp: taskResp,
+        error   : err,
       }
       return callback(null, handleInfo);
     });

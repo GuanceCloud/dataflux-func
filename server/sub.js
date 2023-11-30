@@ -31,8 +31,8 @@ var CONNECTOR_TOPIC_FUNC_MAP = {};
 function createMessageHandler(locals, connectorId, handlerFuncId) {
   return function(topic, message, packet, callback) {
     // 发送任务
-    var taskReq    = null;
-    var funcResult = null;
+    var taskReq  = null;
+    var taskResp = null;
     async.series([
       // 生成函数调用配置
       function(asyncCallback) {
@@ -58,26 +58,24 @@ function createMessageHandler(locals, connectorId, handlerFuncId) {
       },
       // 发送任务
       function(asyncCallback) {
-        mainAPICtrl.callFuncRunner(locals, taskReq, function(err, taskResp) {
+        mainAPICtrl.callFuncRunner(locals, taskReq, function(err, _taskResp) {
           locals.logger.debug('[SUB] TOPIC: `{0}` -> FUNC: `{1}`', topic, handlerFuncId);
 
-          if (err) return asyncCallback(err);
-
           // 提取结果
-          try {
-            funcResult = taskResp.result.returnValue;
-          } catch(err) {
-            funcResult = null;
+          taskResp = _taskResp;
+          if (err) {
+            locals.logger.debug('[SUB] FUNC Error: `{0}` -> `{1}`', handlerFuncId, err);
+          } else {
+            locals.logger.debug('[SUB] FUNC {0}: `{1}` -> `{2}`', taskResp.status, handlerFuncId, JSON.stringify(taskResp.result.returnValue))
           }
 
-          locals.logger.debug('[SUB] FUNC: `{0}` -> `{1}`', handlerFuncId, JSON.stringify(funcResult));
-
+          // 函数任务错误不中断
           return asyncCallback();
         });
       },
     ], function(err) {
       if (err) locals.logger.logError(err);
-      return callback(err, funcResult);
+      return callback(err, taskResp);
     });
   }
 };
@@ -163,6 +161,9 @@ exports.runListener = function runListener(app) {
 
             // 连接器信息加入待创建表
             d.configJSON.topicHandlers.forEach(function(th) {
+              // 忽略已禁用的主题
+              if (th.isDisabled) return;
+
               var ctfKey = sortedJSON.sortify({
                 'id'    : d.id,
                 'topic' : th.topic,
@@ -250,7 +251,6 @@ exports.runListener = function runListener(app) {
           if (err) return timesCallback(err);
 
           subWorkerCount = parseInt(cacheRes || 0) || 0;
-
           return asyncCallback();
         });
       },
@@ -278,25 +278,35 @@ exports.runListener = function runListener(app) {
             connector.client.consume(function(err, handleInfo){
               if (err) app.locals.logger.logError(err);
 
-              if (handleInfo) {
+              if (handleInfo && handleInfo.taskResp) {
                 app.locals.logger.debug('CONNECTOR: `{0}` -> consumed', ctfKey);
                 isAnyConsumed = true;
 
-                // 记录最近消费时间
                 var ctfKeyObj = JSON.parse(ctfKey);
+
+                // 记录最近消费时间
                 var cacheKey = toolkit.getCacheKey('cache', 'recentSubConsumeInfo', [
                   'connectorId', ctfKeyObj.id,
-                  'topic',       ctfKeyObj.topic]);
+                  'topic',       ctfKeyObj.topic,
+                  'status',      handleInfo.taskResp.status]);
                 var consumeInfo = JSON.stringify({
-                  connectorId: ctfKeyObj.id,
-                  topic      : ctfKeyObj.topic,
                   funcId     : ctfKeyObj.funcId,
                   timestampMs: Date.now(),
                   message    : handleInfo.message,
-                  funcResult : handleInfo.funcResult,
+                  taskResp   : handleInfo.taskResp,
                   error      : handleInfo.error,
                 });
                 app.locals.cacheDB.setex(cacheKey, CONFIG._SUB_RECENT_CONSUME_EXPIRE, consumeInfo);
+
+                // 记录消费速度
+                var timestamp  = parseInt(Date.now() / 1000);
+                var cacheKey   = toolkit.getCacheKey('cache', 'recentSubConsumeRate', [ 'timestamp', timestamp]);
+                var cacheField = `${ctfKeyObj.id}/${ctfKeyObj.topic}`;
+                app.locals.cacheDB.hincr(cacheKey, cacheField, function(err) {
+                  if (err) return;
+
+                  app.locals.cacheDB.expire(cacheKey, 60 * 2);
+                });
               }
 
               // 出错不停止

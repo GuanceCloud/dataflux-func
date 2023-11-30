@@ -1,4 +1,10 @@
+<i18n locale="en" lang="yaml">
+messageRate: '{n} Message/min | {n} Messages/min'
+</i18n>
+
 <i18n locale="zh-CN" lang="yaml">
+messageRate: '{n} 条/分钟'
+
 Add Connector  : 添加连接器
 Setup Connector: 配置连接器
 
@@ -33,14 +39,16 @@ Sub Offset                      : 订阅 Offset
 Topic                           : 主题
 Handler Func                    : 处理函数
 No Recent Message               : 无近期消息
-Recent Message                  : 近期消息
+Last Consumed                   : 最后消费
 'Add Topic / Handler'           : 添加主题 / 处理函数
-Test connection                : 测试连通性
+Current consumption rate        : 当前消费速度
+Topic Handler is disabled       : 主题订阅处理已禁用
+Test connection                 : 测试连通性
 
-Received Time   : 接收时间
-Received Message: 接收消息
-Func Return     : 函数返回值
-Traceback       : 调用堆栈
+Message          : 消息
+Content          : 内容
+Func Return Value: 函数返回值
+Traceback        : 调用堆栈
 
 Save without connection test: 保存（忽略连通性测试）
 
@@ -349,7 +357,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
                     <el-input :placeholder="$t('Topic')" v-model="topicHandler.topic"></el-input>
 
                     <!-- 删除按钮 -->
-                    <el-link type="primary" @click.prevent="removeTopicHandler(index)">{{ $t('Delete') }}</el-link>
+                    <el-link class="topic-handler-button" type="primary" @click.prevent="removeTopicHandler(index)">{{ $t('Delete') }}</el-link>
                   </el-form-item>
 
                   <el-form-item
@@ -367,24 +375,39 @@ This is a built-in Connector, please contact the admin to change the config: 当
                       :options="funcCascader"
                       :props="{ expandTrigger: 'hover', emitPath: false, multiple: false }"></el-cascader>
 
-                    <!-- 最近消费提示 -->
-                    <el-link v-if="subInfoMap[topicHandler.topic]"
-                      :type="subInfoMap[topicHandler.topic].error ? 'danger' : 'success'"
-                      @click="showDetail(subInfoMap[topicHandler.topic])">
-                      <i class="fa fa-fw" :class="subInfoMap[topicHandler.topic].error ? 'fa-times text-bad' : 'fa-check text-good'"></i>
-                      {{ $t('Recent Message') }}{{ $t(':') }}
-                      {{ T.getDateTimeString(subInfoMap[topicHandler.topic].timestampMs, 'MM-DD HH:mm:ss') }}
-                      {{ $t('(') }}{{ T.fromNow(subInfoMap[topicHandler.topic].timestampMs) }}{{ $t(')') }}
+                    <!-- 启用 / 禁用按钮 -->
+                    <el-link class="topic-handler-button" @click.prevent="enableTopicHandler(index)" v-if="topicHandler.isDisabled">{{ $t('Enable') }}</el-link>
+                    <el-link class="topic-handler-button" @click.prevent="disableTopicHandler(index)" v-else>{{ $t('Disable') }}</el-link>
+
+                    <!-- 订阅已禁用 -->
+                    <el-link type="danger" v-if="topicHandler.isDisabled">
+                      <i class="fa fa-fw fa-ban"></i>
+                      {{ $t('Topic Handler is disabled') }}
                     </el-link>
-                    <el-link v-else
-                      type="info"
-                      :underline="false">
+
+                    <template v-else-if="subInfoMap[topicHandler.topic]">
+                      <!-- 最后消费信息 -->
+                      <template v-for="status in C.TASK_STATUS">
+                        <el-link v-if="subInfoMap[topicHandler.topic].lastConsumed[status.key]"
+                          :type="status.tagType"
+                          @click="showDetail(topicHandler.topic, subInfoMap[topicHandler.topic].lastConsumed[status.key])">
+                          <i :class="status.icon"></i>
+                          {{ $t('Last Consumed') }} {{ $t('(') }}{{ status.name }}{{ $t(')') }}{{ $t(':') }}
+                          {{ T.getDateTimeString(subInfoMap[topicHandler.topic].lastConsumed[status.key].timestampMs, 'MM-DD HH:mm:ss') }}
+                          {{ $t('(') }}{{ T.fromNow(subInfoMap[topicHandler.topic].lastConsumed[status.key].timestampMs) }}{{ $t(')') }}
+                        </el-link>
+                      </template>
+
+                      <!-- 当前消费速度 -->
+                      <el-link type="info" :underline="false">
+                        <i class="el-icon-odometer"></i>
+                        {{ $t('Current consumption rate') }}{{ $t(':') }}
+                        {{ $tc('messageRate', subInfoMap[topicHandler.topic].lastMinuteCount || 0) }}
+                      </el-link>
+                    </template>
+                    <el-link v-else type="info" :underline="false">
                       {{ $t('No Recent Message') }}
                     </el-link>
-                  </el-form-item>
-
-                  <el-form-item class="config-divider">
-                    <el-divider></el-divider>
                   </el-form-item>
                 </template>
                 <el-form-item>
@@ -593,6 +616,13 @@ export default {
         let apiRes = await this.T.callAPI_getOne('/api/v1/connectors/do/list', this.data.id);
         if (!apiRes || !apiRes.ok) return;
 
+        // 补全禁用选项
+        if (apiRes.data.configJSON && apiRes.data.configJSON.topicHandlers) {
+          apiRes.data.configJSON.topicHandlers.forEach(th => {
+            th.isDisabled = th.isDisabled || false;
+          })
+        }
+
         this.data = apiRes.data;
 
         let nextForm = {};
@@ -631,7 +661,7 @@ export default {
       if (!apiRes || !apiRes.ok) return;
 
       let subInfoMap = apiRes.data.reduce((acc, x) => {
-        acc[x.topic] = x.consumeInfo;
+        acc[x.topic]  = x;
         return acc;
       }, {});
       this.subInfoMap = subInfoMap;
@@ -743,43 +773,49 @@ export default {
       if (this.T.isNothing(this.form.configJSON.topicHandlers)) {
         this.$set(this.form.configJSON, 'topicHandlers', []);
       }
-      this.form.configJSON.topicHandlers.push({ topic: '', funcId: '' });
+      this.form.configJSON.topicHandlers.push({
+        topic     : '',
+        funcId    : '',
+        isDisabled: false,
+      });
     },
     removeTopicHandler(index) {
       this.form.configJSON.topicHandlers.splice(index, 1);
     },
+    enableTopicHandler(index) {
+      this.form.configJSON.topicHandlers[index].isDisabled = false;
+    },
+    disableTopicHandler(index) {
+      this.form.configJSON.topicHandlers[index].isDisabled = true;
+    },
 
-    showDetail(d) {
+    showDetail(topic, consumeInfo) {
       let lines = [];
 
-      // 主题
-      lines.push(`===== ${this.$t('Topic')} =====`);
-      lines.push(d.topic);
+      // 任务
+      lines.push(`===== ${this.$t('Message')} =====`);
+      lines.push(`${this.$t('Topic')}: ${topic}`);
+      lines.push(`${this.$t('Time')}: ${this.M(consumeInfo.timestampMs).format('YYYY-MM-DD HH:mm:ss Z')}`);
 
-      // 收到时间
-      lines.push(`\n===== ${this.$t('Received Time')} =====`);
-      lines.push(this.M(d.timestampMs).format('YYYY-MM-DD HH:mm:ss Z'));
-
-      // 收到消息
-      lines.push(`\n===== ${this.$t('Received Message')} =====`);
-      lines.push(d.message);
+      lines.push(`\n===== ${this.$t('Content')} =====`);
+      lines.push(consumeInfo.message);
 
       // 函数返回
-      lines.push(`\n===== ${this.$t('Func Return')} =====`)
-      lines.push(JSON.stringify(d.funcResult, null, 2));
+      if (consumeInfo.taskResp.result) {
+        lines.push(`\n===== ${this.$t('Func Return Value')} =====`)
+        lines.push(JSON.stringify(consumeInfo.taskResp.result.returnValue, null, 2));
+      }
 
       // 堆栈
-      lines.push(`\n===== ${this.$t('Traceback')} =====`);
-      if (d.error && d.error.detail && d.error.detail.traceback) {
-        lines.push(d.error.detail.traceback);
-      } else {
-        lines.push(this.$t('No Traceback'))
+      if (consumeInfo.taskResp.traceback) {
+        lines.push(`\n===== ${this.$t('Traceback')} =====`);
+        lines.push(consumeInfo.taskResp.traceback);
       }
 
       let docText = lines.join('\n');
 
-      let createTimeStr = this.M(d.timestampMs).format('YYYYMMDD_HHmmss');
-      let fileName = `connector-sub-dump.${d.connectorId}.${d.topic}.${createTimeStr}`;
+      let createTimeStr = this.M(consumeInfo.timestampMs).format('YYYYMMDD_HHmmss');
+      let fileName = `connector-sub-dump.${consumeInfo.connectorId}.${consumeInfo.topic}.${createTimeStr}`;
       this.$refs.longTextDialog.update(docText, fileName);
     },
   },
@@ -1117,8 +1153,8 @@ export default {
 .recent-message .form-tip {
   width: 420px !important;
 }
-.topic-handler .el-link {
-  float: right;
+.topic-handler-button {
+  margin-left: 10px;
 }
 </style>
 <style>

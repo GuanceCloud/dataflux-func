@@ -2668,6 +2668,10 @@ connectorAPI:
                 $desc     : 处理函数
                 $type     : string
                 $allowNull: true
+              isDisabled:
+                $desc     : 是否已禁用
+                $type     : boolean
+                $allowNull: true
           meta:
             $desc     : Meta数据（仅限API添加）
             $allowNull: true
@@ -2836,6 +2840,10 @@ connectorAPI:
               funcId:
                 $desc     : 处理函数
                 $type     : string
+                $allowNull: true
+              isDisabled:
+                $desc     : 是否已禁用
+                $type     : boolean
                 $allowNull: true
           meta:
             $desc     : Meta数据（仅限API添加）

@@ -161,7 +161,6 @@ class DFFWraper(object):
     def __getattr__(self, name):
         if not self.inject_funcs:
             return None
-
         else:
             return self.inject_funcs.get(name)
 
