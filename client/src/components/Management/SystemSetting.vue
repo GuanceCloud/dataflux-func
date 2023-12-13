@@ -4,7 +4,7 @@ Custom Site Favicon        : 自定义网站 Favicon
 Custom Site Logo           : 自定义网站 Logo
 Notice Bar                 : 顶部提示栏
 Doc Link in Navi Bar       : 导航栏文档链接
-Func Task Record           : 函数任务记录
+Local Func Task Record     : 本地函数任务记录
 Guance Data Upload         : 观测云数据上报
 Official Script Market     : 官方脚本市场
 Hide Following Script Sets : 隐藏下列脚本集
@@ -211,7 +211,7 @@ Save and Refresh: 保存并刷新
                 </template>
 
                 <!-- 本地函数任务记录 -->
-                <el-divider content-position="left"><h1>{{ $t('Func Task Record') }}</h1></el-divider>
+                <el-divider content-position="left"><h1>{{ $t('Local Func Task Record') }}</h1></el-divider>
 
                 <el-form-item>
                   <InfoBlock :title="$t('Save Func Task Records in database of this system')" />
