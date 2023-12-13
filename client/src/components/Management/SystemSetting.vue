@@ -245,8 +245,8 @@ Save and Refresh: 保存并刷新
                       type="textarea"
                       :autosize="{ minRows: 2 }"
                       v-model="form['GUANCE_DATA_UPLOAD_URL']"></el-input>
-                    <InfoBlock :title="`DataWay URL${':'}http://openway.guance.con?token=tkn_xxxxx`" />
-                    <InfoBlock :title="`DataKit URL${':'}http://datakit-ip-or-domain:9529`" />
+                    <InfoBlock :title="`DataWay${':'} http://openway.guance.con?token=tkn_xxxxx`" />
+                    <InfoBlock :title="`DataKit${':'} http://datakit-ip-or-domain:9529`" />
                   </el-form-item>
 
                   <el-form-item :label="$t('Site Name')" prop="GUANCE_DATA_SITE_NAME">
