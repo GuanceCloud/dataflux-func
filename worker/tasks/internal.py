@@ -179,7 +179,10 @@ class FlushDataBuffer(BaseInternalTask):
         if not cache_res:
             return 0
 
-        self.upload_guance_data('logging', cache_res)
+        try:
+            self.upload_guance_data('logging', cache_res)
+        except Exception as e:
+            pass
 
         return len(cache_res)
 
@@ -239,7 +242,10 @@ class FlushDataBuffer(BaseInternalTask):
 
         # 写入观测云
         if guance_data:
-            self.upload_guance_data('metric', guance_data)
+            try:
+                self.upload_guance_data('metric', guance_data)
+            except Exception as e:
+                pass
 
         return len(cache_res)
 

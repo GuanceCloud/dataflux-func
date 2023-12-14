@@ -398,6 +398,8 @@ export default {
     },
     async modifyData() {
       let _formData = this.T.jsonCopy(this.form);
+      delete _formData.id;
+
       let opt = {
         params: { id: this.data.id },
         body  : { data: _formData },

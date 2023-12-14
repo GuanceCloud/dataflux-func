@@ -21,6 +21,12 @@ CONFIG = yaml_resources.get('CONFIG')
 class FuncRunner(FuncBaseTask):
     name = 'Func.Runner'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # 观测云上报错误记录
+        self.guance_data_upload_error = None
+
     @property
     def return_value(self):
         if not self.result:
@@ -49,7 +55,7 @@ class FuncRunner(FuncBaseTask):
             log_data.append('\n'.join(print_logs))
 
         if self.traceback:
-            log_data.append(' Traceback '.center(30, '-'))
+            log_data.append('[Traceback]')
             log_data.append(self.traceback)
 
         return '\n'.join(log_data)
@@ -78,6 +84,24 @@ class FuncRunner(FuncBaseTask):
             data = '\n\n'.join([ reduce_tip, first_part, skip_tip, last_part ])
 
         return data
+
+    @property
+    def guance_data_upload_error_logs(self):
+        if not self.guance_data_upload_error:
+            return None
+
+        return '\n'.join([ '[Guance Data Upload Error]', repr(self.guance_data_upload_error) ])
+
+    @property
+    def reduced_print_logs_with_guance_data_upload_error(self):
+        sections = []
+        if self.reduced_print_logs:
+            sections.append(self.reduced_print_logs)
+
+        if self.guance_data_upload_error_logs:
+            sections.append(self.guance_data_upload_error_logs)
+
+        return '\n\n'.join(sections)
 
     # 完全重写父类方法
     def create_task_record_guance_data(self, task_resp):
@@ -156,7 +180,7 @@ class FuncRunner(FuncBaseTask):
             'exceptionType'      : self.exception_type,
             'exceptionTEXT'      : self.exception_text,
             'tracebackTEXT'      : self.traceback,
-            'printLogsTEXT'      : self.reduced_print_logs,
+            'printLogsTEXT'      : self.reduced_print_logs_with_guance_data_upload_error,
             'returnValueJSON'    : toolkit.json_dumps(self.return_value, keep_none=True),
             'responseControlJSON': toolkit.json_dumps(self.response_control, keep_none=True),
         }
@@ -181,17 +205,20 @@ class FuncRunner(FuncBaseTask):
 
     # 完全重写父类方法
     def buff_task_record(self, task_resp):
+        # 函数任务可能非常多，且可能同时包含大量日志
+        # 因此直接上报观测云，而不进入缓冲区
+        data = self.create_task_record_guance_data(task_resp)
+        if data:
+            try:
+                self.upload_guance_data('logging', data)
+            except Exception as e:
+                self.guance_data_upload_error = e
+
         # 任务记录（函数）
         self._buff_task_record_func(task_resp)
 
         # 函数调用计数
         self._buff_func_call_count(task_resp)
-
-        # 函数任务可能非常多，且可能同时包含大量日志
-        # 因此直接上报观测云，而不进入缓冲区
-        data = self.create_task_record_guance_data(task_resp)
-        if data:
-            self.upload_guance_data('logging', data)
 
     # 为父类方法添加处理
     def response(self, task_resp):

@@ -382,6 +382,8 @@ class BaseTask(object):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
+            raise
+
     def response(self, task_resp):
         cache_key = toolkit.get_cache_key('task', 'response', [ 'name', self.name, 'id', self.task_id ])
         task_resp_dumps = toolkit.json_dumps(task_resp, ignore_nothing=True, indent=None)
