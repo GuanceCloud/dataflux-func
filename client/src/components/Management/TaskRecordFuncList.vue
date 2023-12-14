@@ -48,6 +48,7 @@ Task Record cleared: 任务记录已清空
 
 Are you sure you want to clear the Task Record?: 是否确认清空任务记录？
 
+Uploading Guance data failed: 观测云数据上报失败
 No Recent Task Record: 尚无任何近期任务记录
 All recent Task Record will be collected and shown here: 所有近期任务会被记录，并展示在此
 
@@ -152,6 +153,7 @@ connector  : 连接器
                 :id="scope.row.func_id"
                 :title="scope.row.func_title" />
               <InfoBlock v-if="scope.row.exceptionType" type="error" :title="`${scope.row.exceptionType}: ${scope.row.exceptionTEXTReduced}`" />
+              <InfoBlock v-if="scope.row.printLogsTEXT && scope.row.printLogsTEXT.indexOf('[Guance Data Upload Error]') >= 0" type="warning" :title="$t('Uploading Guance data failed')" />
             </template>
           </el-table-column>
 
