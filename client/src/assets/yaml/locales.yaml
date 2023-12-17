@@ -323,7 +323,7 @@ en:
   Crontab Config           : 自动触发配置
   Batch                    : 批处理
   Script Set Export        : 脚本集导出
-  Script Sets Import       : 脚本集导入
+  Script Set Import        : 脚本集导入
   Script Set Export History: 脚本集导出历史
   Script Set Import History: 脚本集导入历史
   Script Lib Recover       : 脚本库还原

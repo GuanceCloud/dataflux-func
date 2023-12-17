@@ -74,7 +74,7 @@
             <el-menu-item index="/management/script-set-import-history-list">
               <span>
                 <i class="fa fa-fw fa-cloud-upload"></i>
-                {{ $t('Script Sets Import') }}
+                {{ $t('Script Set Import') }}
               </span>
             </el-menu-item>
             <el-menu-item index="/management/script-recover-point-list">

@@ -68,7 +68,7 @@ Add external Script Sets by importing Script Sets: 使用脚本集导入功能�
         <div class="setup-page-footer">
           <el-button @click="openSetup(null, 'import')">
             <i class="fa fa-fw fa-cloud-upload"></i>
-            {{ $t('Script Sets Import') }}
+            {{ $t('Script Set Import') }}
           </el-button>
         </div>
       </el-footer>

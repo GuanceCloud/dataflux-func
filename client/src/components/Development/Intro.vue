@@ -204,7 +204,7 @@ Distribute and share code by publishing and installing Script Sets using git rep
                   <td>{{ $t('Export Script Sets as zip files') }}</td>
                 </tr>
                 <tr>
-                  <td><i class="fa fa-fw fa-cloud-upload"></i> {{ $t('Script Sets Import') }}</td>
+                  <td><i class="fa fa-fw fa-cloud-upload"></i> {{ $t('Script Set Import') }}</td>
                   <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
                   <td>{{ $t('Import Script Sets from zip files') }}</td>
                 </tr>
