@@ -122,7 +122,7 @@ def before_app_create():
                         timezone = arrow.get().to(timezone).format('ZZ')
 
                     else:
-                        print(f'> 无法解析数据库时区配置（{timezone}），建议使用如 +08:00 格式直接指定时区。')
+                        print(f'> 无法解析数据库时区配置（{timezone}），建议使用类似 +08:00 格式直接指定时区。')
                         print(f'> Cannot parse the database time zone configuration ({timezone}), it is recommended to use the format such as +08:00 to specify the time zone directly.')
                         e = Exception(f'Bad database timezone: {timezone}')
                         raise e
