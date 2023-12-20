@@ -101,7 +101,7 @@ def before_app_create():
                 if timezone in ('UTC', 'GMT', '0:00', '00:00', '-0:00', '-00:00', '+0:00', '+00:00'):
                     timezone = '+00:00'
 
-                elif timezone == 'CST':
+                elif timezone in ('CST', 'Asia/Beijing'):
                     timezone = '+08:00'
 
                 else:
@@ -122,9 +122,9 @@ def before_app_create():
                         timezone = arrow.get().to(timezone).format('ZZ')
 
                     else:
-                        print('Time zone abbreviations are not part of the ISO standard. A format such as +08:00 is recommended to specify the time zone.')
-                        print('时区缩写并不是 ISO 标准的一部分。建议使用类似 +08:00 格式指定时区。')
-                        e = Exception('Cannot parse timezone: {timezone}')
+                        print(f'> 无法解析数据库时区配置（{timezone}），建议使用如 +08:00 格式直接指定时区。')
+                        print(f'> Cannot parse the database time zone configuration ({timezone}), it is recommended to use the format such as +08:00 to specify the time zone directly.')
+                        e = Exception(f'Bad database timezone: {timezone}')
                         raise e
 
             yaml_resources.set_value('CONFIG', '_MYSQL_TIMEZONE', timezone)

@@ -121,6 +121,7 @@ exports.beforeAppCreate = function(callback) {
               break;
 
             case 'CST':
+            case 'Asia/Beijing':
               timezone = '+08:00';
               break;
 
@@ -142,9 +143,9 @@ exports.beforeAppCreate = function(callback) {
               timezone = moment().tz(timezone).format('Z');
 
             } else {
-              console.log('Time zone abbreviations are not part of the ISO standard. A format such as +08:00 is recommended to specify the time zone.');
-              console.log('时区缩写并不是 ISO 标准的一部分。建议使用类似 +08:00 格式指定时区。');
-              var e = new Error(`Cannot parse timezone: ${timezone}`);
+              console.log(`> 无法解析数据库时区配置（${timezone}），建议使用如 +08:00 格式直接指定时区。`);
+              console.log(`> Cannot parse the database time zone configuration (${timezone}), it is recommended to use the format such as +08:00 to specify the time zone directly.`);
+              var e = new Error(`Bad database timezone: ${timezone}`);
               throw e;
             }
           }
