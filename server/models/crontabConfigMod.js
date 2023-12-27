@@ -80,8 +80,6 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('  ON sset.id = func.scriptSetId');
 
   options.baseSQL = sql.toString();
-  options.groups  = [ 'cron.id' ];
-  options.orders  = [ { field: 'cron.seq', method: 'DESC' } ];
 
   this._list(options, callback);
 };

@@ -93,8 +93,6 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('  ON apia.id = bat.apiAuthId');
 
   options.baseSQL = sql.toString();
-  options.groups  = [ 'bat.id' ];
-  options.orders  = [ { field: 'bat.seq', method: 'DESC' } ];
 
   this._list(options, callback);
 };
