@@ -261,8 +261,8 @@ class BaseTask(object):
 
     def unlock(self):
         if self._lock_key and self._lock_value:
-            self.cache_db.unlock(self._lock_key, self._lock_value)
-            self.logger.debug(f'[LOCK] Task Unlocked')
+            if self.cache_db.unlock(self._lock_key, self._lock_value):
+                self.logger.debug(f'[LOCK] Task Unlocked')
 
         self._lock_key   = None
         self._lock_value = None
