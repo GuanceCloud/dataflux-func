@@ -6,6 +6,7 @@
 '''
 
 # Built-in Modules
+import time
 
 # 3rd-party Modules
 
@@ -136,10 +137,9 @@ class CrontabStarter(BaseTask):
                 crontab_lock_key = toolkit.get_cache_key('lock', 'CrontabConfig', tags=[
                         'crontabConfigId', crontab_config['id'],
                         'funcId',          crontab_config['funcId'],
-                        'execMode',        exec_mode,
-                        'crontabDelay',    crontab_delay])
+                        'execMode',        exec_mode])
 
-                crontab_lock_value = toolkit.gen_uuid()
+                crontab_lock_value = f"{int(time.time())}-{toolkit.gen_uuid()}"
 
                 self.logger.debug(f"[TASK REQ] funcId=`{crontab_config['funcId']}`, origin=`{origin}/{origin_id}`, queue=`{queue}`, crontabDelay=`{crontab_delay}`, delay=`{delay}`")
 
