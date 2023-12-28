@@ -1,7 +1,3 @@
-<i18n locale="en" lang="yaml">
-taskRemain: '(remain {n} task to process) | (remain {n} tasks to process)'
-</i18n>
-
 <i18n locale="zh-CN" lang="yaml">
 About: 关于
 
@@ -36,8 +32,6 @@ Worker Queues cleared: 工作队列已清空
 Log and Cache cleared: 日志与缓存表已清空
 
 'Full Worker Queue name is DataFluxFunc-worker#workerQueue@{Number}': 完整工作队列名称为 DataFluxFunc-worker#workerQueue@{序号}
-
-taskRemain: （存在 {n} 个待处理任务）
 
 Are you sure you want to clear the Worker Queues?: 是否确认清空工作队列？
 Are you sure you want to clear the Log and Cache?: 是否确认清空日志与缓存表？
