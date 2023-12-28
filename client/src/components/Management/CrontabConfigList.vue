@@ -6,6 +6,19 @@ failureCount  : 'Failure {n}'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
+Crontab Configs can globally pause temporarily              : 自动触发配置可以全局临时暂停
+Crontab Configs has been globally paused, will resume in {0}: 自动触发配置已全局暂停，将在 {0} 后继续
+Crontab Configs has been globally paused                    : 自动触发配置已全局暂停
+
+Resume all          : 全部继续
+Pause all           : 全部暂停
+Pause for 15 minutes: 暂停 15 分钟
+Pause for 30 minutes: 暂停 30 分钟
+Pause for 1 hour    : 暂停 1 小时
+Pause for 3 hours   : 暂停 3 小时
+Pause for 12 hours  : 暂停 12 小时
+Pause for 1 day     : 暂停 1 天
+
 Fixed      : 固定
 Not Set    : 未配置
 Config     : 配置
@@ -42,6 +55,38 @@ Using Crontab Config, you can have functions executed at regular intervals: 使�
         <div class="common-page-header">
           <h1>{{ $t('Crontab Config') }}</h1>
           <div class="header-control">
+            <template v-if="T.notNothing(pauseTimeout)">
+              <small>
+                <i18n v-if="pauseTimeout > 0" path="Crontab Configs has been globally paused, will resume in {0}">
+                  <el-tooltip effect="dark" :content="$tc('nSeconds', pauseTimeout)" placement="bottom">
+                    <span class="text-bad">{{ T.duration(pauseTimeout * 1000, true) }}</span>
+                  </el-tooltip>
+                </i18n>
+                <span v-else-if="pauseTimeout < 0" class="text-bad">{{ $t('Crontab Configs has been globally paused') }}</span>
+                <span v-else class="text-info">{{ $t('Crontab Configs can globally pause temporarily') }}</span>
+              </small>
+
+              <el-button v-if="pauseTimeout"
+                size="small" @click="resumeAll()">
+                <i class="fa fa-fw fa-play"></i>
+                {{ $t('Resume all') }}
+              </el-button>
+              <el-dropdown v-else
+                split-button size="small" @click="pauseAll()" @command="pauseAll">
+                <i class="fa fa-fw fa-pause"></i>
+                {{ $t('Pause all') }}
+
+                <el-dropdown-menu slot="dropdown">
+                  <el-dropdown-item :command="15 * 60">{{ $t('Pause for 15 minutes') }}</el-dropdown-item>
+                  <el-dropdown-item :command="30 * 60">{{ $t('Pause for 30 minutes') }}</el-dropdown-item>
+                  <el-dropdown-item :command="60 * 60">{{ $t('Pause for 1 hour') }}</el-dropdown-item>
+                  <el-dropdown-item :command="3 * 60 * 60">{{ $t('Pause for 3 hours') }}</el-dropdown-item>
+                  <el-dropdown-item :command="12 * 60 * 60">{{ $t('Pause for 12 hours') }}</el-dropdown-item>
+                  <el-dropdown-item :command="24 * 60 * 60">{{ $t('Pause for 1 day') }}</el-dropdown-item>
+                </el-dropdown-menu>
+              </el-dropdown>
+            </template>
+
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
 
             <el-tooltip :content="$t('Show all contents')" placement="bottom" :enterable="false">
@@ -229,6 +274,9 @@ export default {
 
       this.$store.commit('updateLoadStatus', true);
 
+      // 获取暂停标记
+      await this.updatePauseTimeout();
+
       // 获取统计信息
       if (this.isLocalFuncTaskRecordEnabled && !options.skipStatistic) {
         this.isStatisticLoaded = false;
@@ -302,6 +350,32 @@ export default {
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
     },
+    async pauseAll(duration) {
+      duration = duration || -1;
+      let apiRes = await this.T.callAPI('post', '/api/v1/temporary-flags/:id/do/set', {
+        params: { id: 'pauseAllCrontabConfigs' },
+        body  : { duration: duration },
+      });
+      if (!apiRes || !apiRes.ok) return;
+
+      await this.updatePauseTimeout();
+    },
+    async resumeAll() {
+      let apiRes = await this.T.callAPI_get('/api/v1/temporary-flags/:id/do/clear', {
+        params: { id: 'pauseAllCrontabConfigs' },
+      });
+      if (!apiRes || !apiRes.ok) return;
+
+      await this.updatePauseTimeout();
+    },
+    async updatePauseTimeout() {
+      let apiRes = await this.T.callAPI_get('/api/v1/temporary-flags/do/get', {
+        query: { id: 'pauseAllCrontabConfigs' },
+      });
+      if (!apiRes || !apiRes.ok) return;
+
+      this.pauseTimeout = apiRes.data.pauseAllCrontabConfigs;
+    },
   },
   computed: {
     isLocalFuncTaskRecordEnabled() {
@@ -325,13 +399,23 @@ export default {
         _fuzzySearch: _dataFilter._fuzzySearch,
         origin      : _dataFilter.origin,
       },
+
+      pauseTimeout: null,
+
+      autoRefreshTimer: null,
     }
   },
   created() {
     this.$root.$on('reload.crontabConfigList', () => this.loadData({ skipStatistic: true }));
+
+    this.autoRefreshTimer = setInterval(() => {
+      this.updatePauseTimeout();
+    }, 10 * 1000);
   },
   destroyed() {
     this.$root.$off('reload.crontabConfigList');
+
+    if (this.autoRefreshTimer) clearInterval(this.autoRefreshTimer);
   },
 }
 </script>

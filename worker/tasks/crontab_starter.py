@@ -22,6 +22,12 @@ class CrontabStarter(BaseTask):
     default_expires = CONFIG['_CRONTAB_STARTER_TASK_TIMEOUT']
     default_timeout = CONFIG['_CRONTAB_STARTER_TASK_TIMEOUT']
 
+    @property
+    def is_paused(self):
+        cache_key = toolkit.get_cache_key('temporaryFlag', 'pauseAllCrontabConfigs')
+        pause_all_crontab_configs_flag = self.cache_db.get(cache_key)
+        return bool(pause_all_crontab_configs_flag)
+
     def filter_crontab_config(self, crontab_config):
         crontab = crontab_config.get('crontab')
         if not crontab or not toolkit.is_valid_crontab(crontab):
@@ -171,6 +177,11 @@ class CrontabStarter(BaseTask):
             self.cache_db.put_tasks(task_reqs)
 
     def run(self, **kwargs):
+        # 暂停运行
+        if self.is_paused:
+            self.logger.debug(f"[FLAG] Crontab Configs is paused.")
+            return
+
         # 上锁
         self.lock(max_age=60)
 

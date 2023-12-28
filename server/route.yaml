@@ -5407,14 +5407,13 @@ systemSettingAPI:
 
   get:
     showInDoc    : true
-    name         : List System Settings
+    name         : Get System Settings
     name_zhCN    : 获取系统设置
     method       : get
     url          : /api/v1/system-settings/do/get
     response     : json
     requireSignIn: true
     privilege    : systemSetting_r
-    export       : true
     fuzzySearch:
       - ss.id
     query:
@@ -5458,6 +5457,58 @@ systemSettingAPI:
     params:
       id:
         $desc: System Setting ID
+        $type: string
+
+# 临时标记
+temporaryFlagAPI:
+  $tag     : Temporary Flag
+  $tag_zhCN: 临时标记
+
+  get:
+    showInDoc    : true
+    name         : Get Temporary Flag
+    name_zhCN    : 获取临时标记
+    method       : get
+    url          : /api/v1/temporary-flags/do/get
+    response     : json
+    requireSignIn: true
+    privilege    : user_r
+    query:
+      id:
+        $desc: Filter by ID
+        $type: commaArray
+
+  set:
+    showInDoc    : true
+    name         : Set Temporary Flag
+    name_zhCN    : 设置临时标记
+    method       : post
+    url          : /api/v1/temporary-flags/:id/do/set
+    response     : json
+    requireSignIn: true
+    privilege    : user_w
+    params:
+      id:
+        $desc: Temporary Flag ID
+        $type: string
+    body:
+      duration:
+        $desc      : Duration (in seconds)
+        $isRequired: true
+        $type      : integer
+
+  clear:
+    showInDoc    : true
+    name         : Clear System Setting
+    name_zhCN    : 清除临时标记
+    method       : get
+    url          : /api/v1/temporary-flags/:id/do/clear
+    response     : json
+    requireSignIn: true
+    privilege    : user_w
+    params:
+      id:
+        $desc: Temporary Flag ID
         $type: string
 
 # 监控

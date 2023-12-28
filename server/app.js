@@ -165,6 +165,7 @@ function startApplication() {
   require('./routers/accessKeyAPIRouter');
   require('./routers/monitorAPIRouter');
   require('./routers/systemSettingAPIRouter');
+  require('./routers/temporaryFlagAPIRouter');
   require('./routers/debugAPIRouter');
 
   require('./routers/mainAPIRouter');
