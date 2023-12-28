@@ -1131,6 +1131,8 @@ export default {
       isSaving           : false,
       testConnectorResult: null,
 
+      autoRefreshTimer: null,
+
       // Func 只是 Python 包装提示
       img_noticeFuncIsJustPythonWrapper: img_noticeFuncIsJustPythonWrapper,
     }
