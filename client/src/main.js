@@ -96,12 +96,6 @@ Vue.filter('datetime', function(dt, pattern) {
 Vue.filter('fromNow', function(dt) {
   return toolkit.fromNow(dt);
 });
-Vue.filter('duration', function(d, digits) {
-  if (d < 0) d = 0;
-  let seconds = toolkit.duration(d).asSeconds();
-  if (digits) seconds = seconds.toFixed(digits);
-  return seconds;
-})
 
 // 验证
 import validator from 'validator';
