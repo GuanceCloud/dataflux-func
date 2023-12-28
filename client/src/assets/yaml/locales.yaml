@@ -13,6 +13,14 @@ en:
   timePerMonth : '{n} time / month | {n} times / month'
   timePerYear  : '{n} time / year | {n} times / year'
 
+  # 时长
+  nSeconds: '{n} second | {n} second'
+  nMinutes: '{n} minute | {n} minute'
+  nHours  : '{n} hour | {n} hour'
+  nDays   : '{n} day | {n} day'
+  nMonths : '{n} month | {n} month'
+  nYears  : '{n} year | {n} year'
+
   # 功能提示
   FeatureNotice_monkeyPatch            : '<h1>No Monkey Patches in Scripts</h1><p>For performance reasons, the script does <strong style="color: red">NOT</strong> run in a sandbox or isolated environment.</p><p>Using monkey patches may cause problems to the entire system.</p>'
   FeatureNotice_funcIsJustPythonWarpper: '<h1>DataFlux Func is Just a Python Wrapper</h1><p>A connector is simply a convenient feature for developers who want to connect to a database or external system but not an essential feature.</p></p>You can install any third-party Python package you want through the PIP tool and work with it.</p><p>Just like you do with orignal Python.</p>'
@@ -28,6 +36,14 @@ en:
   ms     : 毫秒
   s      : 秒
   seconds: 秒
+
+  # 时长
+  nSeconds: '{n} 秒'
+  nMinutes: '{n} 分钟'
+  nHours  : '{n} 小时'
+  nDays   : '{n} 天'
+  nMonths : '{n} 月'
+  nYears  : '{n} 年'
 
   New Version       : 新版本
   Light Mode        : 明亮模式
