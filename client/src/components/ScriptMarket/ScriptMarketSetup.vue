@@ -153,7 +153,7 @@ Are you sure you want to delete the Script Market?: 是否确认删除此脚本�
               <!-- 可变部分结束 -->
 
               <el-form-item class="setup-footer">
-                <el-button class="delete-button" v-if="pageMode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+                <el-button class="danger-button float-left" v-if="pageMode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
                 <el-button type="primary" @click="submitData"
                   :disabled="isSaving">
                   <i class="fa fa-fw fa-circle-o-notch fa-spin" v-if="isSaving"></i>

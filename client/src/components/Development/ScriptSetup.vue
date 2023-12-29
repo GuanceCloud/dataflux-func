@@ -91,7 +91,7 @@ This Script is locked by other user ({user}): 当前脚本已被其他用户（{
             </el-form-item>
 
             <el-form-item class="setup-footer">
-              <el-button class="delete-button" v-if="pageMode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+              <el-button class="danger-button float-left" v-if="pageMode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
               <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
             </el-form-item>
           </el-form>

@@ -588,14 +588,27 @@ ul {
   width: 620px;
 }
 
-.delete-button {
+.danger-button {
   color: #FF0000 !important;
   border-color: #FF000055 !important;
-  float: left;
 }
-.delete-button.is-disabled {
+.danger-button:hover {
+  background-color: #FF000011 !important;
+}
+.danger-button.is-disabled {
   color: #FF000055 !important;
 }
+.success-button {
+  color: #008000 !important;
+  border-color: #00800055 !important;
+}
+.success-button:hover {
+  background-color: #00800011 !important;
+}
+.success-button.is-disabled {
+  color: #00800055 !important;
+}
+
 .aside-on-button {
   color: #FF6600 !important
 }

@@ -55,7 +55,7 @@ Are you sure you want to delete the Blueprint?: 是否确认删除此蓝图？
             </el-form-item>
 
             <el-form-item class="setup-footer">
-              <el-button class="delete-button" v-if="pageMode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
+              <el-button class="danger-button" v-if="pageMode === 'setup'" @click="deleteData">{{ $t('Delete') }}</el-button>
               <el-button type="primary" v-prevent-re-click @click="submitData">{{ $t('Save') }}</el-button>
             </el-form-item>
           </el-form>

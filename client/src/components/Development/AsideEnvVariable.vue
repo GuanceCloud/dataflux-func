@@ -127,7 +127,7 @@ Are you sure you want to delete the ENV?<br><strong class="text-bad">{label}</st
           <el-button-group>
             <!-- 删除 -->
             <el-button
-              class="delete-button"
+              class="danger-button"
               size="small"
               @click="deleteEntity(data)">
               <i class="fa fa-fw fa-times"></i>

@@ -293,7 +293,7 @@ Some Script Sets have been hidden: 一些脚本集已被隐藏
               <el-button-group>
                 <!-- 删除 -->
                 <el-button
-                  class="delete-button"
+                  class="danger-button"
                   size="small"
                   :disabled="!data.isEditable"
                   @click="deleteEntity(data)">

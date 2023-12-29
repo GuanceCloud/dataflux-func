@@ -155,7 +155,7 @@ Go to Recent Task Record: 前往最近任务记录
           <el-button-group>
             <!-- 删除 -->
             <el-button
-              class="delete-button"
+              class="danger-button"
               size="small"
               @click="deleteEntity(data)">
               <i class="fa fa-fw fa-times"></i>

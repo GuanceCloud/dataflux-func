@@ -68,7 +68,7 @@ Using Crontab Config, you can have functions executed at regular intervals: ä½¿ç
 
               <el-button v-if="pauseTimeout"
                 size="small"
-                type="success" plain
+                class="success-button"
                 @click="resumeAll()">
                 <i class="fa fa-fw fa-play"></i>
                 {{ $t('Resume all') }}

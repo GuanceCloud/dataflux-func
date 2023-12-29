@@ -429,7 +429,7 @@ This is a built-in Connector, please contact the admin to change the config: 当
               <!-- 可变区域结束 -->
 
               <el-form-item class="setup-footer">
-                <el-button class="delete-button" v-if="pageMode === 'setup' && !data.isBuiltin" @click="deleteData">{{ $t('Delete') }}</el-button>
+                <el-button class="danger-button float-left" v-if="pageMode === 'setup' && !data.isBuiltin" @click="deleteData">{{ $t('Delete') }}</el-button>
                 <el-button v-if="pageMode === 'setup'" @click="testConnector"
                   :disabled="testConnectorResult === 'running'">
                   <i class="fa fa-fw fa-check text-good" v-if="testConnectorResult === 'ok'"></i>
