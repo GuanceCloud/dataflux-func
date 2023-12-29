@@ -218,10 +218,11 @@ _STARTUP_SCRIPT_SET_ID: startup
 _STARTUP_CRONTAB_ID_PREFIX: cron-starup
 
 # MySQL一般作为常量的配置
-_MYSQL_CONNECTION_LIMIT: 20
-_MYSQL_CONNECT_TIMEOUT : 15
-_MYSQL_CHARSET         : utf8mb4
-_MYSQL_TIMEZONE        : ''
+_MYSQL_CONNECTION_LIMIT_FOR_SERVER: 10
+_MYSQL_CONNECTION_LIMIT_FOR_WORKER: 1
+_MYSQL_CONNECT_TIMEOUT            : 15
+_MYSQL_CHARSET                    : utf8mb4
+_MYSQL_TIMEZONE                   : ''
 
 # WEB模块一般作为常量的配置
 _WEB_CLIENT_APP_PATH                : /client-app
