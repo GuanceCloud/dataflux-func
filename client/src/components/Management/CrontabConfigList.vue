@@ -67,12 +67,17 @@ Using Crontab Config, you can have functions executed at regular intervals: ä½¿ç
               </small>
 
               <el-button v-if="pauseTimeout"
-                size="small" @click="resumeAll()">
+                size="small"
+                type="success" plain
+                @click="resumeAll()">
                 <i class="fa fa-fw fa-play"></i>
                 {{ $t('Resume all') }}
               </el-button>
               <el-dropdown v-else
-                split-button size="small" @click="pauseAll()" @command="pauseAll">
+                split-button
+                size="small"
+                @click="pauseAll()"
+                @command="pauseAll">
                 <i class="fa fa-fw fa-pause"></i>
                 {{ $t('Pause all') }}
 
