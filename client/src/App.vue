@@ -901,9 +901,6 @@ kbd {
   z-index: unset;
 }
 
-.el-button--small .el-dropdown__icon {
-  font-size: 11px !important;
-}
 .el-button--mini,
 .el-input--mini .el-input__inner,
 .el-radio-button--mini .el-radio-button__inner {

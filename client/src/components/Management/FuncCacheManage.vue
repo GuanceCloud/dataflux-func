@@ -158,7 +158,7 @@ export default {
       switch(operation) {
         case 'delete':
           apiRes = await this.T.callAPI('/api/v1/func-caches/:scope/:key/do/delete', {
-            params: { scope: d.scope, key: d.key },
+            params: { scope: d.scope, key: encodeURIComponent(d.key) },
             alert : { okMessage: this.$t('Func Cache data deleted') },
           });
           break;
@@ -169,7 +169,7 @@ export default {
     },
     async showDetail(d) {
       let apiRes = await this.T.callAPI_get('/api/v1/func-caches/:scope/:key/do/get', {
-        params: { scope: d.scope, key: d.key }
+        params: { scope: d.scope, key: encodeURIComponent(d.key) }
       });
       if (!apiRes.ok) return
 
