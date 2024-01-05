@@ -6,9 +6,9 @@ failureCount  : 'Failure {n}'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Crontab Configs can globally pause temporarily              : 自动触发配置可以全局临时暂停
-Crontab Configs has been globally paused, will resume in {0}: 自动触发配置已全局暂停，将在 {0} 后继续
-Crontab Configs has been globally paused                    : 自动触发配置已全局暂停
+Crontab Configs can temporarily pause globally              : 自动触发配置可以临时全局暂停
+Crontab Configs has been paused globally, will resume in {0}: 自动触发配置已全局暂停，将在 {0} 后继续
+Crontab Configs has been paused globally                    : 自动触发配置已全局暂停
 
 Resume all          : 全部继续
 Pause all           : 全部暂停
@@ -57,13 +57,12 @@ Using Crontab Config, you can have functions executed at regular intervals: 使�
           <div class="header-control">
             <template v-if="T.notNothing(pauseTimeout)">
               <small>
-                <i18n v-if="pauseTimeout > 0" path="Crontab Configs has been globally paused, will resume in {0}">
+                <i18n v-if="pauseTimeout > 0" path="Crontab Configs has been paused globally, will resume in {0}">
                   <el-tooltip effect="dark" :content="$tc('nSeconds', pauseTimeout)" placement="bottom">
                     <span class="text-bad">{{ T.duration(pauseTimeout * 1000, true) }}</span>
                   </el-tooltip>
                 </i18n>
-                <span v-else-if="pauseTimeout < 0" class="text-bad">{{ $t('Crontab Configs has been globally paused') }}</span>
-                <span v-else class="text-info">{{ $t('Crontab Configs can globally pause temporarily') }}</span>
+                <span v-else-if="pauseTimeout < 0" class="text-bad">{{ $t('Crontab Configs has been paused globally') }}</span>
               </small>
 
               <el-button v-if="pauseTimeout"
@@ -73,23 +72,25 @@ Using Crontab Config, you can have functions executed at regular intervals: 使�
                 <i class="fa fa-fw fa-play"></i>
                 {{ $t('Resume all') }}
               </el-button>
-              <el-dropdown v-else
-                split-button
-                size="small"
-                @click="pauseAll()"
-                @command="pauseAll">
-                <i class="fa fa-fw fa-pause"></i>
-                {{ $t('Pause all') }}
+              <el-tooltip v-else effect="dark" :content="$t('Crontab Configs can temporarily pause globally')" placement="left">
+                <el-dropdown
+                  split-button
+                  size="small"
+                  @click="pauseAll()"
+                  @command="pauseAll">
+                  <i class="fa fa-fw fa-pause"></i>
+                  {{ $t('Pause all') }}
 
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item :command="15 * 60">{{ $t('Pause for 15 minutes') }}</el-dropdown-item>
-                  <el-dropdown-item :command="30 * 60">{{ $t('Pause for 30 minutes') }}</el-dropdown-item>
-                  <el-dropdown-item :command="60 * 60">{{ $t('Pause for 1 hour') }}</el-dropdown-item>
-                  <el-dropdown-item :command="3 * 60 * 60">{{ $t('Pause for 3 hours') }}</el-dropdown-item>
-                  <el-dropdown-item :command="12 * 60 * 60">{{ $t('Pause for 12 hours') }}</el-dropdown-item>
-                  <el-dropdown-item :command="24 * 60 * 60">{{ $t('Pause for 1 day') }}</el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item :command="15 * 60">{{ $t('Pause for 15 minutes') }}</el-dropdown-item>
+                    <el-dropdown-item :command="30 * 60">{{ $t('Pause for 30 minutes') }}</el-dropdown-item>
+                    <el-dropdown-item :command="60 * 60">{{ $t('Pause for 1 hour') }}</el-dropdown-item>
+                    <el-dropdown-item :command="3 * 60 * 60">{{ $t('Pause for 3 hours') }}</el-dropdown-item>
+                    <el-dropdown-item :command="12 * 60 * 60">{{ $t('Pause for 12 hours') }}</el-dropdown-item>
+                    <el-dropdown-item :command="24 * 60 * 60">{{ $t('Pause for 1 day') }}</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </el-tooltip>
             </template>
 
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
