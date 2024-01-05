@@ -19,8 +19,9 @@ Blueprint ID   : 蓝图 ID
 Main Task      : 主任务
 Sub Task       : 子任务
 Delay          : 延迟执行
+Queuing        : 入队等待
 Queue          : 所属队列
-Wait Cost      : 排队耗时
+Wait Cost      : 等待耗时
 Run Cost       : 执行耗时
 Log Lines      : 日志行数
 Task Type      : 任务类型
@@ -121,7 +122,7 @@ connector  : 连接器
           :data="data"
           :row-class-name="T.getHighlightRowCSS">
 
-          <el-table-column :label="$t('Status')" width="150">
+          <el-table-column :label="$t('Status')" width="120">
             <template slot-scope="scope">
               <el-tag
                 v-if="C.TASK_STATUS_MAP.get(scope.row.status)"
@@ -157,11 +158,19 @@ connector  : 连接器
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Wait Cost')" align="right" width="100">
+          <el-table-column :label="$t('Wait Cost')" align="left" width="150">
             <template slot-scope="scope">
-              <template v-if="scope.row.waitCostMs && scope.row.waitCostMs > 2000">
-                <strong :class="scope.row.waitCostClass">{{ scope.row.waitCostMs < 10000 ? scope.row.waitCostMs : (scope.row.waitCostMs / 1000).toFixed(1) }}</strong>
-                <span class="text-info">{{ scope.row.waitCostMs < 10000 ? $t('ms') : $t('s') }}</span>
+              <span class="text-info">{{ $t('Delay') }}{{ $t(':') }}</span>
+              <template v-if="scope.row.delay">
+                <strong class="text-main">{{ scope.row.delay }}</strong>
+                <span class="text-info">{{ $t('s') }}</span>
+              </template>
+              <template v-else>-</template>
+              <br>
+              <span class="text-info">{{ $t('Queuing') }}{{ $t(':') }}</span>
+              <template v-if="scope.row.queuingCost && scope.row.queuingCost > 2000">
+                <strong :class="scope.row.waitCostClass">{{ scope.row.queuingCost < 10000 ? scope.row.queuingCost : (scope.row.queuingCost / 1000).toFixed(1) }}</strong>
+                <span class="text-info">{{ scope.row.queuingCost < 10000 ? $t('ms') : $t('s') }}</span>
               </template>
               <template v-else>-</template>
             </template>
@@ -257,11 +266,11 @@ export default {
 
         // 排队等待时间
         if (d.triggerTimeMs && d.startTimeMs) {
-          d.waitCostMs = d.startTimeMs - d.triggerTimeMs;
+          d.queuingCost = d.startTimeMs - d.triggerTimeMs - (d.delay * 1000);
 
-          if (d.waitCostMs > 3 * 60 * 1000) {
+          if (d.queuingCost > 3 * 60 * 1000) {
             d.waitCostClass = 'text-bad';
-          } else if (d.waitCostMs > 10 * 1000) {
+          } else if (d.queuingCost > 10 * 1000) {
             d.waitCostClass = 'text-watch';
           } else {
             d.waitCostClass = 'text-good';
@@ -346,10 +355,10 @@ export default {
       }
 
       // 耗时
-      if (d.waitCostMs > 1000) {
-        lines.push(`${this.$t('Wait Cost')}: ${d.waitCostMs} ${this.$t('ms')}`);
+      if (d.queuingCost > 1000) {
+        lines.push(`${this.$t('Queuing')}: ${d.queuingCost} ${this.$t('ms')}`);
       } else {
-        lines.push(`${this.$t('Wait Cost')}: -`);
+        lines.push(`${this.$t('Queuing')}: -`);
       }
       lines.push(`${this.$t('Run Cost')}: ${d.runCostMs} ${this.$t('ms')}`);
 
