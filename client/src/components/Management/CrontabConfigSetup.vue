@@ -152,37 +152,9 @@ shortcutDays  : '{n} 天'
                 <code class="crontab-expr-parts crontab-expr-parts-weeks">{{ formCrontabExprParts.weeks }}</code>
               </el-form-item>
 
-              <el-form-item :label="$t('Weekdays')">
-                <el-checkbox-group v-model="formCrontab.weeks">
-                  <template v-for="(item, index) in WEEKS">
-                    <br v-if="item === 'sep'">
-                    <el-checkbox v-else
-                      border
-                      class="crontab-item-checkbox"
-                      :key="item.expr"
-                      :label="item.expr"
-                      @change="autoFixCrontab">{{ item.name }}</el-checkbox>
-                  </template>
-                </el-checkbox-group>
-              </el-form-item>
-
-              <el-form-item :label="$t('Months')">
-                <el-checkbox-group v-model="formCrontab.months">
-                  <template v-for="(item, index) in MONTHS">
-                    <br v-if="item === 'sep'">
-                    <el-checkbox v-else
-                      border
-                      class="crontab-item-checkbox"
-                      :key="item.expr"
-                      :label="item.expr"
-                      @change="autoFixCrontab">{{ item.name }}</el-checkbox>
-                  </template>
-                </el-checkbox-group>
-              </el-form-item>
-
-              <el-form-item :label="$t('Days')">
-                <el-checkbox-group v-model="formCrontab.days">
-                  <template v-for="(item, index) in DAYS">
+              <el-form-item :label="$t('Minutes')">
+                <el-checkbox-group v-model="formCrontab.minutes">
+                  <template v-for="(item, index) in MINUTES">
                     <br v-if="item === 'sep'">
                     <el-checkbox v-else
                       border
@@ -208,9 +180,37 @@ shortcutDays  : '{n} 天'
                 </el-checkbox-group>
               </el-form-item>
 
-              <el-form-item :label="$t('Minutes')">
-                <el-checkbox-group v-model="formCrontab.minutes">
-                  <template v-for="(item, index) in MINUTES">
+              <el-form-item :label="$t('Days')">
+                <el-checkbox-group v-model="formCrontab.days">
+                  <template v-for="(item, index) in DAYS">
+                    <br v-if="item === 'sep'">
+                    <el-checkbox v-else
+                      border
+                      class="crontab-item-checkbox"
+                      :key="item.expr"
+                      :label="item.expr"
+                      @change="autoFixCrontab">{{ item.name }}</el-checkbox>
+                  </template>
+                </el-checkbox-group>
+              </el-form-item>
+
+              <el-form-item :label="$t('Months')">
+                <el-checkbox-group v-model="formCrontab.months">
+                  <template v-for="(item, index) in MONTHS">
+                    <br v-if="item === 'sep'">
+                    <el-checkbox v-else
+                      border
+                      class="crontab-item-checkbox"
+                      :key="item.expr"
+                      :label="item.expr"
+                      @change="autoFixCrontab">{{ item.name }}</el-checkbox>
+                  </template>
+                </el-checkbox-group>
+              </el-form-item>
+
+              <el-form-item :label="$t('Weekdays')">
+                <el-checkbox-group v-model="formCrontab.weeks">
+                  <template v-for="(item, index) in WEEKS">
                     <br v-if="item === 'sep'">
                     <el-checkbox v-else
                       border
