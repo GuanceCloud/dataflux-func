@@ -1,32 +1,38 @@
-<i18n locale="zh-CN" lang="yaml">
+<i18n locale="en" lang="yaml">
 direct     : Directly Call
 integration: Integration Call
 authLink   : Auth Link
 crontab    : Crontab
 batch      : Batch
 connector  : Connector
+
+'Func ID: '        : 'Func ID   : '
+'Func Title: '     : 'Func Title: '
+'Blueprint ID: '   : 'Blueprint ID   : '
+'Blueprint Title: ': 'Blueprint Title: '
+
+'Queue: '       : 'Queue       : '
+'Trigger Time: ': 'Trigger Time: '
+'Start Time: '  : 'Start Time  : '
+'End Time: '    : 'End Time    : '
+'Delay Time: '  : 'Delay Time  : '
+'Queuing Time: ': 'Queuing Time: '
+'Run Cost: '    : 'Run Cost    : '
+'Task Type: '   : 'Task Type   : '
+'Task Status: ' : 'Task Status : '
 </i18n>
 <i18n locale="zh-CN" lang="yaml">
-Exec Mode      : 执行模式
-Trigger Time   : 触发时间
-Start Time     : 启动时间
-End Time       : 结束时间
-Task           : 任务
-Func Title     : 函数标题
-Func ID        : 函数 ID
-Blueprint Title: 蓝图标题
-Blueprint ID   : 蓝图 ID
-Main Task      : 主任务
-Sub Task       : 子任务
-Delay          : 延迟执行
-Queuing        : 入队等待
-Queue          : 所属队列
-Wait Cost      : 等待耗时
-Run Cost       : 执行耗时
-Log Lines      : 日志行数
-Task Type      : 任务类型
-Task Status    : 任务状态
-
+Exec Mode   : 执行模式
+Trigger Time: 触发时间
+Task        : 任务
+Func ID     : 函数 ID
+Main Task   : 主任务
+Sub Task    : 子任务
+Delay       : 延迟
+Queuing     : 排队
+Wait Cost   : 等待耗时
+Run Cost    : 执行耗时
+Log Lines   : 日志行数
 Print Log   : Print 日志
 Traceback   : 调用堆栈
 No Print Log: 无 Print 日志
@@ -62,6 +68,21 @@ authLink   : 授权链接
 crontab    : 自动触发
 batch      : 批处理
 connector  : 连接器
+
+'Func ID: '        : '函数 ID ：'
+'Func Title: '     : '函数标题：'
+'Blueprint ID: '   : '蓝图 ID ：'
+'Blueprint Title: ': '蓝图标题：'
+'Queue: '          : '所属队列：'
+
+'Trigger Time: '   : '触发时间：'
+'Start Time: '     : '开始时间：'
+'End Time: '       : '结束时间：'
+'Delay Time: '     : '延迟执行：'
+'Queuing Time: '   : '排队等待：'
+'Run Cost: '       : '执行耗时：'
+'Task Type: '      : '任务类型：'
+'Task Status: '    : '任务状态：'
 </i18n>
 
 <template>
@@ -158,7 +179,7 @@ connector  : 连接器
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Wait Cost')" align="left" width="150">
+          <el-table-column :label="$t('Wait Cost')" align="left" width="180">
             <template slot-scope="scope">
               <span class="text-info">{{ $t('Delay') }}{{ $t(':') }}</span>
               <template v-if="scope.row.delay">
@@ -168,9 +189,19 @@ connector  : 连接器
               <template v-else>-</template>
               <br>
               <span class="text-info">{{ $t('Queuing') }}{{ $t(':') }}</span>
-              <template v-if="scope.row.queuingCost && scope.row.queuingCost > 2000">
-                <strong :class="scope.row.waitCostClass">{{ scope.row.queuingCost < 10000 ? scope.row.queuingCost : (scope.row.queuingCost / 1000).toFixed(1) }}</strong>
-                <span class="text-info">{{ scope.row.queuingCost < 10000 ? $t('ms') : $t('s') }}</span>
+              <template v-if="scope.row.queuingTime && scope.row.queuingTime > 300">
+                <template v-if="scope.row.queuingTime < 1000">
+                  <strong :class="scope.row.waitCostClass">{{ scope.row.queuingTime }}</strong>
+                  <span class="text-info">{{ $t('ms') }}</span>
+                </template>
+                <template v-else-if="scope.row.queuingTime < 60 * 1000">
+                  <strong :class="scope.row.waitCostClass">{{ (scope.row.queuingTime / 1000).toFixed(1) }}</strong>
+                  <span class="text-info">{{ $t('s') }}</span>
+                </template>
+                <template v-else>
+                  <strong :class="scope.row.waitCostClass">{{ (scope.row.queuingTime / 60 / 1000).toFixed(1) }}</strong>
+                  <span class="text-info">{{ $t('min') }}</span>
+                </template>
               </template>
               <template v-else>-</template>
             </template>
@@ -178,8 +209,8 @@ connector  : 连接器
           <el-table-column :label="$t('Run Cost')" align="right" width="100">
             <template slot-scope="scope">
               <template v-if="scope.row.runCostMs">
-                <strong :class="scope.row.runCostClass">{{ scope.row.runCostMs < 10000 ? scope.row.runCostMs : (scope.row.runCostMs / 1000).toFixed(1) }}</strong>
-                <span class="text-info">{{ scope.row.runCostMs < 10000 ? $t('ms') : $t('s') }}</span>
+                <strong :class="scope.row.runCostClass">{{ scope.row.runCostMs < 1000 ? scope.row.runCostMs : (scope.row.runCostMs / 1000).toFixed(1) }}</strong>
+                <span class="text-info">{{ scope.row.runCostMs < 1000 ? $t('ms') : $t('s') }}</span>
               </template>
               <template v-else>-</template>
             </template>
@@ -266,11 +297,11 @@ export default {
 
         // 排队等待时间
         if (d.triggerTimeMs && d.startTimeMs) {
-          d.queuingCost = d.startTimeMs - d.triggerTimeMs - (d.delay * 1000);
+          d.queuingTime = d.startTimeMs - d.triggerTimeMs - (d.delay * 1000);
 
-          if (d.queuingCost > 3 * 60 * 1000) {
+          if (d.queuingTime > 3 * 60 * 1000) {
             d.waitCostClass = 'text-bad';
-          } else if (d.queuingCost > 10 * 1000) {
+          } else if (d.queuingTime > 10 * 1000) {
             d.waitCostClass = 'text-watch';
           } else {
             d.waitCostClass = 'text-good';
@@ -330,43 +361,40 @@ export default {
       lines.push(`===== ${this.$t('Task')} =====`);
       if (origin === 'scriptLib') {
         // 脚本
-        lines.push(`${this.$t('Func ID')} : ${this.$t(id)}`);
-        lines.push(`${this.$t('Func Title')}: ${this.$t(d.func_title)}`);
+        lines.push(`${this.$t('Func ID: ')}${this.$t(id)}`);
+        lines.push(`${this.$t('Func Title: ')}${this.$t(d.func_title)}`);
       } else {
         // 蓝图
-        lines.push(`${this.$t('Blueprint ID')} : ${this.$t(id)}`);
-        lines.push(`${this.$t('Blueprint Title')}: ${this.$t(d.func_title)}`);
+        lines.push(`${this.$t('Blueprint ID: ')}${this.$t(id)}`);
+        lines.push(`${this.$t('Blueprint Title: ')}${this.$t(d.func_title)}`);
       }
 
+      lines.push('');
+
       // 队列
-      lines.push(`${this.$t('Queue')}: #${d.queue}`);
+      lines.push(`${this.$t('Queue: ')}#${d.queue}`);
 
       // 时间
-      lines.push('');
-      lines.push(`${this.$t('Trigger Time')}: ${this.T.getDateTimeString(d.triggerTimeMs)} ${this.$t('(')}${this.T.fromNow(d.triggerTimeMs)}${this.$t(')')}`);
-      lines.push(`${this.$t('Start Time')}: ${this.T.getDateTimeString(d.startTimeMs)} ${this.$t('(')}${this.T.fromNow(d.startTimeMs)}${this.$t(')')}`);
-      lines.push(`${this.$t('End Time')}: ${this.T.getDateTimeString(d.endTimeMs)} ${this.$t('(')}${this.T.fromNow(d.endTimeMs)}${this.$t(')')}`);
+      lines.push(`${this.$t('Trigger Time: ')}${this.T.getDateTimeString(d.triggerTimeMs)} ${this.$t('(')}${this.T.fromNow(d.triggerTimeMs)}${this.$t(')')}`);
+      lines.push(`${this.$t('Start Time: ')}${this.T.getDateTimeString(d.startTimeMs)} ${this.$t('(')}${this.T.fromNow(d.startTimeMs)}${this.$t(')')}`);
+      lines.push(`${this.$t('End Time: ')}${this.T.getDateTimeString(d.endTimeMs)} ${this.$t('(')}${this.T.fromNow(d.endTimeMs)}${this.$t(')')}`);
 
       // 延迟
       if (d.delay > 0) {
-        lines.push(`${this.$t('Delay')}: ${d.delay} ${this.$t('s')}`);
+        lines.push(`${this.$t('Delay Time: ')}${d.delay} ${this.$t('s')}`);
       } else {
-        lines.push(`${this.$t('Delay')}: -`);
+        lines.push(`${this.$t('Delay Time: ')}-`);
       }
 
       // 耗时
-      if (d.queuingCost > 1000) {
-        lines.push(`${this.$t('Queuing')}: ${d.queuingCost} ${this.$t('ms')}`);
-      } else {
-        lines.push(`${this.$t('Queuing')}: -`);
-      }
-      lines.push(`${this.$t('Run Cost')}: ${d.runCostMs} ${this.$t('ms')}`);
+      lines.push(`${this.$t('Queuing Time: ')}${d.queuingTime} ${this.$t('ms')}`);
+      lines.push(`${this.$t('Run Cost: ')}${d.runCostMs} ${this.$t('ms')}`);
 
       // 任务类型
-      lines.push(`${this.$t('Task Type')}: ${d.rootTaskId === 'ROOT' ? this.$t('Main Task') : this.$t('Sub Task')}`);
+      lines.push(`${this.$t('Task Type: ')}${d.rootTaskId === 'ROOT' ? this.$t('Main Task') : this.$t('Sub Task')}`);
 
       // 任务状态
-      lines.push(`${this.$t('Task Status')}: ${this.$t(d.status)}`);
+      lines.push(`${this.$t('Task Status: ')}${this.$t(d.status)}`);
 
       // 日志
       lines.push('');

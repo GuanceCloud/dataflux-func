@@ -36,6 +36,8 @@ en:
   ms     : 毫秒
   s      : 秒
   seconds: 秒
+  min    : 分钟
+  minutes: 分钟
 
   # 时长
   nSeconds: '{n} 秒'
