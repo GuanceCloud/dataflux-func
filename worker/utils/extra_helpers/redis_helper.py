@@ -168,24 +168,24 @@ class RedisHelper(object):
             elif isinstance(key, dict):
                 key = ', '.join(key.keys())
 
-        dumps = ' '.join([
+        args_kwargs_dumps = ' '.join([
             ' '.join([ str(x) for x in command_args[1:]]),
             ' '.join([ f'{k}={v}' for k, v in kwargs.items()])
         ]).strip()
 
-        dumps = toolkit.limit_text(dumps, max_length=100)
+        args_kwargs_dumps = toolkit.limit_text(args_kwargs_dumps, max_length=100)
 
         try:
             dt = toolkit.DiffTimer()
             result = getattr(self.client, command)(*command_args, **kwargs)
 
             if not self.skip_log:
-                self.logger.debug(f'[REDIS] Run `{command.upper()} {key} {dumps} (Cost: {dt.tick()} ms)`')
+                self.logger.debug(f'[REDIS] Run `{command.upper()} {key}` {args_kwargs_dumps} (Cost: {dt.tick()} ms)')
 
             return result
 
         except Exception as e:
-            self.logger.error(f'[REDIS] Run `{command.upper()} {key} {dumps} (Cost: {dt.tick()} ms)`')
+            self.logger.error(f'[REDIS] Run `{command.upper()} {key}` {args_kwargs_dumps} (Cost: {dt.tick()} ms)')
             raise
 
     def publish(self, topic, message):
