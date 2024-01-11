@@ -5,12 +5,10 @@ var path         = require('path');
 var childProcess = require('child_process');
 
 /* 3rd-party Modules */
-var async      = require('async');
-var request    = require('request');
-var promClient = require('prom-client');
+var async   = require('async');
+var request = require('request');
 
 /* Project Modules */
-var E          = require('../utils/serverError');
 var IMAGE_INFO = require('../utils/yamlResources').get('IMAGE_INFO');
 var ROUTE      = require('../utils/yamlResources').get('ROUTE');
 var CONST      = require('../utils/yamlResources').get('CONST');
@@ -18,8 +16,7 @@ var CONFIG     = require('../utils/yamlResources').get('CONFIG');
 var toolkit    = require('../utils/toolkit');
 var common     = require('../utils/common');
 
-var funcMod          = require('../models/funcMod');
-var systemSettingMod = require('../models/systemSettingMod');
+var funcMod = require('../models/funcMod');
 
 /* Init */
 var API_LIST_CACHE = {};
@@ -455,90 +452,12 @@ exports.systemInfo = function(req, res, next) {
 exports.metrics = function(req, res, next) {
   res.set('Content-Type', 'application/openmetrics-text; version=1.0.0; charset=utf-8');
 
-  var interval_min = 10;
-  var interval     = interval_min * 60;
+  var deprecateInfo = [
+    '# [DEPRECATE] This API is DEPRECATED, please go to "DataFlux Func / Management / System Setting" and enable "Guance Data Upload" to report system metrics.',
+    '# [废除] 本 API 已被废除，请前往「DataFlux Func / 管理 / 系统配置」并开启「观测云数据上报」来上报系统指标。'
+  ].join('\n');
 
-  var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', '*']);
-  var ignoreMetrics = [
-    // 不适合作为OpenMetric导出的指标
-    'matchedRouteCount', // 按每日统计的数据，非时序数据
-  ];
-
-  var keys = null;
-  async.series([
-    // 查询所有指标键
-    function(asyncCallback) {
-      res.locals.cacheDB.keys(cacheKeyPattern, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        keys = cacheRes.sort();
-
-        return asyncCallback();
-      })
-    },
-    // 设置指标
-    function(asyncCallback) {
-      async.eachSeries(keys, function(key, eachCallback) {
-        var parsedKey = toolkit.parseCacheKey(key);
-        var metric = parsedKey.tags.metric;
-        var labels = parsedKey.tags;
-        delete labels.metric;
-
-        if (ignoreMetrics.indexOf(metric) >= 0) return eachCallback();
-
-        // 初始化Prom指标
-        var promMetric = METRIC_MAP[metric];
-        if (!promMetric) {
-          promMetric = new promClient.Gauge({
-            name      : `DFF_${metric}`,
-            help      : toolkit.splitCamel(metric) + ` (in recent ${interval_min} minutes)`,
-            labelNames: Object.keys(labels),
-          });
-          METRIC_MAP[metric] = promMetric;
-        }
-
-        var now = toolkit.getTimestamp();
-        var opt = {
-          start    : now - interval * 2,
-          groupTime: interval,
-          limit    : 2,
-        };
-
-        switch(metric) {
-          case 'funcCallCount':
-            opt.agg = 'sum';
-            break;
-        }
-
-        res.locals.cacheDB.tsGet(key, opt, function(err, tsData) {
-          if (err) return eachCallback(err);
-
-          var value = 0;
-          try { value = tsData[0][1] } catch(_) {}
-
-          switch(metric) {
-            case 'cacheDBKeyCountByPrefix':
-              if (labels.prefix) {
-                labels.prefix = toolkit.fromBase64(labels.prefix);
-              }
-              break
-          }
-          promMetric.labels(labels).set(value);
-
-          return eachCallback();
-        });
-      }, asyncCallback);
-    },
-  ], function(err) {
-    if (err) return next(err)
-
-    promClient.register.metrics().then(function(data) {
-      return res.locals.sendRaw(data);
-
-    }) .catch(function(err) {
-      return next(err)
-    });
-  });
+  return res.locals.sendRaw(deprecateInfo);
 };
 
 exports.ping = function(req, res, next) {

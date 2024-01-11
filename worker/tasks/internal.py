@@ -33,6 +33,162 @@ class BaseInternalTask(BaseTask):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
+class SystemMetric(BaseInternalTask):
+    '''
+    系统指标
+    '''
+    name = 'Internal.SystemMetric'
+
+    def get_metric_worker_queue(self):
+        guance_data = []
+
+        available_queues = list(range(CONFIG['_WORKER_QUEUE_COUNT']))
+        for queue in available_queues:
+            worker_queue        = toolkit.get_worker_queue(queue)
+            worker_queue_length = int(self.cache_db.llen(worker_queue) or 0)
+
+            # 内置监控
+            cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'workerQueueLength', 'queue', worker_queue])
+            self.cache_db.ts_add(cache_key, worker_queue_length, timestamp=self.trigger_time)
+
+            # 观测云
+            if self.guance_data_upload_url:
+                guance_data.append({
+                    'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_WORKER_QUEUE'],
+                    'tags': {
+                        'queue'    : str(queue),
+                        'redis_key': worker_queue,
+                    },
+                    'fields': {
+                        'length' : worker_queue_length,
+                    },
+                    'timestamp': self.trigger_time,
+                })
+
+        if self.guance_data_upload_url:
+            self.upload_guance_data('metric', guance_data)
+
+    def get_metric_cache_db(self):
+        cache_res = self.cache_db.info()
+        db_info   = cache_res.get(f"db{CONFIG['REDIS_DATABASE'] or 0}") or {}
+
+        key_count   = db_info.get('keys')          or 0
+        used_memory = cache_res.get('used_memory') or 0
+
+        # 内置监控
+        cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'cacheDBKeyUsed'])
+        self.cache_db.ts_add(cache_key, key_count, timestamp=self.trigger_time)
+
+        cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'cacheDBMemoryUsed'])
+        self.cache_db.ts_add(cache_key, used_memory, timestamp=self.trigger_time)
+
+        # 观测云
+        if self.guance_data_upload_url:
+            guance_data = {
+                'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_CACHE_DB'],
+                'tags': {
+                },
+                'fields': {
+                    'keys'       : key_count,
+                    'used_memory': used_memory,
+                },
+                'timestamp': self.trigger_time,
+            }
+
+            self.upload_guance_data('metric', guance_data)
+
+    def get_metric_cache_db_key(self):
+        key_prefix_count_map = {}
+
+        keys = self.cache_db.keys()
+        for k in keys:
+            if k.startswith(CONFIG['APP_NAME']):
+                prefix = k.split(':')[0] + ':TAGS'
+            else:
+                prefix = 'NON_DFF_KEY'
+
+            if prefix not in key_prefix_count_map:
+                key_prefix_count_map[prefix] = 0
+
+            key_prefix_count_map[prefix] += 1
+
+        guance_data = []
+        for prefix, count in key_prefix_count_map.items():
+            # 内置监控
+            cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'cacheDBKeyCountByPrefix', 'prefix', toolkit.get_base64(prefix)])
+            self.cache_db.ts_add(cache_key, count, timestamp=self.trigger_time)
+
+            # 观测云
+            if self.guance_data_upload_url:
+                guance_data.append({
+                    'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_CACHE_DB_KEY'],
+                    'tags': {
+                        'prefix': prefix,
+                    },
+                    'fields': {
+                        'count': count,
+                    },
+                    'timestamp': self.trigger_time,
+                })
+
+        if self.guance_data_upload_url:
+            self.upload_guance_data('metric', guance_data)
+
+    def get_metric_db(self):
+        guance_data = []
+
+        db_res = self.db.query('SHOW TABLE STATUS')
+        for d in db_res:
+            total_length = d['Data_length'] + d['Index_length']
+
+            # 内置监控
+            cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'dbTableTotalUsed', 'table', d['Name']])
+            self.cache_db.ts_add(cache_key, total_length, timestamp=self.trigger_time)
+
+            cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'dbTableDataUsed', 'table', d['Name']])
+            self.cache_db.ts_add(cache_key, d['Data_length'], timestamp=self.trigger_time)
+
+            cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'dbTableIndexUsed', 'table', d['Name']])
+            self.cache_db.ts_add(cache_key, d['Index_length'], timestamp=self.trigger_time)
+
+            # 观测云
+            if self.guance_data_upload_url:
+                guance_data.append({
+                    'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_DB'],
+                    'tags': {
+                        'name'   : d['Name'],
+                        'comment': d['Comment'],
+                    },
+                    'fields': {
+                        'total_length'  : total_length,
+                        'data_length'   : d['Data_length'],
+                        'index_length'  : d['Index_length'],
+                        'avg_row_length': d['Avg_row_length'],
+                        'rows'          : d['Rows'],
+                        'auto_increment': d['Auto_increment'],
+                    },
+                    'timestamp': self.trigger_time,
+                })
+
+        if self.guance_data_upload_url:
+            self.upload_guance_data('metric', guance_data)
+
+    def run(self, **kwargs):
+        # 上锁
+        self.lock()
+
+        # 上报队列长度数据
+        self.safe_call(self.get_metric_worker_queue)
+
+        # 上报缓存数据库信息
+        self.safe_call(self.get_metric_cache_db)
+
+        # 上报缓存数据库 Key 信息
+        self.safe_call(self.get_metric_cache_db_key)
+
+        # 上报数据库信息
+        self.safe_call(self.get_metric_db)
+
 class FlushDataBuffer(BaseInternalTask):
     '''
     释放缓存数据

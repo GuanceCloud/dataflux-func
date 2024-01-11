@@ -131,10 +131,14 @@ def before_app_create():
             print(f'Database Timezone: {timezone}');
 
 def after_app_created():
-    from worker.tasks.internal import AutoBackupDB, ReloadDataMD5Cache, AutoRun, AutoClean
+    from worker.tasks.internal import SystemMetric, AutoBackupDB, ReloadDataMD5Cache, AutoRun, AutoClean
 
     # 启动时自动执行
     if not CONFIG['_DISABLE_STARTUP_TASKS']:
+        REDIS.put_tasks({
+            'name': SystemMetric.name,
+        })
+
         REDIS.put_tasks({
             'name': AutoBackupDB.name,
         })

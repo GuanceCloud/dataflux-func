@@ -23,53 +23,53 @@ CONFIG = yaml_resources.get('CONFIG')
 
 from worker import LOGGER, REDIS, run_background
 
-# 定时任务表
+# 系统定时任务
 from worker.tasks.example import ExampleSuccess
 from worker.tasks.crontab_starter import CrontabStarter
-from worker.tasks.internal import FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache
+from worker.tasks.internal import SystemMetric, FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache
 
-CRONTAB_MAP = {
-    # 示例
-    # 'example': {
+SYSTEM_CRONTAB = [
+    # {
+    #     # 示例
     #     'task'   : ExampleSuccess,
     #     'crontab': '*/3 * * * * *',
     # },
-
-    # 自动触发配置启动器
-    'crontab-starter': {
+    {
+        # 自动触发配置启动器
         'task'   : CrontabStarter,
         'crontab': CONFIG['_CRONTAB_STARTER'],
     },
-
-    # 缓存数据刷入数据库
-    'flush-data-buffer': {
+    {
+        # 系统指标
+        'task'   : SystemMetric,
+        'crontab': CONFIG['_CRONTAB_SYSTEM_METRIC'],
+    },
+    {
+        # 缓存数据刷入数据库
         'task'   : FlushDataBuffer,
         'crontab': CONFIG['_CRONTAB_FLUSH_DATA_BUFFER'],
     },
-
-    # 自动清理
-    'auto-clean': {
+    {
+        # 自动清理
         'task'   : AutoClean,
         'crontab': CONFIG['_CRONTAB_AUTO_CLEAN'],
     },
-
-    # 数据库自动备份
-    'auto-backup-db': {
+    {
+        # 数据库自动备份
         'task'   : AutoBackupDB,
         'crontab': CONFIG['_CRONTAB_AUTO_BACKUP_DB'],
     },
-
-    # 重新加载数据 MD5 缓存
-    'reload-data-md5-cache': {
+    {
+        # 重新加载数据 MD5 缓存
         'task'   : ReloadDataMD5Cache,
         'crontab': CONFIG['_CRONTAB_RELOAD_DATA_MD5_CACHE'],
         'kwargs' : { 'lockTime': 15, 'all': True },
     },
-}
+]
 
 def get_matched_crontab_task_instances(t):
     result = []
-    for item in CRONTAB_MAP.values():
+    for item in SYSTEM_CRONTAB:
         if toolkit.is_match_crontab(item['crontab'], t, tz=CONFIG['TIMEZONE']):
             task_inst = item['task'](kwargs=item.get('kwargs'), trigger_time=t)
             result.append(task_inst)

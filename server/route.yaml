@@ -586,13 +586,14 @@ indexAPI:
     response : json
 
   metrics:
-    showInDoc: true
-    name     : Metric data (OpenMetric)
-    name_zhCN: 指标数据（OpenMetric）
-    method   : get
-    url      : /api/v1/metrics
-    response : text
-    privilege: general_r
+    showInDoc : true
+    deprecated: true
+    name      : Metric data (OpenMetric)
+    name_zhCN : 指标数据（OpenMetric）
+    method    : get
+    url       : /api/v1/metrics
+    response  : text
+    privilege : general_r
 
   captcha:
     name     : Gen captcha image
