@@ -156,7 +156,7 @@ class SystemMetric(BaseInternalTask):
             # 观测云
             if self.guance_data_upload_url:
                 guance_data.append({
-                    'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_DB'],
+                    'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_DB_TABLE'],
                     'tags': {
                         'target' : f"{CONFIG['MYSQL_HOST']}: {CONFIG['MYSQL_PORT']}/{CONFIG['MYSQL_DATABASE']}",
                         'name'   : d['Name'],
