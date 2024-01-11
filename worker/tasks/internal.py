@@ -87,6 +87,7 @@ class SystemMetric(BaseInternalTask):
             guance_data = {
                 'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_CACHE_DB'],
                 'tags': {
+                    'target': f"{CONFIG['REDIS_HOST']}:{CONFIG['REDIS_PORT']}/{CONFIG['REDIS_DATABASE']}",
                 },
                 'fields': {
                     'keys'       : key_count,
@@ -123,6 +124,7 @@ class SystemMetric(BaseInternalTask):
                 guance_data.append({
                     'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_CACHE_DB_KEY'],
                     'tags': {
+                        'target': f"{CONFIG['REDIS_HOST']}: {CONFIG['REDIS_PORT']}/{CONFIG['REDIS_DATABASE']}",
                         'prefix': prefix,
                     },
                     'fields': {
@@ -156,6 +158,7 @@ class SystemMetric(BaseInternalTask):
                 guance_data.append({
                     'measurement': CONFIG['_MONITOR_GUANCE_MEASUREMENT_DB'],
                     'tags': {
+                        'target' : f"{CONFIG['MYSQL_HOST']}: {CONFIG['MYSQL_PORT']}/{CONFIG['MYSQL_DATABASE']}",
                         'name'   : d['Name'],
                         'comment': d['Comment'],
                     },
