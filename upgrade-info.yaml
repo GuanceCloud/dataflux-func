@@ -679,3 +679,11 @@ upgradeInfo:
         KEY `QUEUE` (`queue`),
         KEY `STATUS` (`status`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务记录（函数）';
+
+  # 于观测云SaaS 2024-11-15 迭代中实装
+  - seq: 27
+    database: |-
+      -- 扩充 originId 字段长度
+      TRUNCATE biz_main_task_record_func;
+      ALTER TABLE biz_main_task_record_func
+        MODIFY COLUMN `originId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '任务来源 ID';
