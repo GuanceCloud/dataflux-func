@@ -507,7 +507,7 @@ exports.systemReport = function(req, res, next) {
   var MAIN = IMAGE_INFO;
 
   // 配置信息
-  var _CONFIG = toolkit.maskConfig(CONFIG);
+  var _CONFIG = toolkit.jsonMask(CONFIG);
 
   // Python 相关
   var PYTHON = {

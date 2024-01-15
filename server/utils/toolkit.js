@@ -42,7 +42,8 @@ var TRANSMISSION_RATE_RADIX_IN_BYTE = toolkit.TRANSMISSION_RATE_RADIX_IN_BYTE = 
 
 var RE_HTTP_BASIC_AUTH_MASK         = /:\/\/.+:.+@/g;
 var RE_HTTP_BASIC_AUTH_MASK_REPLACE = '://***:***@';
-var CONFIG_AUTH_FIELD_KEYWORDS = [
+
+var MASK_KEYWORDS = [
   'secret',
   'password',
 ]
@@ -486,6 +487,28 @@ var jsonDumps = toolkit.jsonDumps = function jsonDumps(j, indent) {
   } else {
     return JSON.stringify(j, replacer, indent);
   }
+};
+
+/**
+ * Mask JSON fields according keywords
+ * @param  {Object} j
+ * @return string
+ */
+var jsonMask = toolkit.jsonMask = function(j) {
+  var masked = {};
+  for (var k in j) {
+    masked[k] = j[k];
+
+    for (var i = 0; i < MASK_KEYWORDS.length; i++) {
+      var kw = MASK_KEYWORDS[i].toLowerCase();
+      if (k.toLowerCase().indexOf(kw) >= 0) {
+        masked[k] = '*****';
+        break;
+      }
+    }
+  }
+
+  return masked;
 };
 
 /**
@@ -2433,23 +2456,6 @@ var maskAuthURL = toolkit.maskAuthURL = function(s) {
   } catch(err) {
     return s;
   }
-};
-
-var maskConfig = toolkit.maskConfig = function(j) {
-  var masked = {};
-  for (var k in j) {
-    masked[k] = j[k];
-
-    for (var i = 0; i < CONFIG_AUTH_FIELD_KEYWORDS.length; i++) {
-      var kw = CONFIG_AUTH_FIELD_KEYWORDS[i].toLowerCase();
-      if (k.toLowerCase().indexOf(kw) >= 0) {
-        masked[k] = '*****';
-        break;
-      }
-    }
-  }
-
-  return masked;
 };
 
 var childProcessSpawnSync = toolkit.childProcessSpawnSync = function(cmd, cmdArgs, cmdOpt) {

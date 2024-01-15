@@ -44,6 +44,11 @@ MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000
 RE_HTTP_BASIC_AUTH_MASK         = re.compile('://.+:.+@')
 RE_HTTP_BASIC_AUTH_MASK_REPLACE = '://***:***@'
 
+MASK_KEYWORDS = [
+  'secret',
+  'password',
+]
+
 def nope_func(*args, **kwargs):
     pass
 
@@ -271,6 +276,18 @@ def json_loads(s):
 
 def json_copy(j):
     return ujson.loads(json_dumps(j))
+
+def json_mask(j):
+    masked = {}
+    for k, v in j.items():
+        masked[k] = j[k]
+
+        for kw in MASK_KEYWORDS:
+            if kw in k.lower():
+                masked[k] = '*****'
+                break
+
+    return masked
 
 def no_duplication(arr):
     return list(set(arr))

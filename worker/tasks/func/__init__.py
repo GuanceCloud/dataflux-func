@@ -142,9 +142,6 @@ class InvalidAPIOptionException(DataFluxFuncBaseException):
 class DuplicatedFuncException(DataFluxFuncBaseException):
     pass
 
-class ConfigUnaccessableException(DataFluxFuncBaseException):
-    pass
-
 class DFFWraper(object):
     def __init__(self, inject_funcs=None):
         self.api_func_set = set()
@@ -854,6 +851,8 @@ class FuncEnvVariableHelper(object):
         return toolkit.json_copy(env_variable['castedValue'])
 
 class FuncConfigHelper(object):
+    MASKED_CONFIG = toolkit.json_mask(CONFIG)
+
     def __init__(self, task):
         self.__task = task
 
@@ -861,20 +860,16 @@ class FuncConfigHelper(object):
         return self.get(*args, **kwargs)
 
     def get(self, config_id, default=None):
-        if not config_id.startswith('CUSTOM_'):
-            e = ConfigUnaccessableException(f'Config `{config_id}` is not accessible')
-            raise e
-
-        if config_id in CONFIG:
-            return toolkit.json_copy(CONFIG[config_id])
+        if config_id in self.MASKED_CONFIG:
+            return toolkit.json_copy(self.MASKED_CONFIG[config_id])
         else:
             return toolkit.json_copy(default)
 
-    def list(self):
-        return [{ 'key': k, 'value': v } for k, v in CONFIG.items() if k.startswith('CUSTOM_')]
+    def list(self, all_configs=False):
+        return [{ 'key': k, 'value': v } for k, v in self.MASKED_CONFIG.items() if all_configs or k.startswith('CUSTOM_')]
 
-    def dict(self):
-        return dict([(k, v) for k, v in CONFIG.items() if k.startswith('CUSTOM_')])
+    def dict(self, all_configs=False):
+        return dict([(k, v) for k, v in self.MASKED_CONFIG.items() if all_configs or k.startswith('CUSTOM_')])
 
 class FuncExtraForGuanceHelper(object):
     def __init__(self, task):
