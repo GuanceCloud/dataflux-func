@@ -447,7 +447,7 @@ export default {
         l = l.replace(/\t/g, ' '.repeat(4)); // Tab 转 4 空格
         l = l.trimRight();                   // 删除行尾空格
         return l;
-      }).join('\n');
+      }).join('\n').trimRight();
 
       // 添加行尾空行
       if (codeDraft) codeDraft += '\n';

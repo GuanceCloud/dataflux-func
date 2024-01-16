@@ -141,7 +141,7 @@ function _getRemoteTokenInfo(scriptMarket) {
   var localPath = _getLocalAbsPath(scriptMarket);
 
   var tokenFilePath = path.join(localPath, CONFIG._SCRIPT_MARKET_TOKEN_FILE);
-  var remoteToken   = toolkit.safeReadFileSync(tokenFilePath);
+  var remoteToken   = toolkit.safeReadFileSync(tokenFilePath).trim();
 
   var info = {
     path : tokenFilePath,

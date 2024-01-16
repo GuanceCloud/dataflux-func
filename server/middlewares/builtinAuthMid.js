@@ -287,7 +287,7 @@ exports.byLocalhostAuthToken = function byLocalhostAuthToken(req, res, next) {
 
   // Get Localhost Auth Token
   var receivedLocalhostAuthToken = req.get(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_HEADER);
-  var localhostAuthToken         = toolkit.safeReadFileSync(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_PATH);
+  var localhostAuthToken         = toolkit.safeReadFileSync(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_PATH).trim();
 
   // Skip if no Localhost Auth Token
   if (req.hostname !== 'localhost' || !receivedLocalhostAuthToken || !localhostAuthToken) return next();

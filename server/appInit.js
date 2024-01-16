@@ -305,7 +305,7 @@ exports.afterAppCreated = function(app, server) {
       },
       // 执行 Autorun 脚本
       function(asyncCallback) {
-        var localhostAuthToken = toolkit.safeReadFileSync(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_PATH);
+        var localhostAuthToken = toolkit.safeReadFileSync(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_PATH).trim();
 
         var initScriptDir = path.join(__dirname, '../init-scripts/');
         var scripts = fs.readdirSync(initScriptDir).filter(function(filename) {

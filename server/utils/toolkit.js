@@ -2406,7 +2406,7 @@ var createGitHandler = toolkit.createGitHandler = function(baseDir, timeout) {
   var git = simpleGit({
     baseDir: baseDir,
     timeout: { block: 15 * 1000 },
-  });
+  })
 
   return git;
 };
@@ -2436,9 +2436,6 @@ var safeReadFileSync = toolkit.safeReadFileSync = function(filePath, type) {
         break;
 
       default:
-        if ('string' === typeof data) {
-          data = data.trim();
-        }
         break;
     }
 
