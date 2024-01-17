@@ -413,7 +413,7 @@ function _doSetup(userConfig, callback) {
       });
     },
   ], function(err) {
-    if (err) return process.exit(1);
+    if (err) return process.exit(99);
 
     if (setupErrorWrap.hasError()) return callback(setupErrorWrap);
 
@@ -462,7 +462,7 @@ function runSetupServer() {
     yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, config) {
       if (err) {
         console.log(err);
-        return process.exit(1);
+        return process.exit(99);
       }
 
       // 进入下一轮等待
@@ -602,7 +602,7 @@ function runUpgrade() {
       cacheHelper.lock(lockKey, lockValue, maxLockTime, function(err, cacheRes) {
         if (err) {
           console.log('Checking upgrade status failed: ', err);
-          return process.exit(1);
+          return process.exit(99);
         }
 
         // 正常取得锁，继续执行
@@ -614,7 +614,7 @@ function runUpgrade() {
           cacheHelper.get(lockKey, function(err, cacheRes) {
             if (err) {
               console.log('Waiting upgrade status failed: ', err);
-              return process.exit(1);
+              return process.exit(99);
             }
 
             if (cacheRes) {
@@ -714,7 +714,7 @@ function runUpgrade() {
 
     if (err) {
       console.log('Upgrading failed: ', err);
-      return process.exit(1);
+      return process.exit(99);
     }
 
     return process.exit(0);
@@ -753,7 +753,7 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
       return _doSetup(USER_CONFIG, function(setupErrorWrap) {
         if (setupErrorWrap && setupErrorWrap.hasError()) {
           console.log(setupErrorWrap.toJSON());
-          return process.exit(1);
+          return process.exit(99);
         }
 
         console.log('Auto setup finished.');

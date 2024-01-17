@@ -139,7 +139,7 @@ def run_background(func, pool_size, max_tasks):
                     shutdown_event.set()
 
                 except redis.exceptions.ConnectionError as e:
-                    LOGGER.error('Redis Connection error, Shutting down...')
+                    LOGGER.error('Redis Connection error, Shutting down... (1)')
                     shutdown_event.set()
 
                 except Exception as e:
@@ -166,6 +166,9 @@ def run_background(func, pool_size, max_tasks):
 
             time.sleep(1)
 
+            # if REDIS.get('shutdownFlag'):
+            #     shutdown_event.set()
+
         # 清理
         for p in pool:
             p.join()
@@ -173,9 +176,12 @@ def run_background(func, pool_size, max_tasks):
         LOGGER.warning('Shutdown')
 
     except redis.exceptions.ConnectionError as e:
-        LOGGER.error('Redis Connection error, Shutting down...')
+        LOGGER.error('Redis Connection error, Shutting down... (2)')
         shutdown_event.set()
 
     except KeyboardInterrupt as e:
         LOGGER.warning('Interrupted by Ctrl + C')
         shutdown_event.set()
+
+    finally:
+        sys.exit(99)
