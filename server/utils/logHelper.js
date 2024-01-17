@@ -39,7 +39,7 @@ var LOG_TEXT_FIELDS = [
   // 'appName',
   // 'subAppName',
   'subAppNameShort',
-  'pid',
+  // 'pid',
   // 'upTime',
   // 'level',
   'levelShort',
@@ -47,6 +47,7 @@ var LOG_TEXT_FIELDS = [
   // 'timestampMs',
   // 'timestampHumanized',
   'timestampShort',
+  'lineNo',
   'hostname',
   // 'traceId',
   // 'requestType',
@@ -70,6 +71,7 @@ var LOG_TEXT_COLOR_MAP = {
   timestampMs       : true,
   timestampHumanized: true,
   timestampShort    : true,
+  lineNo            : true,
   hostname          : true,
   traceId           : 'yellow',
   traceIdShort      : 'yellow',
@@ -94,6 +96,7 @@ var LOG_JSON_FIELD_MAP = {
   timestampMs       : 'timestamp',
   timestampHumanized: 'timestamp_humanized',
   // timestampShort    : 'timestamp_short',
+  lineNo            : 'line_no',
   hostname          : 'hostname',
   traceId           : 'trace_id',
   requestType       : 'request_type',
@@ -144,6 +147,14 @@ var createWinstonFormatter = function(opt) {
         // Pretty field
         var fieldValue = meta[field] || '';
         switch (field) {
+          case 'pid':
+            fieldValue = `PID:${fieldValue}`;
+            break;
+
+          case 'lineNo':
+            fieldValue = `L${toolkit.padZero(fieldValue, 4)}`;
+            break;
+
           case 'traceId':
           case 'traceIdShort':
             fieldValue = fieldValue || 'TRACE-NONE';
@@ -244,6 +255,7 @@ var LoggerHelper = function(locals, req) {
 
   this.level = CONFIG.LOG_LEVEL.toUpperCase();
 
+  this._lineNo      = 0;
   this._prevLogTime = null;
   this._stagedLogs  = [];
 };
@@ -293,6 +305,8 @@ LoggerHelper.prototype._log = function() {
     level = level.toUpperCase();
   }
 
+  this._lineNo += 1;
+
   var nowMs    = Date.now();
   var now      = parseInt(nowMs / 1000);
   var nowStr   = moment(nowMs).tz(CONFIG.TIMEZONE).format('YYYY-MM-DD HH:mm:ss');
@@ -323,6 +337,7 @@ LoggerHelper.prototype._log = function() {
       timestampMs       : nowMs,
       timestampHumanized: nowStr,
       timestampShort    : nowShort,
+      lineNo            : this._lineNo,
       hostname          : HOSTNAME,
       requestType       : this.locals.requestType,
       clientIP          : this.req.ip,

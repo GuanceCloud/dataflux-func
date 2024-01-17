@@ -46,8 +46,9 @@ LOG_TEXT_FIELDS = [
     # 'appName',
     # 'subAppName',
     'subAppNameShort',
-    'processType',
-    'pid',
+    # 'processType',
+    'processTypeShort',
+    # 'pid',
     # 'upTime',
     # 'level',
     'levelShort',
@@ -55,6 +56,7 @@ LOG_TEXT_FIELDS = [
     # 'timestampMs',
     # 'timestampHumanized',
     'timestampShort',
+    'lineNo',
     'hostname',
     'queue',
     # 'taskId',
@@ -74,6 +76,7 @@ LOG_TEXT_COLOR_MAP = {
     'subAppName'        : True,
     'subAppNameShort'   : True,
     'processType'       : True,
+    'processTypeShort'  : True,
     'pid'               : True,
     'upTime'            : True,
     'level'             : True,
@@ -82,6 +85,7 @@ LOG_TEXT_COLOR_MAP = {
     'timestampMs'       : True,
     'timestampHumanized': True,
     'timestampShort'    : True,
+    'lineNo'            : True,
     'hostname'          : True,
     'queue'             : 'yellow',
     'queueShort'        : 'yellow',
@@ -101,7 +105,8 @@ LOG_JSON_FIELD_MAP = {
     'appName'           : 'app',
     'subAppName'        : 'sub_app',
     # 'subAppNameShort'   : 'sub_app_short',
-    'processType'       : 'process_type',
+    # 'processType'       : 'process_type',
+    'processTypeShort'  : 'process_type_short',
     'pid'               : 'pid',
     'upTime'            : 'up_time',
     'level'             : 'level',
@@ -110,6 +115,7 @@ LOG_JSON_FIELD_MAP = {
     'timestampMs'       : 'timestamp',
     'timestampHumanized': 'timestamp_humanized',
     # 'timestampShort'    : 'timestamp_short',
+    'lineNo'            : 'line_no',
     'hostname'          : 'hostname',
     'queue'             : 'queue',
     'queueShort'        : 'queue_short',
@@ -160,7 +166,13 @@ class LoggingFormatter(logging.Formatter):
 
                 # Pretty field
                 field_value = meta.get(field) or ''
-                if field == 'upTime':
+                if field == 'pid':
+                    field_value = f'PID:{field_value}'
+
+                elif field == 'lineNo':
+                    field_value = f"L{str(field_value).rjust(4, '0')}"
+
+                elif field == 'upTime':
                     field_value = f'UP {field_value or 0}s'
 
                 elif field == 'costTime':
@@ -217,6 +229,7 @@ class LogHelper(object):
 
         self.level = CONFIG['LOG_LEVEL']
 
+        self._line_no       = 0
         self._base_time     = int(time.time() * 1000)
         self._prev_log_time = None
         self._staged_logs   = []
@@ -229,6 +242,8 @@ class LogHelper(object):
                 level = 'INFO'
         else:
             level = level.upper()
+
+        self._line_no += 1
 
         now_ms    = int(time.time() * 1000)
         now       = int(now_ms / 1000)
@@ -248,6 +263,7 @@ class LogHelper(object):
                 'subAppName'        : f'Worker',
                 'subAppNameShort'   : f'WKR',
                 'processType'       : process_type,
+                'processTypeShort'  : process_type[0],
                 'upTime'            : now - RUN_UP_TIME,
                 'level'             : level,
                 'levelShort'        : level[0],
@@ -255,6 +271,7 @@ class LogHelper(object):
                 'timestampMs'       : now_ms,
                 'timestampHumanized': now_str,
                 'timestampShort'    : now_short,
+                'lineNo'            : self._line_no,
                 'hostname'          : HOSTNAME,
                 'queue'             : f'#{self.task.queue}',
                 # 'clientIP'          : meta_extra.get('clientIP'),
