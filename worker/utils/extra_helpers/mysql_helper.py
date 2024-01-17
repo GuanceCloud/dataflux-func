@@ -11,6 +11,7 @@ import arrow
 import pymysql
 from pymysql.cursors import DictCursor
 from pymysql.constants import CLIENT as CLIENT_FLAG
+from dbutils.persistent_db import PersistentDB
 from dbutils.pooled_db import PooledDB
 
 # Project Modules
@@ -19,7 +20,7 @@ from worker.utils.extra_helpers import format_sql_v2 as format_sql
 
 CONFIG = yaml_resources.get('CONFIG')
 
-def get_config(c):
+def get_config(c, use_pool=True):
     _charset = c.get('charset') or 'utf8mb4'
 
     config = {
@@ -29,14 +30,21 @@ def get_config(c):
         'password': c.get('password'),
         'database': c.get('database'),
 
-        'cursorclass' : DictCursor,
-        'charset'     : _charset,
-        'init_command': 'SET NAMES "{0}"'.format(_charset),
-        'client_flag' : CLIENT_FLAG.MULTI_STATEMENTS,
-
-        'maxconnections' : c.get('maxconnections') or 1,
+        'cursorclass'    : DictCursor,
+        'charset'        : _charset,
+        'init_command'   : 'SET NAMES "{0}"'.format(_charset),
+        'client_flag'    : CLIENT_FLAG.MULTI_STATEMENTS,
         'connect_timeout': CONFIG['_MYSQL_CONNECT_TIMEOUT'],
     }
+
+    # For PooledDB
+    if use_pool:
+        config.update({
+            'mincached'     : 1,
+            'maxconnections': c.get('maxconnections') or 1,
+            'blocking'      : True,
+        })
+
     return config
 
 CLIENT_CONFIG = None
@@ -56,7 +64,7 @@ class MySQLHelper(object):
                 config['maxconnections'] = pool_size
 
             self.config = config
-            self.client = PooledDB(pymysql, **get_config(config))
+            self.client = PooledDB(pymysql, **get_config(config, use_pool=True))
 
         else:
             global CLIENT_CONFIG
@@ -73,7 +81,7 @@ class MySQLHelper(object):
                     'timezone'      : CONFIG['_MYSQL_TIMEZONE'],
                     'maxconnections': CONFIG['_MYSQL_CONNECTION_LIMIT_FOR_WORKER'],
                 }
-                CLIENT = PooledDB(pymysql, **get_config(CLIENT_CONFIG))
+                CLIENT = PersistentDB(pymysql, **get_config(CLIENT_CONFIG, use_pool=False))
 
             self.config = CLIENT_CONFIG
             self.client = CLIENT
