@@ -24,6 +24,8 @@ var sortedJSON = require('sorted-json');
 
 var toolkit = exports;
 
+var SYS_START_TIME = parseInt(Date.now() / 1000);
+
 var SHORT_UNIX_TIMESTAMP_OFFSET = toolkit.SHORT_UNIX_TIMESTAMP_OFFSET = 1503982020;
 
 var MIN_UNIX_TIMESTAMP    = toolkit.MIN_UNIX_TIMESTAMP    = 0;
@@ -47,6 +49,10 @@ var MASK_KEYWORDS = [
   'secret',
   'password',
 ]
+
+var sysStartTime = toolkit.sysStartTime = function sysStartTime() {
+  return SYS_START_TIME;
+}
 
 var ensureFn = toolkit.ensureFn = function ensureFn(fn) {
   if ('function' === typeof fn) {

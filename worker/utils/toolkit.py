@@ -34,9 +34,11 @@ import nanoid
 from Cryptodome.Cipher import AES
 from croniter import croniter
 
+SYS_START_TIME = int(time.time())
+
 SHORT_UNIX_TIMESTAMP_OFFSET = 1503982020
 
-MIN_UNIX_TIMESTAMP    = 0;
+MIN_UNIX_TIMESTAMP    = 0
 MIN_UNIX_TIMESTAMP_MS = MIN_UNIX_TIMESTAMP * 1000
 MAX_UNIX_TIMESTAMP    = 2145888000 # 2038-01-01 00:00:00
 MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000
@@ -48,6 +50,9 @@ MASK_KEYWORDS = [
   'secret',
   'password',
 ]
+
+def sys_start_time():
+    return SYS_START_TIME
 
 def nope_func(*args, **kwargs):
     pass

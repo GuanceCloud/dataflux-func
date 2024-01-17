@@ -19,22 +19,11 @@ exports.get = function(req, res, next) {
   var temporaryFlags = {};
 
   async.eachLimit(temporaryFlagIds, 5, function(id, eachCallback) {
-    var cacheKey = toolkit.getWorkerCacheKey('temporaryFlag', id);
-    res.locals.cacheDB.ttl(cacheKey, function(err, cacheRes) {
+    var cacheKey = toolkit.getGlobalCacheKey('temporaryFlag', id);
+    res.locals.cacheDB.getWithTTL(cacheKey, function(err, cacheRes) {
       if (err) return eachCallback(err);
 
-      if (cacheRes === -2) {
-        // 不存在
-        temporaryFlags[id] = 0;
-
-      } else if (cacheRes === -1) {
-        // 永不过期
-        temporaryFlags[id] = -1;
-
-      } else {
-        // 正常过期
-        temporaryFlags[id] = cacheRes;
-      }
+      temporaryFlags[id] = cacheRes;
 
       return eachCallback();
     });
@@ -47,33 +36,35 @@ exports.get = function(req, res, next) {
 };
 
 exports.set = function(req, res, next) {
-  var id       = req.params.id;
-  var duration = req.body.duration;
+  var id    = req.params.id;
+  var value = req.body.value || toolkit.getTimestamp();
+  var ttl   = req.body.ttl   || 0;
 
   if (CONST.temporaryFlags.indexOf(id) < 0) {
-    // return next(new E('EClientUnsupported', 'Unsupported temporary flag'));
+    return next(new E('EClientUnsupported', 'Unsupported temporary flag'));
   }
 
-  var cacheKey = toolkit.getWorkerCacheKey('temporaryFlag', id);
+  var cacheKey = toolkit.getGlobalCacheKey('temporaryFlag', id);
   var apiCallback = function(err) {
     if (err) return next(err);
     return res.locals.sendJSON();
   }
 
-  if (duration <= 0) {
+  value = JSON.stringify(value);
+  if (ttl <= 0) {
     // 永久标记
-    return res.locals.cacheDB.set(cacheKey, 'x', apiCallback);
+    return res.locals.cacheDB.set(cacheKey, value, apiCallback);
 
   } else {
     // 自动过期标记
-    return res.locals.cacheDB.setex(cacheKey, duration, 'x', apiCallback);
+    return res.locals.cacheDB.setex(cacheKey, ttl, value, apiCallback);
   }
 };
 
 exports.clear = function(req, res, next) {
   var id = req.params.id;
 
-  var cacheKey = toolkit.getWorkerCacheKey('temporaryFlag', id);
+  var cacheKey = toolkit.getGlobalCacheKey('temporaryFlag', id);
 
   return res.locals.cacheDB.del(cacheKey, function(err) {
     if (err) return next(err);

@@ -62,7 +62,7 @@ Using Crontab Config, you can have functions executed at regular intervals: ä½¿ç
                     <span class="text-bad">{{ T.duration(pauseTimeout * 1000, true) }}</span>
                   </el-tooltip>
                 </i18n>
-                <span v-else-if="pauseTimeout < 0" class="text-bad">{{ $t('Crontab Configs has been paused globally') }}</span>
+                <span v-else-if="pauseTimeout === -1" class="text-bad">{{ $t('Crontab Configs has been paused globally') }}</span>
               </small>
 
               <el-button v-if="pauseTimeout"
@@ -356,11 +356,11 @@ export default {
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
     },
-    async pauseAll(duration) {
-      duration = duration || -1;
+    async pauseAll(ttl) {
+      ttl = ttl || -1;
       let apiRes = await this.T.callAPI('post', '/api/v1/temporary-flags/:id/do/set', {
         params: { id: 'pauseAllCrontabConfigs' },
-        body  : { duration: duration },
+        body  : { ttl: ttl },
       });
       if (!apiRes || !apiRes.ok) return;
 
@@ -380,7 +380,7 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.pauseTimeout = apiRes.data.pauseAllCrontabConfigs;
+      this.pauseTimeout = apiRes.data.pauseAllCrontabConfigs.ttl || 0;
     },
   },
   computed: {

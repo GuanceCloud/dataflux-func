@@ -21,9 +21,8 @@ CONFIG = yaml_resources.get('CONFIG')
 # Init
 REDIS = None
 
-RUN_UP_TIME = int(time.time())
-HOSTNAME    = socket.gethostname()
-MAIN_PID    = os.getpid()
+HOSTNAME = socket.gethostname()
+MAIN_PID = os.getpid()
 
 LOG_LEVELS = {
     'levels': {
@@ -264,7 +263,7 @@ class LogHelper(object):
                 'subAppNameShort'   : f'WKR',
                 'processType'       : process_type,
                 'processTypeShort'  : process_type[0],
-                'upTime'            : now - RUN_UP_TIME,
+                'upTime'            : now - toolkit.sys_start_time(),
                 'level'             : level,
                 'levelShort'        : level[0],
                 'timestamp'         : now,

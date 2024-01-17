@@ -112,6 +112,21 @@ def heartbeat():
         cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'workerMemoryPSS', 'hostname', hostname])
         REDIS.ts_add(cache_key, total_memory_pss, timestamp=t)
 
+def check_shutdown_flag(shutdown_event):
+    # 不重复检测
+    if shutdown_event.is_set():
+        return
+
+    cache_key = toolkit.get_global_cache_key('temporaryFlag', 'shutDownAllWorkers')
+    shutdown_flag_time = REDIS.get(cache_key)
+
+    if shutdown_flag_time:
+        shutdown_flag_time = int(shutdown_flag_time)
+
+        if shutdown_flag_time > toolkit.sys_start_time():
+            LOGGER.warning(f'Flag `shutDownAllWorkers` is set at {toolkit.to_iso_datetime(shutdown_flag_time)}, worker will be shut down soon...')
+            shutdown_event.set()
+
 def run_background(func, pool_size, max_tasks):
     try:
         manager = multiprocessing.Manager()
@@ -145,6 +160,9 @@ def run_background(func, pool_size, max_tasks):
                 except Exception as e:
                     raise
 
+                # 检查关机 Flag
+                check_shutdown_flag(shutdown_event)
+
                 # 检查停止事件
                 if shutdown_event.is_set():
                     return
@@ -162,18 +180,20 @@ def run_background(func, pool_size, max_tasks):
                 p.start()
                 pool.append(p)
 
+            # 心跳
             heartbeat()
 
-            time.sleep(1)
+            # 检查关机 Flag
+            check_shutdown_flag(shutdown_event)
 
-            # if REDIS.get('shutdownFlag'):
-            #     shutdown_event.set()
+            # 等待
+            time.sleep(1)
 
         # 清理
         for p in pool:
             p.join()
 
-        LOGGER.warning('Shutdown')
+        LOGGER.warning('Shut down')
 
     except redis.exceptions.ConnectionError as e:
         LOGGER.error('Redis Connection error, Shutting down... (2)')

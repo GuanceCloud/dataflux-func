@@ -238,6 +238,46 @@ RedisHelper.prototype.get = function(key, callback) {
   return this.run('get', key, callback);
 };
 
+RedisHelper.prototype.getWithTTL = function(key, callback) {
+  var self = this;
+
+  var result = {
+    value: null,
+    ttl  : null,
+  }
+  async.series([
+    function(asyncCallback) {
+      self.run('get', key, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (!cacheRes) return callback(null, result);
+
+        try {
+          cacheRes = JSON.parse(cacheRes)
+        } catch(err) {
+          // Nope
+        }
+
+        result.value = cacheRes;
+
+        return asyncCallback();
+      });
+    },
+    function(asyncCallback) {
+      self.run('ttl', key, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        result.ttl = cacheRes;
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return callback(err);
+    return callback(null, result);
+  });
+};
+
 RedisHelper.prototype.getset = function(key, value, callback) {
   if (this.isDryRun) {
     return this.run('get', key, callback);

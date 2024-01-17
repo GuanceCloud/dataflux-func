@@ -5493,9 +5493,13 @@ temporaryFlagAPI:
         $desc: Temporary Flag ID
         $type: string
     body:
-      duration:
-        $desc      : Duration (in seconds)
-        $isRequired: true
+      value:
+        $desc      : Value
+        $isRequired: false
+        $type      : any
+      ttl:
+        $desc      : TTL (in seconds)
+        $isRequired: false
         $type      : integer
 
   clear:

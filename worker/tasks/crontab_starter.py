@@ -24,7 +24,7 @@ class CrontabStarter(BaseTask):
 
     @property
     def is_paused(self):
-        cache_key = toolkit.get_cache_key('temporaryFlag', 'pauseAllCrontabConfigs')
+        cache_key = toolkit.get_global_cache_key('temporaryFlag', 'pauseAllCrontabConfigs')
         pause_all_crontab_configs_flag = self.cache_db.get(cache_key)
         return bool(pause_all_crontab_configs_flag)
 

@@ -43,6 +43,7 @@ exports.beforeAppCreate = function(callback) {
   var APP_NAME_SERVER  = CONFIG.APP_NAME + '-server';
   var APP_NAME_WORKER  = CONFIG.APP_NAME + '-worker';
   var APP_NAME_MONITOR = CONFIG.APP_NAME + '-monitor';
+  var APP_NAME_GLOBAL  = CONFIG.APP_NAME + '-global';
 
   toolkit.getCacheKey = function(topic, name, tags, appName) {
     var cacheKey = toolkit._getCacheKey(topic, name, tags);
@@ -59,6 +60,10 @@ exports.beforeAppCreate = function(callback) {
 
   toolkit.getMonitorCacheKey = function(topic, name, tags) {
     return toolkit.getCacheKey(topic, name, tags, APP_NAME_MONITOR);
+  };
+
+  toolkit.getGlobalCacheKey = function(topic, name, tags) {
+    return toolkit.getCacheKey(topic, name, tags, APP_NAME_GLOBAL);
   };
 
   toolkit.parseCacheKey = function(cacheKey) {

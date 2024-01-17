@@ -34,6 +34,7 @@ def before_app_create():
     APP_NAME_SERVER  = CONFIG['APP_NAME'] + '-server'
     APP_NAME_WORKER  = CONFIG['APP_NAME'] + '-worker'
     APP_NAME_MONITOR = CONFIG['APP_NAME'] + '-monitor'
+    APP_NAME_GLOBAL  = CONFIG['APP_NAME'] + '-global'
 
     def get_cache_key(topic, name, tags=None, app_name=None):
         cache_key = toolkit._get_cache_key(topic, name, tags)
@@ -54,6 +55,11 @@ def before_app_create():
         return toolkit.get_cache_key(topic, name, tags, APP_NAME_MONITOR)
 
     toolkit.get_monitor_cache_key = get_monitor_cache_key
+
+    def get_global_cache_key(topic, name, tags=None):
+        return toolkit.get_cache_key(topic, name, tags, APP_NAME_GLOBAL)
+
+    toolkit.get_global_cache_key = get_global_cache_key
 
     def parse_cache_key(cache_key):
         cache_key_info = toolkit._parse_cache_key(cache_key)

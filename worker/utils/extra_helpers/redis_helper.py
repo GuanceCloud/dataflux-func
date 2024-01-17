@@ -214,6 +214,24 @@ class RedisHelper(object):
     def get(self, key):
         return self.run('get', key)
 
+    def get_with_ttl(self, key):
+        result = {
+            'value': None,
+            'ttl'  : None,
+        }
+
+        value = self.run('get', key)
+        if not value:
+            return result
+
+        try:
+            result['value'] = toolkit.json_loads(value)
+        except Exception as e:
+            pass
+
+        result['ttl'] = self.run('ttl', key)
+        return result
+
     def getset(self, key, value):
         return self.run('getset', key, value)
 
