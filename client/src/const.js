@@ -260,7 +260,7 @@ res = memcached.query('GET', 'some_key')`,
         },
         links: {
           doc : 'https://func.guance.com/doc/development-guide-builtin-features-dff-conn-memcached/',
-          pypi: 'https://pypi.org/project/python3-memcached/1.51/',
+          pypi: 'https://pypi.org/project/python-memcached/1.62/',
         },
       },
       {
