@@ -28,17 +28,17 @@ Show Abnormal Requests: 查看异常请求
 Clear Worker Queues: 清空工作队列
 Clear Log and Cache: 清空日志与缓存表
 
-Shut down All Workers: 关闭全部工作单元
+Restart all Workers: 重启全部工作单元
 
 Worker Queues cleared: 工作队列已清空
 Log and Cache cleared: 日志与缓存表已清空
-All Workers will be shut down soon: 所有工作队列即将关闭
+All Workers will be restarted soon: 所有工作单元即将重启
 
 'Full Worker Queue name is DataFluxFunc-worker#workerQueue@{Number}': 完整工作队列名称为 DataFluxFunc-worker#workerQueue@{序号}
 
 Are you sure you want to clear the Worker Queues? : 是否确认清空工作队列？
 Are you sure you want to clear the Log and Cache? : 是否确认清空日志与缓存表？
-Are you sure you want to shut down all the Workers?: 是否确认关闭所有工作单元？
+Are you sure you want to restart all the Workers?: 是否确认重启所有工作单元？
 </i18n>
 
 <template>
@@ -152,7 +152,7 @@ Are you sure you want to shut down all the Workers?: 是否确认关闭所有工
                   &#12288;
                   <el-link @click="clearLogCacheTables">{{ $t('Clear Log and Cache') }}</el-link>
                   <br>
-                  <el-link @click="shutDownAllWorkers">{{ $t('Shut down All Workers') }}</el-link>
+                  <el-link @click="restartAllWorkers">{{ $t('Restart all Workers') }}</el-link>
                 </el-form-item>
               </el-form>
             </div>
@@ -232,13 +232,13 @@ export default {
         alert: { okMessage: `${this.$t('Log and Cache cleared')}` },
       });
     },
-    async shutDownAllWorkers() {
-      if (!await this.T.confirm(this.$t('Are you sure you want to shut down all the Workers?'))) return;
+    async restartAllWorkers() {
+      if (!await this.T.confirm(this.$t('Are you sure you want to restart all the Workers?'))) return;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/temporary-flags/:id/do/set', {
-        params: { id: 'shutDownAllWorkers' },
+        params: { id: 'restartAllWorkers' },
         body  : {  },
-        alert: { okMessage: `${this.$t('All Workers will be shut down soon')}` },
+        alert: { okMessage: `${this.$t('All Workers will be restarted soon')}` },
       });
     },
   },

@@ -54,6 +54,15 @@ MASK_KEYWORDS = [
 def sys_start_time():
     return SYS_START_TIME
 
+def sys_exit_ok():
+    sys.exit(0)
+
+def sys_exit_error():
+    sys.exit(1)
+
+def sys_exit_restart():
+    sys.exit(8)
+
 def nope_func(*args, **kwargs):
     pass
 

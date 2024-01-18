@@ -413,7 +413,7 @@ function _doSetup(userConfig, callback) {
       });
     },
   ], function(err) {
-    if (err) return process.exit(99);
+    if (err) return toolkit.sysExitError();
 
     if (setupErrorWrap.hasError()) return callback(setupErrorWrap);
 
@@ -462,7 +462,7 @@ function runSetupServer() {
     yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, config) {
       if (err) {
         console.log(err);
-        return process.exit(99);
+        return toolkit.sysExitError();
       }
 
       // 进入下一轮等待
@@ -473,7 +473,7 @@ function runSetupServer() {
 
       // 退出配置程序，执行后一个程序
       console.log('Other process finished installation.');
-      return process.exit(0);
+      return toolkit.sysExitOK();
     });
   }, CHECKER_INTERVAL);
 
@@ -555,7 +555,7 @@ function runUpgrade() {
    */
   if (toolkit.isNothing(UPGRADE_INFO)) {
     console.log('No upgrade info, skip.');
-    process.exit(0);
+    toolkit.sysExitOK();
   }
 
   // Init
@@ -602,7 +602,7 @@ function runUpgrade() {
       cacheHelper.lock(lockKey, lockValue, maxLockTime, function(err, cacheRes) {
         if (err) {
           console.log('Checking upgrade status failed: ', err);
-          return process.exit(99);
+          return toolkit.sysExitError();
         }
 
         // 正常取得锁，继续执行
@@ -614,7 +614,7 @@ function runUpgrade() {
           cacheHelper.get(lockKey, function(err, cacheRes) {
             if (err) {
               console.log('Waiting upgrade status failed: ', err);
-              return process.exit(99);
+              return toolkit.sysExitError();
             }
 
             if (cacheRes) {
@@ -623,7 +623,7 @@ function runUpgrade() {
             }
 
             console.log('Upgrading ended, start application...');
-            return process.exit(0)
+            return toolkit.sysExitOK();
           });
         }, CHECKER_INTERVAL);
       });
@@ -714,10 +714,10 @@ function runUpgrade() {
 
     if (err) {
       console.log('Upgrading failed: ', err);
-      return process.exit(99);
+      return toolkit.sysExitError();
     }
 
-    return process.exit(0);
+    return toolkit.sysExitOK();
   });
 }
 
@@ -739,7 +739,7 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
 
   if (CONFIG._DISABLE_SETUP) {
     console.log('Setup disabled, skip...');
-    return process.exit(0);
+    return toolkit.sysExitOK();
   }
 
   if (!CONFIG._IS_INSTALLED) {
@@ -753,11 +753,11 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
       return _doSetup(USER_CONFIG, function(setupErrorWrap) {
         if (setupErrorWrap && setupErrorWrap.hasError()) {
           console.log(setupErrorWrap.toJSON());
-          return process.exit(99);
+          return toolkit.sysExitError();
         }
 
         console.log('Auto setup finished.');
-        return process.exit(0);
+        return toolkit.sysExitOK();
       });
 
     } else {

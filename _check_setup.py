@@ -6,7 +6,7 @@ import sys
 import time
 
 # Project Modules
-from worker.utils import yaml_resources
+from worker.utils import yaml_resources, toolkit
 
 CHECK_INTERVAL = 3
 
@@ -18,7 +18,7 @@ def get_config():
 
 def main():
     if get_config().get('_DISABLE_SETUP'):
-        sys.exit(0)
+        toolkit.sys_exit_ok()
 
     while True:
         config = get_config()
@@ -28,7 +28,7 @@ def main():
         print(f"Waiting for setup, please open http://<IP or Hostname>:{config.get('WEB_PORT')}/ and continue")
         time.sleep(CHECK_INTERVAL)
 
-    sys.exit(0)
+    toolkit.sys_exit_ok()
 
 if __name__ == '__main__':
     main()

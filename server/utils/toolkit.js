@@ -52,7 +52,17 @@ var MASK_KEYWORDS = [
 
 var sysStartTime = toolkit.sysStartTime = function sysStartTime() {
   return SYS_START_TIME;
-}
+};
+
+var sysExitOK = toolkit.sysExitOK = function sysExitOK() {
+  process.exit(0);
+};
+var sysExitError = toolkit.sysExitError = function sysExitError() {
+  process.exit(1);
+};
+var sysExitRestart = toolkit.sysExitRestart = function sysExitRestart() {
+  process.exit(8);
+};
 
 var ensureFn = toolkit.ensureFn = function ensureFn(fn) {
   if ('function' === typeof fn) {

@@ -117,14 +117,14 @@ def check_shutdown_flag(shutdown_event):
     if shutdown_event.is_set():
         return
 
-    cache_key = toolkit.get_global_cache_key('temporaryFlag', 'shutDownAllWorkers')
+    cache_key = toolkit.get_global_cache_key('temporaryFlag', 'restartAllWorkers')
     shutdown_flag_time = REDIS.get(cache_key)
 
     if shutdown_flag_time:
         shutdown_flag_time = int(shutdown_flag_time)
 
         if shutdown_flag_time > toolkit.sys_start_time():
-            LOGGER.warning(f'Flag `shutDownAllWorkers` is set at {toolkit.to_iso_datetime(shutdown_flag_time)}, worker will be shut down soon...')
+            LOGGER.warning(f'Flag `restartAllWorkers` is set at {toolkit.to_iso_datetime(shutdown_flag_time)}, all the workers will be restarted soon...')
             shutdown_event.set()
 
 def run_background(func, pool_size, max_tasks):
@@ -154,18 +154,19 @@ def run_background(func, pool_size, max_tasks):
                     shutdown_event.set()
 
                 except redis.exceptions.ConnectionError as e:
-                    LOGGER.error('Redis Connection error, Shutting down... (1)')
+                    LOGGER.error('Redis Connection error, closing all processes...')
                     shutdown_event.set()
 
                 except Exception as e:
                     raise
 
-                # 检查关机 Flag
-                check_shutdown_flag(shutdown_event)
+                finally:
+                    # 检查关机 Flag
+                    check_shutdown_flag(shutdown_event)
 
-                # 检查停止事件
-                if shutdown_event.is_set():
-                    return
+                    # 检查停止事件
+                    if shutdown_event.is_set():
+                        break
 
         # 保持一定数量进程
         pool = []
@@ -193,15 +194,28 @@ def run_background(func, pool_size, max_tasks):
         for p in pool:
             p.join()
 
-        LOGGER.warning('Shut down')
-
     except redis.exceptions.ConnectionError as e:
-        LOGGER.error('Redis Connection error, Shutting down... (2)')
+        LOGGER.error('Redis Connection error, restart soon... (2)')
         shutdown_event.set()
+
+        # Redis 故障需要自动重启
+        toolkit.sys_exit_restart()
 
     except KeyboardInterrupt as e:
         LOGGER.warning('Interrupted by Ctrl + C')
         shutdown_event.set()
 
-    finally:
-        sys.exit(99)
+        # 键盘打断正常退出
+        toolkit.sys_exit_ok()
+
+    except Exception as e:
+        LOGGER.error(f'Error occured: {e}')
+        shutdown_event.set()
+
+        # 其他错误退出
+        toolkit.sys_exit_error()
+
+    else:
+        # 无错误结束需要自动重启
+        LOGGER.info('System ended, restart soon...')
+        toolkit.sys_exit_restart()

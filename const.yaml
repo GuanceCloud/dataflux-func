@@ -125,5 +125,5 @@ systemSettings:
 
 # Temporary Flags
 temporaryFlags:
-  - shutDownAllWorkers
+  - restartAllWorkers
   - pauseAllCrontabConfigs

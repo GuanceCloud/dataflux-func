@@ -17,4 +17,10 @@ fi
 
 # Run Server
 echo "[STARTER] Run Server"
-node server/app.js
+
+set +e
+exit_code=8
+while [ $exit_code -eq 8 ]; do
+    node server/app.js
+    exit_code=$?
+done
