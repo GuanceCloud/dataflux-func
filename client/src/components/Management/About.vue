@@ -28,17 +28,20 @@ Show Abnormal Requests: 查看异常请求
 Clear Worker Queues: 清空工作队列
 Clear Log and Cache: 清空日志与缓存表
 
-Restart all Workers: 重启全部工作单元
+Restart all Servers: 重启所有前端服务（Server）
+Restart all Workers and Beat: 重启所有工作单元（Worker、Beat）
 
 Worker Queues cleared: 工作队列已清空
 Log and Cache cleared: 日志与缓存表已清空
-All Workers will be restarted soon: 所有工作单元即将重启
+All Servers will be restarted soon: 所有前端服务（Server）即将重启
+All Workers and Beat will be restarted soon: 所有工作单元（Worker、Beat）即将重启
 
 'Full Worker Queue name is DataFluxFunc-worker#workerQueue@{Number}': 完整工作队列名称为 DataFluxFunc-worker#workerQueue@{序号}
 
 Are you sure you want to clear the Worker Queues? : 是否确认清空工作队列？
 Are you sure you want to clear the Log and Cache? : 是否确认清空日志与缓存表？
-Are you sure you want to restart all the Workers?: 是否确认重启所有工作单元？
+Are you sure you want to restart all the Servers?: 是否确认重启所有前端服务（Server）？
+Are you sure you want to restart all the Workers and Beat?: 是否确认重启所有工作单元（Worker、Beat）？
 </i18n>
 
 <template>
@@ -152,7 +155,9 @@ Are you sure you want to restart all the Workers?: 是否确认重启所有工�
                   &#12288;
                   <el-link @click="clearLogCacheTables">{{ $t('Clear Log and Cache') }}</el-link>
                   <br>
-                  <el-link @click="restartAllWorkers">{{ $t('Restart all Workers') }}</el-link>
+                  <el-link @click="restartAllServers">{{ $t('Restart all Servers') }}</el-link>
+                  &#12288;
+                  <el-link @click="restartAllWorkersAndBeat">{{ $t('Restart all Workers and Beat') }}</el-link>
                 </el-form-item>
               </el-form>
             </div>
@@ -232,13 +237,22 @@ export default {
         alert: { okMessage: `${this.$t('Log and Cache cleared')}` },
       });
     },
-    async restartAllWorkers() {
-      if (!await this.T.confirm(this.$t('Are you sure you want to restart all the Workers?'))) return;
+    async restartAllServers() {
+      if (!await this.T.confirm(this.$t('Are you sure you want to restart all the Servers?'))) return;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/temporary-flags/:id/do/set', {
-        params: { id: 'restartAllWorkers' },
+        params: { id: 'restartAllServers' },
         body  : {  },
-        alert: { okMessage: `${this.$t('All Workers will be restarted soon')}` },
+        alert: { okMessage: `${this.$t('All Servers will be restarted soon')}` },
+      });
+    },
+    async restartAllWorkersAndBeat() {
+      if (!await this.T.confirm(this.$t('Are you sure you want to restart all the Workers and Beat?'))) return;
+
+      let apiRes = await this.T.callAPI('post', '/api/v1/temporary-flags/:id/do/set', {
+        params: { id: 'restartAllWorkersAndBeat' },
+        body  : {  },
+        alert: { okMessage: `${this.$t('All Workers and Beat will be restarted soon')}` },
       });
     },
   },

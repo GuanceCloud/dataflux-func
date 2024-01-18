@@ -334,5 +334,19 @@ function startApplication() {
 
     // Guance WS client
     require('./guanceWebSocket').runListener(app);
+
+    // Check restart flag
+    setInterval(function checkRestartFlag() {
+      var cacheKey = toolkit.getGlobalCacheKey('temporaryFlag', 'restartAllServers');
+      app.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+        if (!cacheRes) return;
+
+        var restartFlagTime = parseInt(cacheRes);
+        if (restartFlagTime <= toolkit.sysStartTime()) return;
+
+        app.locals.logger.warning(`Flag \`restartAllServers\` is set at ${toolkit.getISO8601(restartFlagTime * 1000)}, all Servers will be restarted soon...`);
+        toolkit.sysExitRestart();
+      });
+    }, 5 * 1000);
   });
 }
