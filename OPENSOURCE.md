@@ -133,4 +133,5 @@ DataFlux Func uses the following open source projects.
 | toml              | 0.10.2   | MIT                                                             | [https://github.com/uiri/toml](https://github.com/uiri/toml)                                       |
 | tomli-w           | 1.0.0    | MIT                                                             | [https://github.com/hukkin/tomli-w](https://github.com/hukkin/tomli-w)                             |
 | tomli             | 2.0.1    | MIT                                                             | [https://github.com/hukkin/tomli](https://github.com/hukkin/tomli)                                 |
+| ujson             | 5.9.0    | BSD License                                                     | [https://github.com/ultrajson/ultrajson](https://github.com/ultrajson/ultrajson)                   |
 | xmltodict         | 0.13.0   | MIT                                                             | [https://github.com/martinblech/xmltodict](https://github.com/martinblech/xmltodict)               |

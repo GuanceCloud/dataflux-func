@@ -35,4 +35,5 @@ timeout-decorator==0.5.0
 toml==0.10.2
 tomli-w==1.0.0
 tomli==2.0.1
+ujson==5.9.0
 xmltodict==0.13.0

@@ -27,7 +27,7 @@ except ImportError:
 
 # 3rd-party Modules
 import six
-import simplejson
+import simplejson, ujson
 import arrow
 from dateutil import parser as dateutil_parser
 import nanoid
@@ -274,16 +274,22 @@ def json_dumps(j, ignore_nothing=False, keep_none=False, **kwargs):
     if ignore_nothing:
         j = no_none_or_whitespace(j)
 
-    kwargs['indent'] = kwargs['indent'] or None
-    if not kwargs['indent']:
-        kwargs['separators'] = (',', ':')
-    return simplejson.dumps(j, default=json_dumps_default, ignore_nan=True, **kwargs)
+    try:
+        return ujson.dumps(j, **kwargs)
+
+    except Exception as e:
+        print(f'Warning: ujson.dumps(...) failed, use simplejson.dumps(...) instead: {repr(e)}')
+
+        kwargs['indent'] = kwargs['indent'] or None
+        if not kwargs['indent']:
+            kwargs['separators'] = (',', ':')
+        return simplejson.dumps(j, default=json_dumps_default, ignore_nan=True, **kwargs)
 
 def json_loads(s):
-    return simplejson.loads(s)
+    return ujson.loads(s)
 
 def json_copy(j):
-    return simplejson.loads(json_dumps(j))
+    return ujson.loads(json_dumps(j))
 
 def json_mask(j):
     masked = {}

@@ -16,6 +16,7 @@ PYPI_INFO_PATCH = {
     'timeout-decorator': { 'license': 'MIT' },
     'tomli'            : { 'license': 'MIT' },
     'tomli-w'          : { 'license': 'MIT' },
+    'ujson'            : { 'license': 'BSD License' },
 }
 
 def get_npm_opensource_info(package_json_path):
