@@ -859,9 +859,12 @@ class FuncConfigHelper(object):
     def __call__(self, *args, **kwargs):
         return self.get(*args, **kwargs)
 
-    def get(self, config_id, default=None):
+    def get(self, config_id, default=None, unmask=False):
         if config_id in self.MASKED_CONFIG:
-            return toolkit.json_copy(self.MASKED_CONFIG[config_id])
+            if unmask and config_id.startswith('CUSTOM_'):
+                return toolkit.json_copy(CONFIG[config_id])
+            else:
+                return toolkit.json_copy(self.MASKED_CONFIG[config_id])
         else:
             return toolkit.json_copy(default)
 
