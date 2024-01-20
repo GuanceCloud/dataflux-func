@@ -221,8 +221,13 @@ _STARTUP_CRONTAB_ID_PREFIX: cron-starup
 _MYSQL_CONNECTION_LIMIT_FOR_SERVER: 10
 _MYSQL_CONNECTION_LIMIT_FOR_WORKER: 1
 _MYSQL_CONNECT_TIMEOUT            : 15
+_MYSQL_READ_TIMEOUT               : 30
+_MYSQL_WRITE_TIMEOUT              : 30
 _MYSQL_CHARSET                    : utf8mb4
 _MYSQL_TIMEZONE                   : ''
+_MYSQL_POOL_MIN_CACHED            : 1
+_MYSQL_POOL_MAX_USAGE             : 1000
+_MYSQL_POOL_RECYCLE_TIMEOUT       : 3600
 
 # WEB模块一般作为常量的配置
 _WEB_CLIENT_APP_PATH                : /client-app

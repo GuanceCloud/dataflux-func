@@ -11,7 +11,6 @@ import arrow
 import pymysql
 from pymysql.cursors import DictCursor
 from pymysql.constants import CLIENT as CLIENT_FLAG
-from dbutils.persistent_db import PersistentDB
 from dbutils.pooled_db import PooledDB
 
 # Project Modules
@@ -20,7 +19,7 @@ from worker.utils.extra_helpers import format_sql_v2 as format_sql
 
 CONFIG = yaml_resources.get('CONFIG')
 
-def get_config(c, use_pool=True):
+def get_config(c):
     _charset = c.get('charset') or 'utf8mb4'
 
     config = {
@@ -35,20 +34,21 @@ def get_config(c, use_pool=True):
         'init_command'   : 'SET NAMES "{0}"'.format(_charset),
         'client_flag'    : CLIENT_FLAG.MULTI_STATEMENTS,
         'connect_timeout': CONFIG['_MYSQL_CONNECT_TIMEOUT'],
-    }
 
-    # For PooledDB
-    if use_pool:
-        config.update({
-            'mincached'     : 1,
-            'maxconnections': c.get('maxconnections') or 1,
-            'blocking'      : True,
-        })
+        'read_timeout'  : CONFIG['_MYSQL_READ_TIMEOUT'],
+        'write_timeout' : CONFIG['_MYSQL_WRITE_TIMEOUT'],
+        'maxusage'      : CONFIG['_MYSQL_POOL_MAX_USAGE'],
+        'mincached'     : CONFIG['_MYSQL_POOL_MIN_CACHED'],
+        'maxconnections': c.get('maxconnections') or 1,
+        'blocking'      : True,
+        'ping'          : 7,
+    }
 
     return config
 
-CLIENT_CONFIG = None
-CLIENT        = None
+CLIENT_CREATE_TIME = 0
+CLIENT_CONFIG      = None
+CLIENT             = None
 
 class MySQLHelper(object):
     def __init__(self, logger, config=None, database=None, pool_size=None, *args, **kwargs):
@@ -64,13 +64,21 @@ class MySQLHelper(object):
                 config['maxconnections'] = pool_size
 
             self.config = config
-            self.client = PooledDB(pymysql, **get_config(config, use_pool=True))
+            self.client = PooledDB(pymysql, **get_config(config))
 
         else:
+            global CLIENT_CREATE_TIME
             global CLIENT_CONFIG
             global CLIENT
 
+            if CLIENT and time.time() - CLIENT_CREATE_TIME > CONFIG['_MYSQL_POOL_RECYCLE_TIMEOUT']:
+                CLIENT.close()
+
+                CLIENT_CREATE_TIME = None
+                CLIENT             = None
+
             if not CLIENT:
+                CLIENT_CREATE_TIME = time.time()
                 CLIENT_CONFIG = {
                     'host'          : CONFIG['MYSQL_HOST'],
                     'port'          : CONFIG['MYSQL_PORT'],
@@ -81,7 +89,7 @@ class MySQLHelper(object):
                     'timezone'      : CONFIG['_MYSQL_TIMEZONE'],
                     'maxconnections': CONFIG['_MYSQL_CONNECTION_LIMIT_FOR_WORKER'],
                 }
-                CLIENT = PersistentDB(pymysql, **get_config(CLIENT_CONFIG, use_pool=False))
+                CLIENT = PooledDB(pymysql, **get_config(CLIENT_CONFIG))
 
             self.config = CLIENT_CONFIG
             self.client = CLIENT
