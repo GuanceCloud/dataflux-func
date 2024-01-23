@@ -56,13 +56,22 @@ Vue.use(VueI18n);
 
 import elementUILocale_en   from 'element-ui/lib/locale/lang/en'
 import elementUILocale_zhCN from 'element-ui/lib/locale/lang/zh-CN'
+import elementUILocale_zhTW from 'element-ui/lib/locale/lang/zh-TW'
 const elementUILocales = {
   en     : elementUILocale_en,
   'zh-CN': elementUILocale_zhCN,
+  'zh-HK': elementUILocale_zhTW,
+  'zh-TW': elementUILocale_zhTW,
 }
 
 import locales  from '@/assets/yaml/locales.yaml'
 import messages from '@/assets/yaml/messages.yaml'
+
+import locales_zht  from '@/assets/yaml/locales.zht.yaml'
+import messages_zht from '@/assets/yaml/messages.zht.yaml'
+Object.assign(locales, locales_zht)
+Object.assign(messages, messages_zht)
+
 const_.UI_LOCALE.forEach(_locale => {
   let lang = _locale.key;
   [ elementUILocales, messages ].forEach( localeSrc => {

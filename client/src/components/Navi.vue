@@ -259,6 +259,7 @@ export default {
   line-height: 14px;
   text-align: center;
   font-size: 12px;
+  font-family: Iosevka;
   margin-top: 2px;
 }
 .navi-content .ui-locale-tip {

@@ -565,7 +565,19 @@ kafka.publish(topic='some_topic', message='some_message')`,
       {
         key      : 'zh-CN',
         name     : '简体中文',
-        shortName: '简',
+        shortName: 'CN',
+      },
+      {
+        key      : 'zh-HK',
+        name     : '繁體中文（香港)',
+        shortName: 'HK',
+        tip      : 'By OpenCC',
+      },
+      {
+        key      : 'zh-TW',
+        name     : '繁體中文（臺灣）',
+        shortName: 'TW',
+        tip      : 'By OpenCC',
       },
       {
         key      : 'en',

@@ -1,0 +1,234 @@
+zh-HK:
+  Accessing git repo timeout: 訪問 git 庫超時
+  Admin of the Script Market is already taken by other DataFlux Func: 管理權已經被其他 DataFlux Func 獲取
+  Admin user cannot been modified directly: 管理員用户無法直接修改
+  Async task failed: 異步任務失敗
+  At least one condition should been specified: 至少需要指定一個條件
+  Auth Token expired: 認證令牌已過期
+  Auth type not supported: 此認證類型不支持
+  Bad DingTalk Robot call: 釘釘機器人調用失敗
+  Calling Function failed: 調用函數失敗
+  Calling Function timeout: 調用函數超時
+  Can not found captcha token: 驗證碼令牌無效
+  Cannot generate SQL for a Model without a table name: 數據模型沒有對應表名，無法自動生成SQL語句
+  Cannot generate SQL for a Model without a view name: 數據模型沒有對應視圖名，無法自動生成SQL語句
+  Cannot generate SQL for non-SQL database: 無法針對非 SQL 數據庫生成 SQL 語句
+  Cannot not access file out of resource folder: 無法訪問資源目錄外的文件
+  Cannot not fetch folder out of resource folder: 無法查詢資源目錄外的目錄
+  Cannot not operate file or folder out of resource folder: 無法操作資源目錄外的文件或目錄
+  Cannot use a ID of reserved prefix: 無法使用系統保留前綴作為 ID 開頭部分
+  Client not send X-Auth-Token yet: 客户端尚未發送 X-Auth-Token
+  Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again: 代碼預檢查失敗。腳本在執行期間產生了異常錯誤，請檢查代碼後再試一次
+  Confirming import timeout: 導入確認超時
+  Connecting to Connector failed: 連接到連接器失敗
+  Connecting to Connector timeout: 連接到連接器超時
+  Current user does not exists: 當前用户不存在
+  Current user has been disabled: 當前用户已被禁用
+  Data of Socket.io must be a JSON string: Socket.io 數據必須為 JSON 字符串
+  Deleting built-in Connector is not allowed: 不允許刪除內置連接器
+  Empty import file: 導入文件為空
+  'Exception: Guance API Key NOT match to API Key ID!': 錯誤：觀測雲 API Key ID 與 API Key 不匹配
+  Export failed: 導出失敗
+  Failed to access data, please refresh the page and try again.: 訪問數據失敗，請嘗試刷新頁面後再試一次
+  Failed to communicate with the server, please refresh the page and try again.: 與服務器通訊失敗，請嘗試刷新頁面後再試一次。
+  Failed to setting Admin: 獲取管理權失敗
+  File not exists: 文件不存在
+  File or folder already existed: 文件或目錄已存在
+  File or folder not existed: 文件或目錄不存在
+  Fixed Field Auth failed: 固定字段認證失敗
+  Folder not exists: 目錄不存在
+  Found duplicated func names in script: 腳本中發現重複的函數名
+  Func Auth failed: 函數認證失敗
+  Func ID not specified: 函數 ID 未指定
+  Func result is not standard JSON: 函數結果無法解析為標準JSON
+  ID of Connector already exists: 連接器 ID 已存在
+  ID of ENV Variable already exists: 環境變量 ID 已存在
+  ID of cloned Script will be too long: 腳本 ID 將在克隆後會變得過長
+  ID of file service already exists: 文件服務 ID 已存在
+  ID of script already exists: 腳本 ID 已存在
+  ID of script set already exists: 腳本集 ID 已存在
+  If the problem continues to occur, please contact the administrator to check the status of the server.: 如果問題持續出現，請聯繫管理員，檢查服務器狀態。
+  Init Script Market failed: 初始化腳本市場失敗
+  Install Python package failed: 安裝 Python 包失敗
+  Integrated Sign-in is disabled: 集成登錄功能已被禁用
+  Invalid Auth Token: 認證令牌無效
+  Invalid captcha: 驗證碼無效
+  Invalid captcha token: 驗證碼令牌無效
+  Invalid config JSON: 配置無效
+  Invalid import file: 無效的導入文件
+  Invalid kwargs, bad JSON format: 函數參數無效，無法解析為 JSON
+  Invalid old password: 舊密碼無效
+  Invalid options, api_timeout is too large: 配置錯誤，api_timeout 過大
+  Invalid options, api_timeout is too small: 配置錯誤，api_timeout 過小
+  Invalid options, bad JSON format: 配置錯誤，無法解析為 JSON
+  Invalid options, eta should be a valid datetime value: 配置錯誤，eta 必須為有效的日期-時間值
+  Invalid options, execMode should be "async" in Crontab or Batch calling: 配置錯誤，調用自動觸發或批處理時，execMode 必須為 "async"
+  Invalid options, execMode should be "sync" in Auth Link calling: 配置錯誤，調用授權鏈接時，execMode 必須為 "sync"
+  Invalid options, invalid execMode: 配置錯誤，execMode 值無效
+  Invalid options, invalid returnType: 配置錯誤，returnType 值無效
+  Invalid options, queue should be an integer between 1 and 9: 配置錯誤，隊列必須為 1 到 9 之間的整數
+  Invalid options, timeout is too large: 配置錯誤，timeout 過大
+  Invalid options, timeout is too small: 配置錯誤，timeout 過小
+  Invalid package index: 包索引無效
+  Invalid request body: 請求體無效
+  Invalid request post data: 請求體數據無效
+  Invalid request query: 請求參數無效
+  Invalid username or password: 用户名或密碼無效
+  Maximum calling rate exceeded: 達到最大調用頻率
+  Modifying built-in Connector is not allowed, please edit the config instead: 不允許修改內置連接器，請修改系統配置
+  No such Auth Link: 不存在此授權鏈接
+  No such Batch: 不存在批處理
+  No such Crontab Config: 不存在自動觸發配置
+  No such Func: 不存在函數
+  No such data: 不存在數據
+  No such router. Please make sure that the METHOD is correct and no spelling missing in the URL: 不存在路由，請檢查 HTTP 請求方法以及 URL 拼寫是否正確
+  Operation Record cannot be deleted: 操作記錄無法刪除
+  Operation Record cannot be modified: 操作記錄無法修改
+  Please input captcha: 請輸入驗證碼
+  Preparing Python package failed: 準備 Python 包失敗
+  Privilege is not satisfied: 權限不足
+  Query failed: 查詢失敗
+  Query timeout: 查詢超時
+  Read cache error: 緩存讀取失敗
+  Resource operation Failed: 資源操作失敗
+  Script draft already changed: 腳本草稿已發生變化
+  Script not edited: 腳本尚未修改
+  Sign-in function returned False or nothing: 登錄函數返回 False 或空內容
+  Sign-in function timeout: 登錄函數超時
+  Socket.io connection gone: Socket.io 連接已斷開
+  Specified new file or folder name already existed: 指定的新文件名或目錄名已存在
+  This Auth Link is already expired: 此授權鏈接已過期
+  This Auth Link is disabled: 此授權鏈接已被禁用
+  This Batch is disabled: 此批處理已被禁用
+  This File Service is disabled: 此文件服務已被禁用
+  This Script Market is locked by other user: 此腳本市場已被其他用户鎖定
+  This Script Set is locked by other user: 此腳本集已被其他用户鎖定
+  This Script is locked by other user: 此腳本已被其他用户鎖定
+  This captcha token is already used: 此驗證碼令牌已被使用
+  This username is already existed: 此用户名已存在
+  This username is used by others: 此用户名已被其他用户使用
+  Too many tasks in worker queue: 工作隊列中任務過多
+  Unknown auth type: 認證類型未知
+  Unknown event of Socket.io: Socket.io 事件未知
+  Unsupported resource operation: 資源不支持進行此操作
+  User not signed in: 用户尚未登錄
+  Worker no response: 工作單元無響應
+  X-Auth-Token not sent: X-Auth-Token 尚未發送
+  Zip file already existed: 壓縮文件已經存在
+zh-TW:
+  Accessing git repo timeout: 訪問 git 庫超時
+  Admin of the Script Market is already taken by other DataFlux Func: 管理權已經被其他 DataFlux Func 獲取
+  Admin user cannot been modified directly: 管理員使用者無法直接修改
+  Async task failed: 非同步任務失敗
+  At least one condition should been specified: 至少需要指定一個條件
+  Auth Token expired: 認證令牌已過期
+  Auth type not supported: 此認證型別不支援
+  Bad DingTalk Robot call: 釘釘機器人呼叫失敗
+  Calling Function failed: 呼叫函式失敗
+  Calling Function timeout: 呼叫函式超時
+  Can not found captcha token: 驗證碼令牌無效
+  Cannot generate SQL for a Model without a table name: 資料模型沒有對應表名，無法自動生成SQL語句
+  Cannot generate SQL for a Model without a view name: 資料模型沒有對應檢視名，無法自動生成SQL語句
+  Cannot generate SQL for non-SQL database: 無法針對非 SQL 資料庫生成 SQL 語句
+  Cannot not access file out of resource folder: 無法訪問資源目錄外的檔案
+  Cannot not fetch folder out of resource folder: 無法查詢資源目錄外的目錄
+  Cannot not operate file or folder out of resource folder: 無法操作資源目錄外的檔案或目錄
+  Cannot use a ID of reserved prefix: 無法使用系統保留字首作為 ID 開頭部分
+  Client not send X-Auth-Token yet: 客戶端尚未傳送 X-Auth-Token
+  Code pre-check failed. Script raised an EXCEPTION during executing, please check your code and try again: 程式碼預檢查失敗。指令碼在執行期間產生了異常錯誤，請檢查程式碼後再試一次
+  Confirming import timeout: 匯入確認超時
+  Connecting to Connector failed: 連線到聯結器失敗
+  Connecting to Connector timeout: 連線到聯結器超時
+  Current user does not exists: 當前使用者不存在
+  Current user has been disabled: 當前使用者已被禁用
+  Data of Socket.io must be a JSON string: Socket.io 資料必須為 JSON 字串
+  Deleting built-in Connector is not allowed: 不允許刪除內建聯結器
+  Empty import file: 匯入檔案為空
+  'Exception: Guance API Key NOT match to API Key ID!': 錯誤：觀測雲 API Key ID 與 API Key 不匹配
+  Export failed: 匯出失敗
+  Failed to access data, please refresh the page and try again.: 訪問資料失敗，請嘗試重新整理頁面後再試一次
+  Failed to communicate with the server, please refresh the page and try again.: 與伺服器通訊失敗，請嘗試重新整理頁面後再試一次。
+  Failed to setting Admin: 獲取管理權失敗
+  File not exists: 檔案不存在
+  File or folder already existed: 檔案或目錄已存在
+  File or folder not existed: 檔案或目錄不存在
+  Fixed Field Auth failed: 固定欄位認證失敗
+  Folder not exists: 目錄不存在
+  Found duplicated func names in script: 指令碼中發現重複的函式名
+  Func Auth failed: 函式認證失敗
+  Func ID not specified: 函式 ID 未指定
+  Func result is not standard JSON: 函式結果無法解析為標準JSON
+  ID of Connector already exists: 聯結器 ID 已存在
+  ID of ENV Variable already exists: 環境變數 ID 已存在
+  ID of cloned Script will be too long: 指令碼 ID 將在克隆後會變得過長
+  ID of file service already exists: 檔案服務 ID 已存在
+  ID of script already exists: 指令碼 ID 已存在
+  ID of script set already exists: 指令碼集 ID 已存在
+  If the problem continues to occur, please contact the administrator to check the status of the server.: 如果問題持續出現，請聯絡管理員，檢查伺服器狀態。
+  Init Script Market failed: 初始化指令碼市場失敗
+  Install Python package failed: 安裝 Python 包失敗
+  Integrated Sign-in is disabled: 整合登入功能已被禁用
+  Invalid Auth Token: 認證令牌無效
+  Invalid captcha: 驗證碼無效
+  Invalid captcha token: 驗證碼令牌無效
+  Invalid config JSON: 配置無效
+  Invalid import file: 無效的匯入檔案
+  Invalid kwargs, bad JSON format: 函式引數無效，無法解析為 JSON
+  Invalid old password: 舊密碼無效
+  Invalid options, api_timeout is too large: 配置錯誤，api_timeout 過大
+  Invalid options, api_timeout is too small: 配置錯誤，api_timeout 過小
+  Invalid options, bad JSON format: 配置錯誤，無法解析為 JSON
+  Invalid options, eta should be a valid datetime value: 配置錯誤，eta 必須為有效的日期-時間值
+  Invalid options, execMode should be "async" in Crontab or Batch calling: 配置錯誤，呼叫自動觸發或批處理時，execMode 必須為 "async"
+  Invalid options, execMode should be "sync" in Auth Link calling: 配置錯誤，呼叫授權連結時，execMode 必須為 "sync"
+  Invalid options, invalid execMode: 配置錯誤，execMode 值無效
+  Invalid options, invalid returnType: 配置錯誤，returnType 值無效
+  Invalid options, queue should be an integer between 1 and 9: 配置錯誤，佇列必須為 1 到 9 之間的整數
+  Invalid options, timeout is too large: 配置錯誤，timeout 過大
+  Invalid options, timeout is too small: 配置錯誤，timeout 過小
+  Invalid package index: 包索引無效
+  Invalid request body: 請求體無效
+  Invalid request post data: 請求體資料無效
+  Invalid request query: 請求引數無效
+  Invalid username or password: 使用者名稱或密碼無效
+  Maximum calling rate exceeded: 達到最大呼叫頻率
+  Modifying built-in Connector is not allowed, please edit the config instead: 不允許修改內建聯結器，請修改系統配置
+  No such Auth Link: 不存在此授權連結
+  No such Batch: 不存在批處理
+  No such Crontab Config: 不存在自動觸發配置
+  No such Func: 不存在函式
+  No such data: 不存在資料
+  No such router. Please make sure that the METHOD is correct and no spelling missing in the URL: 不存在路由，請檢查 HTTP 請求方法以及 URL 拼寫是否正確
+  Operation Record cannot be deleted: 操作記錄無法刪除
+  Operation Record cannot be modified: 操作記錄無法修改
+  Please input captcha: 請輸入驗證碼
+  Preparing Python package failed: 準備 Python 包失敗
+  Privilege is not satisfied: 許可權不足
+  Query failed: 查詢失敗
+  Query timeout: 查詢超時
+  Read cache error: 快取讀取失敗
+  Resource operation Failed: 資源操作失敗
+  Script draft already changed: 指令碼草稿已發生變化
+  Script not edited: 指令碼尚未修改
+  Sign-in function returned False or nothing: 登入函式返回 False 或空內容
+  Sign-in function timeout: 登入函式超時
+  Socket.io connection gone: Socket.io 連線已斷開
+  Specified new file or folder name already existed: 指定的新檔名或目錄名已存在
+  This Auth Link is already expired: 此授權連結已過期
+  This Auth Link is disabled: 此授權連結已被禁用
+  This Batch is disabled: 此批處理已被禁用
+  This File Service is disabled: 此檔案服務已被禁用
+  This Script Market is locked by other user: 此指令碼市場已被其他使用者鎖定
+  This Script Set is locked by other user: 此指令碼集已被其他使用者鎖定
+  This Script is locked by other user: 此指令碼已被其他使用者鎖定
+  This captcha token is already used: 此驗證碼令牌已被使用
+  This username is already existed: 此使用者名稱已存在
+  This username is used by others: 此使用者名稱已被其他使用者使用
+  Too many tasks in worker queue: 工作佇列中任務過多
+  Unknown auth type: 認證型別未知
+  Unknown event of Socket.io: Socket.io 事件未知
+  Unsupported resource operation: 資源不支援進行此操作
+  User not signed in: 使用者尚未登入
+  Worker no response: 工作單元無響應
+  X-Auth-Token not sent: X-Auth-Token 尚未傳送
+  Zip file already existed: 壓縮檔案已經存在

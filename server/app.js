@@ -51,7 +51,9 @@ function startApplication() {
   var linuxDistro = null;
   try {
       linuxDistro = toolkit.safeReadFileSync('/linux-distro')
-                || childProcess.execFileSync('lsb_release', [ '-is' ]).toString().trim();
+                || childProcess.execFileSync('lsb_release', [ '-is' ]).toString()
+                || 'UNKNOWN';
+      linuxDistro = linuxDistro.trim();
   } catch(err) {
     // Nope
   } finally {

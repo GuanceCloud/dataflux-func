@@ -1,7 +1,6 @@
 import re
 import json
 
-
 import requirements
 from prettytable import PrettyTable, MARKDOWN
 import requests

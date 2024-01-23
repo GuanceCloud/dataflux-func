@@ -1,0 +1,862 @@
+zh-HK:
+  (: （
+  (Use /re/ syntax for regexp search): （也可以使用 /正則表達式/ 搜索，如 /\\d+/）
+  ): ）
+  ',': ，
+  7z file already existed: 7z 文件已經存在
+  ':': ：
+  A Broker with MQTTv5 support and use share subscription is recommended: 建議使用支持 MQTTv5 協議的 Broker，並使用共享訂閲
+  A System error occured. Please report this response to the administrator: 發生系統故障，請聯繫管理員並報告此問題
+  ADB for MySQL: 阿里雲分析型數據庫(ADB) MySQL 版
+  ADB for PostgreSQL: 阿里雲分析型數據庫(ADB) PostgreSQL 版
+  API Auth: API 認證
+  Abnormal Requests: 異常請求
+  About: 關於
+  Access Keys: Access Key
+  Add: 添加
+  Added: 已添加
+  Admin: 管理
+  Administrator: 系統管理員
+  Alibaba Cloud: 阿里雲
+  Alibaba Cloud OSS: 阿里雲 OSS
+  Alibaba Cloud mirror: 阿里雲鏡像
+  Aliyun OceanBase: 阿里雲 OceanBase
+  Aliyun PolarDB for MySQL: 阿里雲 PolarDB MySQL
+  Aliyun PolarDB for PostgreSQL: 阿里雲 PolarDB MySQL
+  Aliyun Time Series Database for InfluxDB: 阿里雲時序數據庫 InfluxDB 版
+  All: 全部
+  Anonymity: 匿名
+  Auth Link: 授權鏈接
+  Auth Link Doc: 授權鏈接文檔
+  Auth Link ID: 授權鏈接 ID
+  Auto: 自動
+  'Auto: Default': 自動切換：默認
+  'Auto: base16': 自動切換：base16
+  'Auto: duotone': 自動切換：duotone
+  'Auto: idea/darcula': 自動切換：idea/darcula
+  'Auto: neat/material-darker': 自動切換：neat/material-darker
+  Batch: 批處理
+  Batch ID: 批處理 ID
+  Before Script Lib recover: 腳本庫還原前
+  Before package import: 腳本集導入前
+  Before package install: 腳本集安裝前
+  Blueprint: 藍圖
+  Blueprint ID: 藍圖 ID
+  Boolean: 布爾值
+  Browser not supported: 當前瀏覽器不支持
+  Built-in: 內置
+  Built-in Connector: 內置連接器
+  Built-in Script Set: 內置腳本集
+  Can be "true"/"false", "yes"/"no" or "on"/"off": 可用 "true"/"false", "yes"/"no", "on"/"off" 表示對應的布爾值
+  Cancel: 取消
+  Cannot not access file out of resource folder: 無法訪問資源目錄以外的文件
+  Cannot not fetch folder out of resource folder: 無法訪問資源目錄以外的目錄
+  Cannot not operate file or folder out of resource folder: 無法操作資源目錄以外的文件或目錄
+  Cannot point to the Entry Node: 不能指向入口節點
+  Cannot point to the node itself: 不能指向節點自身
+  Check Update: 檢查更新
+  Clear: 清空
+  Cleared: 已清空
+  Click to Copy: 點擊複製
+  Clone: 克隆
+  Close: 關閉
+  Closed: 已關閉
+  Code: 代碼
+  Code Node: 代碼節點
+  Comma separated string array: 逗號分隔字符串數組
+  Complete User Profile for git committing: 補全用於 git 提交的用户信息
+  Confirm: 確定
+  Connector: 連接器
+  Connector ID: 連接器 ID
+  Copied: 已複製
+  Copy: 複製
+  Create: 創建
+  Create Time: 創建時間
+  Created by user manually: 用户手動創建
+  Crontab Config: 自動觸發配置
+  Crontab Config ID: 自動觸發配置 ID
+  DELETE Request: 發送 DELETE 請求
+  DIFF: 差異
+  Dark Mode: 黑暗模式
+  'Dark: base16-dark': 黑暗：base16-dark
+  'Dark: darcula': 黑暗：darcula
+  'Dark: duotone-dark': 黑暗：duotone-dark
+  'Dark: material-darker': 黑暗：material-darker
+  'Dark: monokai': 黑暗：monokai
+  Data not found. It may have been deleted: 找不到此數據，該數據可能已經被刪除
+  Debug: 調試
+  Default: 默認
+  Delete: 刪除
+  Deleted: 已刪除
+  Deploy: 部署
+  Description: 描述
+  Detail: 詳情
+  Dev: 開發
+  Development: 開發
+  DingTalk: 釘釘
+  DingTalk MD Message: 釘釘 Markdown 消息
+  DingTalk Robot: 釘釘機器人
+  DingTalk Text Message: 釘釘純文本消息
+  Disable: 禁用
+  Disabled: 已禁用
+  Docs: 文檔
+  Document: 文檔
+  Documents: 文檔
+  Douban mirror: 豆瓣鏡像
+  Download: 下載
+  Draft: 草稿
+  Dump JSON: 輸出 JSON 字符串
+  Dump YAML: 輸出 YAML 字符串
+  ENV: 環境變量
+  ENV ID: 環境變量 ID
+  Edit: 編輯
+  Edited: 已編輯
+  Email: 郵箱
+  Enable: 啓用
+  Enabled: 已啓用
+  Endpoint: 訪問地址
+  Enter: 進入
+  Entry: 入口
+  Entry Node: 入口節點
+  Error: 錯誤
+  Example: 示例
+  Exit: 退出
+  Experimental Features: 實驗性功能
+  Export: 導出
+  Extract output folder already existed: 解壓輸出目錄已經存在
+  Failure: 失敗
+  FeatureNotice_funcIsJustPythonWarpper: <h1>DataFlux Func 只是 Python 的包裝</h1><p>連接器只是方便開發者連接數據庫或外部系統的便捷功能，而不是一個必備功能。</p></p>你可以通過 PIP 工具安裝任何你想要的第三方 Python 包然後直接使用它們。</p><p>就和你用原版 Python 開發一樣。</p>
+  FeatureNotice_monkeyPatch: '<h1>請避免在腳本中使用猴子補丁</h1><p>出於性能方面考慮，腳本<strong style="color: red">並非</strong>運行在沙盒或隔離環境中。</p><p>使用猴子補丁可能導致系統整體出現問題。</p>'
+  FeatureNotice_scriptMarketHomepage: <h1>這個腳本市場有主頁可供訪問</h1><p>腳本市場中的腳本集往往面向腳本開發者。</p><p>如果你不瞭解如何使用這個腳本市場中的腳本集，請先查看腳本市場主頁。</p>
+  File: 文件
+  File Manage: 文件管理
+  File Service: 文件服務
+  File Service ID: 文件服務 ID
+  File or folder already existed: 文件或目錄已經存在
+  File or folder not existed: 文件或目錄不存在
+  Filter: 過濾
+  Finish: 完成
+  Fixed Field: 固定字段
+  Float: 浮點數
+  Folder: 文件夾
+  Follow System: 跟隨系統
+  From Base64: Base64 解碼
+  Func: 函數
+  Func Cache Manage: 函數緩存管理
+  Func Docs: 函數文檔
+  Func ID: 函數 ID
+  Func Node: 函數節點
+  Func Store Manage: 函數存儲管理
+  GET Request: 發送 GET 請求
+  Gen Random Float: 生成隨機小數
+  Gen Random Integer: 生成隨機整數
+  Gen Random String: 生成隨機字符串
+  Get Base64: Base64 編碼
+  Get MD5: 獲取 MD5
+  Get SHA1: 獲取 SHA1
+  Get SHA256: 獲取 SHA256
+  Get SHA512: 獲取 SHA512
+  Guance: 觀測雲
+  Guance DataKit (HTTP): 觀測雲 DataKit (HTTP)
+  Guance DataWay (HTTP): 觀測雲 DataWay (HTTP)
+  Guance Workspace: 觀測雲工作空間
+  HTTP Basic: HTTP Basic
+  HTTP Body: HTTP Body 字段
+  HTTP Digest: HTTP Digest
+  HTTP Header: HTTP Header
+  HTTP Query: HTTP Query 參數
+  HTTP Request: HTTP 請求
+  HTTP Service: HTTP 服務
+  Hidden: 已隱藏
+  Hide: 隱藏
+  Idle: 閒置
+  Import: 導入
+  InfluxDB (HTTP) (And other compatible Databases): InfluxDB (HTTP)（及兼容數據庫）
+  Install: 安裝
+  Installed: 已安裝
+  Installing: 正在安裝
+  Integer: 整數
+  Invalid request body: 請求中的 Body 參數不正確
+  Invalid request post data: 提交數據不正確
+  Invalid request query: 請求中的 Query 參數不正確
+  Item: 項目
+  Light Mode: 明亮模式
+  'Light: base16-light': 明亮：base16-light
+  'Light: duotone-light': 明亮：duotone-light
+  'Light: eclipse': 明亮：eclipse
+  'Light: idea': 明亮：idea
+  'Light: neat': 明亮：neat
+  Like CSV. "apple,pie" will be converted to ["apple", "pie"]: 與 CSV 類似，如 "apple,pie"，將轉換為 ["apple", "pie"]
+  Link: 連接
+  Linked: 已連接
+  Load: 加載
+  Load JSON: 加載 JSON 為對象
+  Load YAML: 加載 YAML 為對象
+  Loading: 正在加載
+  Lock: 鎖定
+  Locked: 已鎖定
+  Manage: 管理
+  Management: 管理
+  Managing Script Market based on git requires your user NAME and EMAIL.: 管理基於 git 的腳本市場需要你的用户名稱與郵箱。
+  Mobile: 手機
+  Modified: 已修改
+  Modify: 修改
+  More: 更多
+  Move: 移動
+  MySQL (And other compatible Databases): MySQL（及兼容數據庫）
+  Name: 名稱
+  New: 新建
+  New Version: 新版本
+  'No': 否
+  No Data: 暫無數據
+  No matched data found: 當前過濾條件無匹配數據
+  No recent record: 沒有近期記錄
+  None: 無
+  Normal: 正常
+  Not Signed In: 尚未登錄
+  Note: 備註
+  'OFF': 關閉
+  OK: 瞭解
+  'ON': 開啓
+  Official: 官方
+  Official Script Market: 官方腳本市場
+  Offline: 離線
+  Online: 在線
+  Open: 打開
+  Open API Doc: Open API 文檔
+  Opened: 已打開
+  Operation Records: 操作記錄
+  Operation failed: 操作失敗
+  Operation succeeded: 操作成功
+  Optional: 可選
+  Oracle Database: Oracle 數據庫
+  Overview: 總覽
+  Owner: 擁有者
+  PATCH Request: 發送 PATCH 請求
+  PIP Tool: PIP 工具
+  POST Request: 發送 POST 請求
+  PUT Request: 發送 PUT 請求
+  Password: 密碼
+  Pending: 執行中
+  Pin: 置頂
+  Pinned: 已置頂
+  Please input email: 請輸入郵箱
+  Please input name: 請輸入名稱
+  Please select: 請選擇
+  PostgreSQL (And other compatible Databases): PostgreSQL（及兼容數據庫）
+  Press ESC to close: 按 ECS 關閉
+  Preview: 預覽
+  Profile: 個人設置
+  Publish: 發佈
+  Published: 已發佈
+  PyPI Official: PyPI 官方原版
+  Random: 隨機
+  Read data: 讀取數據
+  Recover: 還原
+  Refresh: 刷新
+  Reinstall: 重新安裝
+  Rename: 重命名
+  Replace: 替換
+  'Replace all:': 全部替換：
+  'Replace with:': 替換為：
+  'Replace:': 替換：
+  Replace?: 是否替換？
+  Request Cost 1000ms+: 請求耗時 1000 毫秒+
+  Request Cost 5000ms+: 請求耗時 5000 毫秒+
+  Reset: 復位
+  Restore Default: 恢復默認
+  Run: 執行
+  Save: 保存
+  Saved: 已保存
+  Script: 腳本
+  Script Failures: 腳本故障
+  Script ID: 腳本 ID
+  Script Lib: 腳本庫
+  Script Lib Recover: 腳本庫還原
+  Script Logs: 腳本日誌
+  Script Market: 腳本市場
+  Script Market based on HTTP Service is readonly: 基於 HTTP 服務的腳本市場為只讀
+  Script Market based on git supports HTTPS only: 基於 git 的腳本市場僅支持 HTTPS
+  Script Set: 腳本集
+  Script Set Export: 腳本集導出
+  Script Set Export History: 腳本集導出歷史
+  Script Set ID: 腳本集 ID
+  Script Set Import: 腳本集導入
+  Script Set Import History: 腳本集導入歷史
+  'Search:': 搜索：
+  Setting: 設置
+  Setup: 配置
+  Show: 顯示
+  Show all: 顯示全部
+  Show detail: 顯示詳情
+  Shown: 已顯示
+  Sign Out: 登出
+  Sign in: 登錄
+  Signed In: 已登錄
+  Simple Line: 簡單連線
+  Size: 大小
+  Skip: 跳過
+  Specified new file or folder name already existed: 指定的名稱已經存在
+  Status: 狀態
+  Status Code 4xx: 狀態碼 4xx
+  Status Code 5xx: 狀態碼 5xx
+  Stop: 停止
+  String: 字符串
+  Success: 成功
+  Switch: 分支
+  Switch Line: 分支連線
+  Switch Node: 分支節點
+  System Logs: 系統日誌
+  System Setting: 系統設置
+  System Status: 系統狀態
+  Tags: 標籤
+  Tar file already existed: Tar 文件已經存在
+  This information will be used as the user information for git commits.: 此信息將作為 git 提交時的用户信息。
+  Time: 時間
+  Timeout: 超時
+  Title: 標題
+  Total: 總數
+  Tsinghua University mirror: 清華大學鏡像
+  Type: 類型
+  UNKNOWN: 未知
+  Unknow: 未知
+  Unlink: 斷開連接
+  Unlinked: 已斷開連接
+  Unlock: 解鎖
+  Unlockel: 已解鎖
+  Unpin: 取消置頂
+  Unsupported resource operation: 不支持的資源操作
+  Update: 更新
+  Update Time: 更新時間
+  Upgrade: 升級
+  Upload: 上傳
+  User: 用户
+  User ID: 用户 ID
+  User Manage: 成員管理
+  User Name: 用户名
+  User Profile saved: 用户信息已保存
+  Username: 登錄賬號
+  Value: 值
+  Very good: 非常好
+  Will be converted by float() automatically: 將自動使用 float() 進行轉換
+  Will be converted by int() automatically: 將自動使用 int() 進行轉換
+  Will be converted by json.loads() automatically: 將自動使用 json.loads() 進行轉換
+  'With:': 替換為：
+  'Yes': 是
+  Zip file already existed: Zip 文件已經存在
+  add: 添加
+  added: 已添加
+  admin: 管理
+  check update: 檢查更新
+  clear: 清空
+  cleared: 已清空
+  clone: 克隆
+  close: 關閉
+  closed: 已關閉
+  copy: 複製
+  create: 創建
+  debug: 調試
+  delete: 刪除
+  deleted: 已刪除
+  deploy: 部署
+  disable: 禁用
+  disabled: 已禁用
+  download: 下載
+  edit: 編輯
+  edited: 已編輯
+  enable: 啓用
+  enabled: 已啓用
+  enter: 進入
+  exit: 退出
+  export: 導出
+  filter: 過濾
+  hidden: 已隱藏
+  hide: 隱藏
+  import: 導入
+  install: 安裝
+  installed: 已安裝
+  link: 連接
+  linked: 已連接
+  lock: 解鎖
+  locked: 已鎖定
+  manage: 管理
+  min: 分鐘
+  minutes: 分鐘
+  modified: 已修改
+  modify: 修改
+  more: 更多
+  move: 移動
+  ms: 毫秒
+  nDays: '{n} 天'
+  nHours: '{n} 小時'
+  nMinutes: '{n} 分鐘'
+  nMonths: '{n} 月'
+  nSeconds: '{n} 秒'
+  nYears: '{n} 年'
+  open: 打開
+  opened: 已打開
+  pin: 置頂
+  preview: 預覽
+  publish: 發佈
+  recover: 還原
+  refresh: 刷新
+  reinstall: 重新安裝
+  rename: 重命名
+  replace: 替換
+  reset: 復位
+  restore default: 恢復默認
+  run: 執行
+  s: 秒
+  save: 保存
+  saved: 已保存
+  seconds: 秒
+  setup: 配置
+  show: 顯示
+  shown: 已顯示
+  timePerDay: '{n} 次/天'
+  timePerHour: '{n} 次/小時'
+  timePerMinute: '{n} 次/分鐘'
+  timePerMonth: '{n} 次/月'
+  timePerSecond: '{n} 次/秒'
+  timePerYear: '{n} 次/年'
+  unlink: 斷開連接
+  unlinked: 已斷開連接
+  unlock: 鎖定
+  unlockel: 已解鎖
+  unpin: 取消置頂
+  unzip: 解壓
+  update: 更新
+  upgrade: 升級
+  upload: 上傳
+  zip: 壓縮
+zh-TW:
+  (: （
+  (Use /re/ syntax for regexp search): （也可以使用 /正則表示式/ 搜尋，如 /\\d+/）
+  ): ）
+  ',': ，
+  7z file already existed: 7z 檔案已經存在
+  ':': ：
+  A Broker with MQTTv5 support and use share subscription is recommended: 建議使用支援 MQTTv5 協議的 Broker，並使用共享訂閱
+  A System error occured. Please report this response to the administrator: 發生系統故障，請聯絡管理員並報告此問題
+  ADB for MySQL: 阿里雲分析型資料庫(ADB) MySQL 版
+  ADB for PostgreSQL: 阿里雲分析型資料庫(ADB) PostgreSQL 版
+  API Auth: API 認證
+  Abnormal Requests: 異常請求
+  About: 關於
+  Access Keys: Access Key
+  Add: 新增
+  Added: 已新增
+  Admin: 管理
+  Administrator: 系統管理員
+  Alibaba Cloud: 阿里雲
+  Alibaba Cloud OSS: 阿里雲 OSS
+  Alibaba Cloud mirror: 阿里雲映象
+  Aliyun OceanBase: 阿里雲 OceanBase
+  Aliyun PolarDB for MySQL: 阿里雲 PolarDB MySQL
+  Aliyun PolarDB for PostgreSQL: 阿里雲 PolarDB MySQL
+  Aliyun Time Series Database for InfluxDB: 阿里雲時序資料庫 InfluxDB 版
+  All: 全部
+  Anonymity: 匿名
+  Auth Link: 授權連結
+  Auth Link Doc: 授權連結文件
+  Auth Link ID: 授權連結 ID
+  Auto: 自動
+  'Auto: Default': 自動切換：預設
+  'Auto: base16': 自動切換：base16
+  'Auto: duotone': 自動切換：duotone
+  'Auto: idea/darcula': 自動切換：idea/darcula
+  'Auto: neat/material-darker': 自動切換：neat/material-darker
+  Batch: 批處理
+  Batch ID: 批處理 ID
+  Before Script Lib recover: 指令碼庫還原前
+  Before package import: 指令碼集匯入前
+  Before package install: 指令碼集安裝前
+  Blueprint: 藍圖
+  Blueprint ID: 藍圖 ID
+  Boolean: 布林值
+  Browser not supported: 當前瀏覽器不支援
+  Built-in: 內建
+  Built-in Connector: 內建聯結器
+  Built-in Script Set: 內建指令碼集
+  Can be "true"/"false", "yes"/"no" or "on"/"off": 可用 "true"/"false", "yes"/"no", "on"/"off" 表示對應的布林值
+  Cancel: 取消
+  Cannot not access file out of resource folder: 無法訪問資源目錄以外的檔案
+  Cannot not fetch folder out of resource folder: 無法訪問資源目錄以外的目錄
+  Cannot not operate file or folder out of resource folder: 無法操作資源目錄以外的檔案或目錄
+  Cannot point to the Entry Node: 不能指向入口節點
+  Cannot point to the node itself: 不能指向節點自身
+  Check Update: 檢查更新
+  Clear: 清空
+  Cleared: 已清空
+  Click to Copy: 點選複製
+  Clone: 克隆
+  Close: 關閉
+  Closed: 已關閉
+  Code: 程式碼
+  Code Node: 程式碼節點
+  Comma separated string array: 逗號分隔字串陣列
+  Complete User Profile for git committing: 補全用於 git 提交的使用者資訊
+  Confirm: 確定
+  Connector: 聯結器
+  Connector ID: 聯結器 ID
+  Copied: 已複製
+  Copy: 複製
+  Create: 建立
+  Create Time: 建立時間
+  Created by user manually: 使用者手動建立
+  Crontab Config: 自動觸發配置
+  Crontab Config ID: 自動觸發配置 ID
+  DELETE Request: 傳送 DELETE 請求
+  DIFF: 差異
+  Dark Mode: 黑暗模式
+  'Dark: base16-dark': 黑暗：base16-dark
+  'Dark: darcula': 黑暗：darcula
+  'Dark: duotone-dark': 黑暗：duotone-dark
+  'Dark: material-darker': 黑暗：material-darker
+  'Dark: monokai': 黑暗：monokai
+  Data not found. It may have been deleted: 找不到此資料，該資料可能已經被刪除
+  Debug: 除錯
+  Default: 預設
+  Delete: 刪除
+  Deleted: 已刪除
+  Deploy: 部署
+  Description: 描述
+  Detail: 詳情
+  Dev: 開發
+  Development: 開發
+  DingTalk: 釘釘
+  DingTalk MD Message: 釘釘 Markdown 訊息
+  DingTalk Robot: 釘釘機器人
+  DingTalk Text Message: 釘釘純文字訊息
+  Disable: 禁用
+  Disabled: 已禁用
+  Docs: 文件
+  Document: 文件
+  Documents: 文件
+  Douban mirror: 豆瓣映象
+  Download: 下載
+  Draft: 草稿
+  Dump JSON: 輸出 JSON 字串
+  Dump YAML: 輸出 YAML 字串
+  ENV: 環境變數
+  ENV ID: 環境變數 ID
+  Edit: 編輯
+  Edited: 已編輯
+  Email: 郵箱
+  Enable: 啟用
+  Enabled: 已啟用
+  Endpoint: 訪問地址
+  Enter: 進入
+  Entry: 入口
+  Entry Node: 入口節點
+  Error: 錯誤
+  Example: 示例
+  Exit: 退出
+  Experimental Features: 實驗性功能
+  Export: 匯出
+  Extract output folder already existed: 解壓輸出目錄已經存在
+  Failure: 失敗
+  FeatureNotice_funcIsJustPythonWarpper: <h1>DataFlux Func 只是 Python 的包裝</h1><p>聯結器只是方便開發者連線資料庫或外部系統的便捷功能，而不是一個必備功能。</p></p>你可以透過 PIP 工具安裝任何你想要的第三方 Python 包然後直接使用它們。</p><p>就和你用原版 Python 開發一樣。</p>
+  FeatureNotice_monkeyPatch: '<h1>請避免在指令碼中使用猴子補丁</h1><p>出於效能方面考慮，指令碼<strong style="color: red">並非</strong>執行在沙盒或隔離環境中。</p><p>使用猴子補丁可能導致系統整體出現問題。</p>'
+  FeatureNotice_scriptMarketHomepage: <h1>這個指令碼市場有主頁可供訪問</h1><p>指令碼市場中的指令碼集往往面向指令碼開發者。</p><p>如果你不瞭解如何使用這個指令碼市場中的指令碼集，請先檢視指令碼市場主頁。</p>
+  File: 檔案
+  File Manage: 檔案管理
+  File Service: 檔案服務
+  File Service ID: 檔案服務 ID
+  File or folder already existed: 檔案或目錄已經存在
+  File or folder not existed: 檔案或目錄不存在
+  Filter: 過濾
+  Finish: 完成
+  Fixed Field: 固定欄位
+  Float: 浮點數
+  Folder: 資料夾
+  Follow System: 跟隨系統
+  From Base64: Base64 解碼
+  Func: 函式
+  Func Cache Manage: 函式快取管理
+  Func Docs: 函式文件
+  Func ID: 函式 ID
+  Func Node: 函式節點
+  Func Store Manage: 函式儲存管理
+  GET Request: 傳送 GET 請求
+  Gen Random Float: 生成隨機小數
+  Gen Random Integer: 生成隨機整數
+  Gen Random String: 生成隨機字串
+  Get Base64: Base64 編碼
+  Get MD5: 獲取 MD5
+  Get SHA1: 獲取 SHA1
+  Get SHA256: 獲取 SHA256
+  Get SHA512: 獲取 SHA512
+  Guance: 觀測雲
+  Guance DataKit (HTTP): 觀測雲 DataKit (HTTP)
+  Guance DataWay (HTTP): 觀測雲 DataWay (HTTP)
+  Guance Workspace: 觀測雲工作空間
+  HTTP Basic: HTTP Basic
+  HTTP Body: HTTP Body 欄位
+  HTTP Digest: HTTP Digest
+  HTTP Header: HTTP Header
+  HTTP Query: HTTP Query 引數
+  HTTP Request: HTTP 請求
+  HTTP Service: HTTP 服務
+  Hidden: 已隱藏
+  Hide: 隱藏
+  Idle: 閒置
+  Import: 匯入
+  InfluxDB (HTTP) (And other compatible Databases): InfluxDB (HTTP)（及相容資料庫）
+  Install: 安裝
+  Installed: 已安裝
+  Installing: 正在安裝
+  Integer: 整數
+  Invalid request body: 請求中的 Body 引數不正確
+  Invalid request post data: 提交資料不正確
+  Invalid request query: 請求中的 Query 引數不正確
+  Item: 專案
+  Light Mode: 明亮模式
+  'Light: base16-light': 明亮：base16-light
+  'Light: duotone-light': 明亮：duotone-light
+  'Light: eclipse': 明亮：eclipse
+  'Light: idea': 明亮：idea
+  'Light: neat': 明亮：neat
+  Like CSV. "apple,pie" will be converted to ["apple", "pie"]: 與 CSV 類似，如 "apple,pie"，將轉換為 ["apple", "pie"]
+  Link: 連線
+  Linked: 已連線
+  Load: 載入
+  Load JSON: 載入 JSON 為物件
+  Load YAML: 載入 YAML 為物件
+  Loading: 正在載入
+  Lock: 鎖定
+  Locked: 已鎖定
+  Manage: 管理
+  Management: 管理
+  Managing Script Market based on git requires your user NAME and EMAIL.: 管理基於 git 的指令碼市場需要你的使用者名稱稱與郵箱。
+  Mobile: 手機
+  Modified: 已修改
+  Modify: 修改
+  More: 更多
+  Move: 移動
+  MySQL (And other compatible Databases): MySQL（及相容資料庫）
+  Name: 名稱
+  New: 新建
+  New Version: 新版本
+  'No': 否
+  No Data: 暫無資料
+  No matched data found: 當前過濾條件無匹配資料
+  No recent record: 沒有近期記錄
+  None: 無
+  Normal: 正常
+  Not Signed In: 尚未登入
+  Note: 備註
+  'OFF': 關閉
+  OK: 瞭解
+  'ON': 開啟
+  Official: 官方
+  Official Script Market: 官方指令碼市場
+  Offline: 離線
+  Online: 線上
+  Open: 開啟
+  Open API Doc: Open API 文件
+  Opened: 已開啟
+  Operation Records: 操作記錄
+  Operation failed: 操作失敗
+  Operation succeeded: 操作成功
+  Optional: 可選
+  Oracle Database: Oracle 資料庫
+  Overview: 總覽
+  Owner: 擁有者
+  PATCH Request: 傳送 PATCH 請求
+  PIP Tool: PIP 工具
+  POST Request: 傳送 POST 請求
+  PUT Request: 傳送 PUT 請求
+  Password: 密碼
+  Pending: 執行中
+  Pin: 置頂
+  Pinned: 已置頂
+  Please input email: 請輸入郵箱
+  Please input name: 請輸入名稱
+  Please select: 請選擇
+  PostgreSQL (And other compatible Databases): PostgreSQL（及相容資料庫）
+  Press ESC to close: 按 ECS 關閉
+  Preview: 預覽
+  Profile: 個人設定
+  Publish: 釋出
+  Published: 已釋出
+  PyPI Official: PyPI 官方原版
+  Random: 隨機
+  Read data: 讀取資料
+  Recover: 還原
+  Refresh: 重新整理
+  Reinstall: 重新安裝
+  Rename: 重新命名
+  Replace: 替換
+  'Replace all:': 全部替換：
+  'Replace with:': 替換為：
+  'Replace:': 替換：
+  Replace?: 是否替換？
+  Request Cost 1000ms+: 請求耗時 1000 毫秒+
+  Request Cost 5000ms+: 請求耗時 5000 毫秒+
+  Reset: 復位
+  Restore Default: 恢復預設
+  Run: 執行
+  Save: 儲存
+  Saved: 已儲存
+  Script: 指令碼
+  Script Failures: 指令碼故障
+  Script ID: 指令碼 ID
+  Script Lib: 指令碼庫
+  Script Lib Recover: 指令碼庫還原
+  Script Logs: 指令碼日誌
+  Script Market: 指令碼市場
+  Script Market based on HTTP Service is readonly: 基於 HTTP 服務的指令碼市場為只讀
+  Script Market based on git supports HTTPS only: 基於 git 的指令碼市場僅支援 HTTPS
+  Script Set: 指令碼集
+  Script Set Export: 指令碼集匯出
+  Script Set Export History: 指令碼集匯出歷史
+  Script Set ID: 指令碼集 ID
+  Script Set Import: 指令碼集匯入
+  Script Set Import History: 指令碼集匯入歷史
+  'Search:': 搜尋：
+  Setting: 設定
+  Setup: 配置
+  Show: 顯示
+  Show all: 顯示全部
+  Show detail: 顯示詳情
+  Shown: 已顯示
+  Sign Out: 登出
+  Sign in: 登入
+  Signed In: 已登入
+  Simple Line: 簡單連線
+  Size: 大小
+  Skip: 跳過
+  Specified new file or folder name already existed: 指定的名稱已經存在
+  Status: 狀態
+  Status Code 4xx: 狀態碼 4xx
+  Status Code 5xx: 狀態碼 5xx
+  Stop: 停止
+  String: 字串
+  Success: 成功
+  Switch: 分支
+  Switch Line: 分支連線
+  Switch Node: 分支節點
+  System Logs: 系統日誌
+  System Setting: 系統設定
+  System Status: 系統狀態
+  Tags: 標籤
+  Tar file already existed: Tar 檔案已經存在
+  This information will be used as the user information for git commits.: 此資訊將作為 git 提交時的使用者資訊。
+  Time: 時間
+  Timeout: 超時
+  Title: 標題
+  Total: 總數
+  Tsinghua University mirror: 清華大學映象
+  Type: 型別
+  UNKNOWN: 未知
+  Unknow: 未知
+  Unlink: 斷開連線
+  Unlinked: 已斷開連線
+  Unlock: 解鎖
+  Unlockel: 已解鎖
+  Unpin: 取消置頂
+  Unsupported resource operation: 不支援的資源操作
+  Update: 更新
+  Update Time: 更新時間
+  Upgrade: 升級
+  Upload: 上傳
+  User: 使用者
+  User ID: 使用者 ID
+  User Manage: 成員管理
+  User Name: 使用者名稱
+  User Profile saved: 使用者資訊已儲存
+  Username: 登入賬號
+  Value: 值
+  Very good: 非常好
+  Will be converted by float() automatically: 將自動使用 float() 進行轉換
+  Will be converted by int() automatically: 將自動使用 int() 進行轉換
+  Will be converted by json.loads() automatically: 將自動使用 json.loads() 進行轉換
+  'With:': 替換為：
+  'Yes': 是
+  Zip file already existed: Zip 檔案已經存在
+  add: 新增
+  added: 已新增
+  admin: 管理
+  check update: 檢查更新
+  clear: 清空
+  cleared: 已清空
+  clone: 克隆
+  close: 關閉
+  closed: 已關閉
+  copy: 複製
+  create: 建立
+  debug: 除錯
+  delete: 刪除
+  deleted: 已刪除
+  deploy: 部署
+  disable: 禁用
+  disabled: 已禁用
+  download: 下載
+  edit: 編輯
+  edited: 已編輯
+  enable: 啟用
+  enabled: 已啟用
+  enter: 進入
+  exit: 退出
+  export: 匯出
+  filter: 過濾
+  hidden: 已隱藏
+  hide: 隱藏
+  import: 匯入
+  install: 安裝
+  installed: 已安裝
+  link: 連線
+  linked: 已連線
+  lock: 解鎖
+  locked: 已鎖定
+  manage: 管理
+  min: 分鐘
+  minutes: 分鐘
+  modified: 已修改
+  modify: 修改
+  more: 更多
+  move: 移動
+  ms: 毫秒
+  nDays: '{n} 天'
+  nHours: '{n} 小時'
+  nMinutes: '{n} 分鐘'
+  nMonths: '{n} 月'
+  nSeconds: '{n} 秒'
+  nYears: '{n} 年'
+  open: 開啟
+  opened: 已開啟
+  pin: 置頂
+  preview: 預覽
+  publish: 釋出
+  recover: 還原
+  refresh: 重新整理
+  reinstall: 重新安裝
+  rename: 重新命名
+  replace: 替換
+  reset: 復位
+  restore default: 恢復預設
+  run: 執行
+  s: 秒
+  save: 儲存
+  saved: 已儲存
+  seconds: 秒
+  setup: 配置
+  show: 顯示
+  shown: 已顯示
+  timePerDay: '{n} 次/天'
+  timePerHour: '{n} 次/小時'
+  timePerMinute: '{n} 次/分鐘'
+  timePerMonth: '{n} 次/月'
+  timePerSecond: '{n} 次/秒'
+  timePerYear: '{n} 次/年'
+  unlink: 斷開連線
+  unlinked: 已斷開連線
+  unlock: 鎖定
+  unlockel: 已解鎖
+  unpin: 取消置頂
+  unzip: 解壓
+  update: 更新
+  upgrade: 升級
+  upload: 上傳
+  zip: 壓縮
