@@ -77,11 +77,14 @@ def add_zht_for_vue():
             end_index   = None
             for i, l in enumerate(prev_file_lines):
                 if l.strip() == VUE_GEN_START_LINE:
-                    start_index = i
+                    if i > 0 and prev_file_lines[i - 1].strip() == '':
+                        start_index = i - 1
+                    else:
+                        start_index = i
                     continue
 
                 if start_index and l.strip() == VUE_GEN_END_LINE:
-                    end_index = i + 2
+                    end_index = i + 1
                     break
 
             if start_index and end_index:
