@@ -56,6 +56,11 @@ System automatically creates Script Lib Recover Points before importing, install
             {{ $t('System automatically creates Script Lib Recover Points before importing, installing Script Sets.' )}}
             <br>{{ $t('Recover Points can also be created manually.') }}
           </p>
+
+          <el-button @click="openSetup(null, 'add')">
+            <i class="fa fa-fw fa-camera"></i>
+            {{ $t('Create Recover Point') }}
+          </el-button>
         </div>
         <el-timeline v-else>
           <el-timeline-item
@@ -85,7 +90,7 @@ System automatically creates Script Lib Recover Points before importing, install
       </el-main>
 
       <!-- 底部栏 -->
-      <el-footer>
+      <el-footer v-if="T.notNothing(data)">
         <div class="setup-page-footer">
           <el-button @click="openSetup(null, 'add')">
             <i class="fa fa-fw fa-camera"></i>

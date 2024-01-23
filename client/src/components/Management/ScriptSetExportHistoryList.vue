@@ -34,6 +34,11 @@ No Script Set has ever been exported: 從未匯出過任何指令碼集
           <p class="no-data-tip">
             {{ $t('Exporting Script Sets for backup or sharing Script Sets') }}
           </p>
+
+          <el-button @click="openSetup(null, 'export')">
+            <i class="fa fa-fw fa-cloud-download"></i>
+            {{ $t('Script Set Export') }}
+          </el-button>
         </div>
         <template v-else>
           <el-timeline>
@@ -75,7 +80,7 @@ No Script Set has ever been exported: 從未匯出過任何指令碼集
       </el-main>
 
       <!-- 底部栏 -->
-      <el-footer>
+      <el-footer v-if="T.notNothing(data)">
         <div class="setup-page-footer">
           <el-button @click="openSetup(null, 'export')">
             <i class="fa fa-fw fa-cloud-download"></i>

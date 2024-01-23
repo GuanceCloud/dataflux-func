@@ -34,6 +34,11 @@ No Script Set has ever been imported: 從未匯入過任何指令碼集
           <p class="no-data-tip">
             {{ $t('Add external Script Sets by importing Script Sets') }}
           </p>
+
+          <el-button @click="openSetup(null, 'import')">
+            <i class="fa fa-fw fa-cloud-upload"></i>
+            {{ $t('Script Set Import') }}
+          </el-button>
         </div>
         <template v-else>
           <el-timeline>
@@ -75,7 +80,7 @@ No Script Set has ever been imported: 從未匯入過任何指令碼集
       </el-main>
 
       <!-- 底部栏 -->
-      <el-footer>
+      <el-footer v-if="T.notNothing(data)">
         <div class="setup-page-footer">
           <el-button @click="openSetup(null, 'import')">
             <i class="fa fa-fw fa-cloud-upload"></i>
