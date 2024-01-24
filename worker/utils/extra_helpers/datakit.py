@@ -43,7 +43,6 @@ except ImportError:
 
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
-PY34 = sys.version_info[0:2] >= (3, 4)
 
 if PY3:
     string_types = str,
@@ -97,8 +96,6 @@ RE_ESCAPE_TAG_VALUE       = RE_ESCAPE_TAG_KEY
 RE_ESCAPE_FIELD_KEY       = RE_ESCAPE_TAG_KEY
 RE_ESCAPE_MEASUREMENT     = re.compile('([, ])')
 RE_ESCAPE_FIELD_STR_VALUE = re.compile('(["\\\\])')
-
-KEYEVENT_STATUS = ('critical', 'error', 'warning', 'info', 'ok')
 
 ASSERT_TYPE_MAPS = {
     'dict': {
@@ -209,21 +206,16 @@ def colored(s, name):
     else:
         raise AttributeError("Color '{}' not supported.".format(name))
 
-class DataKit(object):
-    def __init__(self, url=None, host=None, port=None, protocol=None, timeout=None, debug=False, dry_run=False, write_size=None, source=None):
+class BaseDataKit(object):
+    def __init__(self, url=None, host=None, port=None, protocol=None, timeout=None, debug=False, dry_run=False, write_size=None):
+        self.url        = url        or None
         self.host       = host       or 'localhost'
-        self.port       = int(port   or 9529)
+        self.port       = port       or None
         self.protocol   = protocol   or 'http'
         self.timeout    = timeout    or 3
         self.debug      = debug      or False
         self.dry_run    = dry_run    or False
         self.write_size = write_size or 100
-        self.source     = source     or 'datakit-python-sdk'
-
-        if self.debug:
-            print('[Python Version]\n{0}'.format(sys.version))
-            if self.dry_run:
-                print('[DRY RUN MODE]')
 
         if url:
             splited_url = urlsplit(url)
@@ -324,6 +316,34 @@ class DataKit(object):
                         # 小数
                         v = '{0}'.format(v)
 
+                    elif isinstance(v, list):
+                        # 数组
+                        elem_list = []
+
+                        if len(v) > 0:
+                            for elem in v:
+                                if type(v[0]) is not type(elem):
+                                    e = TypeError('Field `{0}` got a type-mixed array. repr(v)=`{1}`'.format(k, repr(v)))
+                                    raise e
+
+                                if not isinstance(elem, (string_types, bool, integer_types, float)):
+                                    e = TypeError('Field `{0}` contains a non-basic type element. repr(v)=`{1}`'.format(k, repr(v)))
+                                    raise e
+
+                                if isinstance(elem, string_types):
+                                    elem = re.sub(RE_ESCAPE_FIELD_STR_VALUE, ESCAPE_REPLACER, elem)
+                                    elem = '"{0}"'.format(ensure_str(elem))
+                                elif isinstance(elem, bool):
+                                    elem = '{0}'.format(elem).lower()
+                                elif isinstance(elem, integer_types):
+                                    elem = '{0}i'.format(elem)
+                                elif isinstance(elem, float):
+                                    elem = '{0}'.format(elem)
+
+                                elem_list.append(elem)
+
+                        v = f"[{','.join(elem_list)}]"
+
                     else:
                         # 不支持的类型
                         e = TypeError('Field `{0}` got an invalid data type. type(v)=`{1}`, repr(v)=`{2}`'.format(k, type(v), repr(v)))
@@ -368,6 +388,7 @@ class DataKit(object):
                 conn = httplib.HTTPConnection(self.host, port=self.port, timeout=self.timeout)
 
             try:
+                headers = headers or {}
                 conn.request(method, path, body=body, headers=headers)
             except Exception as e:
                 raise Exception('Send request `{} {}:{}{}` failed: {}'.format(method, self.host, self.port, path, str(e)))
@@ -401,17 +422,13 @@ class DataKit(object):
         return resp_status_code, resp_data
 
     def _do_get(self, path, query=None, headers=None):
-        method = 'GET'
-
-        return self._do_request(method=method, path=path, query=query, headers=headers)
+        return self._do_request(method='GET', path=path, query=query, headers=headers)
 
     def _do_post(self, path, body, content_type, query=None, headers=None):
-        method = 'POST'
-
         headers = headers or {}
         headers['Content-Type'] = content_type
 
-        return self._do_request(method=method, path=path, query=query, body=body, headers=headers)
+        return self._do_request(method='POST', path=path, query=query, body=body, headers=headers)
 
     # Low-Level API
     def get(self, path, query=None, headers=None):
@@ -487,7 +504,7 @@ class DataKit(object):
         }
         return prepared_data
 
-    def _write(self, path, measurement, tags=None, fields=None, timestamp=None):
+    def _write(self, path, measurement, tags=None, fields=None, timestamp=None, query=None):
         data = {
             'measurement': measurement,
             'tags'       : tags,
@@ -500,10 +517,9 @@ class DataKit(object):
 
         prepared_data = self._prepare_data(data)
 
-        query = { 'input': self.source }
         return self.post_line_protocol(path=path, points=prepared_data, query=query)
 
-    def _write_many(self, path, data):
+    def _write_many(self, path, data, query=None):
         data = as_array(data)
 
         # break obj reference
@@ -513,7 +529,6 @@ class DataKit(object):
         for d in data:
             prepared_data.append(self._prepare_data(d))
 
-        query = { 'input': self.source }
         return self.post_line_protocol(path=path, points=prepared_data, query=query)
 
     def write_by_category(self, category, measurement, tags=None, fields=None, timestamp=None):
@@ -536,7 +551,7 @@ class DataKit(object):
     def write_logging_many(self, data):
         return self._write_many('/v1/write/logging', data)
 
-    def query(self, dql, all_series=False, dict_output=False, raw=False, **kwargs):
+    def query(self, dql, all_series=False, dict_output=False, raw=False, token=None, **kwargs):
         q = {
             'query' : dql,
         }
@@ -568,6 +583,10 @@ class DataKit(object):
                 'queries'     : [ q ],
                 'mask_visible': True, # 禁用敏感字段屏蔽
             }
+
+            if token:
+                json_obj['token'] = token
+
             status_code, _dql_res = self.post_json(path=path, json_obj=json_obj)
             if not isinstance(_dql_res, dict):
                 # 接收到非 JSON 响应，无法翻页，直接返回
@@ -637,5 +656,24 @@ class DataKit(object):
     def write_metrics(self, *args, **kwargs):
         return self.write_metric_many(*args, **kwargs)
 
-# Alias
-Datakit = DataKit
+class DataKit(BaseDataKit):
+    def __init__(self, *args, source=None, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if not self.port:
+            self.port = 9529
+
+        self.source = source or 'datakit-python-sdk'
+
+    # High-Level API
+    def _write(self, *args, **kwargs):
+        query = {
+            'input': self.source,
+        }
+        super()._write(query=query, *args, **kwargs)
+
+    def _write_many(self, *args, **kwargs):
+        query = {
+            'input': self.source,
+        }
+        super()._write(query=query, *args, **kwargs)
