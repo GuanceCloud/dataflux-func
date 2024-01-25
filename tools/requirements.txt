@@ -1,4 +1,4 @@
-OpenCC==1.1.6
+OpenCC==1.1.3
 prettytable==2.5.0
 PyYAML==5.4.1
 requests==2.27.1
