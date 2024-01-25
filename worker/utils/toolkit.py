@@ -837,6 +837,9 @@ def to_croniter_style(crontab):
 
 @functools.lru_cache(maxsize=128)
 def is_valid_crontab(crontab):
+    if not crontab:
+        return False
+
     crontab = to_croniter_style(crontab)
     return croniter.is_valid(crontab)
 

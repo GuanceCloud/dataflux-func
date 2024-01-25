@@ -70,6 +70,9 @@ SYSTEM_CRONTAB = [
 def get_matched_crontab_task_instances(t):
     result = []
     for item in SYSTEM_CRONTAB:
+        if not toolkit.is_valid_crontab(item['crontab']):
+            continue
+
         if toolkit.is_match_crontab(item['crontab'], t, tz=CONFIG['TIMEZONE']):
             task_inst = item['task'](kwargs=item.get('kwargs'), trigger_time=t)
             result.append(task_inst)
