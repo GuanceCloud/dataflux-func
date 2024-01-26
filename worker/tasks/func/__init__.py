@@ -188,70 +188,9 @@ def get_sign(*args):
     str_to_sign = CONFIG['SECRET'] + '\n' + '\n'.join(map(str, args))
     return toolkit.get_md5(str_to_sign)
 
-class FuncThreadHelper(object):
-    def __init__(self, task):
-        self.__task = task
-        self.result_map = {}
-
-    def start(self, fn, args=None, kwargs=None, key=None):
-        global FUNC_THREAD_POOL
-
-        if not FUNC_THREAD_POOL:
-            self.__task.logger.debug('[THREAD POOL] Create Pool')
-
-            pool_size = CONFIG['_FUNC_TASK_THREAD_POOL_SIZE']
-            FUNC_THREAD_POOL = ThreadPoolExecutor(pool_size)
-
-        key = key or toolkit.gen_data_id('async')
-        self.__task.logger.debug(f'[THREAD POOL] Submit Key=`{key}`')
-
-        if key in self.result_map:
-            e = ThreadResultKeyDuplicatedException(f'Thread result key already existed: `{key}`')
-            raise e
-
-        args   = args   or []
-        kwargs = kwargs or {}
-        self.result_map[key] = FUNC_THREAD_POOL.submit(fn, *args, **kwargs)
-
-    def get_result(self, wait=True, key=None):
-        global FUNC_THREAD_POOL
-
-        if not self.result_map:
-            return None
-
-        if wait is None:
-            wait = True
-
-        collected_res = {}
-
-        keys = key or list(self.result_map.keys())
-        for k in toolkit.as_array(keys):
-            collected_res[k] = None
-
-            future_res = self.result_map.get(k)
-            if future_res is None:
-                continue
-
-            if not future_res.done() and not wait:
-                continue
-
-            retval = None
-            error  = None
-            try:
-                retval = future_res.result()
-            except Exception as e:
-                error = e
-            finally:
-                collected_res[k] = (retval, error)
-
-        if key:
-            return collected_res.get(key)
-        else:
-            return collected_res
-
 class FuncContextHelper(object):
     def __init__(self, task):
-        self.__task = task
+        self._task = task
 
         self.__data = {}
 
@@ -276,9 +215,264 @@ class FuncContextHelper(object):
     def clear(self):
         return self.__data.clear()
 
+class FuncConnectorHelper(object):
+    def __init__(self, task):
+        self._task = task
+
+    def __call__(self, *args, **kwargs):
+        return self.get(*args, **kwargs)
+
+    def get(self, connector_id, **helper_kwargs):
+        # 同一个连接器可能有不同的配置（如指定的数据库不同）
+        helper_kwargs = toolkit.no_none_or_whitespace(helper_kwargs)
+
+        global CONNECTOR_HELPER_CLASS_MAP
+
+        # 从 DB 获取连接器
+        self._task.logger.debug(f"[LOAD connector] load `{connector_id}` from DB")
+
+        sql = '''
+            SELECT
+                `id`
+                ,`type`
+                ,`configJSON`
+            FROM `biz_main_connector`
+            WHERE
+                `id` = ?
+            '''
+        sql_params = [ connector_id ]
+        connector = self._task.db.query(sql, sql_params)
+        if not connector:
+            e = NotFoundException(f'Connector not found: `{connector_id}`')
+            raise e
+
+        connector = connector[0]
+
+        # 确定连接器类型
+        helper_type  = connector['type']
+        helper_class = CONNECTOR_HELPER_CLASS_MAP.get(helper_type)
+        if not helper_class:
+            e = ConnectorNotSupportException(f'Connector type not support: `{helper_type}`')
+            raise e
+
+        # 创建连接器 Helper
+        config = toolkit.json_loads(connector['configJSON'])
+        config = decipher_connector_config_fields(config)
+
+        helper = helper_class(self._task.logger, config, pool_size=CONFIG['_FUNC_TASK_THREAD_POOL_SIZE'], **helper_kwargs)
+        return helper
+
+    def reload_config_md5(self, connector_id):
+        cache_key = toolkit.get_cache_key('cache', 'dataMD5Cache', ['dataType', 'connector'])
+
+        sql = '''
+            SELECT
+                `id`
+                ,MD5(`configJSON`) AS `configMD5`
+            FROM biz_main_connector
+            WHERE
+                `id` = ?
+            '''
+        sql_params = [ connector_id ]
+        connector = self._task.db.query(sql, sql_params)
+        if not connector:
+            return
+
+        connector = connector[0]
+        self._task.cache_db.hset(cache_key, connector_id, connector['configMD5'])
+
+    def save(self, connector_id, connector_type, config, title=None, description=None):
+        if connector_type not in CONNECTOR_HELPER_CLASS_MAP:
+            e = ConnectorNotSupportException(f'Connector type `{connector_type}` not supported')
+            raise e
+
+        if not config:
+            config = {}
+
+        if not isinstance(config, dict):
+            raise InvalidConnectorOptionException('Connector config should be a dict')
+
+        # 加密字段
+        for k in CONNECTOR_CIPHER_FIELDS:
+            v = config.get(k)
+            if v is not None:
+                config[f'{k}Cipher'] = toolkit.cipher_by_aes(v, CONFIG['SECRET'])
+            config.pop(k, None)
+
+        config_json = toolkit.json_dumps(config)
+
+        sql = '''
+            SELECT `id` FROM biz_main_connector WHERE `id` = ?
+            '''
+        sql_params = [connector_id]
+        db_res = self._task.db.query(sql, sql_params)
+
+        if len(db_res) > 0:
+            # 已存在，更新
+            sql = '''
+                UPDATE biz_main_connector
+                SET
+                     `title`       = ?
+                    ,`description` = ?
+                    ,`type`        = ?
+                    ,`configJSON`  = ?
+                WHERE
+                    `id` = ?
+                '''
+            sql_params = [
+                title,
+                description,
+                connector_type,
+                config_json,
+                connector_id,
+            ]
+            self._task.db.query(sql, sql_params)
+
+        else:
+            # 不存在，插入
+            sql = '''
+                INSERT INTO biz_main_connector
+                SET
+                     `id`          = ?
+                    ,`title`       = ?
+                    ,`description` = ?
+                    ,`type`        = ?
+                    ,`configJSON`  = ?
+                '''
+            sql_params = [
+                connector_id,
+                title,
+                description,
+                connector_type,
+                config_json,
+            ]
+            self._task.db.query(sql, sql_params)
+
+        self.reload_config_md5(connector_id)
+
+    def delete(self, connector_id):
+        sql = '''
+            DELETE FROM biz_main_connector
+            WHERE
+                `id` = ?
+            '''
+        sql_params = [connector_id]
+        self._task.db.query(sql, sql_params)
+
+        self.reload_config_md5(connector_id)
+
+    def query(self, connector_type=None):
+        sql = '''
+            SELECT
+                id,
+                title,
+                type
+            FROM biz_main_connector
+            '''
+        sql_params = []
+
+        if connector_type:
+            sql += 'WHERE type IN (?)'
+            sql_params.append(toolkit.as_array(connector_type))
+
+        db_res = self._task.db.query(sql, sql_params)
+        return db_res
+
+class FuncEnvVariableHelper(object):
+    '''
+    加载环境变量
+    1. 检查本地缓存（60 秒强制失效）的 MD5 与 Redis 缓存的 MD5 是否一致
+        a. 一致则直接使用本地缓存
+        b. 不一致则从数据库中读取脚本，并更新 Redis 缓存的 MD5
+    2. 单次任务中，一旦加载则保持到任务结束
+    '''
+    def __init__(self, task):
+        self._task = task
+
+        self.__loaded_env_variable_cache = toolkit.LocalCache()
+
+    def __call__(self, *args, **kwargs):
+        return self.get(*args, **kwargs)
+
+    def keys(self):
+        sql = '''
+            SELECT
+                `id`
+            FROM `biz_main_env_variable`
+            '''
+        db_res = self._task.db.query(sql)
+
+        return [ d['id'] for d in db_res]
+
+    def get(self, env_variable_id):
+        env_variable = self.__loaded_env_variable_cache[env_variable_id]
+        if env_variable:
+            return toolkit.json_copy(env_variable['castedValue'])
+
+        global ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP
+        global ENV_VARIABLE_LOCAL_CACHE
+
+        remote_md5_cache_key = toolkit.get_cache_key('cache', 'dataMD5Cache', ['dataType', 'envVariable'])
+        remote_md5           = None
+
+        env_variable = ENV_VARIABLE_LOCAL_CACHE[env_variable_id]
+        if env_variable:
+            # 检查 Redis 缓存的环境变量 MD5
+            remote_md5 = self._task.cache_db.hget(remote_md5_cache_key, env_variable_id)
+            if remote_md5:
+                remote_md5 = six.ensure_str(remote_md5)
+
+            # 环境变量 MD5 未变化时，延长本地缓存，并返回缓存值
+            if env_variable['valueMD5'] == remote_md5:
+                self._task.logger.debug(f'[LOAD ENV VARIABLE] load `{env_variable_id}` from Cache')
+
+                # 延长本地缓存
+                ENV_VARIABLE_LOCAL_CACHE.refresh(env_variable_id)
+
+                # 缓存环境变量
+                self.__loaded_env_variable_cache[env_variable_id] = env_variable
+                return toolkit.json_copy(env_variable['castedValue'])
+
+        sql = '''
+            SELECT
+                `id`
+                ,`valueTEXT`
+                ,MD5(IFNULL(`valueTEXT`, '')) AS valueMD5
+                ,`autoTypeCasting`
+            FROM `biz_main_env_variable`
+            WHERE
+                `id` = ?
+            '''
+        sql_params = [ env_variable_id ]
+        env_variable = self._task.db.query(sql, sql_params)
+        if not env_variable:
+            self._task.logger.debug(f"[LOAD ENV VARIABLE] `{env_variable_id}` not found")
+            return None
+
+        # 从 DB 获取环境变量
+        self._task.logger.debug(f"[LOAD ENV VARIABLE] load `{env_variable_id}` from DB")
+
+        env_variable = env_variable[0]
+
+        # 类型转换
+        auto_type_casting = env_variable['autoTypeCasting']
+        if auto_type_casting in ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP:
+            env_variable['castedValue'] = ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP[auto_type_casting](env_variable['valueTEXT'])
+        else:
+            env_variable['castedValue'] = env_variable['valueTEXT']
+
+        # 缓存环境变量 MD5
+        self._task.cache_db.hset(remote_md5_cache_key, env_variable_id, env_variable['valueMD5'])
+        ENV_VARIABLE_LOCAL_CACHE[env_variable_id] = env_variable
+
+        # 缓存环境变量
+        self.__loaded_env_variable_cache[env_variable_id] = env_variable
+
+        return toolkit.json_copy(env_variable['castedValue'])
+
 class FuncStoreHelper(object):
     def __init__(self, task, default_scope):
-        self.__task = task
+        self._task = task
 
         self.default_scope = default_scope
 
@@ -316,7 +510,7 @@ class FuncStoreHelper(object):
                 `id` = ?
             '''
         sql_params = [store_id]
-        db_res = self.__task.db.query(sql, sql_params)
+        db_res = self._task.db.query(sql, sql_params)
 
         # 仅在不存在时插入
         if db_res and not_exists:
@@ -333,7 +527,7 @@ class FuncStoreHelper(object):
                     `id` = ?
                 '''
             sql_params = [value_json, expire, store_id]
-            self.__task.db.query(sql, sql_params)
+            self._task.db.query(sql, sql_params)
 
         else:
             # 不存在，插入
@@ -347,7 +541,7 @@ class FuncStoreHelper(object):
                     ,`expireAt`  = UNIX_TIMESTAMP() + ?
                 '''
             sql_params = [store_id, key, value_json, scope, expire]
-            self.__task.db.query(sql, sql_params)
+            self._task.db.query(sql, sql_params)
 
     def keys(self, pattern='*', scope=None):
         if scope is None:
@@ -367,7 +561,7 @@ class FuncStoreHelper(object):
                     )
             '''
         sql_params = [pattern]
-        db_res = self.__task.db.query(sql, sql_params)
+        db_res = self._task.db.query(sql, sql_params)
 
         ret = [ d['key'] for d in db_res ]
         return ret
@@ -397,7 +591,7 @@ class FuncStoreHelper(object):
                     )
             '''
         sql_params = [store_id]
-        db_res = self.__task.db.query(sql, sql_params)
+        db_res = self._task.db.query(sql, sql_params)
         if not db_res:
             return None
 
@@ -428,11 +622,11 @@ class FuncStoreHelper(object):
                 `id` = ?
             '''
         sql_params = [store_id]
-        self.__task.db.query(sql, sql_params)
+        self._task.db.query(sql, sql_params)
 
 class FuncCacheHelper(object):
     def __init__(self, task, default_scope):
-        self.__task = task
+        self._task = task
 
         self.default_scope = default_scope
 
@@ -465,98 +659,101 @@ class FuncCacheHelper(object):
     def run(self, cmd, key, *args, **kwargs):
         scope = kwargs.pop('scope', None)
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run(cmd, key, *args, **kwargs)
+        return self._task.cache_db.run(cmd, key, *args, **kwargs)
 
     def set(self, key, value, scope=None, expire=None, not_exists=False):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('set', key, value, ex=expire, nx=not_exists)
+        return self._task.cache_db.run('set', key, value, ex=expire, nx=not_exists)
 
     def keys(self, pattern='*', scope=None):
         pattern = self._get_cache_key(pattern, scope)
-        res = self.__task.cache_db.keys(pattern)
+        res = self._task.cache_db.keys(pattern)
         res = list(map(lambda x: self._get_user_cache_key(x, scope), res))
         return res
 
     def get(self, key, scope=None):
         key = self._get_cache_key(key, scope)
-        res = self.__task.cache_db.run('get', key)
+        res = self._task.cache_db.run('get', key)
         return self._convert_result(res)
 
     def getset(self, key, value, scope=None):
         key = self._get_cache_key(key, scope)
-        res = self.__task.cache_db.run('getset', key, value)
+        res = self._task.cache_db.run('getset', key, value)
         return self._convert_result(res)
 
     def expire(self, key, expires, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('expire', key, expires)
+        return self._task.cache_db.run('expire', key, expires)
 
     def delete(self, key, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('delete', key)
+        return self._task.cache_db.run('delete', key)
 
     def incr(self, key, step=1, scope=None):
         key = self._get_cache_key(key, scope)
-        res = self.__task.cache_db.run('incr', key, amount=step)
+        res = self._task.cache_db.run('incr', key, amount=step)
         return self._convert_result(res)
 
     def hkeys(self, key, pattern='*', scope=None):
         key = self._get_cache_key(key, scope)
-        res = self.__task.cache_db.hkeys(key, pattern)
+        res = self._task.cache_db.hkeys(key, pattern)
         return res
 
     def hget(self, key, field=None, scope=None):
         key = self._get_cache_key(key, scope)
         if field is None:
-            res = self.__task.cache_db.run('hgetall', key)
-            res = dict([(six.ensure_str(k), v) for k, v in res.items()])
+            res = self._task.cache_db.run('hgetall', key)
+            res = dict([(k, six.ensure_str(v)) for k, v in res.items()])
             return res
 
         elif isinstance(field, (list, tuple)):
-            res = self.__task.cache_db.run('hmget', key)
-            res = dict(zip(field, [six.ensure_str(x) for x in res]))
+            res = self._task.cache_db.run('hmget', key, field)
+            res = dict(zip(field, [None if not x else six.ensure_str(x) for x in res]))
             return res
 
         else:
-            res = self.__task.cache_db.run('hget', key, field)
+            res = self._task.cache_db.run('hget', key, field)
             return self._convert_result(res)
+
+    def hmget(self, key, fields, scope=None):
+        return self.hget(key, fields, scope)
 
     def hset(self, key, field, value, scope=None, not_exists=False):
         key = self._get_cache_key(key, scope)
         if not_exists:
-            return self.__task.cache_db.run('hsetnx', key, field, value)
+            return self._task.cache_db.run('hsetnx', key, field, value)
         else:
-            return self.__task.cache_db.run('hset', key, field, value)
+            return self._task.cache_db.run('hset', key, field, value)
 
     def hmset(self, key, obj, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('hmset', key, obj)
+        return self._task.cache_db.run('hmset', key, obj)
 
     def hincr(self, key, field, step=1, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('hincrby', key, field, amount=step)
+        return self._task.cache_db.run('hincrby', key, field, amount=step)
 
     def hdel(self, key, field, scope=None):
         key = self._get_cache_key(key, scope)
         field = toolkit.as_array(field)
-        return self.__task.cache_db.run('hdel', key, *field)
+        return self._task.cache_db.run('hdel', key, *field)
 
     def lpush(self, key, value, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('lpush', key, value)
+        return self._task.cache_db.run('lpush', key, value)
 
     def rpush(self, key, value, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('rpush', key, value)
+        return self._task.cache_db.run('rpush', key, value)
 
     def lpop(self, key, scope=None):
         key = self._get_cache_key(key, scope)
-        res = self.__task.cache_db.run('lpop', key)
+        res = self._task.cache_db.run('lpop', key)
         return self._convert_result(res)
 
     def rpop(self, key, scope=None):
         key = self._get_cache_key(key, scope)
-        res = self.__task.cache_db.run('rpop', key)
+        res = self._task.cache_db.run('rpop', key)
         return self._convert_result(res)
 
     def push(self, key, value, scope=None):
@@ -573,16 +770,16 @@ class FuncCacheHelper(object):
 
     def llen(self, key, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('llen', key)
+        return self._task.cache_db.run('llen', key)
 
     def lrange(self, key, start=0, stop=-1, scope=None):
         key = self._get_cache_key(key, scope)
-        res = self.__task.cache_db.run('lrange', key, start, stop);
+        res = self._task.cache_db.run('lrange', key, start, stop);
         return [self._convert_result(x) for x in res]
 
     def ltrim(self, key, start, stop, scope=None):
         key = self._get_cache_key(key, scope)
-        return self.__task.cache_db.run('ltrim', key, start, stop);
+        return self._task.cache_db.run('ltrim', key, start, stop);
 
     def rpoplpush(self, key, dest_key=None, scope=None, dest_scope=None):
         if dest_key is None:
@@ -592,269 +789,14 @@ class FuncCacheHelper(object):
 
         key      = self._get_cache_key(key, scope)
         dest_key = self._get_cache_key(dest_key, dest_scope)
-        res = self.__task.cache_db.run('rpoplpush', key, dest_key)
+        res = self._task.cache_db.run('rpoplpush', key, dest_key)
         return self._convert_result(res)
-
-class FuncConnectorHelper(object):
-    def __init__(self, task):
-        self.__task = task
-
-    def __call__(self, *args, **kwargs):
-        return self.get(*args, **kwargs)
-
-    def get(self, connector_id, **helper_kwargs):
-        # 同一个连接器可能有不同的配置（如指定的数据库不同）
-        helper_kwargs = toolkit.no_none_or_whitespace(helper_kwargs)
-
-        global CONNECTOR_HELPER_CLASS_MAP
-
-        # 从 DB 获取连接器
-        self.__task.logger.debug(f"[LOAD connector] load `{connector_id}` from DB")
-
-        sql = '''
-            SELECT
-                `id`
-                ,`type`
-                ,`configJSON`
-            FROM `biz_main_connector`
-            WHERE
-                `id` = ?
-            '''
-        sql_params = [ connector_id ]
-        connector = self.__task.db.query(sql, sql_params)
-        if not connector:
-            e = NotFoundException(f'Connector not found: `{connector_id}`')
-            raise e
-
-        connector = connector[0]
-
-        # 确定连接器类型
-        helper_type  = connector['type']
-        helper_class = CONNECTOR_HELPER_CLASS_MAP.get(helper_type)
-        if not helper_class:
-            e = ConnectorNotSupportException(f'Connector type not support: `{helper_type}`')
-            raise e
-
-        # 创建连接器 Helper
-        config = toolkit.json_loads(connector['configJSON'])
-        config = decipher_connector_config_fields(config)
-
-        helper = helper_class(self.__task.logger, config, pool_size=CONFIG['_FUNC_TASK_THREAD_POOL_SIZE'], **helper_kwargs)
-        return helper
-
-    def reload_config_md5(self, connector_id):
-        cache_key = toolkit.get_cache_key('cache', 'dataMD5Cache', ['dataType', 'connector'])
-
-        sql = '''
-            SELECT
-                `id`
-                ,MD5(`configJSON`) AS `configMD5`
-            FROM biz_main_connector
-            WHERE
-                `id` = ?
-            '''
-        sql_params = [ connector_id ]
-        connector = self.__task.db.query(sql, sql_params)
-        if not connector:
-            return
-
-        connector = connector[0]
-        self.__task.cache_db.hset(cache_key, connector_id, connector['configMD5'])
-
-    def save(self, connector_id, connector_type, config, title=None, description=None):
-        if connector_type not in CONNECTOR_HELPER_CLASS_MAP:
-            e = ConnectorNotSupportException(f'Connector type `{connector_type}` not supported')
-            raise e
-
-        if not config:
-            config = {}
-
-        if not isinstance(config, dict):
-            raise InvalidConnectorOptionException('Connector config should be a dict')
-
-        # 加密字段
-        for k in CONNECTOR_CIPHER_FIELDS:
-            v = config.get(k)
-            if v is not None:
-                config[f'{k}Cipher'] = toolkit.cipher_by_aes(v, CONFIG['SECRET'])
-            config.pop(k, None)
-
-        config_json = toolkit.json_dumps(config)
-
-        sql = '''
-            SELECT `id` FROM biz_main_connector WHERE `id` = ?
-            '''
-        sql_params = [connector_id]
-        db_res = self.__task.db.query(sql, sql_params)
-
-        if len(db_res) > 0:
-            # 已存在，更新
-            sql = '''
-                UPDATE biz_main_connector
-                SET
-                     `title`       = ?
-                    ,`description` = ?
-                    ,`type`        = ?
-                    ,`configJSON`  = ?
-                WHERE
-                    `id` = ?
-                '''
-            sql_params = [
-                title,
-                description,
-                connector_type,
-                config_json,
-                connector_id,
-            ]
-            self.__task.db.query(sql, sql_params)
-
-        else:
-            # 不存在，插入
-            sql = '''
-                INSERT INTO biz_main_connector
-                SET
-                     `id`          = ?
-                    ,`title`       = ?
-                    ,`description` = ?
-                    ,`type`        = ?
-                    ,`configJSON`  = ?
-                '''
-            sql_params = [
-                connector_id,
-                title,
-                description,
-                connector_type,
-                config_json,
-            ]
-            self.__task.db.query(sql, sql_params)
-
-        self.reload_config_md5(connector_id)
-
-    def delete(self, connector_id):
-        sql = '''
-            DELETE FROM biz_main_connector
-            WHERE
-                `id` = ?
-            '''
-        sql_params = [connector_id]
-        self.__task.db.query(sql, sql_params)
-
-        self.reload_config_md5(connector_id)
-
-    def query(self, connector_type=None):
-        sql = '''
-            SELECT
-                id,
-                title,
-                type
-            FROM biz_main_connector
-            '''
-        sql_params = []
-
-        if connector_type:
-            sql += 'WHERE type IN (?)'
-            sql_params.append(toolkit.as_array(connector_type))
-
-        db_res = self.__task.db.query(sql, sql_params)
-        return db_res
-
-class FuncEnvVariableHelper(object):
-    '''
-    加载环境变量
-    1. 检查本地缓存（60 秒强制失效）的 MD5 与 Redis 缓存的 MD5 是否一致
-        a. 一致则直接使用本地缓存
-        b. 不一致则从数据库中读取脚本，并更新 Redis 缓存的 MD5
-    2. 单次任务中，一旦加载则保持到任务结束
-    '''
-    def __init__(self, task):
-        self.__task = task
-
-        self.__loaded_env_variable_cache = toolkit.LocalCache()
-
-    def __call__(self, *args, **kwargs):
-        return self.get(*args, **kwargs)
-
-    def keys(self):
-        sql = '''
-            SELECT
-                `id`
-            FROM `biz_main_env_variable`
-            '''
-        db_res = self.__task.db.query(sql)
-
-        return [ d['id'] for d in db_res]
-
-    def get(self, env_variable_id):
-        env_variable = self.__loaded_env_variable_cache[env_variable_id]
-        if env_variable:
-            return toolkit.json_copy(env_variable['castedValue'])
-
-        global ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP
-        global ENV_VARIABLE_LOCAL_CACHE
-
-        remote_md5_cache_key = toolkit.get_cache_key('cache', 'dataMD5Cache', ['dataType', 'envVariable'])
-        remote_md5           = None
-
-        env_variable = ENV_VARIABLE_LOCAL_CACHE[env_variable_id]
-        if env_variable:
-            # 检查 Redis 缓存的环境变量 MD5
-            remote_md5 = self.__task.cache_db.hget(remote_md5_cache_key, env_variable_id)
-            if remote_md5:
-                remote_md5 = six.ensure_str(remote_md5)
-
-            # 环境变量 MD5 未变化时，延长本地缓存，并返回缓存值
-            if env_variable['valueMD5'] == remote_md5:
-                self.__task.logger.debug(f'[LOAD ENV VARIABLE] load `{env_variable_id}` from Cache')
-
-                # 延长本地缓存
-                ENV_VARIABLE_LOCAL_CACHE.refresh(env_variable_id)
-
-                # 缓存环境变量
-                self.__loaded_env_variable_cache[env_variable_id] = env_variable
-                return toolkit.json_copy(env_variable['castedValue'])
-
-        sql = '''
-            SELECT
-                `id`
-                ,`valueTEXT`
-                ,MD5(IFNULL(`valueTEXT`, '')) AS valueMD5
-                ,`autoTypeCasting`
-            FROM `biz_main_env_variable`
-            WHERE
-                `id` = ?
-            '''
-        sql_params = [ env_variable_id ]
-        env_variable = self.__task.db.query(sql, sql_params)
-        if not env_variable:
-            self.__task.logger.debug(f"[LOAD ENV VARIABLE] `{env_variable_id}` not found")
-            return None
-
-        # 从 DB 获取环境变量
-        self.__task.logger.debug(f"[LOAD ENV VARIABLE] load `{env_variable_id}` from DB")
-
-        env_variable = env_variable[0]
-
-        # 类型转换
-        auto_type_casting = env_variable['autoTypeCasting']
-        if auto_type_casting in ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP:
-            env_variable['castedValue'] = ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP[auto_type_casting](env_variable['valueTEXT'])
-        else:
-            env_variable['castedValue'] = env_variable['valueTEXT']
-
-        # 缓存环境变量 MD5
-        self.__task.cache_db.hset(remote_md5_cache_key, env_variable_id, env_variable['valueMD5'])
-        ENV_VARIABLE_LOCAL_CACHE[env_variable_id] = env_variable
-
-        # 缓存环境变量
-        self.__loaded_env_variable_cache[env_variable_id] = env_variable
-
-        return toolkit.json_copy(env_variable['castedValue'])
 
 class FuncConfigHelper(object):
     MASKED_CONFIG = toolkit.json_mask(CONFIG)
 
     def __init__(self, task):
-        self.__task = task
+        self._task = task
 
     def __call__(self, *args, **kwargs):
         return self.get(*args, **kwargs)
@@ -868,48 +810,18 @@ class FuncConfigHelper(object):
         else:
             return toolkit.json_copy(default)
 
-    def list(self, all_configs=False):
-        return [{ 'key': k, 'value': v } for k, v in self.MASKED_CONFIG.items() if all_configs or k.startswith('CUSTOM_')]
-
-    def dict(self, all_configs=False):
-        return dict([(k, v) for k, v in self.MASKED_CONFIG.items() if all_configs or k.startswith('CUSTOM_')])
-
-class FuncExtraForGuanceHelper(object):
-    def __init__(self, task):
-        self.__task = task
-
-        self._tags   = {}
-        self._fields = {}
-
-    @property
-    def tags(self):
-        return toolkit.json_copy(self._tags) or {}
-
-    @property
-    def fields(self):
-        return toolkit.json_copy(self._fields) or {}
-
-    def set_tags(self, **data):
-        for k, v in data.items():
-            if v is None:
+    def query(self, all_configs=False, list_output=False):
+        res = {}
+        for k, v in self.MASKED_CONFIG.items():
+            if not all_configs and not k.startswith('CUSTOM_'):
                 continue
 
-            self._tags[k] = str(v)
+            res[k] = v
 
-    def delete_tags(self, *keys):
-        for k in keys:
-            self._tags.pop(k, None)
+        if list_output:
+            res = list([ { 'key': k, 'value': v } for k, v in res.items() ])
 
-    def set_fields(self, **data):
-        for k, v in data.items():
-            if v is None:
-                continue
-
-            self._fields[k] = v
-
-    def delete_fields(self, *keys):
-        for k in keys:
-            self._fields.pop(k, None)
+        return res
 
 class BaseFuncResponse(object):
     def __init__(self,
@@ -1029,6 +941,192 @@ class FuncRedirect(FuncResponse):
                          status_code=302,
                          content_type='html',
                          headers=headers)
+
+class FuncThreadHelper(object):
+    def __init__(self, task):
+        self._task = task
+        self.result_map = {}
+
+    def start(self, fn, args=None, kwargs=None, key=None):
+        global FUNC_THREAD_POOL
+
+        if not FUNC_THREAD_POOL:
+            self._task.logger.debug('[THREAD POOL] Create Pool')
+
+            pool_size = CONFIG['_FUNC_TASK_THREAD_POOL_SIZE']
+            FUNC_THREAD_POOL = ThreadPoolExecutor(pool_size)
+
+        key = key or toolkit.gen_data_id('async')
+        self._task.logger.debug(f'[THREAD POOL] Submit Key=`{key}`')
+
+        if key in self.result_map:
+            e = ThreadResultKeyDuplicatedException(f'Thread result key already existed: `{key}`')
+            raise e
+
+        args   = args   or []
+        kwargs = kwargs or {}
+        self.result_map[key] = FUNC_THREAD_POOL.submit(fn, *args, **kwargs)
+
+    def get_result(self, wait=True, key=None):
+        global FUNC_THREAD_POOL
+
+        if not self.result_map:
+            return None
+
+        if wait is None:
+            wait = True
+
+        collected_res = {}
+
+        keys = key or list(self.result_map.keys())
+        for k in toolkit.as_array(keys):
+            collected_res[k] = None
+
+            future_res = self.result_map.get(k)
+            if future_res is None:
+                continue
+
+            if not future_res.done() and not wait:
+                continue
+
+            retval = None
+            error  = None
+            try:
+                retval = future_res.result()
+            except Exception as e:
+                error = e
+            finally:
+                collected_res[k] = (retval, error)
+
+        if key:
+            return collected_res.get(key)
+        else:
+            return collected_res
+
+class BaseFuncEntityHelper(object):
+    _table         = None
+    _entity_origin = None
+
+    def __init__(self, task):
+        self._task = task
+
+    def resolve_entity_id(self, entity_id=None):
+        if not entity_id:
+            if self._task.origin == self._entity_origin:
+                return self._task.origin_id
+            else:
+                return None
+
+        return entity_id
+
+    def get(self, entity_id=None):
+        sql = '''
+            SELECT * FROM ?? WHERE id = ? LIMIT 1
+            '''
+        sql_params = [ self._table, self.resolve_entity_id(entity_id) ]
+        db_res = self._task.db.query(sql, sql_params)
+        if db_res:
+            return db_res[0]
+
+        return None
+
+    def query(self):
+        sql = '''
+            SELECT * FROM ??
+            '''
+        sql_params = [ self._table ]
+        db_res = self._task.db.query(sql, sql_params)
+        return db_res
+
+    # def add(self, data):
+    #     sql = '''
+    #         INSERT INTO ?? SET ?
+    #         '''
+    #     sql_params = [ self._table, data ]
+    #     self._task.db.query(sql, sql_params)
+
+    # def modify(self, entity_id, data):
+    #     sql = '''
+    #         UPDATE ?? SET ? WHERE id = ? LIMIT 1
+    #         '''
+    #     sql_params = [ self._table, data, self.resolve_entity_id(entity_id) ]
+    #     self._task.db.query(sql, sql_params)
+
+    # def delete(self, entity_id):
+    #     sql = '''
+    #         DELETE FROM ?? WHERE id = ? LIMIT 1
+    #         '''
+    #     sql_params = [ self._table, self.resolve_entity_id(entity_id) ]
+    #     self._task.db.query(sql, sql_params)
+
+class FuncAuthLinkHelper(BaseFuncEntityHelper):
+    _table         = 'biz_main_auth_link'
+    _entity_origin = 'authLink'
+
+class FuncCrontabConfigHelper(BaseFuncEntityHelper):
+    _table         = 'biz_main_crontab_config'
+    _entity_origin = 'crontabConfig'
+
+    def set_temp_crontab(self, temp_crontab, expires=None, entity_id=None):
+        entity_id = self.resolve_entity_id(entity_id)
+        if not entity_id:
+            return
+
+        cache_key = toolkit.get_global_cache_key('tempConfig', 'crontabConfig')
+        cache_value = {
+            'expireTime' : 0 if not expires else int(time.time()) + expires,
+            'tempCrontab': temp_crontab,
+        }
+        self._task.cache_db.hset(cache_key, entity_id, toolkit.json_dumps(cache_value))
+
+    def clear_temp_crontab(self, entity_id=None):
+        entity_id = self.resolve_entity_id(entity_id)
+        if not entity_id:
+            return
+
+        cache_key = toolkit.get_global_cache_key('tempConfig', 'crontabConfig')
+        self._task.cache_db.hdel(cache_key, entity_id)
+
+class FuncBatchHelper(BaseFuncEntityHelper):
+    _table         = 'biz_main_batch'
+    _entity_origin = 'batch'
+
+class FuncExtraForGuanceHelper(object):
+    def __init__(self, task):
+        self._task = task
+
+        self._tags   = {}
+        self._fields = {}
+
+    @property
+    def tags(self):
+        return toolkit.json_copy(self._tags) or {}
+
+    @property
+    def fields(self):
+        return toolkit.json_copy(self._fields) or {}
+
+    def set_tags(self, **data):
+        for k, v in data.items():
+            if v is None:
+                continue
+
+            self._tags[k] = str(v)
+
+    def delete_tags(self, *keys):
+        for k in keys:
+            self._tags.pop(k, None)
+
+    def set_fields(self, **data):
+        for k, v in data.items():
+            if v is None:
+                continue
+
+            self._fields[k] = v
+
+    def delete_fields(self, *keys):
+        for k in keys:
+            self._fields.pop(k, None)
 
 class ToolkitWrap(object):
     gen_uuid             = toolkit.gen_uuid
@@ -1667,12 +1765,15 @@ class FuncBaseTask(BaseTask):
         }
 
         # 添加 DataFlux Func 内置方法/对象
-        __connector_helper    = FuncConnectorHelper(self)
-        __env_variable_helper = FuncEnvVariableHelper(self)
-        __store_helper        = FuncStoreHelper(self, default_scope=script_name)
-        __cache_helper        = FuncCacheHelper(self, default_scope=script_name)
-        __config_helper       = FuncConfigHelper(self)
-        __thread_helper       = FuncThreadHelper(self)
+        __connector_helper      = FuncConnectorHelper(self)
+        __env_variable_helper   = FuncEnvVariableHelper(self)
+        __store_helper          = FuncStoreHelper(self, default_scope = script_name)
+        __cache_helper          = FuncCacheHelper(self, default_scope = script_name)
+        __config_helper         = FuncConfigHelper(self)
+        __thread_helper         = FuncThreadHelper(self)
+        __auth_link_helper      = FuncAuthLinkHelper(self)
+        __crontab_config_helper = FuncCrontabConfigHelper(self)
+        __batch_helper          = FuncBatchHelper(self)
 
         def __log(message):
             return self._log(safe_scope, message)
@@ -1725,13 +1826,17 @@ class FuncBaseTask(BaseTask):
             'SYS_DB'      : self.db,       # 当前 DataFlux Func 数据库
             'SYS_CACHE_DB': self.cache_db, # 当前 DataFlux Func 缓存
 
+            'AUTH_LINK'     : __auth_link_helper,      # 授权链接处理模块
+            'CRONTAB_CONFIG': __crontab_config_helper, # 自动触发处理模块
+            'BATCH'         : __batch_helper,          # 批处理处理模块
+
             # 直接连接器
             'GUANCE_OPENAPI': GuanceOpenAPI,
             'DATAKIT'       : DataKit,
             'DATAWAY'       : DataWay,
 
             # 方便函数
-            'toolkit': ToolkitWrap,
+            'TOOLKIT': ToolkitWrap,
 
             # 用于观测云的额外信息
             'EXTRA_FOR_GUANCE': self.extra_for_guance,

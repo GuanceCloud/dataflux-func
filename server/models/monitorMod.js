@@ -203,8 +203,8 @@ EntityModel.prototype.getSystemMetrics = function(callback) {
 EntityModel.prototype.listAbnormalRequests = function(type, callback) {
   var self = this;
 
-  var abnormalRequests        = null;
-  var abnormalRequestPageInfo = null;
+  var listData     = null;
+  var listPageInfo = null;
 
   async.series([
     // 获取数据
@@ -214,15 +214,15 @@ EntityModel.prototype.listAbnormalRequests = function(type, callback) {
       self.locals.cacheDB.pagedList(cacheKey, paging, function(err, cacheRes, pageInfo) {
         if (err) return asyncCallback(err);
 
-        abnormalRequests        = cacheRes;
-        abnormalRequestPageInfo = pageInfo;
+        listData     = cacheRes;
+        listPageInfo = pageInfo;
 
         return asyncCallback();
       });
     },
     // 补充用户信息
     function(asyncCallback) {
-      var userIds = abnormalRequests.reduce(function(acc, x) {
+      var userIds = listData.reduce(function(acc, x) {
         if (x.userId) {
           acc.push(x.userId);
         }
@@ -249,7 +249,7 @@ EntityModel.prototype.listAbnormalRequests = function(type, callback) {
 
         var userIdMap = toolkit.arrayElementMap(dbRes, 'u_id');
 
-        abnormalRequests.forEach(function(d) {
+        listData.forEach(function(d) {
           var user = userIdMap[d.userId];
           if (user) {
             Object.assign(d, user);
@@ -261,7 +261,7 @@ EntityModel.prototype.listAbnormalRequests = function(type, callback) {
     },
     // 补充路由信息
     function(asyncCallback) {
-      abnormalRequests.forEach(function(d) {
+      listData.forEach(function(d) {
         var key   = `${d.reqMethod.toUpperCase()} ${d.reqRoute}`;
         var route = routeLoader.getRoute(key);
         if (route) {
@@ -273,6 +273,6 @@ EntityModel.prototype.listAbnormalRequests = function(type, callback) {
     },
   ], function(err) {
     if (err) return callback(err);
-    return callback(null, abnormalRequests, abnormalRequestPageInfo);
+    return callback(null, listData, listPageInfo);
   })
 };

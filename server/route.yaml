@@ -5461,7 +5461,7 @@ systemSettingAPI:
         $type: string
 
 # 临时标记
-temporaryFlagAPI:
+tempFlagAPI:
   $tag     : Temporary Flag
   $tag_zhCN: 临时标记
 
@@ -5497,8 +5497,8 @@ temporaryFlagAPI:
         $desc      : Value
         $isRequired: false
         $type      : any
-      ttl:
-        $desc      : TTL (in seconds)
+      expires:
+        $desc      : Expires (in seconds)
         $isRequired: false
         $type      : integer
 

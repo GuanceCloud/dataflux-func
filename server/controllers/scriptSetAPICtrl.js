@@ -38,8 +38,8 @@ exports.list = function(req, res, next) {
   var withScripts    = toolkit.toBoolean(req.query._withScripts);
   var withScriptCode = toolkit.toBoolean(req.query._withScriptCode);
 
-  var scriptSets        = null;
-  var scriptSetPageInfo = null;
+  var listData     = null;
+  var listPageInfo = null;
 
   var scriptModel    = scriptMod.createModel(res.locals);
   var scriptSetModel = scriptSetMod.createModel(res.locals);
@@ -52,8 +52,8 @@ exports.list = function(req, res, next) {
       scriptSetModel.list(opt, function(err, dbRes, pageInfo) {
         if (err) return asyncCallback(err);
 
-        scriptSets        = dbRes;
-        scriptSetPageInfo = pageInfo;
+        listData     = dbRes;
+        listPageInfo = pageInfo;
 
         return asyncCallback();
       });
@@ -62,7 +62,7 @@ exports.list = function(req, res, next) {
     function(asyncCallback) {
       if (!withScripts) return asyncCallback();
 
-      var scriptSetIds = toolkit.arrayElementValues(scriptSets, 'id');
+      var scriptSetIds = toolkit.arrayElementValues(listData, 'id');
       if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
 
       var opt = {
@@ -82,7 +82,7 @@ exports.list = function(req, res, next) {
           return acc;
         }, {});
 
-        scriptSets.forEach(function(scriptSet) {
+        listData.forEach(function(scriptSet) {
           scriptSet.scripts = _map[scriptSet.id] || [];
           scriptSet.md5     = common.getScriptSetMD5(scriptSet, scriptSet.scripts);
         });
@@ -93,7 +93,7 @@ exports.list = function(req, res, next) {
   ], function(err) {
     if (err) return next(err);
 
-    var ret = toolkit.initRet(scriptSets, scriptSetPageInfo);
+    var ret = toolkit.initRet(listData, listPageInfo);
     res.locals.sendJSON(ret);
   });
 };

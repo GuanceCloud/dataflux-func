@@ -167,7 +167,7 @@ function startApplication() {
   require('./routers/accessKeyAPIRouter');
   require('./routers/monitorAPIRouter');
   require('./routers/systemSettingAPIRouter');
-  require('./routers/temporaryFlagAPIRouter');
+  require('./routers/tempFlagAPIRouter');
   require('./routers/debugAPIRouter');
 
   require('./routers/mainAPIRouter');
@@ -339,7 +339,7 @@ function startApplication() {
 
     // Check restart flag
     setInterval(function checkRestartFlag() {
-      var cacheKey = toolkit.getGlobalCacheKey('temporaryFlag', 'restartAllServers');
+      var cacheKey = toolkit.getGlobalCacheKey('tempFlag', 'restartAllServers');
       app.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
         if (!cacheRes) return;
 

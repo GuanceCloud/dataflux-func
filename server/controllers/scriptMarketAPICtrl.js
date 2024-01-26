@@ -1269,8 +1269,8 @@ function _pullFromScriptMarket(locals, scriptMarket, pullScriptSetIds, callback)
 var crudHandler = exports.crudHandler = scriptMarketMod.createCRUDHandler();
 
 exports.list = function(req, res, next) {
-  var scriptMarkets        = null;
-  var scriptMarketPageInfo = null;
+  var listData     = null;
+  var listPageInfo = null;
 
   var scriptMarketModel = scriptMarketMod.createModel(res.locals);
   var scriptMarketModelForFetch = scriptMarketMod.createModel(res.locals);
@@ -1284,8 +1284,8 @@ exports.list = function(req, res, next) {
       scriptMarketModel.list(opt, function(err, dbRes, pageInfo) {
         if (err) return asyncCallback(err);
 
-        scriptMarkets        = dbRes;
-        scriptMarketPageInfo = pageInfo;
+        listData     = dbRes;
+        listPageInfo = pageInfo;
 
         return asyncCallback();
       });
@@ -1294,7 +1294,7 @@ exports.list = function(req, res, next) {
     if (err) return next(err);
 
     // 获取脚本市场管理员信息、脚本集 META 信息等
-    scriptMarkets.forEach(function(scriptMarket) {
+    listData.forEach(function(scriptMarket) {
       // 获取 META 信息
       var metaData = _getMetaData(scriptMarket);
 
@@ -1308,7 +1308,7 @@ exports.list = function(req, res, next) {
       scriptMarket.isAdmin = (token === remoteToken);
     });
 
-    var ret = toolkit.initRet(scriptMarkets, scriptMarketPageInfo);
+    var ret = toolkit.initRet(listData, listPageInfo);
     res.locals.sendJSON(ret);
   });
 };

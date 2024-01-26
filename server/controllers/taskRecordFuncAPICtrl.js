@@ -18,8 +18,8 @@ var taskRecordFuncMod = require('../models/taskRecordFuncMod');
 var crudHandler = exports.crudHandler = taskRecordFuncMod.createCRUDHandler();
 
 exports.list = function(req, res, next) {
-  var taskRecords        = null;
-  var taskRecordPageInfo = null;
+  var listData     = null;
+  var listPageInfo = null;
 
   var taskRecordFuncModel = taskRecordFuncMod.createModel(res.locals);
 
@@ -29,17 +29,17 @@ exports.list = function(req, res, next) {
       taskRecordFuncModel.list(opt, function(err, dbRes, pageInfo) {
         if (err) return asyncCallback(err);
 
-        taskRecords        = dbRes;
-        taskRecordPageInfo = pageInfo;
+        listData     = dbRes;
+        listPageInfo = pageInfo;
 
         // 添加子任务数量 subTaskCount
-        return taskRecordFuncModel.appendSubTaskCount(taskRecords, asyncCallback);
+        return taskRecordFuncModel.appendSubTaskCount(listData, asyncCallback);
       });
     },
   ], function(err) {
     if (err) return next(err);
 
-    var ret = toolkit.initRet(taskRecords, taskRecordPageInfo);
+    var ret = toolkit.initRet(listData, listPageInfo);
     res.locals.sendJSON(ret);
   });
 };

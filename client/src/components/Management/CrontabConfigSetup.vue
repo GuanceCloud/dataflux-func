@@ -254,7 +254,7 @@ shortcutDays: '{n} 天'
                 :precision="0"
                 v-model="form.taskRecordLimit"></el-input-number>
               <span class="task-record-limit-unit">{{ $tc('recentTaskCount', form.taskRecordLimit, { n: '' }) }} </span>
-              <el-link class="task-record-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB')">{{ $t('Restore Default') }}</el-link>
+              <el-link class="task-record-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG')">{{ $t('Restore Default') }}</el-link>
             </el-form-item>
 
             <!-- Crontab配置 -->
@@ -423,7 +423,7 @@ export default {
         this.formCrontabCache = this.T.jsonCopy(defaultFormCrontab);
         this.formCrontab      = this.T.jsonCopy(defaultFormCrontab);
         this.T.jsonClear(this.form);
-        this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB');
+        this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG');
         this.data = {};
 
       } else {
@@ -441,7 +441,7 @@ export default {
         nextForm.tagsJSON = nextForm.tagsJSON || [];
 
         if (this.T.isNothing(nextForm.taskRecordLimit)) {
-          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB')
+          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG')
         }
 
         this.form = nextForm;
@@ -802,7 +802,7 @@ export default {
         funcCallKwargsJSON: null,
         tagsJSON          : [],
         expireTime        : null,
-        taskRecordLimit   : this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB'),
+        taskRecordLimit   : this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG'),
         note              : null,
         // crontab 单独处理
       },

@@ -124,7 +124,7 @@ systemSettings:
   SCRIPT_SET_HIDDEN_BLUEPRINT             : true
 
 # Temporary Flags
-temporaryFlags:
+tempFlags:
   - restartAllServers
   - restartAllWorkersAndBeat
   - pauseAllCrontabConfigs

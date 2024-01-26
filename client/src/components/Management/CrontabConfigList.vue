@@ -20,6 +20,7 @@ Pause for 12 hours  : 暂停 12 小时
 Pause for 1 day     : 暂停 1 天
 
 Fixed      : 固定
+Temp       : 临时
 Not Set    : 未配置
 Config     : 配置
 Created    : 创建
@@ -230,7 +231,11 @@ successCount: 成功 {n}
           <el-table-column :label="$t('Config')" width="240">
             <template slot-scope="scope">
               <span class="text-info">Crontab{{ $t(':') }}</span>
-              <template v-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCrontab">
+              <template v-if="scope.row.tempCrontab">
+                <code class="text-bad">{{ scope.row.tempCrontab }}</code>
+                <el-tag type="danger" size="mini">{{ $t('Temp') }}</el-tag>
+              </template>
+              <template v-else-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCrontab">
                 <code class="text-main">{{ scope.row.func_extraConfigJSON.fixedCrontab }}</code>
                 <el-tag size="mini">{{ $t('Fixed') }}</el-tag>
               </template>
@@ -286,7 +291,7 @@ successCount: 成功 {n}
           <el-table-column align="right" width="350">
             <template slot-scope="scope">
               <template v-if="statisticMap[scope.row.id]">
-                <el-link @click="common.goToTaskRecord({ origin: 'crontab', originId: scope.row.id }, { hlDataId: scope.row.id })" :disabled="!statisticMap[scope.row.id].taskRecordCount">
+                <el-link @click="common.goToTaskRecord({ origin: 'crontabConfig', originId: scope.row.id }, { hlDataId: scope.row.id })" :disabled="!statisticMap[scope.row.id].taskRecordCount">
                   {{ $t('Task Record') }} <code v-if="statisticMap[scope.row.id].taskRecordCount">({{ T.numberLimit(statisticMap[scope.row.id].taskRecordCount) }})</code>
                 </el-link>
               </template>
@@ -427,11 +432,11 @@ export default {
 
       this.$store.commit('updateHighlightedTableDataId', d.id);
     },
-    async pauseAll(ttl) {
-      ttl = ttl || -1;
+    async pauseAll(expires) {
+      expires = expires || -1;
       let apiRes = await this.T.callAPI('post', '/api/v1/temporary-flags/:id/do/set', {
         params: { id: 'pauseAllCrontabConfigs' },
-        body  : { ttl: ttl },
+        body  : { expires: expires },
       });
       if (!apiRes || !apiRes.ok) return;
 

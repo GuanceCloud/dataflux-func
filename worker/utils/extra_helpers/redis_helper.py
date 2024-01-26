@@ -320,13 +320,17 @@ class RedisHelper(object):
     def hget(self, key, field):
         return self.run('hget', key, field)
 
-    def hmget(self, key, fields):
-        return self.run('hmget', key, fields)
-
     def hgetall(self, key):
-        result = self.run('hgetall', key)
-        result = dict([(six.ensure_str(k), v) for k, v in result.items()])
-        return result
+        res = self.run('hgetall', key)
+        res = dict([(six.ensure_str(k), six.ensure_str(v)) for k, v in res.items()])
+        return res
+
+    def hmget(self, key, fields):
+        fields = toolkit.as_array(fields)
+
+        res = self.run('hmget', key, fields)
+        res = dict(zip(fields, [None if not x else six.ensure_str(x) for x in res]))
+        return res
 
     def hset(self, key, field, value):
         return self.run('hset', key, field, value)

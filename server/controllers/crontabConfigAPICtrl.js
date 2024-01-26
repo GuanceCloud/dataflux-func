@@ -19,9 +19,56 @@ var GLOBAL_SCOPE = 'GLOBAL';
 
 /* Handlers */
 var crudHandler = exports.crudHandler = crontabConfigMod.createCRUDHandler();
-exports.list       = crudHandler.createListHandler();
 exports.delete     = crudHandler.createDeleteHandler();
 exports.deleteMany = crudHandler.createDeleteManyHandler();
+
+exports.list = function(req, res, next) {
+  var listData     = null;
+  var listPageInfo = null;
+
+  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
+
+  async.series([
+    function(asyncCallback) {
+      var opt = res.locals.getQueryOptions();
+
+      crontabConfigModel.list(opt, function(err, dbRes, pageInfo) {
+        if (err) return asyncCallback(err);
+
+        listData     = dbRes;
+        listPageInfo = pageInfo;
+
+        return asyncCallback();
+      });
+    },
+    // 添加临时 Crontab 配置
+    function(asyncCallback) {
+      var crontabConfigIds = toolkit.arrayElementValues(listData, 'id');
+      var cacheKey = toolkit.getGlobalCacheKey('tempConfig', 'crontabConfig');
+      res.locals.cacheDB.hmget(cacheKey, crontabConfigIds, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        var now = parseInt(Date.now() / 1000);
+        listData.forEach(function(d) {
+          var tempConfig = cacheRes[d.id];
+          if (!tempConfig) return;
+
+          tempConfig = JSON.parse(tempConfig);
+          if (tempConfig.expireTime && tempConfig.expireTime < now) return;
+
+          d.tempCrontab = tempConfig.tempCrontab;
+        });
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet(listData, listPageInfo);
+    res.locals.sendJSON(ret);
+  });
+}
 
 exports.add = function(req, res, next) {
   var data = req.body.data;

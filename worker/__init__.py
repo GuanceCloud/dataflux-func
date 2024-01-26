@@ -117,7 +117,7 @@ def check_restart_flag(shutdown_event):
     if shutdown_event.is_set():
         return
 
-    cache_key = toolkit.get_global_cache_key('temporaryFlag', 'restartAllWorkersAndBeat')
+    cache_key = toolkit.get_global_cache_key('tempFlag', 'restartAllWorkersAndBeat')
     restart_flag_time = REDIS.get(cache_key)
 
     if not restart_flag_time:

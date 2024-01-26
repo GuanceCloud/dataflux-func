@@ -24,7 +24,7 @@ class CrontabStarter(BaseTask):
 
     @property
     def is_paused(self):
-        cache_key = toolkit.get_global_cache_key('temporaryFlag', 'pauseAllCrontabConfigs')
+        cache_key = toolkit.get_global_cache_key('tempFlag', 'pauseAllCrontabConfigs')
         pause_all_crontab_configs_flag = self.cache_db.get(cache_key)
         return bool(pause_all_crontab_configs_flag)
 
@@ -45,7 +45,7 @@ class CrontabStarter(BaseTask):
         if isinstance(crontab_config['funcExtraConfig'], str):
             crontab_config['funcExtraConfig'] = toolkit.json_loads(crontab_config['funcExtraConfig']) or {}
 
-        crontab_config['crontab'] = crontab_config['funcExtraConfig'].get('fixedCrontab') or crontab_config.get('crontab')
+        crontab_config['crontab'] = crontab_config.get('tempCrontab') or crontab_config['funcExtraConfig'].get('fixedCrontab') or crontab_config.get('crontab')
 
         return crontab_config
 
@@ -71,6 +71,7 @@ class CrontabStarter(BaseTask):
             # 集成 Crontab 使用函数 ID 作为自动触发配置 ID
             c['id']  = f"autoRun.crontab-{c['funcId']}"
 
+        # 准备 / 过滤自动触发配置
         crontab_configs = map(self.prepare_contab_config, crontab_configs)
         crontab_configs = filter(self.filter_crontab_config, crontab_configs)
         return crontab_configs
@@ -108,6 +109,24 @@ class CrontabStarter(BaseTask):
         if len(crontab_configs) > 0:
             latest_seq = crontab_configs[-1]['seq']
 
+            # 优先使用临时 Crontab
+            crontab_config_ids = [ c['id'] for c in crontab_configs]
+            cache_key = toolkit.get_global_cache_key('tempConfig', 'crontabConfig')
+            cache_res = self.cache_db.hmget(cache_key, crontab_config_ids) or {}
+
+            for c in crontab_configs:
+                temp_config = cache_res.get(c['id'])
+
+                if not temp_config:
+                    continue
+
+                temp_config = toolkit.json_loads(temp_config)
+                if temp_config['expireTime'] and temp_config['expireTime'] < self.trigger_time:
+                    continue
+
+                c['tempCrontab'] = temp_config['tempCrontab']
+
+        # 准备 / 过滤自动触发配置
         crontab_configs = map(self.prepare_contab_config, crontab_configs)
         crontab_configs = filter(self.filter_crontab_config, crontab_configs)
         return crontab_configs, latest_seq
@@ -212,7 +231,7 @@ class CrontabStarter(BaseTask):
 
                 tasks.append({
                     'crontabConfig': c,
-                    'origin'       : 'crontab',
+                    'origin'       : 'crontabConfig',
                     'originId'     : c['id'],
                     'delay'        : delay,
                 })
@@ -264,7 +283,7 @@ class CrontabManualStarter(CrontabStarter):
         # 发送任务
         task = {
             'crontabConfig': crontab_config,
-            'origin'       : 'crontab',
+            'origin'       : 'crontabConfig',
             'originId'     : crontab_config['id'],
             'execMode'     : 'manual',
         }

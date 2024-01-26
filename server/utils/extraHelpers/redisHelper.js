@@ -387,7 +387,20 @@ RedisHelper.prototype.hget = function(key, field, callback) {
 };
 
 RedisHelper.prototype.hmget = function(key, fields, callback) {
-  return this.run('hmget', key, fields, callback);
+  fields = toolkit.asArray(fields);
+
+  return this.run('hmget', key, fields, function(err, cacheRes) {
+    if (err) return callback(err);
+
+    var res = {};
+    for (var i = 0; i < fields.length; i++) {
+      var k = fields[i];
+      var v = cacheRes[i];
+      res[k] = v;
+    }
+
+    return callback(null, res);
+  });
 };
 
 RedisHelper.prototype.hgetall = function(key, callback) {

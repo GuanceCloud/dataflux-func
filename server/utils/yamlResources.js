@@ -46,8 +46,8 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
   var configObj     = loadFile(CONFIG_KEY, configFilePath);
   var userConfigObj = {};
 
-  var configFromEnvPrefix = configObj.CONFIG_FROM_ENV_PREFIX;
-  var customConfigPrefix  = configObj.CUSTOM_CONFIG_PREFIX;
+  var configFromEnvPrefix   = configObj.CONFIG_FROM_ENV_PREFIX;
+  var configPrefixForCustom = configObj.CONFIG_FOR_CUSTOM_PREFIX;
 
   // Collect config field type map
   var configTypeMap = {};
@@ -116,7 +116,7 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
       configObj[k] = v;
       console.log(toolkit.strf('[YAML Resource] Config item `{0}` Overrided by env.', k));
 
-    } else if (toolkit.startsWith(k, customConfigPrefix)) {
+    } else if (toolkit.startsWith(k, configPrefixForCustom)) {
       configObj[k] = v;
       console.log(toolkit.strf('[YAML Resource] Custom config item `{0}` added by env.', k));
     }

@@ -26,8 +26,8 @@ var crudHandler = exports.crudHandler = scriptMod.createCRUDHandler();
 exports.get = crudHandler.createGetHandler();
 
 exports.list = function(req, res, next) {
-  var scripts        = null;
-  var scriptPageInfo = null;
+  var listData     = null;
+  var listPageInfo = null;
 
   var scriptModel = scriptMod.createModel(res.locals);
 
@@ -38,8 +38,8 @@ exports.list = function(req, res, next) {
       scriptModel.list(opt, function(err, dbRes, pageInfo) {
         if (err) return asyncCallback(err);
 
-        scripts        = dbRes;
-        scriptPageInfo = pageInfo;
+        listData     = dbRes;
+        listPageInfo = pageInfo;
 
         return asyncCallback();
       });
@@ -47,7 +47,7 @@ exports.list = function(req, res, next) {
   ], function(err) {
     if (err) return next(err);
 
-    var ret = toolkit.initRet(scripts, scriptPageInfo);
+    var ret = toolkit.initRet(listData, listPageInfo);
     res.locals.sendJSON(ret);
   });
 };

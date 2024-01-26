@@ -26,8 +26,8 @@ exports.list = function(req, res, next) {
     req.query.scriptId = req.query.scriptId + '.';
   }
 
-  var funcs        = null;
-  var funcPageInfo = null;
+  var listData     = null;
+  var listPageInfo = null;
 
   var funcModel = funcMod.createModel(res.locals);
 
@@ -38,8 +38,8 @@ exports.list = function(req, res, next) {
       funcModel.list(opt, function(err, dbRes, pageInfo) {
         if (err) return asyncCallback(err);
 
-        funcs        = dbRes;
-        funcPageInfo = pageInfo;
+        listData     = dbRes;
+        listPageInfo = pageInfo;
 
         return asyncCallback();
       });
@@ -47,7 +47,7 @@ exports.list = function(req, res, next) {
   ], function(err) {
     if (err) return next(err);
 
-    var ret = toolkit.initRet(funcs, funcPageInfo);
+    var ret = toolkit.initRet(listData, listPageInfo);
     res.locals.sendJSON(ret);
   });
 };

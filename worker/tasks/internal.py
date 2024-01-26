@@ -201,12 +201,12 @@ class FlushDataBuffer(BaseInternalTask):
     default_timeout = CONFIG['_TASK_FLUSH_DATA_TIMEOUT']
 
     TASK_RECORD_LIMIT_BY_ORIGIN_MAP = {
-        'direct'     : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_DIRECT'],
-        'integration': CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_INTEGRATION'],
-        'connector'  : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CONNECTOR'],
-        'authLink'   : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK'],
-        'crontab'    : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB'],
-        'batch'      : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH'],
+        'direct'       : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_DIRECT'],
+        'integration'  : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_INTEGRATION'],
+        'connector'    : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CONNECTOR'],
+        'authLink'     : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK'],
+        'crontabConfig': CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG'],
+        'batch'        : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH'],
     }
 
     def _flush_data_buffer(self, cache_key):
@@ -573,6 +573,7 @@ class AutoClean(BaseInternalTask):
                     os.remove(file_path)
 
     def clear_outdated_task_info(self):
+        # TODO
         # 搜集实际存活的 Origin ID 列表
         sql = '''
             SELECT id FROM biz_main_auth_link
@@ -627,6 +628,10 @@ class AutoClean(BaseInternalTask):
                 `expireAt` < UNIX_TIMESTAMP()
             '''
         self.db.query(sql)
+
+    def clear_expired_temp_configs(self):
+        # TODO
+        pass
 
     def run(self, **kwargs):
         # 上锁

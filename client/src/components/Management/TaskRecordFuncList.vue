@@ -1,10 +1,10 @@
 <i18n locale="en" lang="yaml">
-direct     : Directly Call
-integration: Integration Call
-authLink   : Auth Link
-crontab    : Crontab
-batch      : Batch
-connector  : Connector
+direct       : Directly Call
+integration  : Integration Call
+authLink     : Auth Link
+crontabConfig: Crontab
+batch        : Batch
+connector    : Connector
 
 'Func ID: '        : 'Func ID   : '
 'Func Title: '     : 'Func Title: '
@@ -62,12 +62,12 @@ All recent Task Record will be collected and shown here: 所有近期任务会�
 Origin   : 来源
 Origin ID: 来源 ID
 
-direct     : 直接调用
-integration: 集成调用
-authLink   : 授权链接
-crontab    : 自动触发
-batch      : 批处理
-connector  : 连接器
+direct       : 直接调用
+integration  : 集成调用
+authLink     : 授权链接
+crontabConfig: 自动触发
+batch        : 批处理
+connector    : 连接器
 
 'Func ID: '        : '函数 ID ：'
 'Func Title: '     : '函数标题：'
