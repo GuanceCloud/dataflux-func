@@ -305,7 +305,7 @@ exports.runListener = function runListener(app) {
                 app.locals.cacheDB.hincr(cacheKey, cacheField, function(err) {
                   if (err) return;
 
-                  app.locals.cacheDB.expire(cacheKey, 60 * 2);
+                  app.locals.cacheDB.expire(cacheKey, 60 + 5);
                 });
               }
 
