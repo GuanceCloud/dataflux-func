@@ -1891,5 +1891,5 @@ class FuncBaseTask(BaseTask):
         pass
 
     def buff_task_record(self, *args, **kwargs):
-        # 函数任务进行一般任务记录
+        # 函数任务不进行一般任务记录
         pass

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Built-in Modules
+import os
 import traceback
 import pprint
 
@@ -178,6 +179,27 @@ class BaseTask(object):
             return arrow.get(self.end_time).to(CONFIG['TIMEZONE']).isoformat()
 
     @property
+    def wait_cost(self):
+        if not self.start_time_ms:
+            return None
+
+        return self.start_time_ms - self.trigger_time_ms
+
+    @property
+    def run_cost(self):
+        if not self.end_time_ms or not self.start_time_ms:
+            return None
+
+        return self.end_time_ms - self.start_time_ms
+
+    @property
+    def total_cost(self):
+        if not self.end_time_ms:
+            return None
+
+        return self.end_time_ms - self.trigger_time_ms
+
+    @property
     def system_settings(self):
         global SYSTEM_SETTING_LOCAL_CACHE
 
@@ -267,7 +289,7 @@ class BaseTask(object):
         self._lock_key   = None
         self._lock_value = None
 
-    def create_task_record_data(self, task_resp):
+    def create_task_record_data(self):
         data = {
             'id'            : self.task_id,
             'name'          : self.name,
@@ -289,7 +311,7 @@ class BaseTask(object):
         }
         return data
 
-    def create_task_record_guance_data(self, task_resp):
+    def create_task_record_guance_data(self):
         if not self.guance_data_upload_url:
             return None
 
@@ -323,24 +345,26 @@ class BaseTask(object):
                 'trigger_time_iso': self.trigger_time_iso,
                 'start_time_iso'  : self.start_time_iso,
                 'end_time_iso'    : self.end_time_iso,
-                'wait_cost'       : self.start_time_ms - self.trigger_time_ms,
-                'run_cost'        : self.end_time_ms   - self.start_time_ms,
-                'total_cost'      : self.end_time_ms   - self.trigger_time_ms,
+                'wait_cost'       : self.wait_cost,
+                'run_cost'        : self.run_cost,
+                'total_cost'      : self.total_cost,
             },
             'timestamp': int(self.trigger_time),
         }
         return data
 
-    def buff_task_record(self, task_resp):
-        # 为了提高处理性能，此处仅写入 Redis 队列，不直接写入数据库
-        data = self.create_task_record_data(task_resp)
+    def buff_task_record(self):
+        '''
+        为了提高处理性能，任务记录仅写入 Redis 队列，不直接写入数据库
+        '''
+        data = self.create_task_record_data()
         if data:
             cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecord')
             self.cache_db.push(cache_key, toolkit.json_dumps(data))
 
             self.logger.debug(f'[TASK RECORD] Buffered: `{cache_key}`')
 
-        data = self.create_task_record_guance_data(task_resp)
+        data = self.create_task_record_guance_data()
         if data:
             cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordGuance')
             self.cache_db.push(cache_key, toolkit.json_dumps(data))
@@ -410,6 +434,23 @@ class BaseTask(object):
         }
         return task_req
 
+    def create_task_resp(self):
+        task_resp =  {
+            'name': self.name,
+            'id'  : self.task_id,
+
+            'triggerTime': self.trigger_time,
+            'startTime'  : self.start_time,
+            'endTime'    : self.end_time,
+
+            'result'       : self.result if not self.ignore_result else 'IGNORED',
+            'status'       : self.status,
+            'exception'    : self.exception_text,
+            'exceptionType': self.exception_type,
+            'traceback'    : self.traceback,
+        }
+        return task_resp
+
     @classmethod
     def from_task_request(cls, task_req):
         task_inst = cls(task_id=task_req.get('id'),
@@ -473,27 +514,12 @@ class BaseTask(object):
             self.logger.debug(f'[END TIME] `{self.end_time}` ({toolkit.to_cn_time_str(self.start_time)})')
             self.logger.debug(f'[STATUS] `{self.status}`')
 
-            # 任务响应
-            task_resp = {
-                'name': self.name,
-                'id'  : self.task_id,
-
-                'triggerTime': self.trigger_time,
-                'startTime'  : self.start_time,
-                'endTime'    : self.end_time,
-
-                'result'       : self.result if not self.ignore_result else 'IGNORED',
-                'status'       : self.status,
-                'exception'    : self.exception_text,
-                'exceptionType': self.exception_type,
-                'traceback'    : self.traceback,
-            }
-
             # 任务记录
-            self.buff_task_record(task_resp)
+            self.buff_task_record()
 
             # 发送结果通知
             if not self.ignore_result:
+                task_resp = self.create_task_resp()
                 self.response(task_resp)
 
             # 自动解锁

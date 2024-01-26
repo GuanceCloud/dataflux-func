@@ -177,6 +177,7 @@ def run_background(func, pool_size, max_tasks):
             for p in pool:
                 if not p.is_alive():
                     p.join()
+                    print('PROCESS EXIT', p.pid, p.exitcode)
                     pool.remove(p)
 
             while len(pool) < pool_size:

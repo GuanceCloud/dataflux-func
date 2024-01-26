@@ -104,7 +104,7 @@ class FuncRunner(FuncBaseTask):
         return '\n\n'.join(sections)
 
     # 完全重写父类方法
-    def create_task_record_guance_data(self, task_resp):
+    def create_task_record_guance_data(self):
         if not self.guance_data_upload_url:
             return None
 
@@ -138,9 +138,9 @@ class FuncRunner(FuncBaseTask):
                 'trigger_time_iso': self.trigger_time_iso,
                 'start_time_iso'  : self.start_time_iso,
                 'end_time_iso'    : self.end_time_iso,
-                'wait_cost'       : self.start_time_ms - self.trigger_time_ms,
-                'run_cost'        : self.end_time_ms   - self.start_time_ms,
-                'total_cost'      : self.end_time_ms   - self.trigger_time_ms,
+                'wait_cost'       : self.wait_cost,
+                'run_cost'        : self.run_cost,
+                'total_cost'      : self.total_cost,
             },
             'timestamp': int(self.trigger_time),
         }
@@ -151,7 +151,7 @@ class FuncRunner(FuncBaseTask):
 
         return data
 
-    def _buff_task_record_func(self, task_resp):
+    def _buff_task_record_func(self):
         if not self.is_local_func_task_record_enabled:
             return
 
@@ -187,7 +187,7 @@ class FuncRunner(FuncBaseTask):
         cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordFunc')
         self.cache_db.push(cache_key, toolkit.json_dumps(data))
 
-    def _buff_func_call_count(self, task_resp):
+    def _buff_func_call_count(self):
         data = {
             'scriptSetId': self.script_set_id,
             'scriptId'   : self.script_id,
@@ -196,18 +196,18 @@ class FuncRunner(FuncBaseTask):
             'queue'      : str(self.queue),
             'status'     : self.status,
             'timestamp'  : int(self.trigger_time),
-            'waitCost'   : self.start_time_ms - self.trigger_time_ms,
-            'runCost'    : self.end_time_ms   - self.start_time_ms,
-            'totalCost'  : self.end_time_ms   - self.trigger_time_ms,
+            'waitCost'   : self.wait_cost,
+            'runCost'    : self.run_cost,
+            'totalCost'  : self.total_cost,
         }
         cache_key = toolkit.get_cache_key('dataBuffer', 'funcCallCount')
         self.cache_db.push(cache_key, toolkit.json_dumps(data))
 
     # 完全重写父类方法
-    def buff_task_record(self, task_resp):
+    def buff_task_record(self):
         # 函数任务可能非常多，且可能同时包含大量日志
         # 因此直接上报观测云，而不进入缓冲区
-        data = self.create_task_record_guance_data(task_resp)
+        data = self.create_task_record_guance_data()
         if data:
             try:
                 self.upload_guance_data('logging', data)
@@ -215,10 +215,10 @@ class FuncRunner(FuncBaseTask):
                 self.guance_data_upload_error = e
 
         # 任务记录（函数）
-        self._buff_task_record_func(task_resp)
+        self._buff_task_record_func()
 
         # 函数调用计数
-        self._buff_func_call_count(task_resp)
+        self._buff_func_call_count()
 
     # 为父类方法添加处理
     def response(self, task_resp):
