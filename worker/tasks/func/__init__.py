@@ -1079,6 +1079,22 @@ class FuncCrontabConfigHelper(BaseFuncEntityHelper):
         }
         self._task.cache_db.hset(cache_key, entity_id, toolkit.json_dumps(cache_value))
 
+    def get_temp_crontab(self, entity_id=None):
+        entity_id = self.resolve_entity_id(entity_id)
+        if not entity_id:
+            return
+
+        cache_key = toolkit.get_global_cache_key('tempConfig', 'crontabConfig')
+        temp_config = self._task.cache_db.hget(cache_key, entity_id)
+        if not temp_config:
+            return None
+
+        temp_config = toolkit.json_loads(temp_config)
+        if temp_config['expireTime'] and temp_config['expireTime'] < int(time.time()):
+            return None
+
+        return temp_config['tempCrontab']
+
     def clear_temp_crontab(self, entity_id=None):
         entity_id = self.resolve_entity_id(entity_id)
         if not entity_id:
