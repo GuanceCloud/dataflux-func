@@ -51,6 +51,18 @@ MASK_KEYWORDS = [
   'password',
 ]
 
+def exception_type(e):
+    if not e:
+        return None
+
+    return e.__class__.__name__
+
+def exception_text(e):
+    if not e:
+        return None
+
+    return str(e) or exception_type(e)
+
 def sys_start_time():
     return SYS_START_TIME
 

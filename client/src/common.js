@@ -387,15 +387,15 @@ export function goToTaskRecord(query, options) {
   });
 }
 
-export async function loadStatistic(groupField, groupIds) {
-  let statisticMap = {};
+export async function getFuncTaskRecordCountMap(groupField, groupIds) {
+  let countMap = {};
 
   const bulkSize = 20;
   while (groupIds.length > 0) {
     let _groupIds = groupIds.slice(0, bulkSize);
     groupIds = groupIds.slice(bulkSize);
 
-    let apiRes = await T.callAPI_get('/api/v1/task-records/func/do/get-statistic', {
+    let apiRes = await T.callAPI_get('/api/v1/task-records/func/do/get-count', {
       query: {
         groupField: groupField,
         groupIds  : _groupIds.join(','),
@@ -403,11 +403,11 @@ export async function loadStatistic(groupField, groupIds) {
     });
 
     if (apiRes.ok) {
-      Object.assign(statisticMap, apiRes.data);
+      Object.assign(countMap, apiRes.data);
     }
   }
 
-  return statisticMap;
+  return countMap;
 }
 
 export async function checkScriptMarketUpdate(scriptMarketId) {

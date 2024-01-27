@@ -283,7 +283,7 @@ timeout: 執行超時
                 :config-func-id="scope.row.funcId"
                 :id="scope.row.func_id"
                 :title="scope.row.func_title" />
-              <InfoBlock v-if="scope.row.exceptionType" type="error" :title="`${scope.row.exceptionType}: ${scope.row.exceptionTEXTReduced}`" />
+              <InfoBlock v-if="scope.row.exceptionType" type="error" :title="`${scope.row.exceptionType}: ${scope.row.exceptionTEXT}`" />
               <InfoBlock v-if="scope.row.printLogsTEXT && scope.row.printLogsTEXT.indexOf('[Guance Data Upload Error]') >= 0" type="warning" :title="$t('Uploading Guance data failed')" />
             </template>
           </el-table-column>
@@ -428,11 +428,6 @@ export default {
           } else {
             d.runCostClass = 'text-good';
           }
-        }
-
-        // 错误信息
-        if (d.exceptionTEXT) {
-          d.exceptionTEXTReduced = this.T.limitText(d.exceptionTEXT, 300, { showLength: 'newLine' });
         }
       });
 

@@ -41,10 +41,27 @@ exports.list = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 添加临时 Crontab 配置
+    // 追加任务状态统计
     function(asyncCallback) {
-      if (toolkit.isNothing(listData)) return asyncCallback();
+      var dataIds = toolkit.arrayElementValues(listData, 'id');
+      var cacheKey = toolkit.getGlobalCacheKey('cache', 'recentTaskStatus', [ 'origin', 'crontabConfig' ]);
+      res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
 
+        listData.forEach(function(d) {
+          d.recentTaskStatus = null;
+
+          var recentTaskStatus = cacheRes[d.id];
+          if (!recentTaskStatus) return;
+
+          d.recentTaskStatus = JSON.parse(recentTaskStatus);
+        });
+
+        return asyncCallback();
+      });
+    },
+    // 追加临时 Crontab 配置
+    function(asyncCallback) {
       var dataIds  = toolkit.arrayElementValues(listData, 'id');
       var cacheKey = toolkit.getGlobalCacheKey('tempConfig', 'crontabConfig');
       res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
@@ -52,6 +69,8 @@ exports.list = function(req, res, next) {
 
         var now = parseInt(Date.now() / 1000);
         listData.forEach(function(d) {
+          d.tempCrontab = null;
+
           var tempConfig = cacheRes[d.id];
           if (!tempConfig) return;
 

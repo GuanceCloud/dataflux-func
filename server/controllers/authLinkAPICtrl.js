@@ -28,8 +28,6 @@ exports.list = function(req, res, next) {
 
   var authLinkModel = authLinkMod.createModel(res.locals);
 
-  var listExtraInfoMap = {};
-
   async.series([
     function(asyncCallback) {
       var opt = res.locals.getQueryOptions();
@@ -40,44 +38,35 @@ exports.list = function(req, res, next) {
         listData     = dbRes;
         listPageInfo = pageInfo;
 
+        return asyncCallback();
+      });
+    },
+    // 追加任务状态统计
+    function(asyncCallback) {
+      var dataIds = toolkit.arrayElementValues(listData, 'id');
+      var cacheKey = toolkit.getGlobalCacheKey('cache', 'recentTaskStatus', [ 'origin', 'authLink' ]);
+      res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
         listData.forEach(function(d) {
-          listExtraInfoMap[d.id] = {
-            recentSuccess: 0,
-            recentFailure: 0,
-          }
-        })
+          d.recentTaskStatus = null;
+
+          var recentTaskStatus = cacheRes[d.id];
+          if (!recentTaskStatus) return;
+
+          d.recentTaskStatus = JSON.parse(recentTaskStatus);
+        });
 
         return asyncCallback();
       });
     },
-    // // 追加任务状态统计
-    // function(asyncCallback) {
-    //   var dataIds = toolkit.arrayElementValues(listData, 'id');
-
-    //   var now = parseInt(Date.now() / 1000);
-    //   async.times(24, function(n, timesCallback) {
-    //     var cacheKey = toolkit.getGlobalCacheKey('cache', 'recentTaskStatusStatistic', [
-    //         'origin', 'authLink',
-    //         'status', 'success',
-    //         'dateHour', toolkit.getMoment(now - (24 - n) * 3600).format('YYYY-MM-DD_HH') ]);
-    //     res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
-    //       if (err) return timesCallback(err);
-
-    //       for (var dataId in cacheRes) {
-    //         listExtraInfoMap[dataId].recentSuccess += parseInt(cacheRes[dataId]);
-    //       }
-
-    //       return timesCallback();
-    //     });
-    //   }, asyncCallback);
-    // },
   ], function(err) {
     if (err) return next(err);
 
     var ret = toolkit.initRet(listData, listPageInfo);
     res.locals.sendJSON(ret);
   });
-}
+};
 
 exports.add = function(req, res, next) {
   var data = req.body.data;

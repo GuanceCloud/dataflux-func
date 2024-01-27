@@ -72,47 +72,31 @@ EntityModel.prototype.list = function(options, callback) {
   this._list(options, callback);
 };
 
-EntityModel.prototype.getStatistic = function(groupField, groupIds, callback) {
+EntityModel.prototype.getCount = function(groupField, groupIds, callback) {
   groupIds = toolkit.asArray(groupIds);
 
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
-  sql.append('   b.*');
-  sql.append('  ,a.startTimeMs   AS lastStartTime');
-  sql.append('  ,a.status        AS lastStatus');
-  sql.append('  ,a.exceptionTEXT AS lastExceptionTEXT');
-  sql.append('FROM biz_main_task_record_func AS a');
-  sql.append('JOIN (SELECT');
-  sql.append('         ??                                      AS groupId');
-  sql.append('        ,MAX(seq)                                AS seq');
-  sql.append('        ,COUNT(*)                                AS taskRecordCount');
-  sql.append("        ,COUNT(IF(status =  'success', 1, NULL)) AS recentSuccessCount");
-  sql.append("        ,COUNT(IF(status != 'success', 1, NULL)) AS recentFailureCount");
-  sql.append('      FROM biz_main_task_record_func');
-  sql.append('      WHERE');
-  sql.append('        ?? IN (?)');
-  sql.append('      GROUP BY');
-  sql.append('        ??');
-  sql.append(') AS b');
-  sql.append('  ON a.seq = b.seq');
+  sql.append('   ??       AS groupId');
+  sql.append('  ,COUNT(*) AS count');
+  sql.append('FROM biz_main_task_record_func');
+  sql.append('WHERE');
+  sql.append('  ?? IN (?)');
+  sql.append('GROUP BY');
+  sql.append('  ??');
 
   var sqlParams = [ groupField, groupField, groupIds, groupField ];
   this.db.query(sql, sqlParams, function(err, dbRes) {
     if (err) return callback(err);
 
-    var statisticMap = {};
+    var countMap = {};
     dbRes.forEach(function(d) {
       if (!d.groupId) return;
 
-      // lastStartTime 转 ISO8601
-      if (d.lastStartTime) {
-        d.lastStartTime = moment(d.lastStartTime).toISOString();
-      }
-
-      statisticMap[d.groupId] = d;
+      countMap[d.groupId] = d;
     });
 
-    return callback(null, statisticMap);
+    return callback(null, countMap);
   });
 };
 

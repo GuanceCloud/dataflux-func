@@ -255,17 +255,11 @@ class BaseTask(object):
 
     @property
     def exception_type(self):
-        if not self.exception:
-            return None
-
-        return self.exception.__class__.__name__
+        return toolkit.exception_type(self.exception)
 
     @property
     def exception_text(self):
-        if not self.exception:
-            return None
-
-        return str(self.exception) or self.exception_type
+        return toolkit.exception_text(self.exception)
 
     def lock(self, max_age=None):
         max_age = int(max_age or 30)

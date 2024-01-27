@@ -103,16 +103,20 @@ class FuncRunner(FuncBaseTask):
 
         return '\n\n'.join(sections)
 
-    # def cache_task_status_statistic(self, status):
-    #     if self.origin not in ( 'authLink', 'crontabConfig', 'batch'):
-    #         return
+    def cache_task_status_statistic(self, status, exception=None):
+        if self.origin not in ( 'authLink', 'crontabConfig', 'batch'):
+            return
 
-    #     cache_key = toolkit.get_global_cache_key('cache', 'recentTaskStatusStatistic', [
-    #         'origin', self.origin,
-    #         'status', status,
-    #         'dateHour', toolkit.get_arrow().format('YYYY-MM-DD_HH') ])
-    #     self.cache_db.hincr(cache_key, self.origin_id)
-    #     self.cache_db.expire(cache_key, 3600 * 24 + 5)
+        cache_key = toolkit.get_global_cache_key('cache', 'recentTaskStatus', [ 'origin', self.origin ])
+        cache_value = {
+            'status'   : status,
+            'timestamp': int(self.trigger_time),
+        }
+        if exception:
+            cache_value['exceptionType'] = toolkit.exception_type(exception)
+            cache_value['exceptionTEXT'] = toolkit.exception_text(exception)
+
+        self.cache_db.hset(cache_key, self.origin_id, toolkit.json_dumps(cache_value))
 
     # 完全重写父类方法
     def create_task_record_guance_data(self):
@@ -275,7 +279,7 @@ class FuncRunner(FuncBaseTask):
 
         except Exception as e:
             # 记录任务状态统计
-            # self.cache_task_status_statistic(status='failure')
+            self.cache_task_status_statistic(status='failure', exception=e)
 
             # 替换默认错误堆栈
             self.traceback = self.get_traceback()
@@ -284,7 +288,7 @@ class FuncRunner(FuncBaseTask):
 
         else:
             # 记录任务状态统计
-            # self.cache_task_status_statistic(status='success')
+            self.cache_task_status_statistic(status='success')
 
             # 准备函数运行结果
             return_value     = func_resp.data

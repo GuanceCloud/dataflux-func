@@ -19,9 +19,54 @@ var batchMod = require('../models/batchMod');
 
 /* Handlers */
 var crudHandler = exports.crudHandler = batchMod.createCRUDHandler();
-exports.list       = crudHandler.createListHandler();
 exports.delete     = crudHandler.createDeleteHandler();
 exports.deleteMany = crudHandler.createDeleteManyHandler();
+
+exports.list = function(req, res, next) {
+  var listData     = null;
+  var listPageInfo = null;
+
+  var batchModel = batchMod.createModel(res.locals);
+
+  async.series([
+    function(asyncCallback) {
+      var opt = res.locals.getQueryOptions();
+
+      batchModel.list(opt, function(err, dbRes, pageInfo) {
+        if (err) return asyncCallback(err);
+
+        listData     = dbRes;
+        listPageInfo = pageInfo;
+
+        return asyncCallback();
+      });
+    },
+    // 追加任务状态统计
+    function(asyncCallback) {
+      var dataIds = toolkit.arrayElementValues(listData, 'id');
+      var cacheKey = toolkit.getGlobalCacheKey('cache', 'recentTaskStatus', [ 'origin', 'batch' ]);
+      res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        listData.forEach(function(d) {
+          d.recentTaskStatus = null;
+
+          var recentTaskStatus = cacheRes[d.id];
+          if (!recentTaskStatus) return;
+
+          d.recentTaskStatus = JSON.parse(recentTaskStatus);
+        });
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet(listData, listPageInfo);
+    res.locals.sendJSON(ret);
+  });
+};
 
 exports.add = function(req, res, next) {
   var data = req.body.data;

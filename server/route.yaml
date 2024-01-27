@@ -4903,12 +4903,12 @@ taskRecordFuncAPI:
         $searchType: eq
         $searchKey : task.status
 
-  getStatistic:
+  getCount:
     showInDoc    : true
-    name         : Get task record statistic
-    name_zhCN    : 获取任务记录统计
+    name         : Get task record count
+    name_zhCN    : 获取任务记录计数
     method       : get
-    url          : /api/v1/task-records/func/do/get-statistic
+    url          : /api/v1/task-records/func/do/get-count
     response     : json
     requireSignIn: true
     privilege    : general_r

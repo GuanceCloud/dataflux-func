@@ -1,8 +1,6 @@
 <i18n locale="en" lang="yaml">
-lastSucceeded : 'Succeeded {t}'
-lastFailed    : 'Failed {t}'
-successCount  : 'Success {n}'
-failureCount  : 'Failure {n}'
+lastSucceeded: 'Succeeded {t}'
+lastFailed   : 'Failed {t}'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
@@ -20,10 +18,8 @@ No Batch has ever been added: 从未添加过任何批处理
 Are you sure you want to disable the Batch?: 是否确认禁用此批处理？
 Are you sure you want to delete the Batch?: 是否确认删除此批处理？
 
-lastSucceeded : '{t}调用成功'
-lastFailed    : '{t}调用失败'
-successCount  : '成功 {n}'
-failureCount  : '失败 {n}'
+lastSucceeded: '{t}调用成功'
+lastFailed   : '{t}调用失败'
 
 Using Batches, you can execute long and time-consuming Python functions: 使用批处理，可以执行长耗时的 Python 函数
 </i18n>
@@ -133,6 +129,9 @@ successCount: 成功 {n}
                   <span>{{ scope.row.note }}</span>
                 </template>
               </div>
+
+              <InfoBlock v-if="scope.row.recentTaskStatus && scope.row.recentTaskStatus.exceptionType"
+                type="error" :title="`${scope.row.recentTaskStatus.exceptionType}: ${scope.row.recentTaskStatus.exceptionTEXT}`" />
             </template>
           </el-table-column>
 
@@ -145,45 +144,46 @@ successCount: 成功 {n}
             </template>
           </el-table-column>
 
-          <el-table-column v-if="isLocalFuncTaskRecordEnabled" :label="$t('Task Record')" width="240">
+          <el-table-column :label="$t('Status')" width="240">
             <template slot-scope="scope">
-              <template v-if="!isStatisticLoaded">
-                <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
-                {{ $t('Loading') }}
-              </template>
-              <template v-else-if="statisticMap[scope.row.id]">
-                <span v-if="statisticMap[scope.row.id].lastStatus === 'success'" class="text-good">
-                  <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(statisticMap[scope.row.id].lastStartTime) }) }}
+              <span v-if="scope.row.isDisabled" class="text-bad">
+                <i class="fa fa-fw fa-ban"></i>
+                {{ $t('Disabled') }}
+              </span>
+              <span v-else class="text-good">
+                <i class="fa fa-fw fa-check"></i>
+                {{ $t('Enabled') }}
+              </span>
+
+              <br>
+              <el-tooltip placement="right" effect="dark" v-if="scope.row.recentTaskStatus">
+                <div slot="content">
+                  <span class="datetime-tip">{{ scope.row.recentTaskStatus.timestamp | datetime }}</span>
+                </div>
+                <span v-if="scope.row.recentTaskStatus.status === 'success'" class="text-good">
+                  <i class="fa fa-fw fa-check"></i>
+                  {{ $t('lastSucceeded', { t: T.fromNow(scope.row.recentTaskStatus.timestamp) }) }}
                 </span>
                 <span v-else class="text-bad">
-                  <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(statisticMap[scope.row.id].lastStartTime) }) }}
+                  <i class="fa fa-fw fa-times"></i>
+                  {{ $t('lastFailed', { t: T.fromNow(scope.row.recentTaskStatus.timestamp) }) }}
                 </span>
-
-                <br>
-                <i class="fa fa-fw fa-pie-chart text-info"></i>
-                <span :class="{ 'text-good': !!statisticMap[scope.row.id].recentSuccessCount }">{{ $t('successCount', { n: T.numberLimit(statisticMap[scope.row.id].recentSuccessCount) }) }}</span>
-                / <span :class="{ 'text-bad': !!statisticMap[scope.row.id].recentFailureCount }">{{ $t('failureCount', { n: T.numberLimit(statisticMap[scope.row.id].recentFailureCount) }) }}</span>
-              </template>
-              <template v-else>
+              </el-tooltip>
+              <span v-else class="text-info">
+                <i class="fa fa-fw fa-ellipsis-h"></i>
                 {{ $t('No recent record') }}
-              </template>
-            </template>
-          </el-table-column>
-
-          <el-table-column :label="$t('Status')" width="100">
-            <template slot-scope="scope">
-              <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
-              <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
+              </span>
             </template>
           </el-table-column>
 
           <el-table-column align="right" width="350">
             <template slot-scope="scope">
-              <template v-if="statisticMap[scope.row.id]">
-                <el-link @click="common.goToTaskRecord({ origin: 'batch', originId: scope.row.id }, { hlDataId: scope.row.id })" :disabled="!statisticMap[scope.row.id].taskRecordCount">
-                  {{ $t('Task Record') }} <code v-if="statisticMap[scope.row.id].taskRecordCount">({{ T.numberLimit(statisticMap[scope.row.id].taskRecordCount) }})</code>
+              <template v-if="funcTaskRecordCountMap[scope.row.id]">
+                <el-link @click="common.goToTaskRecord({ origin: 'batch', originId: scope.row.id }, { hlDataId: scope.row.id })" :disabled="!funcTaskRecordCountMap[scope.row.id].count">
+                  {{ $t('Task Record') }} <code v-if="funcTaskRecordCountMap[scope.row.id].count">({{ T.numberLimit(funcTaskRecordCountMap[scope.row.id].count) }})</code>
                 </el-link>
               </template>
+
               <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)">{{ $t('Example') }}</el-link>
               <el-link :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" v-prevent-re-click @click="quickSubmitData(scope.row, 'enable')">{{ $t('Enable') }}</el-link>
               <el-link :disabled="T.isNothing(scope.row.func_id)" v-if="!scope.row.isDisabled" @click="quickSubmitData(scope.row, 'disable')">{{ $t('Disable') }}</el-link>
@@ -251,12 +251,12 @@ export default {
 
       this.$store.commit('updateLoadStatus', true);
 
-      // 获取统计信息
+      // 获取任务记录数量信息
       if (this.isLocalFuncTaskRecordEnabled && !options.skipStatistic) {
-        this.isStatisticLoaded = false;
+        this.isFuncTaskRecordCountLoaded = false;
         setTimeout(async () => {
-          this.statisticMap = await this.common.loadStatistic('originId', this.data.map(d => d.id));
-          this.isStatisticLoaded = true;
+          this.funcTaskRecordCountMap = await this.common.getFuncTaskRecordCountMap('originId', this.data.map(d => d.id));
+          this.isFuncTaskRecordCountLoaded = true;
         }, 1000);
       }
     },
@@ -354,8 +354,8 @@ export default {
       data    : [],
       pageInfo: _pageInfo,
 
-      statisticMap     : {},
-      isStatisticLoaded: false,
+      funcTaskRecordCountMap     : {},
+      isFuncTaskRecordCountLoaded: false,
 
       dataFilter: {
         _fuzzySearch: _dataFilter._fuzzySearch,
@@ -373,10 +373,10 @@ export default {
 </script>
 
 <style scoped>
+.datetime-tip {
+  font-size: 16px;
+}
 </style>
 
 <style>
-.api-url-with-query .el-link--inner {
-  padding: 0 5px;
-}
 </style>

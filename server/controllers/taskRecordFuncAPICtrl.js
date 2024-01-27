@@ -44,12 +44,12 @@ exports.list = function(req, res, next) {
   });
 };
 
-exports.getStatistic = function(req, res, next) {
+exports.getCount = function(req, res, next) {
   var groupField = req.query.groupField;
   var groupIds   = req.query.groupIds;
 
   var taskRecordFuncModel = taskRecordFuncMod.createModel(res.locals);
-  taskRecordFuncModel.getStatistic(groupField, groupIds, function(err, dbRes) {
+  taskRecordFuncModel.getCount(groupField, groupIds, function(err, dbRes) {
     if (err) return next(err);
 
     var ret = toolkit.initRet(dbRes);
