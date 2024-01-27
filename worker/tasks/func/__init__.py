@@ -707,6 +707,9 @@ class FuncCacheHelper(object):
             return res
 
         elif isinstance(field, (list, tuple)):
+            if not field:
+                return {}
+
             res = self._task.cache_db.run('hmget', key, field)
             res = dict(zip(field, [None if not x else six.ensure_str(x) for x in res]))
             return res

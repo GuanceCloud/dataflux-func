@@ -328,6 +328,9 @@ class RedisHelper(object):
     def hmget(self, key, fields):
         fields = toolkit.as_array(fields)
 
+        if not fields:
+            return {}
+
         res = self.run('hmget', key, fields)
         res = dict(zip(fields, [None if not x else six.ensure_str(x) for x in res]))
         return res

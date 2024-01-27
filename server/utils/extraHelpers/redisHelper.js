@@ -389,6 +389,8 @@ RedisHelper.prototype.hget = function(key, field, callback) {
 RedisHelper.prototype.hmget = function(key, fields, callback) {
   fields = toolkit.asArray(fields);
 
+  if (toolkit.isNothing(fields)) return callback(null, {});
+
   return this.run('hmget', key, fields, function(err, cacheRes) {
     if (err) return callback(err);
 
