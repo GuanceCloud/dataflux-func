@@ -10,6 +10,6 @@ routeLoader.load(ROUTE.taskRecordFuncAPI.list, [
   taskRecordFuncAPICtrl.list,
 ]);
 
-routeLoader.load(ROUTE.taskRecordFuncAPI.getStatistics, [
-  taskRecordFuncAPICtrl.getStatistics,
+routeLoader.load(ROUTE.taskRecordFuncAPI.getStatistic, [
+  taskRecordFuncAPICtrl.getStatistic,
 ]);

@@ -72,7 +72,7 @@ EntityModel.prototype.list = function(options, callback) {
   this._list(options, callback);
 };
 
-EntityModel.prototype.getStatistics = function(groupField, groupIds, callback) {
+EntityModel.prototype.getStatistic = function(groupField, groupIds, callback) {
   groupIds = toolkit.asArray(groupIds);
 
   var sql = toolkit.createStringBuilder();

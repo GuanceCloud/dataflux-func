@@ -300,7 +300,7 @@ exports.runListener = function runListener(app) {
 
                 // 记录消费速度
                 var timestamp  = parseInt(Date.now() / 1000);
-                var cacheKey   = toolkit.getCacheKey('cache', 'recentSubConsumeRate', [ 'timestamp', timestamp]);
+                var cacheKey   = toolkit.getCacheKey('cache', 'recentSubConsumeRate', [ 'timestamp', timestamp ]);
                 var cacheField = `${ctfKeyObj.id}/${ctfKeyObj.topic}`;
                 app.locals.cacheDB.hincr(cacheKey, cacheField, function(err) {
                   if (err) return;

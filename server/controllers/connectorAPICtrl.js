@@ -499,7 +499,7 @@ exports.test = function(req, res, next) {
 exports.listSubInfo = function(req, res, next) {
   var connectorId = req.query.connectorId;
 
-  var subInfoMap = {};
+  var recentSubInfoMap = {};
 
   async.series([
     // 查询消费速率
@@ -511,9 +511,9 @@ exports.listSubInfo = function(req, res, next) {
           if (err) return timesCallback(err);
 
           for (var ctKey in cacheRes) {
-            subInfoMap[ctKey] = subInfoMap[ctKey] || {};
-            subInfoMap[ctKey].lastMinuteCount = subInfoMap[ctKey].lastMinuteCount || 0;
-            subInfoMap[ctKey].lastMinuteCount += parseInt(cacheRes[ctKey]);
+            recentSubInfoMap[ctKey] = recentSubInfoMap[ctKey] || {};
+            recentSubInfoMap[ctKey].lastMinuteCount = recentSubInfoMap[ctKey].lastMinuteCount || 0;
+            recentSubInfoMap[ctKey].lastMinuteCount += parseInt(cacheRes[ctKey]);
           }
 
           return timesCallback();
@@ -536,9 +536,9 @@ exports.listSubInfo = function(req, res, next) {
             var parsedKey = toolkit.parseCacheKey(key);
             var ctKey     = `${parsedKey.tags.connectorId}/${parsedKey.tags.topic}`;
 
-            subInfoMap[ctKey] = subInfoMap[ctKey] || {};
-            subInfoMap[ctKey].lastConsumed = subInfoMap[ctKey].lastConsumed || {};
-            subInfoMap[ctKey].lastConsumed[consumeInfo.taskResp.status] = consumeInfo;
+            recentSubInfoMap[ctKey] = recentSubInfoMap[ctKey] || {};
+            recentSubInfoMap[ctKey].lastConsumed = recentSubInfoMap[ctKey].lastConsumed || {};
+            recentSubInfoMap[ctKey].lastConsumed[consumeInfo.taskResp.status] = consumeInfo;
           }
         }
 
@@ -549,18 +549,18 @@ exports.listSubInfo = function(req, res, next) {
     if (err) return next(err);
 
     // 整理数据
-    var subInfoList = [];
-    for (var ctKey in subInfoMap) {
-      var subInfo = subInfoMap[ctKey];
+    var recentSubInfoList = [];
+    for (var ctKey in recentSubInfoMap) {
+      var recentSubInfo = recentSubInfoMap[ctKey];
 
       var ctKeyParts = ctKey.split('/');
-      subInfo.connectorId = ctKeyParts.shift();
-      subInfo.topic       = ctKeyParts.join('/');
+      recentSubInfo.connectorId = ctKeyParts.shift();
+      recentSubInfo.topic       = ctKeyParts.join('/');
 
-      subInfoList.push(subInfo);
+      recentSubInfoList.push(recentSubInfo);
     }
 
-    var ret = toolkit.initRet(subInfoList);
+    var ret = toolkit.initRet(recentSubInfoList);
     res.locals.sendJSON(ret);
   });
 };

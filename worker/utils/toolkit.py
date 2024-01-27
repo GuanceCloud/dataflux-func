@@ -38,9 +38,9 @@ SYS_START_TIME = int(time.time())
 
 SHORT_UNIX_TIMESTAMP_OFFSET = 1503982020
 
-MIN_UNIX_TIMESTAMP    = 0
+MIN_UNIX_TIMESTAMP    = arrow.get('1980-01-01T00:00:00Z').timestamp
 MIN_UNIX_TIMESTAMP_MS = MIN_UNIX_TIMESTAMP * 1000
-MAX_UNIX_TIMESTAMP    = 2145888000 # 2038-01-01 00:00:00
+MAX_UNIX_TIMESTAMP    = arrow.get('2099-12-31T23:59:59Z').timestamp
 MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000
 
 RE_HTTP_BASIC_AUTH_MASK         = re.compile('://.+:.+@')
@@ -336,85 +336,43 @@ def get_timestamp(ndigits=0):
 def get_timestamp_ms():
     return int(time.time() * 1000)
 
-def get_date_string(d=None, f=None):
-    if not d:
-        d = time.time()
-    elif isinstance(d, six.string_types):
-        d = to_unix_timestamp(d)
-    elif isinstance(d, datetime.datetime):
-        d = time.mktime(d.timetuple())
+def get_arrow(d=None):
+    if isinstance(d, (six.integer_types, float)) or (isinstance(d, six.string_types) and d.isdigit()):
+        d = int(d)
+        if d > MAX_UNIX_TIMESTAMP:
+            d = float(d / 1000)
 
-    if not f:
-        f = '%Y-%m-%d'
-    return time.strftime(f, time.localtime(d))
-
-def get_time_string(d=None, f=None):
-    if not d:
-        d = get_timestamp(3)
-    elif isinstance(d, six.string_types):
-        d = to_unix_timestamp(d)
-    elif isinstance(d, datetime.datetime):
-        d = time.mktime(d.timetuple())
-
-    if not f:
-        f = '%H:%M:%S'
-    return time.strftime(f, time.localtime(d))
+    return arrow.get(d)
 
 def get_datetime_string(d=None, f=None):
-    if not d:
-        d = get_timestamp(3)
-    elif isinstance(d, six.string_types):
-        d = to_unix_timestamp(d)
-    elif isinstance(d, datetime.datetime):
-        d = time.mktime(d.timetuple())
+    return get_arrow(d).to('UTC').format(f or 'YYYY-MM-DD HH:mm:ss')
 
-    if not f:
-        f = '%Y-%m-%d %H:%M:%S'
-    return time.strftime(f, time.localtime(d))
+def get_date_string(d=None, f=None):
+    return get_datetime_string(d, f or 'YYYY-MM-DD')
 
-def to_arrow(d):
-    d_arrow = None
-    if isinstance(d, (six.integer_types, float)):
-        # UNIX Timstamp in number type
-        if d > MAX_UNIX_TIMESTAMP:
-            d = int(d / 1000)
+def get_time_string(d=None, f=None):
+    return get_datetime_string(d, f or 'HH:mm:ss')
 
-        d_arrow = arrow.get(d)
+def get_datetime_string_cn(d=None, f=None):
+    return get_arrow(d).to('Asia/Shanghai').format(f or 'YYYY-MM-DD HH:mm:ss')
 
-    elif isinstance(d, six.string_types) and d.isdigit():
-        # UNIX Timstamp in string type
-        if len(d) > len(str(MAX_UNIX_TIMESTAMP)):
-            d = d[0:-3]
+def get_date_string_cn(d=None, f=None):
+    return get_datetime_string(d, f or 'YYYY-MM-DD')
 
-        d_arrow = arrow.get(d)
+def get_time_string_cn(d=None, f=None):
+    return get_datetime_string(d, f or 'HH:mm:ss')
 
-    else:
-        # Normal
-        try:
-            d_arrow = arrow.get(d)
-        except Exception as e:
-            d_arrow = arrow.get(dateutil_parser.parse(d))
+def to_datetime(d=None):
+    return get_arrow(d).datetime
 
-    return d_arrow
+def to_unix_timestamp(d=None):
+    return get_arrow(d).timestamp
 
-def to_datetime(d):
-    d_arrow = to_arrow(d)
-    return d_arrow.datetime
+def to_unix_timestamp_ms(d=None):
+    return int(get_arrow(d).float_timestamp * 1000)
 
-def to_unix_timestamp(d):
-    d_arrow = to_arrow(d)
-    return d_arrow.timestamp
-
-def to_unix_timestamp_ms(d):
-    timestamp = to_unix_timestamp(d)
-    return timestamp * 1000
-
-def to_iso_datetime(d):
-    d_arrow = to_arrow(d)
-    return d_arrow.isoformat()
-
-def to_cn_time_str(d=None):
-    return arrow.get(d).to('Asia/Shanghai').format('YYYY-MM-DD HH:mm:ss')
+def to_iso_datetime(d=None):
+    return get_arrow(d).isoformat()
 
 def to_boolean(o):
     if isinstance(o, bool):

@@ -28,9 +28,9 @@ var SYS_START_TIME = parseInt(Date.now() / 1000);
 
 var SHORT_UNIX_TIMESTAMP_OFFSET = toolkit.SHORT_UNIX_TIMESTAMP_OFFSET = 1503982020;
 
-var MIN_UNIX_TIMESTAMP    = toolkit.MIN_UNIX_TIMESTAMP    = 0;
+var MIN_UNIX_TIMESTAMP    = toolkit.MIN_UNIX_TIMESTAMP    = moment('1980-01-01T00:00:00Z').unix();
 var MIN_UNIX_TIMESTAMP_MS = toolkit.MIN_UNIX_TIMESTAMP_MS = MIN_UNIX_TIMESTAMP * 1000;
-var MAX_UNIX_TIMESTAMP    = toolkit.MAX_UNIX_TIMESTAMP    = 2145888000; // 2038-01-01 00:00:00
+var MAX_UNIX_TIMESTAMP    = toolkit.MAX_UNIX_TIMESTAMP    = moment('2099-12-31T23:59:59Z').unix();
 var MAX_UNIX_TIMESTAMP_MS = toolkit.MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000;
 
 var VOLUMN_UNITS = toolkit.VOLUMN_UNITS = ['Byte', 'KB', 'MB', 'GB', 'TB'];
@@ -815,6 +815,17 @@ var isJSON = toolkit.isJSON = function isJSON(o) {
   return false;
 }
 
+var getMoment = toolkit.getMoment = function getMoment(d) {
+  if ('number' === typeof d || ('string' === typeof d && d.match(/^\d+$/))) {
+    d = parseInt(d);
+    if (d < MIN_UNIX_TIMESTAMP_MS) {
+      d *= 1000;
+    }
+  }
+
+  return moment(d || undefined);
+};
+
 /**
  * Get current timestamp in s.
  *
@@ -841,6 +852,17 @@ var getTimestampMs = toolkit.getTimestampMs = function getTimestampMs() {
 };
 
 /**
+ * Get the datetime string.
+ *
+ * @param  {null|Number|String|Object}        d - Date Object, String or Number (Unix Timestamp)
+ * @param  {String} [f='YYYY-MM-DD HH:mm:ss'] f - Date formatter
+ * @return {String} - Datetime String
+ */
+var getDateTimeString = toolkit.getDateTimeString = function getDateTimeString(d, f) {
+  return getMoment(d).utcOffset(0).format(f || 'YYYY-MM-DD HH:mm:ss');
+};
+
+/**
  * Get the date string.
  *
  * @param  {null|Number|String|Object} d                - Date Object, String or Number (Unix Timestamp)
@@ -848,107 +870,39 @@ var getTimestampMs = toolkit.getTimestampMs = function getTimestampMs() {
  * @return {String}                                     - Date String
  */
 var getDateString = toolkit.getDateString = function getDateString(d, f) {
-  if (isNothing(d)) {
-    d = new Date();
-  }
-
-  if ('string' === typeof d || 'number' === typeof d) {
-    d = new Date(d);
-  }
-
-  var YYYY = d.getFullYear();
-  var YY   = YYYY.toString().slice(-2);
-
-  var M  = d.getMonth() + 1;
-  var MM = padZero(M, 2);
-
-  var D  = d.getDate();
-  var DD = padZero(D, 2);
-
-  return (f || 'YYYY-MM-DD')
-    .replace('YYYY', YYYY)
-    .replace('YY', YY)
-    .replace('MM', MM)
-    .replace('M', M)
-    .replace('DD', DD)
-    .replace('D', D);
+  return getDateTimeString(d, f || 'YYYY-MM-DD');
 };
 
 /**
  * Get the time string.
  *
  * @param  {null|Number|String|Object} d              - Date Object, String or Number (Unix Timestamp)
- * @param  {String}                    [f='hh:mm:ss'] - Formatter
+ * @param  {String}                    [f='HH:mm:ss'] - Formatter
  * @return {String}                                   - Time String
  */
 var getTimeString = toolkit.getTimeString = function getTimeString(d, f) {
-  if (isNothing(d)) {
-    d = new Date();
-  }
-
-  if ('string' === typeof d || 'number' === typeof d) {
-    d = new Date(d);
-  }
-
-  var h = d.getHours();
-  var hh = padZero(h, 2);
-
-  var m = d.getMinutes();
-  var mm = padZero(m, 2);
-
-  var s = d.getSeconds();
-  var ss = padZero(s, 2);
-
-  var fff = padZero(d.getMilliseconds(), 3);
-
-  return (f || 'hh:mm:ss')
-    .replace('hh', hh)
-    .replace('h', h)
-    .replace('mm', mm)
-    .replace('m', m)
-    .replace('ss', ss)
-    .replace('s', s)
-    .replace('fff', fff);
-};
-
-/**
- * Get the datetime string.
- *
- * @param  {null|Number|String|Object}        d - Date Object, String or Number (Unix Timestamp)
- * @param  {String} [f='YYYY-MM-DD hh:mm:ss'] f - Date formatter
- * @return {String} - Datetime String
- */
-var getDateTimeString = toolkit.getDateTimeString = function getDateTimeString(d, f) {
-  var tmp = (f || 'YYYY-MM-DD hh:mm:ss');
-  tmp = getDateString(d, tmp);
-  tmp = getTimeString(d, tmp);
-
-  return tmp;
-};
-
-/**
- * Get the date string for CN (+08:00).
- */
-var getDateStringCN = toolkit.getDateStringCN = function getDateStringCN(d, f) {
-  f = f || 'YYYY-MM-DD';
-  return getDateTimeStringCN(d, f);
-};
-
-/**
- * Get the time string for CN (+08:00).
- */
-var getTimeStringCN = toolkit.getTimeStringCN = function getTimeStringCN(d, f) {
-  f = f || 'HH:mm:ss';
-  return getDateTimeStringCN(d, f);
+  return getDateTimeString(d, f || 'HH:mm:ss');
 };
 
 /**
  * Get the date time string for CN (+08:00).
  */
 var getDateTimeStringCN = toolkit.getDateTimeStringCN = function getDateTimeStringCN(d, f) {
-  d = d || undefined;
-  f = f || 'YYYY-MM-DD HH:mm:ss';
-  return moment(d).locale('zh_CN').utcOffset("+08:00").format(f);
+  return getMoment(d).utcOffset(8).format(f || 'YYYY-MM-DD HH:mm:ss');
+};
+
+/**
+ * Get the date string for CN (+08:00).
+ */
+var getDateStringCN = toolkit.getDateStringCN = function getDateStringCN(d, f) {
+  return getDateTimeStringCN(d, f || 'YYYY-MM-DD');
+};
+
+/**
+ * Get the time string for CN (+08:00).
+ */
+var getTimeStringCN = toolkit.getTimeStringCN = function getTimeStringCN(d, f) {
+  return getDateTimeStringCN(d, f || 'HH:mm:ss');
 };
 
 /**
@@ -958,13 +912,7 @@ var getDateTimeStringCN = toolkit.getDateTimeStringCN = function getDateTimeStri
  * @return {String} - ISO 8601 time string
  */
 var getISO8601 = toolkit.getISO8601 = function getISO8601(d) {
-  if (isNothing(d)) {
-    d = new Date();
-  } else if ('string' === typeof d || 'number' === typeof d) {
-    d = new Date(d);
-  }
-
-  return d.toISOString();
+  return getMoment(d).toISOString();
 };
 
 /**
@@ -1048,21 +996,6 @@ var getSafeValue = toolkit.getSafeValue = function getSafeValue(v, defaultValue)
   } else {
     return v;
   }
-};
-
-/**
- * Get Date object and safe for MySQL timestamp type
- * @param  {*} v
- */
-var getSafeDateTime = toolkit.getSafeDateTime = function getSafeDateTime(v) {
-  var d = new Date(v);
-  var ts = d.getTime();
-  if (ts < MIN_UNIX_TIMESTAMP_MS) {
-    throw Error(strf('Datetime should not be earlier than {0}', new Date(MIN_UNIX_TIMESTAMP_MS).toISOString()));
-  } else if (ts > MAX_UNIX_TIMESTAMP_MS) {
-    throw Error(strf('Datetime should not be later than {0}', new Date(MAX_UNIX_TIMESTAMP_MS).toISOString()));
-  }
-  return d;
 };
 
 function _padLength(text, length) {
@@ -2515,4 +2448,4 @@ var range = toolkit.range = function(length) {
     return index;
   });
   return a;
-}
+};

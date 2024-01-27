@@ -43,9 +43,9 @@ exports.list = function(req, res, next) {
     },
     // 添加临时 Crontab 配置
     function(asyncCallback) {
-      var crontabConfigIds = toolkit.arrayElementValues(listData, 'id');
+      var dataIds  = toolkit.arrayElementValues(listData, 'id');
       var cacheKey = toolkit.getGlobalCacheKey('tempConfig', 'crontabConfig');
-      res.locals.cacheDB.hmget(cacheKey, crontabConfigIds, function(err, cacheRes) {
+      res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         var now = parseInt(Date.now() / 1000);

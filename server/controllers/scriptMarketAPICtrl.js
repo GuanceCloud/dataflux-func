@@ -401,8 +401,8 @@ function _getDefaultScriptSetReadmeContent(scriptSet) {
 
     // 统计
     content.push(`<br>`,
-                  `## 4. 统计 / Statistics`,
-                  `此脚本集统计信息如下：<br>The statistics of this Script Set are as follows:   `);
+                  `## 4. 统计 / Statistic`,
+                  `此脚本集统计信息如下：<br>The statistic of this Script Set are as follows:   `);
 
     content.push(_getMarkdownTable([
       [ '项目<br>Item', '结果<br>Result' ],

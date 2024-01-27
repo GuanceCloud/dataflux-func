@@ -469,7 +469,7 @@ class BaseTask(object):
         # 任务信息
         self.status     = 'pending'
         self.start_time = toolkit.get_timestamp(3)
-        self.logger.debug(f'[START TIME] `{self.start_time}` ({toolkit.to_cn_time_str(self.start_time)})')
+        self.logger.debug(f'[START TIME] `{self.start_time}` ({toolkit.get_datetime_string_cn(self.start_time)})')
 
         # 调用子类 run() 函数
         try:
@@ -511,7 +511,7 @@ class BaseTask(object):
 
         finally:
             self.end_time = toolkit.get_timestamp(3)
-            self.logger.debug(f'[END TIME] `{self.end_time}` ({toolkit.to_cn_time_str(self.start_time)})')
+            self.logger.debug(f'[END TIME] `{self.end_time}` ({toolkit.get_datetime_string_cn(self.start_time)})')
             self.logger.debug(f'[STATUS] `{self.status}`')
 
             # 任务记录

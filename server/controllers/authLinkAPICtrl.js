@@ -19,9 +19,65 @@ var authLinkMod = require('../models/authLinkMod');
 
 /* Handlers */
 var crudHandler = exports.crudHandler = authLinkMod.createCRUDHandler();
-exports.list       = crudHandler.createListHandler();
 exports.delete     = crudHandler.createDeleteHandler();
 exports.deleteMany = crudHandler.createDeleteManyHandler();
+
+exports.list = function(req, res, next) {
+  var listData     = null;
+  var listPageInfo = null;
+
+  var authLinkModel = authLinkMod.createModel(res.locals);
+
+  var listExtraInfoMap = {};
+
+  async.series([
+    function(asyncCallback) {
+      var opt = res.locals.getQueryOptions();
+
+      authLinkModel.list(opt, function(err, dbRes, pageInfo) {
+        if (err) return asyncCallback(err);
+
+        listData     = dbRes;
+        listPageInfo = pageInfo;
+
+        listData.forEach(function(d) {
+          listExtraInfoMap[d.id] = {
+            recentSuccess: 0,
+            recentFailure: 0,
+          }
+        })
+
+        return asyncCallback();
+      });
+    },
+    // // 追加任务状态统计
+    // function(asyncCallback) {
+    //   var dataIds = toolkit.arrayElementValues(listData, 'id');
+
+    //   var now = parseInt(Date.now() / 1000);
+    //   async.times(24, function(n, timesCallback) {
+    //     var cacheKey = toolkit.getGlobalCacheKey('cache', 'recentTaskStatusStatistic', [
+    //         'origin', 'authLink',
+    //         'status', 'success',
+    //         'dateHour', toolkit.getMoment(now - (24 - n) * 3600).format('YYYY-MM-DD_HH') ]);
+    //     res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
+    //       if (err) return timesCallback(err);
+
+    //       for (var dataId in cacheRes) {
+    //         listExtraInfoMap[dataId].recentSuccess += parseInt(cacheRes[dataId]);
+    //       }
+
+    //       return timesCallback();
+    //     });
+    //   }, asyncCallback);
+    // },
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet(listData, listPageInfo);
+    res.locals.sendJSON(ret);
+  });
+}
 
 exports.add = function(req, res, next) {
   var data = req.body.data;

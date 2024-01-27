@@ -395,7 +395,7 @@ export async function loadStatistic(groupField, groupIds) {
     let _groupIds = groupIds.slice(0, bulkSize);
     groupIds = groupIds.slice(bulkSize);
 
-    let apiRes = await T.callAPI_get('/api/v1/task-records/func/do/get-statistics', {
+    let apiRes = await T.callAPI_get('/api/v1/task-records/func/do/get-statistic', {
       query: {
         groupField: groupField,
         groupIds  : _groupIds.join(','),

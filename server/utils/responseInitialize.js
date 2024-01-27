@@ -391,8 +391,8 @@ router.all('*', function prepareFunctionalComponents(req, res, next) {
   };
 
   res.locals.getDateTimeRangeFilter = function getDateTimeRangeFilter(startField, endField, autoFillTime) {
-    var START_FORMAT = 'YYYY-MM-DD hh:mm:ss';
-    var END_FORMAT   = 'YYYY-MM-DD hh:mm:ss';
+    var START_FORMAT = 'YYYY-MM-DD HH:mm:ss';
+    var END_FORMAT   = 'YYYY-MM-DD HH:mm:ss';
     if (autoFillTime) {
       START_FORMAT = 'YYYY-MM-DD 00:00:00';
       END_FORMAT   = 'YYYY-MM-DD 23:59:59';

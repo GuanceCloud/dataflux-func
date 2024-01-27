@@ -99,11 +99,11 @@ Vue.prototype.i18n = i18n;
 import moment, { locale } from 'moment'
 Vue.prototype.moment = moment;
 Vue.prototype.M = moment;
-Vue.filter('datetime', function(dt, pattern) {
-  return toolkit.getDateTimeString(dt, pattern);
+Vue.filter('datetime', function(d, f) {
+  return toolkit.getDateTimeString(d, f);
 });
-Vue.filter('fromNow', function(dt) {
-  return toolkit.fromNow(dt);
+Vue.filter('fromNow', function(d) {
+  return toolkit.fromNow(d);
 });
 
 // 验证

@@ -103,6 +103,17 @@ class FuncRunner(FuncBaseTask):
 
         return '\n\n'.join(sections)
 
+    # def cache_task_status_statistic(self, status):
+    #     if self.origin not in ( 'authLink', 'crontabConfig', 'batch'):
+    #         return
+
+    #     cache_key = toolkit.get_global_cache_key('cache', 'recentTaskStatusStatistic', [
+    #         'origin', self.origin,
+    #         'status', status,
+    #         'dateHour', toolkit.get_arrow().format('YYYY-MM-DD_HH') ])
+    #     self.cache_db.hincr(cache_key, self.origin_id)
+    #     self.cache_db.expire(cache_key, 3600 * 24 + 5)
+
     # 完全重写父类方法
     def create_task_record_guance_data(self):
         if not self.guance_data_upload_url:
@@ -263,12 +274,18 @@ class FuncRunner(FuncBaseTask):
                 func_resp.cache_to_file(self.cache_result_expires or 0)
 
         except Exception as e:
+            # 记录任务状态统计
+            # self.cache_task_status_statistic(status='failure')
+
             # 替换默认错误堆栈
             self.traceback = self.get_traceback()
 
             raise
 
         else:
+            # 记录任务状态统计
+            # self.cache_task_status_statistic(status='success')
+
             # 准备函数运行结果
             return_value     = func_resp.data
             response_control = func_resp.make_response_control()

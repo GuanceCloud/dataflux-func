@@ -744,22 +744,19 @@ export function getTimestamp() {
   return parseInt(Date.now() / 1000);
 };
 
-export function getDateTimeString(dt, pattern) {
-  dt = dt || new Date();
+export function getDateTimeString(d, f) {
+  d = moment() ? isNothing(d) : moment(d);
 
   let uiLocale = getUILocale();
   let utcOffset = (0 - new Date().getTimezoneOffset() / 60);
-  let inputTime = moment.utc(dt).locale(uiLocale).utcOffset(utcOffset);
+  let inputTime = d.locale(uiLocale).utcOffset(utcOffset);
 
-  if (!pattern) {
-    pattern = 'YYYY-MM-DD HH:mm:ss';
-  }
-  return inputTime.format(pattern);
+  return inputTime.format(f || 'YYYY-MM-DD HH:mm:ss');
 };
 
-export function fromNow(dt) {
+export function fromNow(d) {
   let uiLocale = getUILocale();
-  return moment.utc(dt).locale(uiLocale).fromNow();
+  return moment(d).locale(uiLocale).fromNow();
 };
 
 export function duration(d, humanized) {
