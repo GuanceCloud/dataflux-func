@@ -73,9 +73,9 @@ import byteSize from 'byte-size'
 import '@/assets/css/dff-hint.css'
 import '@/assets/js/dff-anyword.js'
 
-export const MIN_UNIX_TIMESTAMP    = 0;
+export const MIN_UNIX_TIMESTAMP    = moment('1980-01-01T00:00:00Z').unix();
 export const MIN_UNIX_TIMESTAMP_MS = MIN_UNIX_TIMESTAMP * 1000;
-export const MAX_UNIX_TIMESTAMP    = 2145888000; // 2038-01-01 00:00:00
+export const MAX_UNIX_TIMESTAMP    = moment('2099-12-31T23:59:59Z').unix();
 export const MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000;
 
 // Markdown
@@ -734,29 +734,43 @@ export function compareVersion(a, b) {
 };
 
 export function isExpired(dt) {
-  return moment.utc(dt).unix() < moment().unix();
+  return getMoment(dt).unix() < getMoment().unix();
 };
 
+export function getMoment(d) {
+  if ('number' === typeof d || ('string' === typeof d && d.match(/^\d+$/))) {
+    d = parseInt(d);
+    if (d < MIN_UNIX_TIMESTAMP_MS) {
+      d *= 1000;
+    }
+  }
+
+  return moment(d || undefined);
+};
+
+export function getTimestamp(ndigits) {
+  ndigits = ndigits || 0;
+  if (ndigits === 0) {
+    return Math.round(Date.now() / 1000);
+  } else if (ndigits === 3) {
+    return Date.now() / 1000;
+  } else {
+    return parseFloat((Date.now() / 1000).toFixed(ndigits));
+  }
+};
 export function getTimestampMs() {
   return Date.now();
 };
-export function getTimestamp() {
-  return parseInt(Date.now() / 1000);
-};
 
 export function getDateTimeString(d, f) {
-  d = moment() ? isNothing(d) : moment(d);
-
   let uiLocale = getUILocale();
   let utcOffset = (0 - new Date().getTimezoneOffset() / 60);
-  let inputTime = d.locale(uiLocale).utcOffset(utcOffset);
-
-  return inputTime.format(f || 'YYYY-MM-DD HH:mm:ss');
+  return getMoment(d).locale(uiLocale).utcOffset(utcOffset).format(f || 'YYYY-MM-DD HH:mm:ss');
 };
 
 export function fromNow(d) {
   let uiLocale = getUILocale();
-  return moment(d).locale(uiLocale).fromNow();
+  return getMoment(d).locale(uiLocale).fromNow();
 };
 
 export function duration(d, humanized) {
@@ -766,7 +780,7 @@ export function duration(d, humanized) {
 };
 
 export function getTimeDiff(from, to, humanized) {
-  let diff = moment(to).diff(moment(from));
+  let diff = getMoment(to).diff(getMoment(from));
   return duration(diff, humanized);
 };
 
