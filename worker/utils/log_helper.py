@@ -219,6 +219,15 @@ if CONFIG['LOG_FILE_PATH']:
     file_handler.setFormatter(LoggingFormatter(color=False, json=CONFIG['LOG_FILE_FORMAT'] == 'json'))
     LOGGER.addHandler(file_handler)
 
+def get_sub_app_name(short=False):
+    exec_name = os.path.basename(sys.argv[0])
+    if exec_name == 'app.py':
+        return 'Worker' if short is False else 'WRK'
+    elif exec_name == 'beat.py':
+        return 'Beat' if short is False else 'BEAT'
+    else:
+        return 'UKWN'
+
 class LogHelper(object):
     '''
     Logger helper
@@ -259,8 +268,8 @@ class LogHelper(object):
             'meta': {
                 'pid'               : pid,
                 'appName'           : CONFIG['APP_NAME'],
-                'subAppName'        : f'Worker',
-                'subAppNameShort'   : f'WKR',
+                'subAppName'        : get_sub_app_name(),
+                'subAppNameShort'   : get_sub_app_name(short=True),
                 'processType'       : process_type,
                 'processTypeShort'  : process_type[0],
                 'upTime'            : now - toolkit.sys_start_time(),

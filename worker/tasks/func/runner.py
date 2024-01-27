@@ -247,38 +247,34 @@ class FuncRunner(FuncBaseTask):
     def run(self, **kwargs):
         super().run(**kwargs)
 
-        # 定时任务锁
-        crontab_lock_key   = kwargs.get('crontabLockKey')
-        crontab_lock_value = kwargs.get('crontabLockValue')
-
-        if crontab_lock_key and crontab_lock_value:
-            if not self.cache_db.lock(crontab_lock_key, crontab_lock_value, self.timeout):
-                raise PreviousTaskNotFinishedException()
-
-        # 用于函数缓存
-        self.func_call_kwargs_md5 = kwargs.get('funcCallKwargsMD5')
-
-        # 函数结果缓存时长
-        self.cache_result_expires = None
-
         ### 任务开始
         func_resp = None
         try:
+            # 定时任务锁
+            crontab_lock_key   = kwargs.get('crontabLockKey')
+            crontab_lock_value = kwargs.get('crontabLockValue')
+
+            if crontab_lock_key and crontab_lock_value:
+                if not self.cache_db.lock(crontab_lock_key, crontab_lock_value, self.timeout):
+                    raise PreviousTaskNotFinishedException()
+
+            # 缓存任务状态
+            self.cache_task_status_statistic(status='started')
+
             # 执行函数
             func_resp = self.apply()
 
-            # 提取函数结果缓存时长
-            try:
-                self.cache_result_expires = self.script['funcExtraConfig'][self.func_id]['cacheResult']
-            except (KeyError, TypeError) as e:
-                pass
-
             # 响应大型数据，需要将数据缓存为文件
             if isinstance(func_resp, FuncResponseLargeData):
-                func_resp.cache_to_file(self.cache_result_expires or 0)
+                try:
+                    cache_result_expires = self.script['funcExtraConfig'][self.func_id]['cacheResult']
+                except (KeyError, TypeError) as e:
+                    pass
+                else:
+                    func_resp.cache_to_file(cache_result_expires or 0)
 
         except Exception as e:
-            # 记录任务状态统计
+            # 缓存任务状态
             self.cache_task_status_statistic(status='failure', exception=e)
 
             # 替换默认错误堆栈
@@ -287,7 +283,7 @@ class FuncRunner(FuncBaseTask):
             raise
 
         else:
-            # 记录任务状态统计
+            # 缓存任务状态
             self.cache_task_status_statistic(status='success')
 
             # 准备函数运行结果

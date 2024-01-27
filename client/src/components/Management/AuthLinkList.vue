@@ -1,4 +1,5 @@
 <i18n locale="en" lang="yaml">
+lastStarted  : 'Started {t}'
 lastSucceeded: 'Succeeded {t}'
 lastFailed   : 'Failed {t}'
 </i18n>
@@ -20,8 +21,9 @@ No Auth Link has ever been added: 从未添加过任何授权链接
 Are you sure you want to disable the Auth Link?: 是否确认禁用此授权链接？
 Are you sure you want to delete the Auth Link?: 是否确认删除此授权链接？
 
-lastSucceeded: '{t}调用成功'
-lastFailed   : '{t}调用失败'
+lastStarted  : '{t}执行'
+lastSucceeded: '{t}执行成功'
+lastFailed   : '{t}执行失败'
 
 If you need to access the Python function from an external system,                                              : 如需要从外部系统访问 Python 函数，
 you must first create an Auth Link for the Python function and access the Python function through the Auth Link.: 必须先为 Python 函数创建授权链接，通过授权链接访问 Python 函数
@@ -190,11 +192,15 @@ you must first create an Auth Link for the Python function and access the Python
                 <div slot="content">
                   <span class="datetime-tip">{{ scope.row.recentTaskStatus.timestamp | datetime }}</span>
                 </div>
-                <span v-if="scope.row.recentTaskStatus.status === 'success'" class="text-good">
+                <span v-if="scope.row.recentTaskStatus.status === 'started'" class="text-main">
+                  <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
+                  {{ $t('lastStarted', { t: T.fromNow(scope.row.recentTaskStatus.timestamp) }) }}
+                </span>
+                <span v-else-if="scope.row.recentTaskStatus.status === 'success'" class="text-good">
                   <i class="fa fa-fw fa-check"></i>
                   {{ $t('lastSucceeded', { t: T.fromNow(scope.row.recentTaskStatus.timestamp) }) }}
                 </span>
-                <span v-else class="text-bad">
+                <span v-else-if="scope.row.recentTaskStatus.status === 'failure'" class="text-bad">
                   <i class="fa fa-fw fa-times"></i>
                   {{ $t('lastFailed', { t: T.fromNow(scope.row.recentTaskStatus.timestamp) }) }}
                 </span>

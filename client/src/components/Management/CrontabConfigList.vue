@@ -1,4 +1,5 @@
 <i18n locale="en" lang="yaml">
+lastStarted  : 'Started {t}'
 lastSucceeded: 'Succeeded {t}'
 lastFailed   : 'Failed {t}'
 </i18n>
@@ -38,6 +39,7 @@ Are you sure you want to disable the Crontab Config?: 是否确认禁用此自�
 Are you sure you want to delete the Crontab Config?: 是否确认删除此自动触发配置？
 Are you sure you want to run the Crontab Config manually?: 是否确认手动执行此自动触发配置？
 
+lastStarted  : '{t}执行'
 lastSucceeded: '{t}执行成功'
 lastFailed   : '{t}执行失败'
 
@@ -271,11 +273,15 @@ successCount: 成功 {n}
                 <div slot="content">
                   <span class="datetime-tip">{{ scope.row.recentTaskStatus.timestamp | datetime }}</span>
                 </div>
-                <span v-if="scope.row.recentTaskStatus.status === 'success'" class="text-good">
+                <span v-if="scope.row.recentTaskStatus.status === 'started'" class="text-main">
+                  <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
+                  {{ $t('lastStarted', { t: T.fromNow(scope.row.recentTaskStatus.timestamp) }) }}
+                </span>
+                <span v-else-if="scope.row.recentTaskStatus.status === 'success'" class="text-good">
                   <i class="fa fa-fw fa-check"></i>
                   {{ $t('lastSucceeded', { t: T.fromNow(scope.row.recentTaskStatus.timestamp) }) }}
                 </span>
-                <span v-else class="text-bad">
+                <span v-else-if="scope.row.recentTaskStatus.status === 'failure'" class="text-bad">
                   <i class="fa fa-fw fa-times"></i>
                   {{ $t('lastFailed', { t: T.fromNow(scope.row.recentTaskStatus.timestamp) }) }}
                 </span>
