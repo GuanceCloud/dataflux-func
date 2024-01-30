@@ -241,7 +241,7 @@ function createFuncRunnerTaskReq(locals, options, callback) {
       // 默认值
       switch(options.origin) {
         case 'batch':
-          taskReq.queue = CONFIG._FUNC_TASK_QUEUE_CRONTAB;
+          taskReq.queue = CONFIG._FUNC_TASK_QUEUE_BATCH;
           break;
 
         default:
