@@ -54,12 +54,11 @@ export default {
   },
   methods: {
     update(data) {
-      data = data.reverse();
       let nextData = [];
-      for (let i = 0; i < data.length; i++) {
+      for (let i = data.length - 1; i >= 0; i--) {
         nextData.push({
           triggerTimeMs: data[i] * 1000,
-          interval     : i < data.length - 1 ? parseInt(data[i] - data[i + 1]) : null,
+          interval     : i > 0 ? parseInt(data[i] - data[i - 1]) : null,
         });
       }
 
