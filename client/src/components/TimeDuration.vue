@@ -94,7 +94,7 @@ export default {
     },
     seconds() {
       if (this.T.isNothing(this.duration)) return null;
-      if (this.dataMS % 1000 === 0) return 0;
+      if (this.dataMS % (this.MINUTE_SECONDS * 1000) === 0) return 0;
       return ((this.dataMS / 1000) % this.MINUTE_SECONDS).toFixed(1);
     },
   },
