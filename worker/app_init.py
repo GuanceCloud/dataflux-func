@@ -134,7 +134,7 @@ def before_app_create():
                         raise e
 
             yaml_resources.set_value('CONFIG', '_MYSQL_TIMEZONE', timezone)
-            print(f'Database Timezone: {timezone}');
+            print(f'Database Timezone: {timezone}')
 
 def after_app_created():
     from worker.tasks.internal import SystemMetric, AutoBackupDB, ReloadDataMD5Cache, AutoRun, AutoClean

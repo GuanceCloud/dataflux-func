@@ -1438,7 +1438,7 @@ class FuncBaseTask(BaseTask):
 
         # 指定队列
         if queue is not None:
-            if queue is 0:
+            if queue == 0:
                 e = InvalidAPIOptionException("`queue` can't be 0 because the #0 queue is a system queue")
                 raise e
 
