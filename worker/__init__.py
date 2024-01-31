@@ -130,7 +130,7 @@ def check_restart_flag(shutdown_event):
     LOGGER.warning(f'Flag `restartAllWorkersAndBeat` is set at {toolkit.to_iso_datetime(restart_flag_time)}, all Workers and Beat will be restarted soon...')
     shutdown_event.set()
 
-def run_background(func, pool_size, max_tasks):
+def run_background(func, pool_size=1, max_tasks=-1):
     try:
         manager = multiprocessing.Manager()
         shutdown_event = manager.Event()

@@ -1438,6 +1438,10 @@ class FuncBaseTask(BaseTask):
 
         # 指定队列
         if queue is not None:
+            if queue is 0:
+                e = InvalidAPIOptionException("`queue` can't be 0 because the #0 queue is a system queue")
+                raise e
+
             available_queues = list(range(CONFIG['_WORKER_QUEUE_COUNT']))
             if queue not in available_queues:
                 e = InvalidAPIOptionException(f'`queue` should be one of {toolkit.json_dumps(available_queues)}')

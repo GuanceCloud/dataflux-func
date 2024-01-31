@@ -711,8 +711,7 @@ class IgnoreCaseDict(dict):
         return f'{type(self).__name__}({super().__repr__()})'
 
 class LocalCache(object):
-    def __init__(self, expires=None, clean_interval=60):
-        self.__last_clean = time.time()
+    def __init__(self, expires=None):
         self.__data = {
             # <Key>: {
             #     "ts" : <Timestamp>,
@@ -720,8 +719,7 @@ class LocalCache(object):
             # }
         }
 
-        self.expires        = expires
-        self.clean_interval = clean_interval
+        self.expires = expires
 
     def refresh(self, key):
         if not self.expires:
@@ -731,52 +729,36 @@ class LocalCache(object):
             self.__data[key]['ts'] = time.time() + self.expires
 
     def clean(self):
-        now = time.time()
-
         if not self.expires:
-            return now
+            return
 
-        if now - self.__last_clean < self.clean_interval:
-            return now
-
+        now = time.time()
         for key in list(self.__data.keys()):
             elem = self.__data.get(key)
             if now - elem['ts'] > self.expires:
-                try:
-                    self.__data[key]
-                except KeyError as e:
-                    pass
-
-        return now
+                self.__data.pop(key, None)
 
     def keys(self):
+        self.clean()
         return self.__data.keys()
 
     def __len__(self):
         self.clean()
-
         return len(self.__data)
 
     def __setitem__(self, key, data):
-        now = self.clean()
-
         elem = {
-            'ts' : now,
+            'ts' : time.time(),
             'dat': data,
         }
         self.__data[key] = elem
 
     def __getitem__(self, key):
-        now = self.clean()
+        self.clean()
 
         elem = self.__data.get(key)
         if not elem:
             return None
-
-        elif self.expires and now - elem['ts'] > self.expires:
-            self.__data.pop(key, None)
-            return None
-
         else:
             return elem['dat']
 

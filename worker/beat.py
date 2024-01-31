@@ -142,4 +142,4 @@ if __name__ == '__main__':
     after_app_created()
 
     # 启动后台
-    run_background(func=tick, pool_size=1, max_tasks=3600)
+    run_background(func=tick)
