@@ -201,7 +201,7 @@ workerCount: 工作單元 {n} 個
 
           <el-table-column :label="$t('Cost')" align="right" width="100">
             <template slot-scope="scope">
-              {{ scope.row.reqCost }} <span class="text-info">{{ $t('ms') }}</span>
+              <TimeDuration :duration="scope.row.reqCost" unit="ms" />
             </template>
           </el-table-column>
 
@@ -220,11 +220,13 @@ workerCount: 工作單元 {n} 個
 </template>
 
 <script>
+import TimeDuration from '@/components/TimeDuration'
 import LongTextDialog from '@/components/LongTextDialog'
 
 export default {
   name: 'Overview',
   components: {
+    TimeDuration,
     LongTextDialog,
   },
   watch: {

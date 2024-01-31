@@ -14,12 +14,12 @@ en:
   timePerYear  : '{n} time / year | {n} times / year'
 
   # 时长
-  nSeconds: '{n} second | {n} second'
-  nMinutes: '{n} minute | {n} minute'
-  nHours  : '{n} hour | {n} hour'
-  nDays   : '{n} day | {n} day'
-  nMonths : '{n} month | {n} month'
-  nYears  : '{n} year | {n} year'
+  nSeconds: '{n} second | {n} seconds'
+  nMinutes: '{n} minute | {n} minutes'
+  nHours  : '{n} hour | {n} hours'
+  nDays   : '{n} day | {n} days'
+  nMonths : '{n} month | {n} months'
+  nYears  : '{n} year | {n} years'
 
   # 功能提示
   FeatureNotice_monkeyPatch            : '<h1>No Monkey Patches in Scripts</h1><p>For performance reasons, the script does <strong style="color: red">NOT</strong> run in a sandbox or isolated environment.</p><p>Using monkey patches may cause problems to the entire system.</p>'
@@ -33,11 +33,12 @@ en:
   '(': '（'
   ')': '）'
 
-  ms     : 毫秒
-  s      : 秒
-  seconds: 秒
-  min    : 分钟
-  minutes: 分钟
+  ms : 毫秒
+  s  : 秒
+  m  : 分钟
+  h  : 小时
+  d  : 天
+  'y': 年
 
   # 时长
   nSeconds: '{n} 秒'

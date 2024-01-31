@@ -4,7 +4,6 @@ removedLines : ', Removed {n} Line | , Removed {n} Lines'
 codeLines    : '{n} line | {n} lines'
 codeLinesPrev: 'previously {n} line | previously {n} lines'
 codeLinesCurr: ', currently {n} line| , currently {n} lines'
-seconds      : '{n} second | {n} seconds'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
@@ -63,7 +62,6 @@ Reset Script                                                                    
 The parameter is not a valid JSON                                                      : 调用参数不是有效的JSON格式
 Invalid argument format                                                                : 参数格式不正确
 Check input                                                                            : 输入检查
-seconds                                                                                : '{n} 秒'
 Executed Func                                                                          : 执行函数
 This Script is not published, it will take effect after the Script is published        : 当前脚本尚未发布，脚本只有发布后才会生效
 Do you want to publish the Script now?                                                 : 是否现在发布？
@@ -834,7 +832,7 @@ export default {
       const updateCountDownTipTitle = (countDown) => {
         let tipTitle = this.$t('Func is running. If it is not responding for a long time, please try refreshing.');
         if (countDown > 0) {
-          tipTitle = this.$t('Func is running. It will wait at most {seconds} for the result. If it is not responding for a long time, please try refreshing.', { seconds: this.$tc('seconds', countDown) });
+          tipTitle = this.$t('Func is running. It will wait at most {seconds} for the result. If it is not responding for a long time, please try refreshing.', { seconds: this.$tc('nSeconds', countDown) });
         }
         this.workerRunningTipTitle = tipTitle;
       }
@@ -1063,7 +1061,7 @@ export default {
           //     <br>${this.$t('If this issue persists, please contact the administrator to report this issue')}`);
           this.T.alert(`${this.$t('Waiting Func response timeout')}
               <span class="text-main">
-                <br>${this.$t('There is a {seconds} time limit when calling Funcs in Code Editor', { seconds: this.$tc('seconds', this.$store.getters.SYSTEM_INFO('_FUNC_TASK_TIMEOUT_DEBUGGER')) })}
+                <br>${this.$t('There is a {seconds} time limit when calling Funcs in Code Editor', { seconds: this.$tc('nSeconds', this.$store.getters.SYSTEM_INFO('_FUNC_TASK_TIMEOUT_DEBUGGER')) })}
                 <br>${this.$t('It is not recommended for synchronous calling Funcs that response slowly')}</small>
               </span>`);
           break;
@@ -1310,7 +1308,7 @@ export default {
         // 执行耗时
         let costInfo = '';
         if (o.cost) {
-          costInfo = `<span class="code-editor-output-info">${this.$t('Time Cost')}${this.$t(':')}${this.$tc('seconds', o.cost)}</span>`;
+          costInfo = `<span class="code-editor-output-info">${this.$t('Time Cost')}${this.$t(':')}${this.$tc('nSeconds', o.cost)}</span>`;
           if (o.cost > 3) {
             costInfo += `<br>&#12288;<span class="text-watch">${this.$t('It took too much time for running (more than 3s), may not be suitable for synchronous calling scenario')}</span>`;
           }

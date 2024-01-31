@@ -294,8 +294,9 @@ timeout: 執行超時
             <template slot-scope="scope">
               <span class="text-info">{{ $t('Delay') }}{{ $t(':') }}</span>
               <template v-if="scope.row.delay">
-                <strong class="text-main">{{ scope.row.delay }}</strong>
-                <span class="text-info">{{ $t('s') }}</span>
+                <span class="text-main">
+                  <TimeDuration :duration="scope.row.delay" unit="s" />
+                </span>
               </template>
               <template v-else>
                 <span class="text-info">{{ $t('No Delay') }}</span>
@@ -304,26 +305,16 @@ timeout: 執行超時
               <template v-if="scope.row.queuingTime">
                 <br>
                 <span class="text-info">{{ $t('Queuing') }}{{ $t(':') }}</span>
-                <template v-if="scope.row.queuingTime < 1000">
-                  <strong :class="scope.row.waitCostClass">{{ scope.row.queuingTime }}</strong>
-                  <span class="text-info">{{ $t('ms') }}</span>
-                </template>
-                <template v-else-if="scope.row.queuingTime < 60 * 1000">
-                  <strong :class="scope.row.waitCostClass">{{ (scope.row.queuingTime / 1000).toFixed(1) }}</strong>
-                  <span class="text-info">{{ $t('s') }}</span>
-                </template>
-                <template v-else>
-                  <strong :class="scope.row.waitCostClass">{{ (scope.row.queuingTime / 60 / 1000).toFixed(1) }}</strong>
-                  <span class="text-info">{{ $t('min') }}</span>
-                </template>
+                <span :class="scope.row.waitCostClass">
+                  <TimeDuration :duration="scope.row.queuingTime" unit="ms" />
+                </span>
               </template>
             </template>
           </el-table-column>
           <el-table-column :label="$t('Run Cost')" align="right" width="100">
             <template slot-scope="scope">
               <template v-if="scope.row.runCostMs">
-                <strong :class="scope.row.runCostClass">{{ scope.row.runCostMs < 1000 ? scope.row.runCostMs : (scope.row.runCostMs / 1000).toFixed(1) }}</strong>
-                <span class="text-info">{{ scope.row.runCostMs < 1000 ? $t('ms') : $t('s') }}</span>
+                <TimeDuration :duration="scope.row.runCostMs" unit="ms" />
               </template>
               <template v-else>-</template>
             </template>
@@ -361,11 +352,13 @@ timeout: 執行超時
 </template>
 
 <script>
+import TimeDuration from '@/components/TimeDuration'
 import LongTextDialog from '@/components/LongTextDialog'
 
 export default {
   name: 'TaskRecordFuncList',
   components: {
+    TimeDuration,
     LongTextDialog,
   },
   watch: {

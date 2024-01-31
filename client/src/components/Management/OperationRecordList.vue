@@ -123,7 +123,7 @@ Response: 響應
 
           <el-table-column :label="$t('Cost')" align="right" width="100">
             <template slot-scope="scope">
-              {{ scope.row.reqCost }} <span class="text-info">{{ $t('ms') }}</span>
+              <TimeDuration :duration="scope.row.reqCost" unit="ms" />
             </template>
           </el-table-column>
 
@@ -144,11 +144,13 @@ Response: 響應
 </template>
 
 <script>
+import TimeDuration from '@/components/TimeDuration'
 import LongTextDialog from '@/components/LongTextDialog'
 
 export default {
   name: 'OperationRecordList',
   components: {
+    TimeDuration,
     LongTextDialog,
   },
   watch: {

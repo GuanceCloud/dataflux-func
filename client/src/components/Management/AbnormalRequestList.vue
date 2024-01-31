@@ -111,7 +111,7 @@ omitted.: 略
 
           <el-table-column :label="$t('Cost')" align="right" width="120">
             <template slot-scope="scope">
-              {{ scope.row.reqCost }} <span class="text-info">{{ $t('ms') }}</span>
+              <TimeDuration :duration="scope.row.reqCost" unit="ms" />
             </template>
           </el-table-column>
 
@@ -132,11 +132,13 @@ omitted.: 略
 </template>
 
 <script>
+import TimeDuration from '@/components/TimeDuration'
 import LongTextDialog from '@/components/LongTextDialog'
 
 export default {
   name: 'AbnormalRequestList',
   components: {
+    TimeDuration,
     LongTextDialog,
   },
   watch: {

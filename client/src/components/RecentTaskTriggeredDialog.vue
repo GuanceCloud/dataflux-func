@@ -20,36 +20,22 @@ Download as a text file: 作為文字檔案下載
     id="RecentTaskTriggeredDialog"
     :visible.sync="show"
     :close-on-click-modal="false"
-    width="600px">
+    width="500px">
     <template slot="title">
       {{ $t('Recent Task Triggered') }}
       <span class="text-info press-esc-to-close-tip">{{ $t('Press ESC to close') }}</span>
     </template>
       <el-table v-if="data" :data="data">
-        <el-table-column :label="$t('Trigger Time')" width="200">
+        <el-table-column :label="$t('Trigger Time')" width="300">
           <template slot-scope="scope">
             <span>{{ scope.row.triggerTimeMs | datetime }}</span>
+            <small class="text-info">{{ $t('(') }}{{ scope.row.triggerTimeMs | fromNow }}{{ $t(')') }}</small>
           </template>
         </el-table-column>
 
-        <el-table-column :label="$t('From Now')" width="200">
+        <el-table-column :label="$t('Interval')" align="right">
           <template slot-scope="scope">
-            <span>{{ scope.row.triggerTimeMs | fromNow }}</span>
-          </template>
-        </el-table-column>
-
-        <el-table-column :label="$t('Interval')" width="200">
-          <template slot-scope="scope">
-            <template v-if="T.notNothing(scope.row.interval)">
-              <span v-if="scope.row.interval >= 60 * 60">
-                {{ parseInt(scope.row.interval / (60 * 60)) }} {{ $t('hours') }}
-              </span>
-              <span v-if="scope.row.interval >= 60">
-                {{ parseInt((scope.row.interval % (60 * 60)) / 60) }} {{ $t('minutes') }}
-              </span>
-              {{ scope.row.interval % 60 }} {{ $t('seconds') }}
-            </template>
-            <template v-else>-</template>
+            <TimeDuration :duration="scope.row.interval" unit="s" />
           </template>
         </el-table-column>
       </el-table>
@@ -57,9 +43,12 @@ Download as a text file: 作為文字檔案下載
 </template>
 
 <script>
+import TimeDuration from '@/components/TimeDuration'
+
 export default {
   name: 'RecentTaskTriggeredDialog',
   components: {
+    TimeDuration,
   },
   watch: {
   },
