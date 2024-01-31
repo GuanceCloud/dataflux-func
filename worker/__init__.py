@@ -134,6 +134,7 @@ def run_background(func, pool_size=1, max_tasks=-1):
     try:
         manager = multiprocessing.Manager()
         shutdown_event = manager.Event()
+        global_context = manager.dict()
 
         # SIGTERM 信号
         def sigterm_handler(signum, frame):
@@ -143,7 +144,7 @@ def run_background(func, pool_size=1, max_tasks=-1):
         signal.signal(signal.SIGTERM, sigterm_handler)
 
         # 函数包装
-        def func_wrap():
+        def func_wrap(context):
             # 执行若干个任务后重启进程
             ran_tasks = 0
             while max_tasks <= 0 or ran_tasks <= max_tasks:
@@ -151,7 +152,7 @@ def run_background(func, pool_size=1, max_tasks=-1):
 
                 # 执行指定函数
                 try:
-                    func()
+                    func(context)
 
                 except KeyboardInterrupt as e:
                     shutdown_event.set()
@@ -181,7 +182,7 @@ def run_background(func, pool_size=1, max_tasks=-1):
                     pool.remove(p)
 
             while len(pool) < pool_size:
-                p = multiprocessing.Process(target=func_wrap)
+                p = multiprocessing.Process(target=func_wrap, args=[ global_context ])
                 p.start()
                 pool.append(p)
 

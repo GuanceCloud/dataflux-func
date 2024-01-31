@@ -3,6 +3,7 @@
 # Built-in Modules
 import os
 import time
+import math
 
 # 3rd-party Modules
 import timeout_decorator
@@ -83,52 +84,59 @@ class TickTimeoutException(Exception):
     pass
 
 @timeout_decorator.timeout(60, timeout_exception=TickTimeoutException)
-def tick():
+def tick(context):
     '''
     定时触发器（每秒触发）
 
     1. 获取已注册的，当前时间满足 Crontab 表达式的任务
     2. 到达执行时间的延迟任务进入工作队列
     '''
-    # 计算等待时长
-    interval = 1
-    wait_time = interval - toolkit.get_timestamp() % interval
-    time.sleep(wait_time)
+    now = time.time()
+    next_timestamp = math.ceil(now)
+
+    # 等待到整点
+    if next_timestamp > now:
+        time.sleep(next_timestamp - now)
 
     # 触发时间
-    tick_time = toolkit.get_timestamp()
+    prev_tick_time = context.get('prev_tick_time') or (next_timestamp - 1)
+    for tick_time in range(prev_tick_time, next_timestamp):
+        tick_time += 1
 
-    # 记录运行时间
-    REDIS.incr(toolkit.get_cache_key('beat', 'tick'))
+        # 记录上次运行时间
+        context['prev_tick_time'] = tick_time
 
-    # 分发配置了 Crontab 的任务
-    task_instances = get_matched_crontab_task_instances(tick_time)
-    for task_inst in task_instances:
-        # 创建任务请求
-        task_req = task_inst.create_task_request()
-        task_req_dumps = toolkit.json_dumps(task_req, ignore_nothing=True, indent=None)
+        # 记录运行 tick 数
+        REDIS.incr(toolkit.get_cache_key('beat', 'tick'))
 
-        # 任务入队
-        if task_req['delay']:
-            # 延迟任务
-            delay_queue = toolkit.get_delay_queue(task_req['queue'])
-            eta = task_req['triggerTime'] + task_req['delay']
-            REDIS.zadd(delay_queue, { task_req_dumps: eta })
+        # 分发配置了 Crontab 的任务
+        task_instances = get_matched_crontab_task_instances(tick_time)
+        for task_inst in task_instances:
+            # 创建任务请求
+            task_req = task_inst.create_task_request()
+            task_req_dumps = toolkit.json_dumps(task_req, ignore_nothing=True, indent=None)
 
-        else:
-            # 立即任务
-            worker_queue = toolkit.get_worker_queue(task_req['queue'])
-            REDIS.push(worker_queue, task_req_dumps)
+            # 任务入队
+            if task_req['delay']:
+                # 延迟任务
+                delay_queue = toolkit.get_delay_queue(task_req['queue'])
+                eta = task_req['triggerTime'] + task_req['delay']
+                REDIS.zadd(delay_queue, { task_req_dumps: eta })
 
-    # 延迟任务进入工作队列
-    for queue in range(CONFIG['_WORKER_QUEUE_COUNT']):
-        src_cache_key  = toolkit.get_delay_queue(queue)
-        dest_cache_key = toolkit.get_worker_queue(queue)
+            else:
+                # 立即任务
+                worker_queue = toolkit.get_worker_queue(task_req['queue'])
+                REDIS.push(worker_queue, task_req_dumps)
 
-        while True:
-            cache_res = REDIS.zpop_below_lpush(src_cache_key, dest_cache_key, tick_time)
-            if not cache_res:
-                break
+        # 延迟任务进入工作队列
+        for queue in range(CONFIG['_WORKER_QUEUE_COUNT']):
+            src_cache_key  = toolkit.get_delay_queue(queue)
+            dest_cache_key = toolkit.get_worker_queue(queue)
+
+            while True:
+                cache_res = REDIS.zpop_below_lpush(src_cache_key, dest_cache_key, tick_time)
+                if not cache_res:
+                    break
 
 if __name__ == '__main__':
     # 打印提示信息
@@ -142,4 +150,4 @@ if __name__ == '__main__':
     after_app_created()
 
     # 启动后台
-    run_background(func=tick)
+    run_background(func=tick, max_tasks=3600)

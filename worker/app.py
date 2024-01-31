@@ -59,7 +59,7 @@ TASK_CLS_MAP = {
     AutoRun.name           : AutoRun,
 }
 
-def consume():
+def consume(context):
     '''
     消费队列中任务
     '''
