@@ -23,7 +23,7 @@ Example                                        : 示例
 Code edited but not published yet              : 代码已修改但尚未发布
 'Import/Calling will run the published version': 引用 / API 调用实际将运行已发布代码
 Export Script Set                              : 导出脚本集
-
+'Assigned to queue #{queue}'                   : '指派到队列 #{queue}'
 Script Set {id}: 脚本集 {id}
 Script {id}    : 脚本 {id}
 
@@ -287,6 +287,10 @@ successCount: 成功 {n}
                   type="danger"
                   size="mini">{{ $t('Edited') }}</el-tag>
                 <span>{{ node.label }}</span>
+                <el-tooltip v-if="data.type === 'func' && T.notNothing(data.queue)"
+                  effect="dark" :content="$t('Assigned to queue #{queue}', { queue: data.queue})" placement="top" :enterable="false">
+                  <el-tag size="mini">#{{ data.queue }}</el-tag>
+                </el-tooltip>
               </div>
             </span>
 
@@ -1041,6 +1045,7 @@ export default {
           title      : d.title,
           description: d.description,
           sampleCode : sampleCode,
+          queue      : (d.extraConfigJSON || {}).queue,
 
           disabled: !this.$store.state.codeEditor_isCodeLoaded,
 
