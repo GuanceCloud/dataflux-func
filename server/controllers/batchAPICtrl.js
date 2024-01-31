@@ -41,20 +41,39 @@ exports.list = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 追加任务状态统计
+    // 追加任务触发记录
     function(asyncCallback) {
       var dataIds = toolkit.arrayElementValues(listData, 'id');
-      var cacheKey = toolkit.getGlobalCacheKey('cache', 'recentTaskStatus', [ 'origin', 'batch' ]);
+      var cacheKey = toolkit.getGlobalCacheKey('cache', 'recentTaskTriggered', [ 'origin', 'batch' ]);
       res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         listData.forEach(function(d) {
-          d.recentTaskStatus = null;
+          d.recentTaskTriggered = null;
 
-          var recentTaskStatus = cacheRes[d.id];
-          if (!recentTaskStatus) return;
+          var recentTaskTriggered = cacheRes[d.id];
+          if (!recentTaskTriggered) return;
 
-          d.recentTaskStatus = JSON.parse(recentTaskStatus);
+          d.recentTaskTriggered = JSON.parse(recentTaskTriggered);
+        });
+
+        return asyncCallback();
+      });
+    },
+    // 追加最后任务状态
+    function(asyncCallback) {
+      var dataIds = toolkit.arrayElementValues(listData, 'id');
+      var cacheKey = toolkit.getGlobalCacheKey('cache', 'lastTaskStatus', [ 'origin', 'batch' ]);
+      res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        listData.forEach(function(d) {
+          d.lastTaskStatus = null;
+
+          var lastTaskStatus = cacheRes[d.id];
+          if (!lastTaskStatus) return;
+
+          d.lastTaskStatus = JSON.parse(lastTaskStatus);
         });
 
         return asyncCallback();

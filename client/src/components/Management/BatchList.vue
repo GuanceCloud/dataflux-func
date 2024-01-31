@@ -23,6 +23,8 @@ lastStarted  : '{t}执行'
 lastSucceeded: '{t}执行成功'
 lastFailed   : '{t}执行失败'
 
+Recent Triggered: 最近触发
+
 Using Batches, you can execute long and time-consuming Python functions: 使用批处理，可以执行长耗时的 Python 函数
 </i18n>
 
@@ -132,8 +134,8 @@ successCount: 成功 {n}
                 </template>
               </div>
 
-              <InfoBlock v-if="scope.row.recentTaskStatus && scope.row.recentTaskStatus.exceptionType"
-                type="error" :title="`${scope.row.recentTaskStatus.exceptionType}: ${scope.row.recentTaskStatus.exceptionTEXT}`" />
+              <InfoBlock v-if="scope.row.lastTaskStatus && scope.row.lastTaskStatus.exceptionType"
+                type="error" :title="`${scope.row.lastTaskStatus.exceptionType}: ${scope.row.lastTaskStatus.exceptionTEXT}`" />
             </template>
           </el-table-column>
 
@@ -146,7 +148,7 @@ successCount: 成功 {n}
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Status')" width="240">
+          <el-table-column :label="$t('Status')" width="260">
             <template slot-scope="scope">
               <span v-if="scope.row.isDisabled" class="text-bad">
                 <i class="fa fa-fw fa-ban"></i>
@@ -158,27 +160,33 @@ successCount: 成功 {n}
               </span>
 
               <br>
-              <el-tooltip placement="right" effect="dark" v-if="scope.row.recentTaskStatus">
+              <el-tooltip placement="right" effect="dark" v-if="scope.row.lastTaskStatus">
                 <div slot="content">
-                  <span class="datetime-tip">{{ scope.row.recentTaskStatus.timestamp | datetime }}</span>
+                  <span class="datetime-tip">{{ scope.row.lastTaskStatus.timestamp | datetime }}</span>
                 </div>
-                <span v-if="scope.row.recentTaskStatus.status === 'started'" class="text-main">
+                <span v-if="scope.row.lastTaskStatus.status === 'started'" class="text-main">
                   <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
-                  {{ $t('lastStarted', { t: T.fromNow(scope.row.recentTaskStatus.timestamp) }) }}
+                  {{ $t('lastStarted', { t: T.fromNow(scope.row.lastTaskStatus.timestamp) }) }}
                 </span>
-                <span v-else-if="scope.row.recentTaskStatus.status === 'success'" class="text-good">
+                <span v-else-if="scope.row.lastTaskStatus.status === 'success'" class="text-good">
                   <i class="fa fa-fw fa-check"></i>
-                  {{ $t('lastSucceeded', { t: T.fromNow(scope.row.recentTaskStatus.timestamp) }) }}
+                  {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastTaskStatus.timestamp) }) }}
                 </span>
-                <span v-else-if="scope.row.recentTaskStatus.status === 'failure'" class="text-bad">
+                <span v-else-if="scope.row.lastTaskStatus.status === 'failure'" class="text-bad">
                   <i class="fa fa-fw fa-times"></i>
-                  {{ $t('lastFailed', { t: T.fromNow(scope.row.recentTaskStatus.timestamp) }) }}
+                  {{ $t('lastFailed', { t: T.fromNow(scope.row.lastTaskStatus.timestamp) }) }}
                 </span>
               </el-tooltip>
               <span v-else class="text-info">
                 <i class="fa fa-fw fa-ellipsis-h"></i>
                 {{ $t('No recent record') }}
               </span>
+
+              <br>
+              <el-link @click="$refs.recentTaskTriggeredDialog.update(scope.row.recentTaskTriggered)" :disabled="T.isNothing(scope.row.recentTaskTriggered)">
+                <i class="fa fa-fw fa-clock-o"></i>
+                {{ $t('Recent Triggered') }}
+              </el-link>
             </template>
           </el-table-column>
 
@@ -204,6 +212,7 @@ successCount: 成功 {n}
       <Pager :pageInfo="pageInfo" />
       <BatchSetup ref="setup" />
 
+      <RecentTaskTriggeredDialog ref="recentTaskTriggeredDialog" />
       <APIExampleDialog ref="apiExampleDialog"
         :showExecModeOption="false"
         :showPostExample="true"
@@ -216,12 +225,14 @@ successCount: 成功 {n}
 
 <script>
 import BatchSetup from '@/components/Management/BatchSetup'
+import RecentTaskTriggeredDialog from '@/components/RecentTaskTriggeredDialog'
 import APIExampleDialog from '@/components/APIExampleDialog'
 
 export default {
   name: 'BatchList',
   components: {
     BatchSetup,
+    RecentTaskTriggeredDialog,
     APIExampleDialog,
   },
   watch: {

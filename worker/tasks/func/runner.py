@@ -103,11 +103,26 @@ class FuncRunner(FuncBaseTask):
 
         return '\n\n'.join(sections)
 
-    def cache_task_status_statistic(self, status, exception=None):
+    def cache_recent_task_triggered(self):
         if self.origin not in ( 'authLink', 'crontabConfig', 'batch'):
             return
 
-        cache_key = toolkit.get_global_cache_key('cache', 'recentTaskStatus', [ 'origin', self.origin ])
+        cache_key = toolkit.get_global_cache_key('cache', 'recentTaskTriggered', [ 'origin', self.origin ])
+        cache_value = self.cache_db.hget(cache_key, self.origin_id)
+        if cache_value:
+            cache_value = toolkit.json_loads(cache_value)
+
+        cache_value = cache_value or []
+        cache_value.append(self.trigger_time)
+        cache_value = cache_value[-CONFIG['_RECENT_TASK_STARTS_LIMIT']:]
+
+        self.cache_db.hset(cache_key, self.origin_id, toolkit.json_dumps(cache_value))
+
+    def cache_last_task_status(self, status, exception=None):
+        if self.origin not in ( 'authLink', 'crontabConfig', 'batch'):
+            return
+
+        cache_key = toolkit.get_global_cache_key('cache', 'lastTaskStatus', [ 'origin', self.origin ])
         cache_value = {
             'status'   : status,
             'timestamp': int(self.trigger_time),
@@ -248,6 +263,9 @@ class FuncRunner(FuncBaseTask):
         super().run(**kwargs)
 
         ### 任务开始
+        # 记录任务启动
+        self.cache_recent_task_triggered()
+
         func_resp = None
         try:
             # 定时任务锁
@@ -259,7 +277,7 @@ class FuncRunner(FuncBaseTask):
                     raise PreviousTaskNotFinishedException()
 
             # 缓存任务状态
-            self.cache_task_status_statistic(status='started')
+            self.cache_last_task_status(status='started')
 
             # 执行函数
             func_resp = self.apply()
@@ -275,7 +293,7 @@ class FuncRunner(FuncBaseTask):
 
         except Exception as e:
             # 缓存任务状态
-            self.cache_task_status_statistic(status='failure', exception=e)
+            self.cache_last_task_status(status='failure', exception=e)
 
             # 替换默认错误堆栈
             self.traceback = self.get_traceback()
@@ -284,7 +302,7 @@ class FuncRunner(FuncBaseTask):
 
         else:
             # 缓存任务状态
-            self.cache_task_status_statistic(status='success')
+            self.cache_last_task_status(status='success')
 
             # 准备函数运行结果
             return_value     = func_resp.data
