@@ -23,8 +23,6 @@ lastStarted  : '{t}执行'
 lastSucceeded: '{t}执行成功'
 lastFailed   : '{t}执行失败'
 
-Recent Triggered: 最近触发
-
 Using Batches, you can execute long and time-consuming Python functions: 使用批处理，可以执行长耗时的 Python 函数
 </i18n>
 
@@ -181,12 +179,6 @@ successCount: 成功 {n}
                 <i class="fa fa-fw fa-ellipsis-h"></i>
                 {{ $t('No recent record') }}
               </span>
-
-              <br>
-              <el-link @click="$refs.recentTaskTriggeredDialog.update(scope.row.recentTaskTriggered)" :disabled="T.isNothing(scope.row.recentTaskTriggered)">
-                <i class="fa fa-fw fa-clock-o"></i>
-                {{ $t('Recent Triggered') }}
-              </el-link>
             </template>
           </el-table-column>
 
@@ -212,7 +204,6 @@ successCount: 成功 {n}
       <Pager :pageInfo="pageInfo" />
       <BatchSetup ref="setup" />
 
-      <RecentTaskTriggeredDialog ref="recentTaskTriggeredDialog" />
       <APIExampleDialog ref="apiExampleDialog"
         :showExecModeOption="false"
         :showPostExample="true"
@@ -225,14 +216,12 @@ successCount: 成功 {n}
 
 <script>
 import BatchSetup from '@/components/Management/BatchSetup'
-import RecentTaskTriggeredDialog from '@/components/RecentTaskTriggeredDialog'
 import APIExampleDialog from '@/components/APIExampleDialog'
 
 export default {
   name: 'BatchList',
   components: {
     BatchSetup,
-    RecentTaskTriggeredDialog,
     APIExampleDialog,
   },
   watch: {

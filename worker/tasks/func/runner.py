@@ -104,7 +104,7 @@ class FuncRunner(FuncBaseTask):
         return '\n\n'.join(sections)
 
     def cache_recent_task_triggered(self):
-        if self.origin not in ( 'authLink', 'crontabConfig', 'batch'):
+        if self.origin != 'crontabConfig':
             return
 
         cache_key = toolkit.get_global_cache_key('cache', 'recentTaskTriggered', [ 'origin', self.origin ])

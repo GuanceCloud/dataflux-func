@@ -25,8 +25,6 @@ lastStarted  : '{t}执行'
 lastSucceeded: '{t}执行成功'
 lastFailed   : '{t}执行失败'
 
-Recent Triggered: 最近触发
-
 If you need to access the Python function from an external system,                                              : 如需要从外部系统访问 Python 函数，
 you must first create an Auth Link for the Python function and access the Python function through the Auth Link.: 必须先为 Python 函数创建授权链接，通过授权链接访问 Python 函数
 </i18n>
@@ -211,12 +209,6 @@ you must first create an Auth Link for the Python function and access the Python
                 <i class="fa fa-fw fa-ellipsis-h"></i>
                 {{ $t('No recent record') }}
               </span>
-
-              <br>
-              <el-link @click="$refs.recentTaskTriggeredDialog.update(scope.row.recentTaskTriggered)" :disabled="T.isNothing(scope.row.recentTaskTriggered)">
-                <i class="fa fa-fw fa-clock-o"></i>
-                {{ $t('Recent Triggered') }}
-              </el-link>
             </template>
           </el-table-column>
 
@@ -242,7 +234,6 @@ you must first create an Auth Link for the Python function and access the Python
       <Pager :pageInfo="pageInfo" />
       <AuthLinkSetup ref="setup" />
 
-      <RecentTaskTriggeredDialog ref="recentTaskTriggeredDialog" />
       <APIExampleDialog ref="apiExampleDialog"
         :showPostExample="true"
         :showPostExampleSimplified="true"
@@ -254,14 +245,12 @@ you must first create an Auth Link for the Python function and access the Python
 
 <script>
 import AuthLinkSetup from '@/components/Management/AuthLinkSetup'
-import RecentTaskTriggeredDialog from '@/components/RecentTaskTriggeredDialog'
 import APIExampleDialog from '@/components/APIExampleDialog'
 
 export default {
   name: 'AuthLinkList',
   components: {
     AuthLinkSetup,
-    RecentTaskTriggeredDialog,
     APIExampleDialog,
   },
   watch: {

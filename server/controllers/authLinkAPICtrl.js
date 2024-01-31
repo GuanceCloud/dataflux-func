@@ -41,25 +41,6 @@ exports.list = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 追加任务触发记录
-    function(asyncCallback) {
-      var dataIds = toolkit.arrayElementValues(listData, 'id');
-      var cacheKey = toolkit.getGlobalCacheKey('cache', 'recentTaskTriggered', [ 'origin', 'authLink' ]);
-      res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        listData.forEach(function(d) {
-          d.recentTaskTriggered = null;
-
-          var recentTaskTriggered = cacheRes[d.id];
-          if (!recentTaskTriggered) return;
-
-          d.recentTaskTriggered = JSON.parse(recentTaskTriggered);
-        });
-
-        return asyncCallback();
-      });
-    },
     // 追加最后任务状态
     function(asyncCallback) {
       var dataIds = toolkit.arrayElementValues(listData, 'id');

@@ -293,11 +293,13 @@ successCount: 成功 {n}
                 {{ $t('No recent record') }}
               </span>
 
-              <br>
-              <el-link @click="$refs.recentTaskTriggeredDialog.update(scope.row.recentTaskTriggered)" :disabled="T.isNothing(scope.row.recentTaskTriggered)">
-                <i class="fa fa-fw fa-clock-o"></i>
-                {{ $t('Recent Triggered') }}
-              </el-link>
+              <template v-if="T.notNothing(scope.row.recentTaskTriggered)">
+                <br>
+                <el-link @click="$refs.recentTaskTriggeredDialog.update(scope.row.recentTaskTriggered)">
+                  <i class="fa fa-fw fa-clock-o"></i>
+                  {{ $t('Recent Triggered') }}
+                </el-link>
+              </template>
             </template>
           </el-table-column>
 
