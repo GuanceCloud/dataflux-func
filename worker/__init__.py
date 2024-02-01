@@ -158,7 +158,8 @@ def run_background(func, pool_size=1, max_tasks=-1):
                     shutdown_event.set()
 
                 except redis.exceptions.ConnectionError as e:
-                    LOGGER.error('Redis Connection error, closing all processes...')
+                    LOGGER.error(f'Redis: {repr(e)}')
+                    LOGGER.error('Redis connection error, closing all processes...')
                     shutdown_event.set()
 
                 except Exception as e:
@@ -178,7 +179,6 @@ def run_background(func, pool_size=1, max_tasks=-1):
             for p in pool:
                 if not p.is_alive():
                     p.join()
-                    print('PROCESS EXIT', p.pid, p.exitcode)
                     pool.remove(p)
 
             while len(pool) < pool_size:
@@ -200,21 +200,23 @@ def run_background(func, pool_size=1, max_tasks=-1):
             p.join()
 
     except redis.exceptions.ConnectionError as e:
-        LOGGER.error('Redis Connection error, restart soon... (2)')
+        LOGGER.error(f'Redis: {repr(e)}')
+        LOGGER.error('Redis connection error, system will restart soon...')
         shutdown_event.set()
 
         # Redis 故障需要自动重启
         toolkit.sys_exit_restart()
 
     except KeyboardInterrupt as e:
-        LOGGER.warning('Interrupted by Ctrl + C')
+        LOGGER.warning('Interrupted by Ctrl + C, system exit')
         shutdown_event.set()
 
         # 键盘打断正常退出
         toolkit.sys_exit_ok()
 
     except Exception as e:
-        LOGGER.error(f'Error occured: {e}')
+        LOGGER.error(f'System: {repr(e)}')
+        LOGGER.error(f'Unexpected error occured, system exit')
         shutdown_event.set()
 
         # 其他错误退出
@@ -222,5 +224,5 @@ def run_background(func, pool_size=1, max_tasks=-1):
 
     else:
         # 无错误结束需要自动重启
-        LOGGER.info('System ended, restart soon...')
+        LOGGER.info('System ended, system will restart soon...')
         toolkit.sys_exit_restart()

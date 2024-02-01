@@ -74,8 +74,9 @@ var RedisHelper = function(logger, config) {
   self.checkedKeyMap = {};
 
   self.retryStrategy = function(options) {
-    if (options.error && options.error.code === "ECONNREFUSED") {
-      self.logger.error('[REDIS] Connection Refused. Shutting down...');
+    if (options.error && options.error.code === 'ECONNREFUSED') {
+      self.logger.error(`Redis: ${options.error}`)
+      self.logger.error('Redis connection error, system will restart soon...');
       toolkit.sysExitRestart();
     }
 

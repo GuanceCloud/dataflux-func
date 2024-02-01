@@ -37,7 +37,9 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
 
   CONFIG = _config;
 
-  require('./appInit').beforeAppCreate(startApplication);
+  require('./appInit').prepare(function() {
+    startApplication();
+  });
 });
 
 function startApplication() {
@@ -329,7 +331,7 @@ function startApplication() {
     console.log('Have fun!');
 
     // Non-request code here...
-    require('./appInit').afterAppCreated(app, server);
+    require('./appInit').afterServe(app);
 
     // Sub client
     require('./sub').runListener(app);

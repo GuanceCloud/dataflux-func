@@ -17,8 +17,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 from worker.utils import yaml_resources, toolkit
 
 # Init
-from worker.app_init import before_app_create, after_app_created
-before_app_create()
+from worker import app_init
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -146,8 +145,8 @@ if __name__ == '__main__':
     print(f'PID: {pid}')
     print('Have fun!')
 
-    # 启动任务
-    after_app_created()
+    # 应用初始化
+    app_init.prepare()
 
     # 启动后台
     run_background(func=tick, max_tasks=3600)

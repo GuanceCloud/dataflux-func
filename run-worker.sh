@@ -26,4 +26,6 @@ while [ $exit_code -eq 8 ]; do
         python worker/app.py $*
         exit_code=$?
     fi
+
+    sleep 3
 done

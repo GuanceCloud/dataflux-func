@@ -17,4 +17,6 @@ exit_code=8
 while [ $exit_code -eq 8 ]; do
     python worker/beat.py
     exit_code=$?
+
+    sleep 3
 done

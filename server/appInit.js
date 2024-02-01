@@ -35,7 +35,7 @@ exports.convertJSONResponse = function(ret) {
   return ret;
 };
 
-exports.beforeAppCreate = function(callback) {
+exports.prepare = function(callback) {
   // UV thread pool
   process.env.UV_THREADPOOL_SIZE = parseInt(CONFIG._NODE_UV_THREADPOOL_SIZE);
 
@@ -171,7 +171,7 @@ exports.beforeAppCreate = function(callback) {
   });
 };
 
-exports.afterAppCreated = function(app, server) {
+exports.afterServe = function(app, server) {
   var hostname = os.hostname();
 
   // System Metrics
@@ -225,8 +225,6 @@ exports.afterAppCreated = function(app, server) {
 
   var path = require('path');
   var fs   = require('fs-extra');
-
-  var DataFluxFunc = require('../sdk/dataflux_func_sdk').DataFluxFunc;
 
   /***** 启动时自动运行 *****/
   function printError(err) {

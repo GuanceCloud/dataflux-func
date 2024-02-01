@@ -12,6 +12,7 @@ from pymysql.cursors import DictCursor
 # Project Modules
 from worker import LOGGER, REDIS
 from worker.utils import toolkit, yaml_resources
+from worker.tasks.internal import SystemMetric, AutoBackupDB, ReloadDataMD5Cache, AutoRun, AutoClean
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -29,7 +30,7 @@ def get_db_connection():
 
     return conn
 
-def before_app_create():
+def prepare():
     # Init toolkit
     APP_NAME_SERVER  = CONFIG['APP_NAME'] + '-server'
     APP_NAME_WORKER  = CONFIG['APP_NAME'] + '-worker'
@@ -135,9 +136,6 @@ def before_app_create():
 
             yaml_resources.set_value('CONFIG', '_MYSQL_TIMEZONE', timezone)
             print(f'Database Timezone: {timezone}')
-
-def after_app_created():
-    from worker.tasks.internal import SystemMetric, AutoBackupDB, ReloadDataMD5Cache, AutoRun, AutoClean
 
     # 启动时自动执行
     if not CONFIG['_DISABLE_STARTUP_TASKS']:

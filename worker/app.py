@@ -19,8 +19,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 from worker.utils import yaml_resources, toolkit
 
 # Init
-from worker.app_init import before_app_create
-before_app_create()
+from worker import app_init
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -96,6 +95,9 @@ if __name__ == '__main__':
     print(f'Worker is listening on queues [ {queues} ] (Press CTRL+C to quit)')
     print(f'PID: {pid}')
     print('Have fun!')
+
+    # 应用初始化
+    app_init.prepare()
 
     # 启动后台
     run_background(func=consume,
