@@ -103,6 +103,7 @@ Func ID: 函數 ID
 Log Lines: 日誌行數
 Main Task: 主任務
 Main Task Only: 僅主任務
+No Delay: 不延遲
 No Print Log: 無 Print 日誌
 No Recent Task Record: 尚無任何近期任務記錄
 No Traceback: 無調用堆棧信息
@@ -133,7 +134,7 @@ Wait Cost: 等待耗時
 authLink: 授權鏈接
 batch: 批處理
 connector: 連接器
-crontab: 自動觸發
+crontabConfig: 自動觸發
 direct: 直接調用
 failure: 失敗
 integration: 集成調用
@@ -156,6 +157,7 @@ Func ID: 函式 ID
 Log Lines: 日誌行數
 Main Task: 主任務
 Main Task Only: 僅主任務
+No Delay: 不延遲
 No Print Log: 無 Print 日誌
 No Recent Task Record: 尚無任何近期任務記錄
 No Traceback: 無呼叫堆疊資訊
@@ -186,7 +188,7 @@ Wait Cost: 等待耗時
 authLink: 授權連結
 batch: 批處理
 connector: 聯結器
-crontab: 自動觸發
+crontabConfig: 自動觸發
 direct: 直接呼叫
 failure: 失敗
 integration: 整合呼叫

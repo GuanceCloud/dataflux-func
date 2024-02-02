@@ -356,6 +356,7 @@ zh-HK:
   closed: 已關閉
   copy: 複製
   create: 創建
+  d: 天
   debug: 調試
   delete: 刪除
   deleted: 已刪除
@@ -371,6 +372,7 @@ zh-HK:
   exit: 退出
   export: 導出
   filter: 過濾
+  h: 小時
   hidden: 已隱藏
   hide: 隱藏
   import: 導入
@@ -380,9 +382,9 @@ zh-HK:
   linked: 已連接
   lock: 解鎖
   locked: 已鎖定
+  m: 分鐘
   manage: 管理
   min: 分鐘
-  minutes: 分鐘
   modified: 已修改
   modify: 修改
   more: 更多
@@ -410,7 +412,6 @@ zh-HK:
   s: 秒
   save: 保存
   saved: 已保存
-  seconds: 秒
   setup: 配置
   show: 顯示
   shown: 已顯示
@@ -429,6 +430,7 @@ zh-HK:
   update: 更新
   upgrade: 升級
   upload: 上傳
+  y: 年
   zip: 壓縮
 zh-TW:
   (: （
@@ -787,6 +789,7 @@ zh-TW:
   closed: 已關閉
   copy: 複製
   create: 建立
+  d: 天
   debug: 除錯
   delete: 刪除
   deleted: 已刪除
@@ -802,6 +805,7 @@ zh-TW:
   exit: 退出
   export: 匯出
   filter: 過濾
+  h: 小時
   hidden: 已隱藏
   hide: 隱藏
   import: 匯入
@@ -811,9 +815,9 @@ zh-TW:
   linked: 已連線
   lock: 解鎖
   locked: 已鎖定
+  m: 分鐘
   manage: 管理
   min: 分鐘
-  minutes: 分鐘
   modified: 已修改
   modify: 修改
   more: 更多
@@ -841,7 +845,6 @@ zh-TW:
   s: 秒
   save: 儲存
   saved: 已儲存
-  seconds: 秒
   setup: 配置
   show: 顯示
   shown: 已顯示
@@ -860,4 +863,5 @@ zh-TW:
   update: 更新
   upgrade: 升級
   upload: 上傳
+  y: 年
   zip: 壓縮

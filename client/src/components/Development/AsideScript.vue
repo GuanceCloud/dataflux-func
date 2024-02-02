@@ -84,6 +84,7 @@ Some Script Sets have been hidden: 一些脚本集已被隐藏
 Are you sure you want to delete the Script Set?<br><strong class="text-bad">{label}</strong>: 是否確認刪除此腳本集?<br><strong class="text-bad">{label}</strong>
 Are you sure you want to delete the Script?<br><strong class="text-bad">{label}</strong>: 是否確認刪除此腳本<br><strong class="text-bad">{label}</strong>
 Are you sure you want to run the Crontab Config manually?: 是否確認手動執行此自動觸發配置？
+'Assigned to queue #{queue}': '指派到隊列 #{queue}'
 Auth: 認證
 Auth Link List: 授權鏈接列表
 Auth Links, Crontab Configs and Batches: 授權鏈接、自動觸發配置和批處理
@@ -146,6 +147,7 @@ successCount: 成功 {n}
 Are you sure you want to delete the Script Set?<br><strong class="text-bad">{label}</strong>: 是否確認刪除此指令碼集?<br><strong class="text-bad">{label}</strong>
 Are you sure you want to delete the Script?<br><strong class="text-bad">{label}</strong>: 是否確認刪除此指令碼<br><strong class="text-bad">{label}</strong>
 Are you sure you want to run the Crontab Config manually?: 是否確認手動執行此自動觸發配置？
+'Assigned to queue #{queue}': '指派到佇列 #{queue}'
 Auth: 認證
 Auth Link List: 授權連結列表
 Auth Links, Crontab Configs and Batches: 授權連結、自動觸發配置和批處理
