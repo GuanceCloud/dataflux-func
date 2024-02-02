@@ -546,8 +546,6 @@ export default {
     $route: {
       immediate: true,
       async handler(to, from) {
-        if (to) console.log(`to: ${to.name}, ${to.params.id}`)
-        if (from) console.log(`from: ${from.name}, ${from.params.id}`)
         // 记录为新加载文件，不响应CodeMirror的change事件
         this.isNewLoaded = true;
 
