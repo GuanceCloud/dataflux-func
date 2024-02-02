@@ -1,6 +1,7 @@
 <template>
   <span>
     <template v-if="T.notNothing(duration)">
+      <span v-if="prefix">{{ prefix }}</span>
       <template v-if="dataMS > 3000">
         <span v-if="years">
           <strong>{{ years }}</strong> {{ $t('y') }}
@@ -103,6 +104,7 @@ export default {
   },
   props: {
     duration: Number,
+    prefix: String,
 
     unit: {
       type: String,

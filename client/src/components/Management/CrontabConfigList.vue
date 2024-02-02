@@ -361,7 +361,7 @@ lastSucceeded: '{t}執行成功'
                   {{ $t('Triggered Manually') }}
                 </span>
                 <span v-else>
-                  + <TimeDuration :duration="scope.row.interval" unit="s" />
+                  <TimeDuration :duration="scope.row.interval" unit="s" prefix="+" />
                 </span>
               </template>
             </el-table-column>
