@@ -107,13 +107,16 @@ class FuncRunner(FuncBaseTask):
         if self.origin != 'crontabConfig':
             return
 
+        # 执行模式
+        self.crontab_exec_mode = self.kwargs.get('crontabExecMode')
+
         cache_key = toolkit.get_global_cache_key('cache', 'recentTaskTriggered', [ 'origin', self.origin ])
         cache_value = self.cache_db.hget(cache_key, self.origin_id)
         if cache_value:
             cache_value = toolkit.json_loads(cache_value)
 
         cache_value = cache_value or []
-        cache_value.append(self.trigger_time)
+        cache_value.append([ self.trigger_time, self.crontab_exec_mode ])
         cache_value = cache_value[-CONFIG['_RECENT_TASK_STARTS_LIMIT']:]
 
         self.cache_db.hset(cache_key, self.origin_id, toolkit.json_dumps(cache_value))

@@ -55,6 +55,7 @@ exports.list = function(req, res, next) {
           if (!recentTaskTriggered) return;
 
           d.recentTaskTriggered = JSON.parse(recentTaskTriggered);
+          d.recentTaskTriggered.reverse();
         });
 
         return asyncCallback();

@@ -773,6 +773,6 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
   }
 
   if ('function' === typeof callback) {
-    require('./appInit').beforeAppCreate(callback);
+    require('./appInit').prepare(callback);
   }
 });

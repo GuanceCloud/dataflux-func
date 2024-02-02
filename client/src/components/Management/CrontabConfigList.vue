@@ -44,6 +44,12 @@ lastSucceeded: '{t}执行成功'
 lastFailed   : '{t}执行失败'
 
 Recent Triggered: 最近触发
+Recent Triggered Time: 最近任务触发时间
+
+Trigger Time      : 触发时间
+From Now          : 距现在
+Crontab Interval  : Crontab 触发间隔
+Triggered Manually: 手动触发
 
 Using Crontab Config, you can have functions executed at regular intervals: 使用自动触发配置，可以让函数定时执行
 </i18n>
@@ -295,7 +301,7 @@ successCount: 成功 {n}
 
               <template v-if="T.notNothing(scope.row.recentTaskTriggered)">
                 <br>
-                <el-link @click="$refs.recentTaskTriggeredDialog.update(scope.row.recentTaskTriggered)">
+                <el-link @click="recentTaskTriggeredData = scope.row.recentTaskTriggered; showRecentTaskTriggered = true">
                   <i class="fa fa-fw fa-clock-o"></i>
                   {{ $t('Recent Triggered') }}
                 </el-link>
@@ -327,20 +333,48 @@ successCount: 成功 {n}
       <Pager :pageInfo="pageInfo" />
       <CrontabConfigSetup ref="setup" />
 
-      <RecentTaskTriggeredDialog ref="recentTaskTriggeredDialog" />
+      <el-dialog
+        :visible.sync="showRecentTaskTriggered"
+        :close-on-click-modal="false"
+        width="500px">
+        <template slot="title">
+          {{ $t('Recent Triggered Time') }}
+          <span class="text-info press-esc-to-close-tip">{{ $t('Press ESC to close') }}</span>
+        </template>
+          <el-table v-if="T.notNothing(recentTaskTriggeredData)" :data="recentTaskTriggeredData" size="mini">
+            <el-table-column :label="$t('Trigger Time')" width="300">
+              <template slot-scope="scope">
+                <span :class="{ 'text-good': scope.row.isManual }">{{ scope.row.triggerTimeMs | datetime }}</span>
+                <small :class="scope.row.isManual ? 'text-good' : 'text-info'">{{ $t('(') }}{{ scope.row.triggerTimeMs | fromNow }}{{ $t(')') }}</small>
+              </template>
+            </el-table-column>
+
+            <el-table-column :label="$t('Crontab Interval')" align="right">
+              <template slot-scope="scope">
+                <span v-if="scope.row.isManual" class="text-good">
+                  <i class="fa fa-fw fa-mouse-pointer"></i>
+                  {{ $t('Triggered Manually') }}
+                </span>
+                <span v-else>
+                  + <TimeDuration :duration="scope.row.interval" unit="s" />
+                </span>
+              </template>
+            </el-table-column>
+          </el-table>
+      </el-dialog>
     </el-container>
   </transition>
 </template>
 
 <script>
 import CrontabConfigSetup from '@/components/Management/CrontabConfigSetup'
-import RecentTaskTriggeredDialog from '@/components/RecentTaskTriggeredDialog'
+import TimeDuration from '@/components/TimeDuration'
 
 export default {
   name: 'CrontabConfigList',
   components: {
     CrontabConfigSetup,
-    RecentTaskTriggeredDialog,
+    TimeDuration,
   },
   watch: {
     $route: {
@@ -372,6 +406,31 @@ export default {
 
       this.data = apiRes.data;
       this.pageInfo = apiRes.pageInfo;
+
+      // 整理数据
+      this.data.forEach(d => {
+        if (this.T.isNothing(d.recentTaskTriggered)) return;
+
+        let nextRecentTaskTriggered = [];
+        for (let i = 0; i < d.recentTaskTriggered.length; i++) {
+          let triggerTimeMs = d.recentTaskTriggered[i];
+          let isManual  = false;
+          if (Array.isArray(triggerTimeMs)) {
+            isManual      = triggerTimeMs[1] === 'manual';
+            triggerTimeMs = triggerTimeMs[0];
+          }
+
+          nextRecentTaskTriggered.push({ triggerTimeMs, isManual });
+        }
+
+        let nonManualData = nextRecentTaskTriggered.filter(x => !x.isManual);
+        for (let i = 0; i < nonManualData.length; i++) {
+          if (i >= nonManualData.length - 1) break;
+          nonManualData[i].interval = nonManualData[i].triggerTimeMs - nonManualData[i + 1].triggerTimeMs;
+        }
+
+        d.recentTaskTriggered = nextRecentTaskTriggered;
+      });
 
       this.$store.commit('updateLoadStatus', true);
 
@@ -500,6 +559,9 @@ export default {
         _fuzzySearch: _dataFilter._fuzzySearch,
         origin      : _dataFilter.origin,
       },
+
+      showRecentTaskTriggered: false,
+      recentTaskTriggeredData: null,
 
       pauseTimeout: null,
 

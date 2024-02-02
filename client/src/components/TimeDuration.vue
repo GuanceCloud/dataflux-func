@@ -94,8 +94,11 @@ export default {
     },
     seconds() {
       if (this.T.isNothing(this.duration)) return null;
-      if (this.dataMS % (this.MINUTE_SECONDS * 1000) === 0) return 0;
-      return ((this.dataMS / 1000) % this.MINUTE_SECONDS).toFixed(1);
+      if (Number.isInteger(this.dataS)) {
+        return this.dataS % this.MINUTE_SECONDS;
+      } else {
+        return ((this.dataMS / 1000) % this.MINUTE_SECONDS).toFixed(1);
+      }
     },
   },
   props: {
