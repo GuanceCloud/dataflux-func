@@ -703,7 +703,7 @@ class FuncCacheHelper(object):
         key = self._get_cache_key(key, scope)
         if field is None:
             res = self._task.cache_db.run('hgetall', key)
-            res = dict([(k, six.ensure_str(v)) for k, v in res.items()])
+            res = dict([(six.ensure_str(k), six.ensure_str(v)) for k, v in res.items()])
             return res
 
         elif isinstance(field, (list, tuple)):
