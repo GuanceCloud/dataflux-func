@@ -43,13 +43,10 @@ lastStarted  : '{t}执行'
 lastSucceeded: '{t}执行成功'
 lastFailed   : '{t}执行失败'
 
-Recent Triggered: 最近触发
-Recent Triggered Time: 最近任务触发时间
-
-Trigger Time      : 触发时间
-From Now          : 距现在
-Crontab Interval  : Crontab 触发间隔
-Triggered Manually: 手动触发
+Recent Triggered Time: 最近触发时间
+Trigger Time         : 触发时间
+Since Prev Crontab   : 距上次 Crontab 触发
+Triggered Manually   : 手动触发
 
 Using Crontab Config, you can have functions executed at regular intervals: 使用自动触发配置，可以让函数定时执行
 </i18n>
@@ -303,7 +300,7 @@ successCount: 成功 {n}
                 <br>
                 <el-link @click="recentTaskTriggeredData = scope.row.recentTaskTriggered; showRecentTaskTriggered = true">
                   <i class="fa fa-fw fa-clock-o"></i>
-                  {{ $t('Recent Triggered') }}
+                  {{ $t('Recent Triggered Time') }}
                 </el-link>
               </template>
             </template>
@@ -349,7 +346,7 @@ successCount: 成功 {n}
               </template>
             </el-table-column>
 
-            <el-table-column :label="$t('Crontab Interval')" align="right">
+            <el-table-column :label="$t('Since Prev Crontab')" align="right">
               <template slot-scope="scope">
                 <span v-if="scope.row.isManual" class="text-good">
                   <i class="fa fa-fw fa-mouse-pointer"></i>

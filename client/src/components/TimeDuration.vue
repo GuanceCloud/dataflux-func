@@ -12,7 +12,7 @@
           <strong>{{ hours }}</strong> {{ $t('h') }}
         </span>
         <span v-if="minutes">
-          <strong>{{ minutes }}</strong> {{ $t('m') }}
+          <strong>{{ minutes }}</strong> {{ $t('min') }}
         </span>
         <span v-if="seconds">
           <strong>{{ seconds }}</strong> {{ $t('s') }}
