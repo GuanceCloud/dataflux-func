@@ -1,12 +1,7 @@
 import { BaseNode, BaseNodeModel } from "./BaseNode";
 
 import * as T from '@/toolkit';
-
-// 国际化
-import app from '@/main';
-const $t = function(s) {
-  return app ? app.$t(s) : s;
-}
+import i18n from '@/i18n';
 
 class FuncNode extends BaseNode {
   setHtml(rootEl) {
@@ -16,7 +11,7 @@ class FuncNode extends BaseNode {
     el.className = 'node';
     const html = `
       <div class="node-icon code-font text-info">def</div>
-      <div class="node-text">${properties.title || properties.funcTitle || $t('Func')}</div>
+      <div class="node-text">${properties.title || properties.funcTitle || i18n.t('Func')}</div>
     `;
     el.innerHTML = html;
 

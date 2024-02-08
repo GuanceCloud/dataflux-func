@@ -7,7 +7,6 @@ import C from '@/const'
 import * as T from '@/toolkit'
 
 import moment from 'moment'
-import app from '../main'
 
 const STATE_CONFIG = {
   isSystemInfoLoaded                       : { persist: false, syncXTab: false },
@@ -290,13 +289,7 @@ export default new Vuex.Store({
       }
     },
     uiLocale: (state, getters) => {
-      let uiLocale = state.uiLocale || window.navigator.language;
-      let uiLocaleParts = uiLocale.split('.')[0].split(/[_-]/);
-
-      // 英文不区分国家
-      if (uiLocaleParts[0] == 'en') uiLocale = 'en';
-
-      return C.UI_LOCALE_MAP.get(uiLocale).key;
+      return state.uiLocale || T.getUILocale();
     },
     uiTheme: (state, getters) => {
       let uiTheme = state.uiTheme;
@@ -574,7 +567,7 @@ export default new Vuex.Store({
 
       commit('updateUserProfile', apiRes.data);
     },
-    async loadAPINamesLocales({ commit, getters }) {
+    async getAPINamesLocales({ commit, getters }) {
       if (!getters.isSignedIn) return;
 
       let apiRes = await T.callAPI_get('/api');
@@ -591,7 +584,7 @@ export default new Vuex.Store({
         }
       }
 
-      app.$i18n.mergeLocaleMessage('zh-CN', apiNamesLocales_zhCN);
+      return apiNamesLocales_zhCN;
     },
 
     async checkServerUpgradeInfo({ dispatch, state }, serverInfo) {

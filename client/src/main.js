@@ -4,9 +4,8 @@ import router from '@/router'
 import store from '@/store'
 
 // 公共函数
-import * as toolkit from '@/toolkit'
-Vue.prototype.toolkit = toolkit;
-Vue.prototype.T = toolkit;
+import * as T from '@/toolkit'
+Vue.prototype.T = T;
 
 // 常量
 import C from '@/const'
@@ -51,48 +50,7 @@ Vue.use(ElementUI);
 window.ElementUI = ElementUI
 
 // 国际化
-import VueI18n from 'vue-i18n'
-Vue.use(VueI18n);
-
-import elementUILocale_en   from 'element-ui/lib/locale/lang/en'
-import elementUILocale_zhCN from 'element-ui/lib/locale/lang/zh-CN'
-import elementUILocale_zhTW from 'element-ui/lib/locale/lang/zh-TW'
-const elementUILocales = {
-  en     : elementUILocale_en,
-  'zh-CN': elementUILocale_zhCN,
-  'zh-HK': elementUILocale_zhTW,
-  'zh-TW': elementUILocale_zhTW,
-}
-
-import locales  from '@/assets/yaml/locales.yaml'
-import messages from '@/assets/yaml/messages.yaml'
-
-import locales_zht  from '@/assets/yaml/locales.zht.yaml'
-import messages_zht from '@/assets/yaml/messages.zht.yaml'
-Object.assign(locales, locales_zht)
-Object.assign(messages, messages_zht)
-
-C.UI_LOCALE.forEach(_locale => {
-  let lang = _locale.key;
-  [ elementUILocales, messages ].forEach( localeSrc => {
-    if (!localeSrc || !localeSrc[lang]) return;
-    Object.assign(locales[lang], localeSrc[lang]);
-  })
-});
-
-const i18n = new VueI18n({
-  // 参见 https://zh.wikipedia.org/wiki/%E5%8C%BA%E5%9F%9F%E8%AE%BE%E7%BD%AE
-  locale                : store.getters.uiLocale,
-  fallbackLocale        : 'en',
-  formatFallbackMessages: true,
-  silentFallbackWarn    : true,
-  silentTranslationWarn : true,
-  messages              : locales,
-});
-
-import ElementLocale from 'element-ui/lib/locale';
-// 参考 https://blog.csdn.net/songhsia/article/details/104800966
-ElementLocale.i18n((key, value) => i18n.t(key, value));
+import i18n from '@/i18n'
 Vue.prototype.i18n = i18n;
 
 // 时间处理
@@ -100,10 +58,10 @@ import moment, { locale } from 'moment'
 Vue.prototype.moment = moment;
 Vue.prototype.M = moment;
 Vue.filter('datetime', function(d, f) {
-  return toolkit.getDateTimeString(d, f);
+  return T.getDateTimeString(d, f);
 });
 Vue.filter('fromNow', function(d) {
-  return toolkit.fromNow(d);
+  return T.fromNow(d);
 });
 
 // 验证
@@ -189,10 +147,12 @@ const app = new Vue({
   i18n,
   render: h => h(App),
 
-  created() {
+  async created() {
     this.$store.dispatch('loadSystemInfo');
     this.$store.dispatch('loadUserProfile');
-    this.$store.dispatch('loadAPINamesLocales');
+
+    let apiNamesLocales_zhCN = await this.$store.dispatch('getAPINamesLocales');
+    i18n.mergeLocaleMessage('zh-CN', apiNamesLocales_zhCN);
   },
   computed: {
     systemSettings() {
@@ -244,6 +204,6 @@ Vue.config.silent        = true;
 import * as thanks from '@/thanks'
 window.thanks = thanks.thanks;
 
-window.conflictId = `${store.getters.clientId}:${toolkit.genRandString()}`;
+window.conflictId = `${store.getters.clientId}:${T.genRandString()}`;
 
 export default app

@@ -1489,7 +1489,7 @@ export default {
 
       showExtra                 : false,
       extraFormHeight           : 0,
-      currentLang               : this.$store.getters.uiLocale.toString(),
+      currentLang               : this.$store.getters.uiLocale,
       editingLang               : null,
       textsToTranslate          : [],
       orderedTextsToTranslateMap: {},

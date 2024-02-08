@@ -82,7 +82,7 @@ export const MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000;
 import { marked } from 'marked'
 
 // 国际化
-import app from '@/main'
+import i18n from '@/i18n'
 
 import C from '@/const'
 
@@ -115,6 +115,23 @@ export function _switchToBuiltinAuth() {
   store.commit('switchToBuiltinAuth');
 };
 
+export function getUILocale() {
+  var vuexData = localStorage.getItem('vuex');
+  if (!vuexData) {
+    vuexData = {};
+  } else if ('string' === typeof vuexData) {
+    vuexData = JSON.parse(vuexData);
+  }
+
+  let uiLocale = vuexData.uiLocale || window.navigator.language;
+  let uiLocaleParts = uiLocale.split('.')[0].split(/[_-]/);
+
+  // 英文不区分国家
+  if (uiLocaleParts[0] == 'en') uiLocale = 'en';
+
+  return uiLocale;
+};
+
 export function getBaseURL() {
   let baseURL = store.getters.SYSTEM_INFO('WEB_BASE_URL') || location.origin;
   return baseURL;
@@ -131,20 +148,11 @@ export function isFuncDemo() {
   return location.hostname === 'func-demo.dataflux.cn' || isLocalhost();
 };
 
-let CURRENT_UI_LOCALE = null;
-export function getUILocale() {
-  if (!CURRENT_UI_LOCALE) {
-    CURRENT_UI_LOCALE = jsonCopy(store.getters.uiLocale);
-  }
-
-  return CURRENT_UI_LOCALE;
-};
-
 export function autoScrollTable() {
   let key = router.currentRoute.name;
-  let y = (app.$store.state.TableList_scrollY || {})[key];
+  let y = (store.state.TableList_scrollY || {})[key];
 
-  if (y && app.$store.state.highlightedTableDataId && document.getElementsByClassName('hl-row')[0]) {
+  if (y && store.state.highlightedTableDataId && document.getElementsByClassName('hl-row')[0]) {
     // 滚动到指定高度
     let el = document.getElementsByClassName('el-table__body-wrapper')[0];
     if (el) {
@@ -169,10 +177,10 @@ export function getEngine() {
 };
 
 export function isMac() {
-  return (navigator.platform == "Mac68K")
-      || (navigator.platform == "MacPPC")
-      || (navigator.platform == "Macintosh")
-      || (navigator.platform == "MacIntel");
+  return (navigator.platform == 'Mac68K')
+      || (navigator.platform == 'MacPPC')
+      || (navigator.platform == 'Macintosh')
+      || (navigator.platform == 'MacIntel');
 };
 
 export function getSuperKeyName() {
@@ -938,11 +946,11 @@ export function alert(message, type) {
   let confirmButtonText = null;
   switch(type) {
     case 'success':
-      confirmButtonText = app.$t('Very good');
+      confirmButtonText = i18n.t('Very good');
       break;
 
     default:
-      confirmButtonText = app.$t('OK');
+      confirmButtonText = i18n.t('OK');
       break;
   }
 
@@ -962,8 +970,8 @@ export async function confirm(message) {
     // 简单提示，不需要区分标题和内容
     await MessageBox.confirm(message, {
       dangerouslyUseHTMLString: true,
-      confirmButtonText       : app.$t('Yes'),
-      cancelButtonText        : app.$t('No'),
+      confirmButtonText       : i18n.t('Yes'),
+      cancelButtonText        : i18n.t('No'),
       type                    : 'warning',
     });
 
@@ -984,8 +992,8 @@ export async function prompt(message, defaultValue, options) {
       inputValue              : defaultValue,
       dangerouslyUseHTMLString: true,
       closeOnClickModal       : false,
-      confirmButtonText       : app.$t('Confirm'),
-      cancelButtonText        : app.$t('Cancel'),
+      confirmButtonText       : i18n.t('Confirm'),
+      cancelButtonText        : i18n.t('Cancel'),
     })
     let promptRes = await MessageBox.prompt(message, options);
 
@@ -1159,12 +1167,12 @@ async function _doAxios(axiosOpt) {
         IS_UNDER_NETWORK_ERROR_NOTICE = true;
 
         // 通讯失败，服务端没有响应
-        await MessageBox.alert(`${app.$t('Failed to communicate with the server, please refresh the page and try again.')}
-            <br>${app.$t('If the problem continues to occur, please contact the administrator to check the status of the server.')}
+        await MessageBox.alert(`${i18n.t('Failed to communicate with the server, please refresh the page and try again.')}
+            <br>${i18n.t('If the problem continues to occur, please contact the administrator to check the status of the server.')}
             <br><small>${err.toString()}</small>`, {
           showClose               : false,
           dangerouslyUseHTMLString: true,
-          confirmButtonText       : app.$t('OK'),
+          confirmButtonText       : i18n.t('OK'),
           type                    : 'error',
         });
 
@@ -1224,21 +1232,21 @@ export async function callAPI(method, pathPattern, options) {
         // 自动根据错误信息生成消息
         let message = alert.reasonMap && alert.reasonMap[axiosRes.data.reason]
                     ? alert.reasonMap[axiosRes.data.reason]
-                    : app.$t(axiosRes.data.message);
+                    : i18n.t(axiosRes.data.message);
 
         // 进一步添加小字详细信息
         if (axiosRes.data.detail && axiosRes.data.detail.exception) {
-          message += `<br><small>${app.$t(axiosRes.data.detail.exception.replace(/\n/g, '<br>'))}<small>`;
+          message += `<br><small>${i18n.t(axiosRes.data.detail.exception.replace(/\n/g, '<br>'))}<small>`;
         }
 
         // 简单提示，不需要区分标题和内容
         if (!message) {
-          message = `${app.$t('Failed to access data, please refresh the page and try again.')}<br><small>${method.toUpperCase()} ${pathPattern}</small>`
+          message = `${i18n.t('Failed to access data, please refresh the page and try again.')}<br><small>${method.toUpperCase()} ${pathPattern}</small>`
         }
         MessageBox.alert(message, {
           showClose               : false,
           dangerouslyUseHTMLString: true,
-          confirmButtonText       : app.$t('OK'),
+          confirmButtonText       : i18n.t('OK'),
           type                    : 'error',
         });
       }
@@ -1298,9 +1306,9 @@ export async function callAPI_getOne(pathPattern, id, options) {
       if (!alert.muteError) {
         setTimeout(() => {
           // 简单提示，不需要区分标题和内容
-          MessageBox.alert(app.$t('Data not found. It may have been deleted'), {
+          MessageBox.alert(i18n.t('Data not found. It may have been deleted'), {
             showClose: false,
-            confirmButtonText: app.$t('OK'),
+            confirmButtonText: i18n.t('OK'),
             type: 'error',
           });
         }, 300);
@@ -1392,7 +1400,7 @@ export async function callAPI_getAll(pathPattern, options) {
           // 自动根据错误信息生成消息
           let message = alert.reasonMap && alert.reasonMap[axiosRes.data.reason]
                       ? alert.reasonMap[axiosRes.data.reason]
-                      : app.$t(axiosRes.data.message);
+                      : i18n.t(axiosRes.data.message);
 
           // 进一步添加小字详细信息
           if (axiosRes.data.detail && axiosRes.data.detail.exception) {
@@ -1401,12 +1409,12 @@ export async function callAPI_getAll(pathPattern, options) {
 
           // 简单提示，不需要区分标题和内容
           if (!message) {
-            message = `${app.$t('Failed to access data, please refresh the page and try again.')}<br><small>GET ${pathPattern}</small>`
+            message = `${i18n.t('Failed to access data, please refresh the page and try again.')}<br><small>GET ${pathPattern}</small>`
           }
           MessageBox.alert(message, {
             showClose               : false,
             dangerouslyUseHTMLString: true,
-            confirmButtonText       : app.$t('OK'),
+            confirmButtonText       : i18n.t('OK'),
             type                    : 'error',
           });
         }, 300);
@@ -1625,17 +1633,17 @@ export function resetCodeMirrorPhrases(codeMirror) {
 
   setImmediate(() => {
     var phrases = {
-      "(Use /re/ syntax for regexp search)": app.$t("(Use /re/ syntax for regexp search)"),
-      "All"                                : app.$t("All"),
-      "No"                                 : app.$t("No"),
-      "Replace all:"                       : app.$t("Replace all:"),
-      "Replace with:"                      : app.$t("Replace with:"),
-      "Replace:"                           : app.$t("Replace:"),
-      "Replace?"                           : app.$t("Replace?"),
-      "Search:"                            : app.$t("Search:"),
-      "Stop"                               : app.$t("Stop"),
-      "With:"                              : app.$t("With:"),
-      "Yes"                                : app.$t("Yes"),
+      "(Use /re/ syntax for regexp search)": i18n.t("(Use /re/ syntax for regexp search)"),
+      "All"                                : i18n.t("All"),
+      "No"                                 : i18n.t("No"),
+      "Replace all:"                       : i18n.t("Replace all:"),
+      "Replace with:"                      : i18n.t("Replace with:"),
+      "Replace:"                           : i18n.t("Replace:"),
+      "Replace?"                           : i18n.t("Replace?"),
+      "Search:"                            : i18n.t("Search:"),
+      "Stop"                               : i18n.t("Stop"),
+      "With:"                              : i18n.t("With:"),
+      "Yes"                                : i18n.t("Yes"),
     }
     codeMirror.setOption('phrases', phrases);
   });

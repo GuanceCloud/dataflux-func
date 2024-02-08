@@ -1,12 +1,7 @@
 import { BaseNode, BaseNodeModel } from "./BaseNode";
 
 import * as T from '@/toolkit';
-
-// 国际化
-import app from '@/main';
-const $t = function(s) {
-  return app ? app.$t(s) : s;
-}
+import i18n from '@/i18n';
 
 class SwitchNode extends BaseNode {
   setHtml(rootEl) {
@@ -16,7 +11,7 @@ class SwitchNode extends BaseNode {
     el.className = 'node';
     const html = `
       <div class="node-icon"><i class="fa fa-fw fa-sitemap fa-rotate-270"></i></div>
-      <div class="node-text">${properties.title || $t('Switch')}</div>
+      <div class="node-text">${properties.title || i18n.t('Switch')}</div>
     `;
     el.innerHTML = html;
 

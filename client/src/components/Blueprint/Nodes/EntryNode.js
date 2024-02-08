@@ -1,10 +1,7 @@
 import { BaseHalfNode, BaseHalfNodeModel } from "./BaseHalfNode";
 
-// 国际化
-import app from '@/main';
-const $t = function(s) {
-  return app ? app.$t(s) : s;
-}
+import * as T from '@/toolkit';
+import i18n from '@/i18n';
 
 class EntryNode extends BaseHalfNode {
   setHtml(rootEl) {
@@ -14,7 +11,7 @@ class EntryNode extends BaseHalfNode {
     el.className = 'node node-half';
     const html = `
       <div class="node-icon"><i class="fa fa-fw fa-sign-in"></i></div>
-      <div class="node-text">${properties.title || $t('Entry')}</div>
+      <div class="node-text">${properties.title || i18n.t('Entry')}</div>
     `;
     el.innerHTML = html;
 

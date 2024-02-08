@@ -1,9 +1,6 @@
 // 国际化
-import app from '@/main';
+import i18n from '@/i18n';
 
-const $t = function(s) {
-  return app ? app.$t(s) : s;
-}
 const createMap = function(arrayConst) {
   let map = {};
   arrayConst.forEach(d => {
@@ -77,8 +74,8 @@ export default {
     return [
       {
         key           : 'guance',
-        name          : $t('Guance'),
-        fullName      : $t('Guance'),
+        name          : i18n.t('Guance'),
+        fullName      : i18n.t('Guance'),
         searchKeywords: ['观测云', 'guance', 'dataflux'],
         logo          : logo_guance,
         tagType       : 'primary',
@@ -100,7 +97,7 @@ res = guance.openapi('GET', '/api/v1/workspace/get')`,
       {
         key           : 'df_datakit',
         name          : 'DataKit',
-        fullName      : $t('Guance DataKit (HTTP)'),
+        fullName      : i18n.t('Guance DataKit (HTTP)'),
         searchKeywords: ['观测云', 'guance', 'dataflux', 'datakit'],
         logo          : null,
         tagType       : 'info',
@@ -122,7 +119,7 @@ res = datakit.write_metric(measurement='some_measurement',
       {
         key           : 'df_dataway',
         name          : 'DataWay',
-        fullName      : $t('Guance DataWay (HTTP)'),
+        fullName      : i18n.t('Guance DataWay (HTTP)'),
         searchKeywords: ['观测云', 'guance', 'dataflux', 'dataway'],
         logo          : null,
         tagType       : 'info',
@@ -167,7 +164,7 @@ res = sidecar.shell('ls -l', workdir='/home', wait=True)`,
       {
         key           : 'influxdb',
         name          : 'InfluxDB',
-        fullName      : $t('InfluxDB (HTTP) (And other compatible Databases)'),
+        fullName      : i18n.t('InfluxDB (HTTP) (And other compatible Databases)'),
         searchKeywords: ['influxdb', 'time-series', 'ts'],
         logo          : logo_influxdb,
         tagType       : null,
@@ -175,7 +172,7 @@ res = sidecar.shell('ls -l', workdir='/home', wait=True)`,
         sampleCode    : `influxdb = DFF.CONN('{0}')
 res = influxdb.query('SELECT * FROM "some_measurement" LIMIT 10')`,
         compatibleDBs: [
-          $t('Aliyun Time Series Database for InfluxDB'),
+          i18n.t('Aliyun Time Series Database for InfluxDB'),
         ],
         configFields: {
           host    : { default: null, isRequired: true },
@@ -193,7 +190,7 @@ res = influxdb.query('SELECT * FROM "some_measurement" LIMIT 10')`,
       {
         key           : 'mysql',
         name          : 'MySQL',
-        fullName      : $t('MySQL (And other compatible Databases)'),
+        fullName      : i18n.t('MySQL (And other compatible Databases)'),
         searchKeywords: ['mysql', 'mariadb', 'percona', 'polardb', 'oceanbase', 'sql', 'rdms'],
         logo          : logo_mysql,
         tagType       : 'success',
@@ -203,9 +200,9 @@ res = mysql.query('SELECT * FROM \`some_table\` LIMIT 10')`,
         compatibleDBs: [
           'MariaDB',
           'Percona Server for MySQL',
-          $t('Aliyun PolarDB for MySQL'),
-          $t('Aliyun OceanBase'),
-          $t('ADB for MySQL'),
+          i18n.t('Aliyun PolarDB for MySQL'),
+          i18n.t('Aliyun OceanBase'),
+          i18n.t('ADB for MySQL'),
         ],
         configFields: {
           host    : { default: null, isRequired: true },
@@ -288,7 +285,7 @@ res = clickhouse.query('SELECT * FROM some_table LIMIT 10')`,
       {
         key           : 'oracle',
         name          : 'Oracle',
-        fullName      : $t('Oracle Database'),
+        fullName      : i18n.t('Oracle Database'),
         searchKeywords: ['oracle', 'sql', 'rdms'],
         logo          : logo_oracle,
         tagType       : 'danger',
@@ -334,7 +331,7 @@ res = sqlserver.query('SELECT TOP 10 * FROM some_table')`,
       {
         key           : 'postgresql',
         name          : 'PostgreSQL',
-        fullName      : $t('PostgreSQL (And other compatible Databases)'),
+        fullName      : i18n.t('PostgreSQL (And other compatible Databases)'),
         searchKeywords: ['postgresql', 'sql', 'greenplum', 'polardb', 'rdms'],
         logo          : logo_postgresql,
         tagType       : 'info',
@@ -343,8 +340,8 @@ res = sqlserver.query('SELECT TOP 10 * FROM some_table')`,
 res = postgresql.query('SELECT * FROM some_table LIMIT 10')`,
         compatibleDBs: [
           'Greenplum Database',
-          $t('Aliyun PolarDB for PostgreSQL'),
-          $t('ADB for PostgreSQL'),
+          i18n.t('Aliyun PolarDB for PostgreSQL'),
+          i18n.t('ADB for PostgreSQL'),
         ],
         configFields: {
           host    : { default: null, isRequired: true },
@@ -430,7 +427,7 @@ nsq.publish(topic='some_topic', message='some_message')`,
         fullName      : 'MQTT Broker (v5.0)',
         searchKeywords: ['mqtt', 'mosquitto', 'emqx', 'iot'],
         logo          : logo_mqtt,
-        tips          : $t('A Broker with MQTTv5 support and use share subscription is recommended'),
+        tips          : i18n.t('A Broker with MQTTv5 support and use share subscription is recommended'),
         tagType       : 'info',
         debugSupported: false,
         sampleCode    : `mqtt = DFF.CONN('{0}')
@@ -541,17 +538,17 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key : 'auto',
-        name: $t('Follow System'),
+        name: i18n.t('Follow System'),
         icon: 'fa-adjust',
       },
       {
         key : 'light',
-        name: $t('Light Mode'),
+        name: i18n.t('Light Mode'),
         icon: 'fa-sun-o',
       },
       {
         key : 'dark',
-        name: $t('Dark Mode'),
+        name: i18n.t('Dark Mode'),
         icon: 'fa-moon-o',
       },
     ]
@@ -596,23 +593,23 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key : 'scriptSet',
-        name: $t('Script Set'),
+        name: i18n.t('Script Set'),
       },
       {
         key : 'script',
-        name: $t('Script'),
+        name: i18n.t('Script'),
       },
       {
         key : 'func',
-        name: $t('Func'),
+        name: i18n.t('Func'),
       },
       {
         key : 'connector',
-        name: $t('Connector'),
+        name: i18n.t('Connector'),
       },
       {
         key : 'envVariable',
-        name: $t('ENV'),
+        name: i18n.t('ENV'),
       },
     ];
   },
@@ -625,32 +622,32 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key : 'string',
-        name: $t('String'),
+        name: i18n.t('String'),
       },
       {
         key : 'integer',
-        name: $t('Integer'),
-        tips: $t('Will be converted by int() automatically'),
+        name: i18n.t('Integer'),
+        tips: i18n.t('Will be converted by int() automatically'),
       },
       {
         key : 'float',
-        name: $t('Float'),
-        tips: $t('Will be converted by float() automatically'),
+        name: i18n.t('Float'),
+        tips: i18n.t('Will be converted by float() automatically'),
       },
       {
         key : 'boolean',
-        name: $t('Boolean'),
-        tips: $t('Can be "true"/"false", "yes"/"no" or "on"/"off"'),
+        name: i18n.t('Boolean'),
+        tips: i18n.t('Can be "true"/"false", "yes"/"no" or "on"/"off"'),
       },
       {
         key : 'json',
         name: 'JSON',
-        tips: $t('Will be converted by json.loads() automatically'),
+        tips: i18n.t('Will be converted by json.loads() automatically'),
       },
       {
         key : 'commaArray',
-        name: $t('Comma separated string array'),
-        tips: $t('Like CSV. "apple,pie" will be converted to ["apple", "pie"]'),
+        name: i18n.t('Comma separated string array'),
+        tips: i18n.t('Like CSV. "apple,pie" will be converted to ["apple", "pie"]'),
       },
     ];
   },
@@ -663,28 +660,28 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key : 'fixedField',
-        name: $t('Fixed Field'),
+        name: i18n.t('Fixed Field'),
         configFields: {
           fields: { default: [], isRequired: true },
         },
       },
       {
         key : 'httpBasic',
-        name: $t('HTTP Basic'),
+        name: i18n.t('HTTP Basic'),
         configFields: {
           users: { default: [], isRequired: true },
         },
       },
       {
         key : 'httpDigest',
-        name: $t('HTTP Digest'),
+        name: i18n.t('HTTP Digest'),
         configFields: {
           users: { default: [], isRequired: true },
         },
       },
       {
         key : 'func',
-        name: $t('Func'),
+        name: i18n.t('Func'),
         configFields: {
           funcId: { default: null, isRequired: true },
         },
@@ -700,15 +697,15 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key : 'header',
-        name: $t('HTTP Header'),
+        name: i18n.t('HTTP Header'),
       },
       {
         key : 'query',
-        name: $t('HTTP Query'),
+        name: i18n.t('HTTP Query'),
       },
       {
         key : 'body',
-        name: $t('HTTP Body'),
+        name: i18n.t('HTTP Body'),
       },
     ];
   },
@@ -754,31 +751,31 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key    : 'success',
-        name   : $t('Success'),
+        name   : i18n.t('Success'),
         tagType: 'success',
         icon   : 'el-icon-success',
       },
       {
         key    : 'failure',
-        name   : $t('Failure'),
+        name   : i18n.t('Failure'),
         tagType: 'danger',
         icon   : 'el-icon-error',
       },
       {
         key    : 'timeout',
-        name   : $t('Timeout'),
+        name   : i18n.t('Timeout'),
         tagType: 'danger',
         icon   : 'el-icon-time',
       },
       {
         key    : 'skip',
-        name   : $t('Skip'),
+        name   : i18n.t('Skip'),
         tagType: 'warning',
         icon   : 'el-icon-d-arrow-right',
       },
       {
         key    : 'pending',
-        name   : $t('Pending'),
+        name   : i18n.t('Pending'),
         tagType: 'info',
         icon   : 'el-icon-loading',
       }
@@ -793,52 +790,52 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key : 'scriptSet',
-        name: $t('Script Set'),
+        name: i18n.t('Script Set'),
         icon: 'fa-folder-open-o',
       },
       {
         key : 'script',
-        name: $t('Script'),
+        name: i18n.t('Script'),
         icon: 'fa-file-code-o',
       },
       {
         key    : 'func',
-        name   : $t('Func'),
+        name   : i18n.t('Func'),
         tagText: 'def',
       },
       {
         key : 'connector',
-        name: $t('Connector'),
+        name: i18n.t('Connector'),
         icon: 'fa-database',
       },
       {
         key : 'envVariable',
-        name: $t('ENV'),
+        name: i18n.t('ENV'),
         icon: 'fa-cogs',
       },
       {
         key : 'authLink',
-        name: $t('Auth Link'),
+        name: i18n.t('Auth Link'),
         icon: 'fa-link',
       },
       {
         key : 'crontabConfig',
-        name: $t('Crontab Config'),
+        name: i18n.t('Crontab Config'),
         icon: 'fa-clock-o',
       },
       {
         key : 'batch',
-        name: $t('Batch'),
+        name: i18n.t('Batch'),
         icon: 'fa-tasks',
       },
       {
         key : 'fileService',
-        name: $t('File Service'),
+        name: i18n.t('File Service'),
         icon: 'fa-folder-open',
       },
       {
         key : 'user',
-        name: $t('User'),
+        name: i18n.t('User'),
         icon: 'fa-users',
       },
     ];
@@ -852,22 +849,22 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key      : 'import',
-        name     : $t('Before package import'),
+        name     : i18n.t('Before package import'),
         textClass: 'text-main',
       },
       {
         key      : 'install',
-        name     : $t('Before package install'),
+        name     : i18n.t('Before package install'),
         textClass: 'text-watch',
       },
       {
         key      : 'recover',
-        name     : $t('Before Script Lib recover'),
+        name     : i18n.t('Before Script Lib recover'),
         textClass: 'text-info',
       },
       {
         key      : 'manual',
-        name     : $t('Created by user manually'),
+        name     : i18n.t('Created by user manually'),
         textClass: 'text-good',
       },
     ];
@@ -881,7 +878,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key : 'signIn',
-        name: $t('Sign in'),
+        name: i18n.t('Sign in'),
       },
     ];
   },
@@ -894,63 +891,63 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key : 'eclipse-monokai',
-        name: $t( 'Auto: Default'),
+        name: i18n.t( 'Auto: Default'),
       },
       {
         key : 'base16',
-        name: $t( 'Auto: base16'),
+        name: i18n.t( 'Auto: base16'),
       },
       {
         key : 'duotone',
-        name: $t( 'Auto: duotone'),
+        name: i18n.t( 'Auto: duotone'),
       },
       {
         key : 'neat-material-darker',
-        name: $t( 'Auto: neat/material-darker'),
+        name: i18n.t( 'Auto: neat/material-darker'),
       },
       {
         key : 'idea-darcula',
-        name: $t( 'Auto: idea/darcula'),
+        name: i18n.t( 'Auto: idea/darcula'),
       },
       {
         key : 'eclipse',
-        name: $t('Light: eclipse'),
+        name: i18n.t('Light: eclipse'),
       },
       {
         key : 'base16-light',
-        name: $t('Light: base16-light'),
+        name: i18n.t('Light: base16-light'),
       },
       {
         key : 'duotone-light',
-        name: $t('Light: duotone-light'),
+        name: i18n.t('Light: duotone-light'),
       },
       {
         key : 'neat',
-        name: $t('Light: neat'),
+        name: i18n.t('Light: neat'),
       },
       {
         key : 'idea',
-        name: $t('Light: idea'),
+        name: i18n.t('Light: idea'),
       },
       {
         key : 'monokai',
-        name: $t('Dark: monokai'),
+        name: i18n.t('Dark: monokai'),
       },
       {
         key : 'base16-dark',
-        name: $t('Dark: base16-dark'),
+        name: i18n.t('Dark: base16-dark'),
       },
       {
         key : 'duotone-dark',
-        name: $t('Dark: duotone-dark'),
+        name: i18n.t('Dark: duotone-dark'),
       },
       {
         key : 'material-darker',
-        name: $t('Dark: material-darker'),
+        name: i18n.t('Dark: material-darker'),
       },
       {
         key : 'darcula',
-        name: $t('Dark: darcula'),
+        name: i18n.t('Dark: darcula'),
       },
     ];
   },
@@ -966,22 +963,22 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key  : 'tsinghua',
-        name : $t('Tsinghua University mirror'),
+        name : i18n.t('Tsinghua University mirror'),
         value: 'https://pypi.tuna.tsinghua.edu.cn/simple/',
       },
       {
         key  : 'alibaba',
-        name : $t('Alibaba Cloud mirror'),
+        name : i18n.t('Alibaba Cloud mirror'),
         value: 'https://mirrors.aliyun.com/pypi/simple/',
       },
       {
         key  : 'douban',
-        name : $t('Douban mirror'),
+        name : i18n.t('Douban mirror'),
         value: 'https://pypi.douban.com/simple/',
       },
       {
         key  : 'official',
-        name : $t('PyPI Official'),
+        name : i18n.t('PyPI Official'),
         value: '',
       },
     ];
@@ -998,12 +995,12 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key : 'edit',
-        name: $t('Edit'),
+        name: i18n.t('Edit'),
         icon: 'fa-edit',
       },
       {
         key : 'debug',
-        name: $t('Debug'),
+        name: i18n.t('Debug'),
         icon: 'fa-play',
       },
     ];
@@ -1016,17 +1013,17 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key      : 'draft',
-        name     : $t('Draft'),
+        name     : i18n.t('Draft'),
         codeField: 'codeDraft',
       },
       {
         key      : 'published',
-        name     : $t('Published'),
+        name     : i18n.t('Published'),
         codeField: 'code',
       },
       {
         key      : 'diff',
-        name     : $t('DIFF'),
+        name     : i18n.t('DIFF'),
         codeField: null,
       },
     ];
@@ -1040,19 +1037,19 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key : 'reqCost1000',
-        name: $t('Request Cost 1000ms+'),
+        name: i18n.t('Request Cost 1000ms+'),
       },
       {
         key : 'reqCost5000',
-        name: $t('Request Cost 5000ms+'),
+        name: i18n.t('Request Cost 5000ms+'),
       },
       {
         key : 'statusCode4xx',
-        name: $t('Status Code 4xx'),
+        name: i18n.t('Status Code 4xx'),
       },
       {
         key : 'statusCode5xx',
-        name: $t('Status Code 5xx'),
+        name: i18n.t('Status Code 5xx'),
       },
     ];
   },
@@ -1065,34 +1062,34 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key       : 'scriptSets',
-        name      : $t('Script Set'),
+        name      : i18n.t('Script Set'),
         showField : 'title',
       },
       {
         key       : 'connectors',
-        name      : $t('Connector'),
+        name      : i18n.t('Connector'),
         showField : 'title',
       },
       {
         key       : 'envVariables',
-        name      : $t('ENV'),
+        name      : i18n.t('ENV'),
         showField : 'title',
       },
       {
         key       : 'authLinks',
-        name      : $t('Auth Link'),
+        name      : i18n.t('Auth Link'),
         showField : 'funcId',
         showClass : 'text-main code-font',
       },
       {
         key       : 'crontabConfigs',
-        name      : $t('Crontab Config'),
+        name      : i18n.t('Crontab Config'),
         showField : 'funcId',
         showClass : 'text-main code-font',
       },
       {
         key       : 'batches',
-        name      : $t('Batch'),
+        name      : i18n.t('Batch'),
         showField : 'funcId',
         showClass : 'text-main code-font',
       },
@@ -1109,7 +1106,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
         key       : 'git',
         name      : 'git (HTTPS)',
         logo      : logo_git,
-        tip       : $t('Script Market based on git supports HTTPS only'),
+        tip       : i18n.t('Script Market based on git supports HTTPS only'),
         isReadonly: false,
         brandLogo: {
           'github.com'   : logo_github,
@@ -1127,7 +1124,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
       },
       {
         key       : 'aliyunOSS',
-        name      : $t('Alibaba Cloud OSS'),
+        name      : i18n.t('Alibaba Cloud OSS'),
         logo      : logo_aliyunOSS,
         isReadonly: false,
         configFields: {
@@ -1140,9 +1137,9 @@ kafka.publish(topic='some_topic', message='some_message')`,
       },
       {
         key       : 'httpService',
-        name      : $t('HTTP Service'),
+        name      : i18n.t('HTTP Service'),
         logo      : logo_httpService,
-        tip       : $t('Script Market based on HTTP Service is readonly'),
+        tip       : i18n.t('Script Market based on HTTP Service is readonly'),
         isReadonly: true,
         configFields: {
           url: { default: null, isRequired: true },
@@ -1159,12 +1156,12 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key  : 'SimpleLine',
-        name : $t('Simple Line'),
+        name : i18n.t('Simple Line'),
         props: { },
       },
       {
         key  : 'SwitchLine',
-        name : $t('Switch Line'),
+        name : i18n.t('Switch Line'),
         props: {
           switchOrder: { isRequired: true },
         },
@@ -1172,12 +1169,12 @@ kafka.publish(topic='some_topic', message='some_message')`,
 
       {
         key  : 'EntryNode',
-        name : $t('Entry Node'),
+        name : i18n.t('Entry Node'),
         props: { },
       },
       {
         key  : 'CodeNode',
-        name : $t('Code Node'),
+        name : i18n.t('Code Node'),
         props: {
           title: { isRequired: false },
           code : { isRequired: false },
@@ -1185,7 +1182,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
       },
       {
         key  : 'FuncNode',
-        name : $t('Func Node'),
+        name : i18n.t('Func Node'),
         props: {
           title                 : { isRequired: false },
           funcId                : { isRequired: true },
@@ -1196,7 +1193,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
       },
       {
         key  : 'SwitchNode',
-        name : $t('Switch Node'),
+        name : i18n.t('Switch Node'),
         props: {
           title      : { isRequired: false },
           switchItems: { isRequired: true },
@@ -1205,7 +1202,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
 
       {
         key  : 'BuiltinHashNode',
-        name : $t('Hash'),
+        name : i18n.t('Hash'),
         props: {
           inputField   : { isRequired: true },
           outputField  : { isRequired: true },
@@ -1214,7 +1211,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
       },
       {
         key  : 'BuiltinBase64Node',
-        name : $t('Base64'),
+        name : i18n.t('Base64'),
         props: {
           inputField    : { isRequired: true },
           outputField   : { isRequired: true },
@@ -1223,7 +1220,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
       },
       {
         key  : 'BuiltinRandomNode',
-        name : $t('Random'),
+        name : i18n.t('Random'),
         props: {
           outputField : { isRequired: true },
           randomType  : { isRequired: true },
@@ -1234,7 +1231,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
       },
       {
         key  : 'BuiltinJSONNode',
-        name : $t('JSON'),
+        name : i18n.t('JSON'),
         props: {
           inputField            : { isRequired: true },
           outputField           : { isRequired: true },
@@ -1243,7 +1240,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
       },
       {
         key  : 'BuiltinYAMLNode',
-        name : $t('YAML'),
+        name : i18n.t('YAML'),
         props: {
           inputField            : { isRequired: true },
           outputField           : { isRequired: true },
@@ -1252,7 +1249,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
       },
       {
         key  : 'BuiltinHTTPNode',
-        name : $t('HTTP Request'),
+        name : i18n.t('HTTP Request'),
         props: {
           httpMethod     : { isRequired: true },
           url            : { isRequired: true },
@@ -1262,7 +1259,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
       },
       {
         key  : 'BuiltinDingTalkNode',
-        name : $t('DingTalk Robot'),
+        name : i18n.t('DingTalk Robot'),
         props: {
           url                : { isRequired: true },
           dingTalkMessageType: { isRequired: true },

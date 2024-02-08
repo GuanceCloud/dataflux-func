@@ -257,8 +257,7 @@ export default {
         if (s === 'latestOperations') {
           // 提取对应语言
           this[s].forEach(d => {
-            d.reqRouteName = d.reqRouteNames[this.$store.getters.uiLocale]
-                          || d.reqRouteNames.default;
+            d.reqRouteName = d.reqRouteNames[this.$store.getters.uiLocale] || d.reqRouteNames.default;
           });
         }
       });

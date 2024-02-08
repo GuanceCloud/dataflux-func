@@ -352,20 +352,11 @@ export default {
       }
     },
     releaseDateTEXT() {
-      let releaseDate    = '';
-      let releaseFromNow = '';
-      if (this.imageInfo.releaseTimestamp > 0) {
-        let releaseTimestamp = this.imageInfo.releaseTimestamp * 1000;
+      let releaseTimestamp = this.imageInfo.releaseTimestamp * 1000 ||  Date.now();
+      let releaseDate      = this.M.utc(releaseTimestamp).locale(this.$store.getters.uiLocale).format('YYYY-MM-DD HH:mm:ss Z');
+      let releaseFromNow   = this.M.utc(releaseTimestamp).locale(this.$store.getters.uiLocale).fromNow();
 
-        releaseDate    = this.M.utc(releaseTimestamp).locale(this.T.getUILocale()).format('YYYY-MM-DD HH:mm:ss Z');
-        releaseFromNow = this.M.utc(releaseTimestamp).locale(this.T.getUILocale()).fromNow();
-      }
-
-      if (releaseDate && releaseFromNow) {
-        return `${releaseDate} ${this.$t('(')}${releaseFromNow}${this.$t(')')}`
-      } else {
-        return '-';
-      }
+      return `${releaseDate} ${this.$t('(')}${releaseFromNow}${this.$t(')')}`
     },
   },
   props: {

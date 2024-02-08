@@ -1,10 +1,8 @@
-import app from '@/main';
 import router from '@/router'
 import store from '@/store'
 import * as T from '@/toolkit'
 import C from '@/const'
-
-let FUNC_ARGUMENT_PLACEHOLDERS = store.getters.SYSTEM_INFO('_FUNC_ARGUMENT_PLACEHOLDER_LIST');
+import i18n from '@/i18n';
 
 export function getPythonCodeItems(pythonCode, scriptId) {
   if (!pythonCode) [];
@@ -240,8 +238,8 @@ export async function getFuncList(options) {
 
   } else {
     result.cascader = [
-      { label: app.$t('Script Lib'), children: scriptSets },
-      { label: app.$t('Blueprint'),  children: blueprints },
+      { label: i18n.t('Script Lib'), children: scriptSets },
+      { label: i18n.t('Blueprint'),  children: blueprints },
     ];
   }
 
@@ -272,6 +270,7 @@ export function funcCascaderFilter(node, searchText) {
 }
 
 export function isFuncArgumentPlaceholder(v) {
+  const FUNC_ARGUMENT_PLACEHOLDERS = store.getters.SYSTEM_INFO('_FUNC_ARGUMENT_PLACEHOLDER_LIST');
   for (let i = 0; i < FUNC_ARGUMENT_PLACEHOLDERS.length; i++) {
     if (v === FUNC_ARGUMENT_PLACEHOLDERS[i]) return true;
   }
@@ -460,19 +459,19 @@ export function hasNewVersion() {
 
 export function shouldScriptSetHidden(scriptSet) {
   // 隐藏来自脚本市场脚本集
-  if (app.$store.getters.SYSTEM_SETTINGS('SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET')
+  if (store.getters.SYSTEM_SETTINGS('SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET')
     && scriptSet.origin === 'scriptMarket' && scriptSet.originId === 'smkt-official') {
     return true;
   }
 
   // 隐藏内置脚本集
-  if (app.$store.getters.SYSTEM_SETTINGS('SCRIPT_SET_HIDDEN_BUILTIN')
+  if (store.getters.SYSTEM_SETTINGS('SCRIPT_SET_HIDDEN_BUILTIN')
     && scriptSet.origin === 'builtin') {
     return true;
   }
 
   // 隐藏蓝图脚本集
-  if (app.$store.getters.SYSTEM_SETTINGS('SCRIPT_SET_HIDDEN_BLUEPRINT')
+  if (store.getters.SYSTEM_SETTINGS('SCRIPT_SET_HIDDEN_BLUEPRINT')
     && scriptSet.origin === 'blueprint') {
     return true;
   }
