@@ -88,7 +88,7 @@ const MUTATION_CONFIG = {
   resetFeatureNotice                             : { persist: true  },
 
   syncState: { persist: false },
-}
+};
 
 Vue.use(Vuex)
 
@@ -645,4 +645,3 @@ export default new Vuex.Store({
     }),
   ],
 });
-

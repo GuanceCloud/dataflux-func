@@ -19,20 +19,6 @@ fs.writeFileSync(path.join(__dirname, './public/theme-light.min.css'), cssmin(li
 fs.writeFileSync(path.join(__dirname, './public/theme-dark.min.css'), cssmin(darkThemeCSS.toString()));
 fs.writeFileSync(path.join(__dirname, './public/theme-auto.min.css'), cssmin(autoThemeCSS.toString()));
 
-function getNetworkIP() {
-  let networkIP = null;
-  let interfaces = os.networkInterfaces();
-  for (let interface in interfaces) {
-    let ips = interfaces[interface];
-
-    for (let i = 0; i < ips.length; i++) {
-      if (!ips[i].internal && ips[i].family === 'IPv4') {
-        return ips[i].address;
-      }
-    }
-  }
-}
-
 module.exports = {
   publicPath: IS_PROD ? '/client-app/' : '/',
   productionSourceMap: false,
@@ -57,7 +43,7 @@ module.exports = {
       .end()
       .type('json')
       .use('yaml-loader')
-        .loader("yaml-loader")
+        .loader('yaml-loader')
         .tap(options => {
           options = options || {};
           options.asJSON = true;

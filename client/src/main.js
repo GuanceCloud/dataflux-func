@@ -126,8 +126,6 @@ Vue.use(preventReClick);
 import * as common from '@/common'
 Vue.prototype.common = common;
 
-Vue.config.productionTip = false
-
 // 常用业务组件
 import Logo             from '@/components/Logo'
 import InfoBlock        from '@/components/InfoBlock'
@@ -184,9 +182,7 @@ window.addEventListener('storage', function(ev) {
   store.commit('syncState', nextState);
 });
 
-// 初始化 vuex 数据，避免报错
-
-// 本体
+// Vue 实例
 const app = new Vue({
   router,
   store,
