@@ -1,7 +1,7 @@
 import Vue from 'vue'
-import App from './App.vue'
-import router from './router'
-import store from './store'
+import App from '@/App.vue'
+import router from '@/router'
+import store from '@/store'
 
 // 公共函数
 import * as toolkit from '@/toolkit'
@@ -9,9 +9,9 @@ Vue.prototype.toolkit = toolkit;
 Vue.prototype.T = toolkit;
 
 // 常量
-import const_ from '@/const'
-Vue.prototype.const = const_;
-Vue.prototype.C = const_;
+import C from '@/const'
+Vue.prototype.const = C;
+Vue.prototype.C = C;
 
 // 图标
 import 'font-awesome/css/font-awesome.css'
@@ -72,7 +72,7 @@ import messages_zht from '@/assets/yaml/messages.zht.yaml'
 Object.assign(locales, locales_zht)
 Object.assign(messages, messages_zht)
 
-const_.UI_LOCALE.forEach(_locale => {
+C.UI_LOCALE.forEach(_locale => {
   let lang = _locale.key;
   [ elementUILocales, messages ].forEach( localeSrc => {
     if (!localeSrc || !localeSrc[lang]) return;

@@ -1,6 +1,6 @@
 import app from '@/main';
 import router from '@/router'
-import store from './store'
+import store from '@/store'
 import * as T from '@/toolkit'
 import C from '@/const'
 

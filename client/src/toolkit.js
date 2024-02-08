@@ -82,7 +82,7 @@ export const MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000;
 import { marked } from 'marked'
 
 // 国际化
-import app from '@/main';
+import app from '@/main'
 
 import C from '@/const'
 
