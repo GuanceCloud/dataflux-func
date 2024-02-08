@@ -81,9 +81,7 @@ export const MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000;
 // Markdown
 import { marked } from 'marked'
 
-// 国际化
 import i18n from '@/i18n'
-
 import C from '@/const'
 
 // 网络错误提示
