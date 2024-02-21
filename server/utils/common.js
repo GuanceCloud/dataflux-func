@@ -239,8 +239,8 @@ common.getGuanceNodes = function() {
       'name'     : name,
       'name_en'  : name_en,
       'openapi'  : urlMap.open_api  || urlMap.openapi || null,
-      'websocket': urlMap.websocket || null,
       'openway'  : urlMap.openway   || null,
+      'websocket': urlMap.websocket || null,
     });
   }
 
@@ -250,8 +250,8 @@ common.getGuanceNodes = function() {
     'name'     : '私有部署',
     'name_en'  : 'Private',
     'openapi'  : 'https://openapi.YOUR_DOMAIN.com',
-    'websocket': 'https://websocket.YOUR_DOMAIN.com',
     'openway'  : 'https://openway.YOUR_DOMAIN.com',
+    'websocket': 'https://websocket.YOUR_DOMAIN.com',
   });
 
   // 开发版添加测试环境节点
@@ -261,23 +261,15 @@ common.getGuanceNodes = function() {
       'name'     : '测试环境',
       'name_en'  : 'Testing',
       'openapi'  : 'http://testing-ft2x-open-api.dataflux.cn',
-      'websocket': 'http://testing-ft2x-websocket.dataflux.cn',
       'openway'  : 'http://testing-openway.dataflux.cn',
+      'websocket': 'http://testing-ft2x-websocket.dataflux.cn',
     });
   }
 
   return guanceNodes;
 };
 
-common.checkGuanceAPIKey = function(guanceNodeKey, guanceAPIKeyID, guanceAPIKey, callback) {
-  var guanceNode = common.getGuanceNodes().filter(function(node) {
-    return node.key === guanceNodeKey;
-  })[0];
-
-  if (!guanceNode) {
-    return callback(new E('EClientNotFound', 'Guance Node not found'));
-  }
-
+common.checkGuanceAPIKey = function(guanceNode, guanceAPIKeyID, guanceAPIKey, callback) {
   async.series([
     // 尝试调用观测云 OpenAPI
     function(asyncCallback) {

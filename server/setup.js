@@ -33,6 +33,25 @@ var SYS_CONFIG_ID_UPGRADE_DB_SEQ     = 'UPGRADE_DB_SEQ';
 var SYS_CONFIG_ID_UPGRADE_DB_SEQ_OLD = 'upgrade.db.upgradeSeq';
 var MEMORY_1GB_BYTES                 = 1 * 1024 * 1024 * 1024;
 
+var SKIP_CONFIGS_TO_WRITE = [
+  'ADMIN_USERNAME',
+  'ADMIN_PASSWORD',
+  'ADMIN_PASSWORD_REPEAT',
+
+  'AUTO_SETUP',
+  'AUTO_SETUP_ADMIN_USERNAME',
+  'AUTO_SETUP_ADMIN_PASSWORD',
+  'AUTO_SETUP_AK_ID',
+  'AUTO_SETUP_AK_SECRET',
+
+  'GUANCE_NODE',
+  'GUANCE_OPENAPI_URL',
+  'GUANCE_OPENWAY_URL',
+  'GUANCE_WEBSOCKET_URL',
+  'GUANCE_API_KEY_ID',
+  'GUANCE_API_KEY',
+]
+
 // DB/Cache helper should load AFTER config is loaded.
 var mysqlHelper = null;
 var redisHelper = null;
@@ -117,12 +136,9 @@ function _doSetup(userConfig, callback) {
     function(asyncCallback) {
       if (!userConfig.GUANCE_NODE) return asyncCallback();
 
-      if (!userConfig.GUANCE_API_KEY_ID) {
-        setupErrorWrap.set('guance', 'Guance API Key ID is not inputed');
-      }
-      if (!userConfig.GUANCE_API_KEY) {
-        setupErrorWrap.set('guance', 'Guance API Key is not inputed');
-      }
+      if (!userConfig.GUANCE_API_KEY_ID) setupErrorWrap.set('guance', 'Guance API Key ID is not inputed');
+      if (!userConfig.GUANCE_API_KEY)    setupErrorWrap.set('guance', 'Guance API Key is not inputed');
+
       if (setupErrorWrap.has('guance')) return asyncCallback();
 
       var guanceNode = common.getGuanceNodes().filter(function(node) {
@@ -132,12 +148,30 @@ function _doSetup(userConfig, callback) {
       if (!guanceNode) {
         setupErrorWrap.set('guance', 'No such Guance Node');
         return asyncCallback();
+
+      }
+
+      if (guanceNode.key === 'private') {
+        if (!userConfig.GUANCE_OPENAPI_URL) {
+          setupErrorWrap.set('guance', 'Guance OpenAPI URL is not inputed');
+        }
+        if (!userConfig.GUANCE_OPENWAY_URL) {
+          setupErrorWrap.set('guance', 'Guance OpenWay URL is not inputed');
+        }
+        if (!userConfig.GUANCE_WEBSOCKET_URL) {
+          setupErrorWrap.set('guance', 'Guance WebSocket URL is not inputed');
+        }
+        if (setupErrorWrap.has('guance')) return asyncCallback();
+
+        guanceNode.openapi   = userConfig.GUANCE_OPENAPI_URL;
+        guanceNode.openway   = userConfig.GUANCE_OPENWAY_URL;
+        guanceNode.websocket = userConfig.GUANCE_WEBSOCKET_URL;
       }
 
       async.series([
         // 检查观测云 API Key 有效性
         function(innerCallback) {
-          common.checkGuanceAPIKey(guanceNode.key, userConfig.GUANCE_API_KEY_ID, userConfig.GUANCE_API_KEY, function(err) {
+          common.checkGuanceAPIKey(guanceNode, userConfig.GUANCE_API_KEY_ID, userConfig.GUANCE_API_KEY, function(err) {
             if (err) {
               setupErrorWrap.set('guance', 'Guance API Key ID / API Key is not valid');
               return innerCallback(true);
@@ -151,8 +185,8 @@ function _doSetup(userConfig, callback) {
           guanceConnectorConfig = {
             guanceNode        : guanceNode.key,
             guanceOpenAPIURL  : guanceNode.openapi,
-            guanceWebSocketURL: guanceNode.websocket,
             guanceOpenWayURL  : guanceNode.openway,
+            guanceWebSocketURL: guanceNode.websocket,
             guanceAPIKeyId    : userConfig.GUANCE_API_KEY_ID,
             guanceAPIKeyCipher: toolkit.cipherByAES(userConfig.GUANCE_API_KEY, userConfig.SECRET),
           };
@@ -421,19 +455,9 @@ function _doSetup(userConfig, callback) {
     Object.assign(USER_CONFIG, userConfig);
     USER_CONFIG._IS_INSTALLED = true;
 
-    delete USER_CONFIG.ADMIN_USERNAME;
-    delete USER_CONFIG.ADMIN_PASSWORD;
-    delete USER_CONFIG.ADMIN_PASSWORD_REPEAT;
-
-    delete USER_CONFIG.AUTO_SETUP;
-    delete USER_CONFIG.AUTO_SETUP_ADMIN_USERNAME;
-    delete USER_CONFIG.AUTO_SETUP_ADMIN_PASSWORD;
-    delete USER_CONFIG.AUTO_SETUP_AK_ID;
-    delete USER_CONFIG.AUTO_SETUP_AK_SECRET;
-
-    delete USER_CONFIG.GUANCE_NODE;
-    delete USER_CONFIG.GUANCE_API_KEY_ID;
-    delete USER_CONFIG.GUANCE_API_KEY;
+    SKIP_CONFIGS_TO_WRITE.forEach(function(c) {
+      delete USER_CONFIG[c];
+    })
 
     fs.writeFileSync(CONFIG.CONFIG_FILE_PATH, yaml.dump(USER_CONFIG));
 

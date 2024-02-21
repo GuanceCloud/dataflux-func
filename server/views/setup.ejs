@@ -279,6 +279,69 @@
               </el-popover>
 
               <template v-if="userConfig.GUANCE_NODE">
+                <!-- 观测云 OpenAPI URL -->
+                <el-popover
+                  :disabled="true"
+                  :visible-arrow="false"
+                  placement="right"
+                  popper-class="popover-tips"
+                  trigger="hover">
+                  <div slot="reference">
+                    <div class="config-info">
+                      <span>{{ $t('Guance OpenAPI URL') }}</span>
+                      <code>GUANCE_OPENAPI_URL</code>
+                    </div>
+                    <el-input
+                      ref="GUANCE_OPENAPI_URL"
+                      :class="{ 'bad-config': setupErrorKeyStatus.guance }"
+                      v-model="userConfig.GUANCE_OPENAPI_URL"></el-input>
+                  </div>
+                  <p>
+                  </p>
+                </el-popover>
+
+                <!-- 观测云 OpenWay URL -->
+                <el-popover
+                  :disabled="true"
+                  :visible-arrow="false"
+                  placement="right"
+                  popper-class="popover-tips"
+                  trigger="hover">
+                  <div slot="reference">
+                    <div class="config-info">
+                      <span>{{ $t('Guance OpenWay URL') }}</span>
+                      <code>GUANCE_OPENWAY_URL</code>
+                    </div>
+                    <el-input
+                      ref="GUANCE_OPENWAY_URL"
+                      :class="{ 'bad-config': setupErrorKeyStatus.guance }"
+                      v-model="userConfig.GUANCE_OPENWAY_URL"></el-input>
+                  </div>
+                  <p>
+                  </p>
+                </el-popover>
+
+                <!-- 观测云 WebSocket URL -->
+                <el-popover
+                  :disabled="true"
+                  :visible-arrow="false"
+                  placement="right"
+                  popper-class="popover-tips"
+                  trigger="hover">
+                  <div slot="reference">
+                    <div class="config-info">
+                      <span>{{ $t('Guance WebSocket URL') }}</span>
+                      <code>GUANCE_WEBSOCKET_URL</code>
+                    </div>
+                    <el-input
+                      ref="GUANCE_WEBSOCKET_URL"
+                      :class="{ 'bad-config': setupErrorKeyStatus.guance }"
+                      v-model="userConfig.GUANCE_WEBSOCKET_URL"></el-input>
+                  </div>
+                  <p>
+                  </p>
+                </el-popover>
+
                 <!-- 观测云 API Key ID -->
                 <el-popover
                   :disabled="true"
@@ -690,6 +753,9 @@
 
         'Administrator username or password is not inputed'       : '管理员用户名或密码未填写',
         'Repeated administrator password not match'               : '两次输入的管理员密码不匹配',
+        'Guance OpenAPI URL is not inputed'                       : '观测云 OpenAPI 地址未填写',
+        'Guance OpenWay URL is not inputed'                       : '观测云 OpenWay 地址未填写',
+        'Guance WebSocket URL is not inputed'                     : '观测云 WebSocket 地址未填写',
         'Guance API Key ID is not inputed'                        : '观测云 API Key ID 未填写',
         'Guance API Key is not inputed'                           : '观测云 API Key 未填写',
         'No such Guance Node'                                     : '不存在此观测云节点',
@@ -735,9 +801,11 @@
         'Do not create Guance connector': '不要创建观测云连接器',
         'Provide Guance API Key to create a Guance connector automatically': '请提供观测云 API Key 来自动创建观测云连接器',
 
-        'Guance API Key ID': '观测云 API Key ID',
-
-        'Guance API Key': '观测云 API Key',
+        'Guance OpenAPI URL'  : '观测云 OpenAPI 地址',
+        'Guance OpenWay URL'  : '观测云 OpenWay 地址',
+        'Guance WebSocket URL': '观测云 WebSocket 地址',
+        'Guance API Key ID'   : '观测云 API Key ID',
+        'Guance API Key'      : '观测云 API Key',
 
         'Show more configs': '显示更多配置',
         'Unless necessary, just use the default configuration': '除非必要，使用默认配置即可',
@@ -938,6 +1006,9 @@
             ADMIN_PASSWORD       : 'adminUser',
             ADMIN_PASSWORD_REPEAT: 'adminUser',
             GUANCE_NODE          : 'guance',
+            GUANCE_OPENAPI_URL   : 'guance',
+            GUANCE_OPENWAY_URL   : 'guance',
+            GUANCE_WEBSOCKET_URL : 'guance',
             GUANCE_API_KEY_ID    : 'guance',
             GUANCE_API_KEY       : 'guance',
             MYSQL_HOST           : 'mysql',
@@ -991,6 +1062,9 @@
             ADMIN_PASSWORD       : currentConfig.ADMIN_PASSWORD,
             ADMIN_PASSWORD_REPEAT: currentConfig.ADMIN_PASSWORD_REPEAT,
             GUANCE_NODE          : null,
+            GUANCE_OPENAPI_URL   : null,
+            GUANCE_OPENWAY_URL   : null,
+            GUANCE_WEBSOCKET_URL : null,
             GUANCE_API_KEY_ID    : null,
             GUANCE_API_KEY       : null,
           },
