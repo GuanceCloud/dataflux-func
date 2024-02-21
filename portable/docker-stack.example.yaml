@@ -72,7 +72,13 @@ services:
       replicas: 1
     labels:
       - worker-0
+      - queue-0
       - system-task
+      - queue-4
+      - queue-7
+      - queue-8
+      - queue-9
+      - reserved-for-guance
     volumes:
       - "<INSTALL_DIR>/data:/data"
     logging:
@@ -86,7 +92,7 @@ services:
     environment:
       HOST_HOSTNAME: '{{.Node.Hostname}}' # 宿主机 hostname
       DFF__WORKER_CONCURRENCY: '2'        # 单 Worker 并发进程数
-    command: ./run-worker-by-queue.sh 0
+    command: ./run-worker-by-queue.sh 0 4 7 8 9
 
   worker-1:
     image: <DATAFLUX_FUNC_IMAGE>
@@ -94,6 +100,7 @@ services:
       replicas: 1
     labels:
       - worker-1
+      - queue-1
       - user-task-general
     volumes:
       - "<INSTALL_DIR>/data:/data"
@@ -115,6 +122,7 @@ services:
       replicas: 1
     labels:
       - worker-2
+      - queue-2
       - user-task-crontab-config
     volumes:
       - "<INSTALL_DIR>/data:/data"
@@ -136,6 +144,7 @@ services:
       replicas: 1
     labels:
       - worker-3
+      - queue-3
       - user-task-batch
     volumes:
       - "<INSTALL_DIR>/data:/data"
@@ -151,34 +160,13 @@ services:
       HOST_HOSTNAME: '{{.Node.Hostname}}'
     command: ./run-worker-by-queue.sh 3
 
-  worker-4:
-    image: <DATAFLUX_FUNC_IMAGE>
-    deploy:
-      replicas: 1
-    labels:
-      - worker-4
-      - reserved
-    volumes:
-      - "<INSTALL_DIR>/data:/data"
-    logging:
-      driver: json-file
-      options:
-        max-size: 10m
-        max-file: 10
-    networks:
-      - datafluxfunc
-      - default
-    environment:
-      HOST_HOSTNAME: '{{.Node.Hostname}}'
-      DFF__WORKER_CONCURRENCY: '1'
-    command: ./run-worker-by-queue.sh 4
-
   worker-5:
     image: <DATAFLUX_FUNC_IMAGE>
     deploy:
       replicas: 1
     labels:
       - worker-5
+      - queue-5
       - debugger
     volumes:
       - "<INSTALL_DIR>/data:/data"
@@ -201,6 +189,7 @@ services:
       replicas: 1
     labels:
       - worker-6
+      - queue-6
       - user-task-sub
     volumes:
       - "<INSTALL_DIR>/data:/data"
@@ -215,28 +204,6 @@ services:
     environment:
       HOST_HOSTNAME: '{{.Node.Hostname}}'
     command: ./run-worker-by-queue.sh 6
-
-  worker-789:
-    image: <DATAFLUX_FUNC_IMAGE>
-    deploy:
-      replicas: 1
-    labels:
-      - worker-789
-      - reserved-for-guance
-    volumes:
-      - "<INSTALL_DIR>/data:/data"
-    logging:
-      driver: json-file
-      options:
-        max-size: 10m
-        max-file: 10
-    networks:
-      - datafluxfunc
-      - default
-    environment:
-      HOST_HOSTNAME: '{{.Node.Hostname}}'
-      DFF__WORKER_CONCURRENCY: '1'
-    command: ./run-worker-by-queue.sh 7 8 9
   # WORKER DEFAULT END
 
   # WORKER MINI START
