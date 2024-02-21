@@ -280,7 +280,7 @@
 
               <template v-if="userConfig.GUANCE_NODE">
                 <!-- 观测云 OpenAPI URL -->
-                <el-popover
+                <el-popover v-if="userConfig.GUANCE_NODE === 'private'"
                   :disabled="true"
                   :visible-arrow="false"
                   placement="right"
@@ -301,7 +301,7 @@
                 </el-popover>
 
                 <!-- 观测云 OpenWay URL -->
-                <el-popover
+                <el-popover v-if="userConfig.GUANCE_NODE === 'private'"
                   :disabled="true"
                   :visible-arrow="false"
                   placement="right"
@@ -322,7 +322,7 @@
                 </el-popover>
 
                 <!-- 观测云 WebSocket URL -->
-                <el-popover
+                <el-popover v-if="userConfig.GUANCE_NODE === 'private'"
                   :disabled="true"
                   :visible-arrow="false"
                   placement="right"
