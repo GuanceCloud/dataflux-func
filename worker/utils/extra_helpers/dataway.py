@@ -98,4 +98,4 @@ class DataWay(BaseDataKit):
         if not self.token:
             raise Exception('No Workspace Token specified.')
 
-        super().query(*args, token=self.token, **kwargs)
+        return super().query(*args, token=self.token, **kwargs)
