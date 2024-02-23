@@ -1567,7 +1567,7 @@ export default {
   font-size: 18px;
 }
 .code-editor-action-left {
-  margin: 5px 0 5px 0;
+  margin: 10px 0 10px 0;
   position: absolute;
   background-image: linear-gradient(to left, rgba(255, 255,255, 0) 0%, white 2%);
   padding-right: 25px;
@@ -1583,7 +1583,7 @@ export default {
 }
 .code-editor-action-right {
   float: right;
-  margin: 5px 0 5px 0;
+  margin: 10px 0 10px 0;
   background-image: linear-gradient(to right, rgba(255, 255,255, 0) 0%, white 2%);
   padding-left: 10px;
   position: relative;
