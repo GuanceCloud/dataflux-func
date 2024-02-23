@@ -1190,7 +1190,7 @@ Model.prototype.genWhereStatement = function(filters, options) {
         var searchConditions = [];
         for (var i = 0; i < condition.keys.length; i++) {
           var key = condition.keys[i];
-          searchConditions.push(this.db.whereSqlGenerators.like(key, condition.value));
+          searchConditions.push(this.db.whereSqlGenerator.like(key, condition.value));
         }
         sqlConditions.push('(' + searchConditions.join(' OR ') + ')');
 
@@ -1202,7 +1202,7 @@ Model.prototype.genWhereStatement = function(filters, options) {
 
         var key   = toolkit.asArray(condition.key).join(', ');
         var value = toolkit.asArray(condition.value).join(' ');
-        sqlConditions.push('(' + this.db.whereSqlGenerators.fulltext(key, value) + ')')
+        sqlConditions.push('(' + this.db.whereSqlGenerator.fulltext(key, value) + ')')
 
         break;
 
@@ -1210,10 +1210,10 @@ Model.prototype.genWhereStatement = function(filters, options) {
       default:
         for (var operation in condition) if (condition.hasOwnProperty(operation)) {
           var value = condition[operation];
-          if ('function' !== typeof this.db.whereSqlGenerators[operation]) {
+          if ('function' !== typeof this.db.whereSqlGenerator[operation]) {
             throw Error('Unknown SQL operation: {0}', operation);
           } else {
-            sqlConditions.push('(' + this.db.whereSqlGenerators[operation](field, value) + ')');
+            sqlConditions.push('(' + this.db.whereSqlGenerator[operation](field, value) + ')');
           }
         }
         break;

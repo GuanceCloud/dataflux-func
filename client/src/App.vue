@@ -901,7 +901,7 @@ kbd {
   width: 1.1em !important;
 }
 .el-button .fa {
-  line-height: 0 !important;
+  /* line-height: 0 !important; */
 }
 
 /* Element-UI 修正 */
@@ -924,15 +924,6 @@ kbd {
   z-index: unset;
 }
 
-.el-button--mini,
-.el-input--mini .el-input__inner,
-.el-radio-button--mini .el-radio-button__inner {
-  height: 29px !important;
-}
-.el-form--inline .el-form-item,
-.el-form--inline .el-form-item__content {
-  vertical-align: unset !important;
-}
 .el-form-item__error {
   word-break: break-all;
 }
@@ -1061,13 +1052,14 @@ kbd {
   font-weight: normal;
   color: darkgrey !important;
 }
+.el-radio-button__inner, .el-radio-group {
+  vertical-align: baseline !important;
+}
 .el-radio-button:first-child .el-radio-button__inner {
-  border-top-left-radius: 3px !important;
-  border-bottom-left-radius: 3px !important;
+  border-radius: 3px 0 0 3px !important;
 }
 .el-radio-button:last-child .el-radio-button__inner {
-  border-top-right-radius: 3px !important;
-  border-bottom-right-radius: 3px !important;
+  border-radius: 0 3px 3px 0 !important;
 }
 .el-checkbox.el-transfer-panel__item {
   margin-right: 0px !important;

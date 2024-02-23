@@ -21,6 +21,7 @@ import funcsigs
 from worker.tasks import BaseTask
 from worker.utils import yaml_resources, toolkit
 from worker.utils.extra_helpers import format_sql_v2 as format_sql
+from worker.utils.extra_helpers import WhereSQLGenerator
 from worker.utils.extra_helpers import GuanceHelper, DataKitHelper, DataWayHelper, SidecarHelper
 from worker.utils.extra_helpers import InfluxDBHelper, MySQLHelper, RedisHelper, MemcachedHelper, ClickHouseHelper
 from worker.utils.extra_helpers import PostgreSQLHelper, MongoDBHelper, ElasticSearchHelper, NSQLookupHelper, MQTTHelper, KafkaHelper
@@ -1033,34 +1034,23 @@ class BaseFuncEntityHelper(object):
 
         return None
 
-    def query(self):
+    def query(self, filters=None):
         sql = '''
             SELECT * FROM ??
             '''
         sql_params = [ self._table ]
+
+        if filters:
+            where_clause_list = []
+            for field, conditions in filters.items():
+                for op, value in conditions.items():
+                    where_clause_list.append(f"({WhereSQLGenerator.run(op, field, value)})")
+
+            if where_clause_list:
+                sql += f" WHERE {' AND '.join(where_clause_list)}"
+
         db_res = self._task.db.query(sql, sql_params)
         return db_res
-
-    # def add(self, data):
-    #     sql = '''
-    #         INSERT INTO ?? SET ?
-    #         '''
-    #     sql_params = [ self._table, data ]
-    #     self._task.db.query(sql, sql_params)
-
-    # def modify(self, entity_id, data):
-    #     sql = '''
-    #         UPDATE ?? SET ? WHERE id = ? LIMIT 1
-    #         '''
-    #     sql_params = [ self._table, data, self.resolve_entity_id(entity_id) ]
-    #     self._task.db.query(sql, sql_params)
-
-    # def delete(self, entity_id):
-    #     sql = '''
-    #         DELETE FROM ?? WHERE id = ? LIMIT 1
-    #         '''
-    #     sql_params = [ self._table, self.resolve_entity_id(entity_id) ]
-    #     self._task.db.query(sql, sql_params)
 
 class FuncAuthLinkHelper(BaseFuncEntityHelper):
     _table         = 'biz_main_auth_link'

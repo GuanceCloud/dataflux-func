@@ -1685,20 +1685,35 @@ export function getCodeMirrorThemeName() {
 export function jumpToCodeMirrorLine(codeMirror, cursor) {
   if (!cursor) return;
 
+  // 编辑器高度
+  let margin = parseInt(codeMirror.getWrapperElement().clientHeight / 3);
+
+  // 光标位置
   if ('number' === typeof cursor) {
-    cursor = { line: cursor };
+    cursor = { line: cursor, ch: 0 };
   }
-  codeMirror.setCursor({line: codeMirror.lineCount() - 1});
-  codeMirror.setCursor(cursor);
 
-  setImmediate(() => {
-    let $target    = document.querySelector('.CodeMirror-scroll');
-    let $highlight = document.querySelector('.highlight-text');
-    if (!$target || !$highlight) return;
+  codeMirror.scrollIntoView(cursor, margin);
+};
 
-    let _scrollTo = $highlight.clientHeight * cursor.line - $target.clientHeight * 0.15;
-    $target.scrollTo(0, _scrollTo);
-  });
+export function foldCode(codeMirror, level) {
+  if (!codeMirror) return;
+
+  // 全部展开
+  codeMirror.execCommand('unfoldAll');
+
+  if (level < 0) return;
+
+  // 折叠特定层级
+  let foldBlankCount = (level - 1) * 4;
+  for (let i = 0; i < codeMirror.lineCount(); i++) {
+    let linePreBlank = codeMirror.lineInfo(i).text.trimEnd().match(/^ */)[0] || '';
+    let linePreBlankCount = linePreBlank.length;
+
+    if (foldBlankCount === linePreBlankCount) {
+      codeMirror.foldCode(i);
+    }
+  }
 };
 
 export function getEchartTextStyle() {

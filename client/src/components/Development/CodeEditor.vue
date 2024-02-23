@@ -7,7 +7,11 @@ codeLinesCurr: ', currently {n} line| , currently {n} lines'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Script Setup                                                                         : 脚本设置
+Fold Code   : 折叠代码
+Fold Level 2: 折叠层级 2
+Fold Level 3: 折叠层级 3
+Unfold All  : 全部展开
+
 'Script is under editing in other tab, please wait...'                               : '其他标签页或窗口正在编辑此脚本，请稍后...'
 'Script is under editing in other client, please wait...'                            : '其他客户端正在编辑此脚本，请稍后...'
 Select Target                                                                        : 选择跳转目标
@@ -303,179 +307,182 @@ removedLines: ，刪除 {n} 行
               <code class="code-editor-action-title">
                 <i class="fa fa-file-code-o"></i>
                 {{ data.id }}
-                <el-tooltip :content="$t('Script Setup')" placement="bottom" :enterable="false">
-                  <el-button
-                    type="text"
-                    @click.stop="showSetup">
-                    <i class="fa fa-fw fa-wrench"></i>
-                  </el-button>
-                </el-tooltip>
               </code>
             </div>
             <div class="code-editor-action-breaker hidden-lg-and-up"></div>
             <div class="code-editor-action-right">
-              <el-form :inline="true">
-                <el-form-item v-show="conflictStatus">
-                  <span class="text-bad" v-if="conflictStatus === 'otherTab'">{{ $t('Script is under editing in other tab, please wait...') }}</span>
-                  <span class="text-bad" v-else-if="conflictStatus === 'otherClient'">{{ $t('Script is under editing in other client, please wait...') }}</span>
-                </el-form-item>
+              <div v-show="conflictStatus" class="conflict-info">
+                <i class="fa fa-fw fa-exclamation-triangle"></i>
+                <span v-if="conflictStatus === 'otherTab'">{{ $t('Script is under editing in other tab, please wait...') }}</span>
+                <span v-else-if="conflictStatus === 'otherClient'">{{ $t('Script is under editing in other client, please wait...') }}</span>
+              </div>
 
-                <el-form-item>
-                  <el-select
-                    style="width: 150px"
-                    popper-class="code-font"
-                    v-model="selectedItemId"
-                    size="mini"
-                    filterable
-                    :placeholder="$t('Select Target')">
-                    <el-option v-for="item in selectableItems" :key="item.id" :label="item.name" :value="item.id">
-                      <el-tag v-if="item.type === 'todo'"
-                        size="mini"
-                        class="select-todo-tag" :type="C.TODO_TYPE_MAP.get(item.todoType).tagType">
-                        <i class="fa fa-fw" :class="C.TODO_TYPE_MAP.get(item.todoType).icon"></i>
-                        {{ item.todoType }}
-                      </el-tag>
-                      <el-tag v-else class="select-item-tag" type="info" size="mini">{{ item.type }}</el-tag>
-                      {{ item.name }}
-                    </el-option>
-                  </el-select>
-                </el-form-item>
+              <div>
+                <el-dropdown split-button size="mini" @click="foldCode(1)" @command="foldCode">
+                  {{ $t('Fold Code') }}
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item :command="2">{{ $t('Fold Level 2') }}</el-dropdown-item>
+                    <el-dropdown-item :command="3">{{ $t('Fold Level 3') }}</el-dropdown-item>
+                    <el-dropdown-item :command="-1" divided>{{ $t('Unfold All') }}</el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </div>
 
-                <template v-if="!conflictStatus">
-                  <el-form-item class="hidden-lg-and-up">
-                    <el-tooltip placement="bottom" :enterable="false">
-                      <div slot="content">
-                        {{ $t('Viewport are too narrow') }}<br>
-                        {{ $t('Writing test cases to test your Func is recommended') }}
-                      </div>
-                      <el-tag type="info" size="medium" style="height: 29px">{{ $t('Args') }}</el-tag>
-                    </el-tooltip>
-                  </el-form-item>
+              <div>
+                <el-select
+                  style="width: 150px"
+                  popper-class="code-font"
+                  v-model="selectedItemId"
+                  size="mini"
+                  filterable
+                  :placeholder="$t('Select Target')">
+                  <el-option v-for="item in selectableItems" :key="item.id" :label="item.name" :value="item.id">
+                    <el-tag v-if="item.type === 'todo'"
+                      size="mini"
+                      class="select-todo-tag" :type="C.TODO_TYPE_MAP.get(item.todoType).tagType">
+                      <i class="fa fa-fw" :class="C.TODO_TYPE_MAP.get(item.todoType).icon"></i>
+                      {{ item.todoType }}
+                    </el-tag>
+                    <el-tag v-else class="select-item-tag" type="info" size="mini">{{ item.type }}</el-tag>
+                    {{ item.name }}
+                  </el-option>
+                </el-select>
+              </div>
 
-                  <el-form-item class="hidden-md-and-down">
-                    <el-popover placement="bottom" trigger="hover" width="380" :disabled="!isFuncSelected">
-                      <div>
-                        <el-input
-                          type="textarea"
-                          resize="none"
-                          :autosize="{ minRows: 3, maxRows: 15 }"
-                          :clearable="true"
-                          :placeholder="$t('Arguments (JSON)')"
-                          v-model="funcCallKwargsJSON"
-                          class="code-editor-call-func-kwargs-json">
-                        </el-input>
-                        <InfoBlock type="error" v-if="!isValidFuncCallKwargsJSON" :title="$t('Invalid argument format')" />
-                        <InfoBlock type="info" :title="$t('Arguments should be inputed like {&quot;arg&quot;: value}.') + '\n' + $t('Leave blank or {} when no argument')" />
-                        <InfoBlock type="info" :title="$t('Writing test cases to test your Func is recommended')" />
-                      </div>
-                      <el-input slot="reference"
-                        style="width: 150px; text-overflow: ellipsis;"
-                        size="mini"
-                        :readonly="true"
+              <template v-if="!conflictStatus">
+                <div class="hidden-lg-and-up">
+                  <el-tooltip placement="bottom" :enterable="false">
+                    <div slot="content">
+                      {{ $t('Viewport are too narrow') }}<br>
+                      {{ $t('Writing test cases to test your Func is recommended') }}
+                    </div>
+                    <el-tag type="info" size="medium">{{ $t('Args') }}</el-tag>
+                  </el-tooltip>
+                </div>
+
+                <div class="hidden-md-and-down">
+                  <el-popover placement="bottom" trigger="hover" width="380" :disabled="!isFuncSelected">
+                    <div>
+                      <el-input
+                        type="textarea"
+                        resize="none"
+                        :autosize="{ minRows: 3, maxRows: 15 }"
+                        :clearable="true"
                         :placeholder="$t('Arguments (JSON)')"
-                        :value="funcCallKwargsShowValue"
-                        :disabled="!isFuncSelected"
+                        v-model="funcCallKwargsJSON"
                         class="code-editor-call-func-kwargs-json">
                       </el-input>
-                    </el-popover>
-                  </el-form-item>
+                      <InfoBlock type="error" v-if="!isValidFuncCallKwargsJSON" :title="$t('Invalid argument format')" />
+                      <InfoBlock type="info" :title="$t('Arguments should be inputed like {&quot;arg&quot;: value}.') + '\n' + $t('Leave blank or {} when no argument')" />
+                      <InfoBlock type="info" :title="$t('Writing test cases to test your Func is recommended')" />
+                    </div>
+                    <el-input slot="reference"
+                      style="width: 150px; text-overflow: ellipsis;"
+                      size="mini"
+                      :readonly="true"
+                      :placeholder="$t('Arguments (JSON)')"
+                      :value="funcCallKwargsShowValue"
+                      :disabled="!isFuncSelected"
+                      class="code-editor-call-func-kwargs-json">
+                    </el-input>
+                  </el-popover>
+                </div>
 
-                  <el-form-item>
+                <div>
+                  <el-tooltip placement="bottom" :enterable="false">
+                    <div slot="content">
+                      {{ $t('Run selected Func') }}<br>
+                      {{ $t('Shortcut') }}{{ $t(':') }}<kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>B</kbd>
+                    </div>
+                    <el-button
+                      v-prevent-re-click @click="callFuncDraft"
+                      type="primary" plain
+                      size="mini"
+                      :disabled="!(!!selectedItemId && !workerRunning && isFuncSelected)">
+                      <i class="fa fa-fw fa-play"></i> {{ $t('Run') }}
+                    </el-button>
+                  </el-tooltip>
+                </div>
+
+                <div v-if="isEditable">
+                  <el-button-group>
                     <el-tooltip placement="bottom" :enterable="false">
                       <div slot="content">
-                        {{ $t('Run selected Func') }}<br>
-                        {{ $t('Shortcut') }}{{ $t(':') }}<kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>B</kbd>
+                        {{ $t('Save Script draft') }}<br>
+                        {{ $t('Shortcut') }}{{ $t(':') }}<kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>S</kbd>
                       </div>
                       <el-button
-                        v-prevent-re-click @click="callFuncDraft"
-                        type="primary" plain
-                        size="mini"
-                        :disabled="!(!!selectedItemId && !workerRunning && isFuncSelected)">
-                        <i class="fa fa-fw fa-play"></i> {{ $t('Run') }}
+                        v-prevent-re-click @click="saveScript()"
+                        :disabled="workerRunning"
+                        plain
+                        size="mini">
+                        <i class="fa fa-fw fa-save"></i> <span class="hidden-lg-and-down">{{ $t('Save') }}</span>
                       </el-button>
                     </el-tooltip>
-                  </el-form-item>
 
-                  <el-form-item v-if="isEditable">
-                    <el-button-group>
-                      <el-tooltip placement="bottom" :enterable="false">
-                        <div slot="content">
-                          {{ $t('Save Script draft') }}<br>
-                          {{ $t('Shortcut') }}{{ $t(':') }}<kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>S</kbd>
-                        </div>
-                        <el-button
-                          v-prevent-re-click @click="saveScript()"
-                          :disabled="workerRunning"
-                          plain
-                          size="mini">
-                          <i class="fa fa-fw fa-save"></i> <span class="hidden-lg-and-down">{{ $t('Save') }}</span>
-                        </el-button>
-                      </el-tooltip>
-
-                      <el-tooltip placement="bottom" :enterable="false">
-                        <div slot="content">
-                          {{ $t('Show code diff') }}
-                        </div>
-                        <el-button
-                          @click="showDiff()"
-                          :disabled="workerRunning"
-                          plain
-                          size="mini">
-                          <i class="fa fa-fw fa-code"></i> <span class="hidden-lg-and-down">{{ $t('DIFF') }}</span>
-                        </el-button>
-                      </el-tooltip>
-
-                      <el-tooltip placement="bottom" :enterable="false">
-                        <div slot="content">
-                          {{ $t('Save and publish Script') }}<br>
-                        </div>
-                        <el-button
-                          @click="publishScript"
-                          :disabled="workerRunning"
-                          plain
-                          class="text-main"
-                          size="mini">
-                          <i class="fa fa-fw fa-coffee"></i> {{ $t('Publish') }}
-                        </el-button>
-                      </el-tooltip>
-                    </el-button-group>
-                  </el-form-item>
-                </template>
-
-                <el-form-item>
-                  <el-button-group>
-                    <template v-if="!conflictStatus && isEditable">
-                      <el-tooltip :content="$t('Recover code to latest published version')" placement="bottom" :enterable="false">
-                        <el-button
-                          @click="resetScript"
-                          :disabled="workerRunning"
-                          plain
-                          size="mini"><i class="fa fa-fw fa-history"></i></el-button>
-                      </el-tooltip>
-                    </template>
-
-                    <el-tooltip :content="$t('End editing')" placement="bottom" :enterable="false">
+                    <el-tooltip placement="bottom" :enterable="false">
+                      <div slot="content">
+                        {{ $t('Show code diff') }}
+                      </div>
                       <el-button
-                        @click="endEdit"
+                        @click="showDiff()"
                         :disabled="workerRunning"
                         plain
-                        size="mini"><i class="fa fa-fw fa-sign-out"></i> {{ $t('Exit') }}</el-button>
+                        size="mini">
+                        <i class="fa fa-fw fa-code"></i> <span class="hidden-lg-and-down">{{ $t('DIFF') }}</span>
+                      </el-button>
                     </el-tooltip>
-                  </el-button-group>
-                </el-form-item>
 
-                <el-form-item>
-                  <el-button-group>
-                    <el-tooltip :content="$t('Code Editor setting')" placement="bottom" :enterable="false">
+                    <el-tooltip placement="bottom" :enterable="false">
+                      <div slot="content">
+                        {{ $t('Save and publish Script') }}<br>
+                      </div>
                       <el-button
-                        @click="$refs.codeEditorSetting.open()"
+                        @click="publishScript"
                         :disabled="workerRunning"
                         plain
-                        size="mini"><i class="fa fa-fw fa-cog"></i></el-button>
+                        class="text-main"
+                        size="mini">
+                        <i class="fa fa-fw fa-coffee"></i> {{ $t('Publish') }}
+                      </el-button>
                     </el-tooltip>
                   </el-button-group>
-                </el-form-item>
-              </el-form>
+                </div>
+              </template>
+
+              <div>
+                <el-button-group>
+                  <template v-if="!conflictStatus && isEditable">
+                    <el-tooltip :content="$t('Recover code to latest published version')" placement="bottom" :enterable="false">
+                      <el-button
+                        @click="resetScript"
+                        :disabled="workerRunning"
+                        plain
+                        size="mini"><i class="fa fa-fw fa-history"></i></el-button>
+                    </el-tooltip>
+                  </template>
+
+                  <el-tooltip :content="$t('End editing')" placement="bottom" :enterable="false">
+                    <el-button
+                      @click="endEdit"
+                      :disabled="workerRunning"
+                      plain
+                      size="mini"><i class="fa fa-fw fa-sign-out"></i> {{ $t('Exit') }}</el-button>
+                  </el-tooltip>
+                </el-button-group>
+              </div>
+
+              <div>
+                <el-button-group>
+                  <el-tooltip :content="$t('Code Editor setting')" placement="bottom" :enterable="false">
+                    <el-button
+                      @click="$refs.codeEditorSetting.open()"
+                      :disabled="workerRunning"
+                      plain
+                      size="mini"><i class="fa fa-fw fa-cog"></i></el-button>
+                  </el-tooltip>
+                </el-button-group>
+              </div>
             </div>
 
             <InfoBlock v-if="isLockedByOther" :type="isEditable ? 'warning' : 'error'" :title="$t('This Script is locked by other user ({user})', { user: lockedByUser })" />
@@ -496,8 +503,6 @@ removedLines: ，刪除 {n} 行
 
           <LongTextDialog :title="$t('Diff between published and previously published')" mode="diff" ref="longTextDialog" />
           <CodeEditorSetting :codeMirror="codeMirror" ref="codeEditorSetting" />
-
-          <ScriptSetup ref="setup" />
         </el-container>
       </template>
 
@@ -531,16 +536,12 @@ import * as htmlEscaper from 'html-escaper';
 import FeatureNoticeDialog from '@/components/FeatureNoticeDialog'
 import img_noticeMonkeyPatch from '@/assets/img/notice-monkey-patch.png'
 
-import ScriptSetup from '@/components/Development/ScriptSetup'
-
 export default {
   name: 'CodeEditor',
   components: {
     FeatureNoticeDialog,
     CodeEditorSetting,
     LongTextDialog,
-
-    ScriptSetup,
   },
   watch: {
     $route: {
@@ -737,6 +738,9 @@ export default {
 
       // 保存
       await this._saveCodeDraft();
+    },
+    foldCode(level) {
+      this.T.foldCode(this.codeMirror, level);
     },
     showDiff() {
       let fileTitle = this.data.title ? ` (${this.data.title})` : '';
@@ -1211,9 +1215,6 @@ export default {
         backgroundClass: 'current-func-background highlight-code-line-blink',
       });
     },
-    showSetup() {
-      this.$refs.setup.loadData(this.scriptSetId, this.scriptId);
-    },
   },
   computed: {
     SPLIT_PANE_MAX_PERCENT  : () => 80,
@@ -1500,6 +1501,9 @@ export default {
 
         this.codeMirror.on('change', autoSaveFuncCreator(this.scriptId));
       }
+
+      window.cm = this.codeMirror;
+
     });
   },
   beforeDestroy() {
@@ -1545,6 +1549,10 @@ export default {
 #editor_CodeEditor {
   display: none;
 }
+.conflict-info {
+  color: red;
+  font-size: 12px;
+}
 .el-header {
   box-shadow: 5px 5px 5px lightgrey;
   z-index: 5;
@@ -1559,12 +1567,13 @@ export default {
   font-size: 18px;
 }
 .code-editor-action-left {
-  margin-top: 5px;
-  height: 48px;
+  margin: 5px 0 5px 0;
   position: absolute;
   background-image: linear-gradient(to left, rgba(255, 255,255, 0) 0%, white 2%);
   padding-right: 25px;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
 }
 .code-editor-action-left:hover {
   z-index: 1;
@@ -1574,20 +1583,19 @@ export default {
 }
 .code-editor-action-right {
   float: right;
-  margin-top: 5px;
-  height: 48px;
+  margin: 5px 0 5px 0;
   background-image: linear-gradient(to right, rgba(255, 255,255, 0) 0%, white 2%);
   padding-left: 10px;
   position: relative;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+.code-editor-action-right > div {
+  margin-right: 10px;
 }
 </style>
 <style>
-.code-viewer-action-right .el-radio-group,
-.code-viewer-action-right .el-button-group {
-  position: relative;
-  top: -0.5px;
-}
 #editorContainer_CodeEditor {
   padding: 1px 0 0 5px;
   position: relative;

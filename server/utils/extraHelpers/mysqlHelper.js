@@ -96,7 +96,7 @@ var MySQLHelper = function(logger, config, debug) {
   }
 
   var self = this;
-  self.whereSqlGenerators = {
+  self.whereSqlGenerator = {
     raw: function(f, v) {
       var sql = v;
       return sql;
@@ -326,18 +326,18 @@ var MySQLHelper = function(logger, config, debug) {
       return sqlParts.join(' AND ');
     },
   };
-  self.whereSqlGenerators['=']              = self.whereSqlGenerators.eq;
-  self.whereSqlGenerators['==']             = self.whereSqlGenerators.eq;
-  self.whereSqlGenerators['!=']             = self.whereSqlGenerators.ne;
-  self.whereSqlGenerators['<>']             = self.whereSqlGenerators.ne;
-  self.whereSqlGenerators['<']              = self.whereSqlGenerators.lt;
-  self.whereSqlGenerators['>']              = self.whereSqlGenerators.gt;
-  self.whereSqlGenerators['<=']             = self.whereSqlGenerators.le;
-  self.whereSqlGenerators['>=']             = self.whereSqlGenerators.ge;
-  self.whereSqlGenerators['contains']       = self.whereSqlGenerators.like;
-  self.whereSqlGenerators['contains_ci']    = self.whereSqlGenerators.like_ci;
-  self.whereSqlGenerators['notcontains']    = self.whereSqlGenerators.notlike;
-  self.whereSqlGenerators['notcontains_ci'] = self.whereSqlGenerators.notlike_ci;
+  self.whereSqlGenerator['=']              = self.whereSqlGenerator.eq;
+  self.whereSqlGenerator['==']             = self.whereSqlGenerator.eq;
+  self.whereSqlGenerator['!=']             = self.whereSqlGenerator.ne;
+  self.whereSqlGenerator['<>']             = self.whereSqlGenerator.ne;
+  self.whereSqlGenerator['<']              = self.whereSqlGenerator.lt;
+  self.whereSqlGenerator['>']              = self.whereSqlGenerator.gt;
+  self.whereSqlGenerator['<=']             = self.whereSqlGenerator.le;
+  self.whereSqlGenerator['>=']             = self.whereSqlGenerator.ge;
+  self.whereSqlGenerator['contains']       = self.whereSqlGenerator.like;
+  self.whereSqlGenerator['contains_ci']    = self.whereSqlGenerator.like_ci;
+  self.whereSqlGenerator['notcontains']    = self.whereSqlGenerator.notlike;
+  self.whereSqlGenerator['notcontains_ci'] = self.whereSqlGenerator.notlike_ci;
 
   self.transConn = null;
   self.transConnRing = 0;

@@ -3,7 +3,11 @@ codeLines: '{n} line | {n} lines'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
-Script Setup                                                          : 脚本设置
+Fold Code   : 折叠代码
+Fold Level 2: 折叠层级 2
+Fold Level 3: 折叠层级 3
+Unfold All  : 全部展开
+
 'Script is under editing in other tab, please wait...'                : '其他标签页或窗口正在编辑此脚本，请稍后...'
 'Script is under editing in other client, please wait...'             : '其他客户端正在编辑此脚本，请稍后...'
 Shortcut                                                              : 快捷键
@@ -61,85 +65,86 @@ View Mode: 檢視模式
           <code class="code-viewer-action-title">
             <i class="fa fa-file-code-o"></i>
             {{ data.id }}
-            <el-tooltip :content="$t('Script Setup')" placement="bottom" :enterable="false">
-              <el-button
-                type="text"
-                @click.stop="showScriptSetup">
-                <i class="fa fa-fw fa-wrench"></i>
-              </el-button>
-            </el-tooltip>
           </code>
         </div>
         <div class="code-viewer-action-breaker hidden-lg-and-up"></div>
         <div class="code-viewer-action-right">
-          <el-form :inline="true">
-            <el-form-item v-show="conflictStatus">
-              <span class="text-bad" v-if="conflictStatus === 'otherTab'">{{ $t('Script is under editing in other tab, please wait...') }}</span>
-              <span class="text-bad" v-else-if="conflictStatus === 'otherClient'">{{ $t('Script is under editing in other client, please wait...') }}</span>
-              &#12288;
-              &#12288;
-            </el-form-item>
+          <div v-show="conflictStatus" class="conflict-info">
+            <i class="fa fa-fw fa-exclamation-triangle"></i>
+            <span v-if="conflictStatus === 'otherTab'">{{ $t('Script is under editing in other tab, please wait...') }}</span>
+            <span v-else-if="conflictStatus === 'otherClient'">{{ $t('Script is under editing in other client, please wait...') }}</span>
+          </div>
 
-            <el-form-item>
-              <el-select
-                style="width: 150px"
-                popper-class="code-font"
-                v-model="selectedItemId"
-                size="mini"
-                filterable
-                :placeholder="$t('Select Target')">
-                <el-option v-for="item in selectableItems" :key="item.id" :label="item.name" :value="item.id">
-                  <el-tag v-if="item.type === 'todo'"
-                    size="mini"
-                    class="select-todo-tag" :type="C.TODO_TYPE_MAP.get(item.todoType).tagType">
-                    <i class="fa fa-fw" :class="C.TODO_TYPE_MAP.get(item.todoType).icon"></i>
-                    {{ item.todoType }}
-                  </el-tag>
-                  <el-tag v-else class="select-item-tag" type="info" size="mini">{{ item.type }}</el-tag>
-                  {{ item.name }}
-                </el-option>
-              </el-select>
-            </el-form-item>
+          <div>
+            <el-dropdown split-button size="mini" @click="foldCode(1)" @command="foldCode">
+              {{ $t('Fold Code') }}
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item :command="2">{{ $t('Fold Level 2') }}</el-dropdown-item>
+                <el-dropdown-item :command="3">{{ $t('Fold Level 3') }}</el-dropdown-item>
+                <el-dropdown-item :command="-1" divided>{{ $t('Unfold All') }}</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </div>
 
-            <el-form-item v-if="!conflictStatus">
-              <el-tooltip placement="bottom" :enterable="false">
+          <div>
+            <el-select
+              style="width: 150px"
+              popper-class="code-font"
+              v-model="selectedItemId"
+              size="mini"
+              filterable
+              :placeholder="$t('Select Target')">
+              <el-option v-for="item in selectableItems" :key="item.id" :label="item.name" :value="item.id">
+                <el-tag v-if="item.type === 'todo'"
+                  size="mini"
+                  class="select-todo-tag" :type="C.TODO_TYPE_MAP.get(item.todoType).tagType">
+                  <i class="fa fa-fw" :class="C.TODO_TYPE_MAP.get(item.todoType).icon"></i>
+                  {{ item.todoType }}
+                </el-tag>
+                <el-tag v-else class="select-item-tag" type="info" size="mini">{{ item.type }}</el-tag>
+                {{ item.name }}
+              </el-option>
+            </el-select>
+          </div>
+
+          <div v-if="!conflictStatus">
+            <el-tooltip placement="bottom" :enterable="false">
+              <div slot="content">
+                {{ $t('Shortcut') }}{{ $t(':') }}<kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>E</kbd>
+              </div>
+              <el-button
+                @click="startEdit"
+                type="primary" plain
+                size="mini">
+                <i class="fa fa-fw" :class="[C.CODE_VIEWR_USER_OPERATION_MAP.get(userOperation).icon]"></i> {{ C.CODE_VIEWR_USER_OPERATION_MAP.get(userOperation).name }}</el-button>
+            </el-tooltip>
+          </div>
+
+          <div>
+            <el-radio-group v-model="showMode" size="mini">
+              <el-tooltip placement="bottom" v-for="mode, i in C.CODE_VIEWER_SHOW_MODE" :key="mode.key" :enterable="false">
                 <div slot="content">
-                  {{ $t('Shortcut') }}{{ $t(':') }}<kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>E</kbd>
+                  {{ $t('Shortcut') }}{{ $t(':') }}<kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>{{ i + 1 }}</kbd>
                 </div>
-                <el-button
-                  @click="startEdit"
-                  type="primary" plain
-                  size="mini">
-                  <i class="fa fa-fw" :class="[C.CODE_VIEWR_USER_OPERATION_MAP.get(userOperation).icon]"></i> {{ C.CODE_VIEWR_USER_OPERATION_MAP.get(userOperation).name }}</el-button>
+                <el-radio-button :label="mode.key">{{ mode.name }}</el-radio-button>
               </el-tooltip>
-            </el-form-item>
+            </el-radio-group>
+          </div>
 
-            <el-form-item>
-              <el-radio-group v-model="showMode" size="mini">
-                <el-tooltip placement="bottom" v-for="mode, i in C.CODE_VIEWER_SHOW_MODE" :key="mode.key" :enterable="false">
-                  <div slot="content">
-                    {{ $t('Shortcut') }}{{ $t(':') }}<kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>{{ i + 1 }}</kbd>
-                  </div>
-                  <el-radio-button :label="mode.key">{{ mode.name }}</el-radio-button>
-                </el-tooltip>
-              </el-radio-group>
-            </el-form-item>
+          <div>
+            <el-tooltip :content="$t('Download')" placement="bottom" :enterable="false">
+              <el-button v-prevent-re-click @click="download" plain size="mini">{{ $t('Download {type}', { type: C.CODE_VIEWER_SHOW_MODE_MAP.get(showMode).name } ) }}</el-button>
+            </el-tooltip>
+          </div>
 
-            <el-form-item>
-              <el-tooltip :content="$t('Download')" placement="bottom" :enterable="false">
-                <el-button v-prevent-re-click @click="download" plain size="mini">{{ $t('Download {type}', { type: C.CODE_VIEWER_SHOW_MODE_MAP.get(showMode).name } ) }}</el-button>
-              </el-tooltip>
-            </el-form-item>
-
-            <el-form-item>
-              <el-tooltip :content="$t('Code Editor setting')" placement="bottom" :enterable="false">
-                <el-button
-                  @click="$refs.codeEditorSetting.open()"
-                  plain
-                  size="mini"><i class="fa fa-fw fa-cog"></i></el-button>
-              </el-tooltip>
-            </el-form-item>
-          </el-form>
+          <div>
+            <el-tooltip :content="$t('Code Editor setting')" placement="bottom" :enterable="false">
+              <el-button
+                @click="$refs.codeEditorSetting.open()"
+                plain
+                size="mini"><i class="fa fa-fw fa-cog"></i></el-button>
+            </el-tooltip>
+          </div>
         </div>
 
         <InfoBlock v-if="isLockedByOther" :type="isEditable ? 'warning' : 'error'" :title="$t('This Script is locked by other user ({user})', { user: lockedByUser })" />
@@ -154,7 +159,6 @@ View Mode: 檢視模式
       </el-main>
 
       <CodeEditorSetting :codeMirror="codeMirror" ref="codeEditorSetting" />
-      <ScriptSetup ref="setup" />
     </el-container>
   </transition>
 </template>
@@ -166,14 +170,10 @@ import CodeEditorSetting from '@/components/Development/CodeEditorSetting'
 import { createPatch } from 'diff'
 import FileSaver from 'file-saver';
 
-import ScriptSetup from '@/components/Development/ScriptSetup'
-
 export default {
   name: 'CodeViewer',
   components: {
     CodeEditorSetting,
-
-    ScriptSetup,
   },
   watch: {
     $route: {
@@ -284,6 +284,9 @@ export default {
 
         this.isReady = true;
       });
+    },
+    foldCode(level) {
+      this.T.foldCode(this.codeMirror, level);
     },
     startEdit() {
       this.$router.push({
@@ -425,9 +428,6 @@ export default {
       }
       FileSaver.saveAs(blob, fileName);
     },
-    showSetup() {
-      this.$refs.setup.loadData(this.scriptSetId, this.scriptId);
-    },
   },
   computed: {
     codeMirrorTheme() {
@@ -523,6 +523,7 @@ export default {
       });
 
       this.T.setCodeMirrorReadOnly(this.codeMirror, true);
+    window.cm = this.codeMirror;
     });
   },
   beforeDestroy() {
@@ -544,6 +545,10 @@ export default {
 #editor_CodeViewer {
   display: none;
 }
+.conflict-info {
+  color: red;
+  font-size: 12px;
+}
 .el-header {
   box-shadow: 5px 5px 5px lightgrey;
   z-index: 5;
@@ -558,11 +563,12 @@ export default {
   font-size: 18px;
 }
 .code-viewer-action-left {
-  margin-top: 5px;
-  height: 48px;
+  margin: 5px 0 5px 0;
   position: absolute;
   background-image: linear-gradient(to left, rgba(255, 255,255, 0) 0%, white 2%);
   padding-right: 25px;
+  display: flex;
+  align-items: center;
 }
 .code-viewer-action-left:hover {
   z-index: 1;
@@ -572,20 +578,19 @@ export default {
 }
 .code-viewer-action-right {
   float: right;
-  margin-top: 5px;
-  height: 48px;
+  margin: 5px 0 5px 0;
   background-image: linear-gradient(to right, rgba(255, 255,255, 0) 0%, white 2%);
   padding-left: 10px;
   position: relative;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+.code-viewer-action-right > div {
+  margin-right: 10px;
 }
 </style>
 <style>
-.code-viewer-action-right .el-radio-group,
-.code-viewer-action-right .el-button-group {
-  position: relative;
-  top: -0.5px;
-}
 #viewModeHint {
   position: absolute;
   right: 30px;
