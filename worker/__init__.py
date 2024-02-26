@@ -24,11 +24,13 @@ IMAGE_INFO = yaml_resources.load_file('IMAGE_INFO', os.path.join(BASE_PATH, '../
 LISTINGING_QUEUES = sys.argv[1:]
 
 from worker.utils.log_helper import LogHelper
-from worker.utils.extra_helpers import RedisHelper
+from worker.utils.extra_helpers import RedisHelper, MySQLHelper
 
 LOGGER = LogHelper()
 REDIS  = RedisHelper(logger=LOGGER)
+MYSQL  = MySQLHelper(logger=LOGGER)
 REDIS.skip_log = True
+MYSQL.skip_log = True
 
 # 系统监控
 WORKER_ID                = None

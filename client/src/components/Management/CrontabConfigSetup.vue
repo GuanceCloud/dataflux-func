@@ -22,7 +22,29 @@ Minutes     : 按分钟重复
 Expires     : 有效期
 Note        : 备注
 
+Simple Mode                         : 简单模式
+Advanced Mode                       : 高级模式
+Fill in Crontab expressions directly: 直接填写 Crontab 表达式
+
 '(Fixed Crontab)': （固定Crontab）
+Every minute     : 每分钟
+Every 2 minutes  : 每 2 分钟
+Every 3 minutes  : 每 3 分钟
+Every 5 minutes  : 每 5 分钟
+Every 10 minutes : 每 10 分钟
+Every 15 minutes : 每 15 分钟
+Every 30 minutes : 每 30 分钟
+Every hour       : 每小时
+Every 2 hours    : 每 2 小时
+Every 3 hours    : 每 3 小时
+Every 6 hours    : 每 6 小时
+Every 8 hours    : 每 8 小时
+Every 12 hours   : 每 12 小时
+Every day        : 每天
+Every month      : 每月
+Every 2 months   : 每 2 个月
+Every 3 months   : 每 3 个月
+Every 6 months   : 每 6 个月
 Every weekday    : 不限星期
 SUN              : 周日
 MON              : 周一
@@ -31,19 +53,6 @@ WED              : 周三
 THU              : 周四
 FRI              : 周五
 SAT              : 周六
-Every month      : 每月
-Every 3 months   : 每 3 个月
-Every 6 months   : 每 6 个月
-Every day        : 每天
-Every hour       : 每小时
-Every 2 hours    : 每 2 小时
-Every 3 hours    : 每 3 小时
-Every 6 hours    : 每 6 小时
-Every 12 hours   : 每 12 小时
-Every minute     : 每分钟
-Every 5 minutes  : 每 5 分钟
-Every 15 minutes : 每 15 分钟
-Every 30 minutes : 每 30 分钟
 
 'JSON formated arguments (**kwargs)': 'JSON格式的参数（**kwargs）'
 The Func accepts extra arguments not listed above: 本函数允许传递额外的自定义函数参数
@@ -55,6 +64,8 @@ Please select Func: 请选择执行函数
 Only date-time between 1970 and 2037 are allowed: 只能选择1970年至2037年之间的日期
 Date-time cannot earlier than 1970: 日期不能早于1970年
 Date-time cannot later than 2037: 时间不能晚于2037年
+Crontab expression does support second field: Crontab 表达式不支持秒字段
+Invalid Crontab expression                  : Crontab 表达式不正确
 
 Crontab Config created: 自动触发配置已创建
 Crontab Config saved  : 自动触发配置已保存
@@ -259,98 +270,115 @@ shortcutDays: '{n} 天'
 
             <!-- Crontab配置 -->
             <template v-if="!fixedCrontabExpr">
-              <el-form-item label="Crontab">
-                <code class="crontab-expr-parts crontab-expr-parts-minutes">{{ formCrontabExprParts.minutes }}</code>
-                <code class="crontab-expr-parts crontab-expr-parts-hours">{{ formCrontabExprParts.hours }}</code>
-                <code class="crontab-expr-parts crontab-expr-parts-days">{{ formCrontabExprParts.days }}</code>
-                <code class="crontab-expr-parts crontab-expr-parts-months">{{ formCrontabExprParts.months }}</code>
-                <code class="crontab-expr-parts crontab-expr-parts-weeks">{{ formCrontabExprParts.weeks }}</code>
+              <el-form-item>
+                <el-radio-group v-model="crontabMode" size="mini">
+                  <el-radio-button label="simple">{{ $t('Simple Mode') }}</el-radio-button>
+                  <el-radio-button label="advanced">{{ $t('Advanced Mode') }}</el-radio-button>
+                </el-radio-group>
               </el-form-item>
 
-              <el-form-item :label="$t('Minutes')">
-                <el-checkbox-group v-model="formCrontab.minutes">
-                  <template v-for="(item, index) in MINUTES">
-                    <br v-if="item === 'sep'">
-                    <el-checkbox v-else
-                      border
-                      class="crontab-item-checkbox"
-                      :key="item.expr"
-                      :label="item.expr"
-                      @change="autoFixCrontab">{{ item.name }}</el-checkbox>
-                  </template>
-                </el-checkbox-group>
-              </el-form-item>
+              <template v-if="crontabMode === 'simple'">
+                <el-form-item label="Crontab">
+                  <span class="crontab-expr-parts crontab-expr-parts-minutes">{{ uiCrontabParts.minutes }}</span>
+                  <span class="crontab-expr-parts crontab-expr-parts-hours">{{ uiCrontabParts.hours }}</span>
+                  <span class="crontab-expr-parts crontab-expr-parts-days">{{ uiCrontabParts.days }}</span>
+                  <span class="crontab-expr-parts crontab-expr-parts-months">{{ uiCrontabParts.months }}</span>
+                  <span class="crontab-expr-parts crontab-expr-parts-weeks">{{ uiCrontabParts.weeks }}</span>
+                </el-form-item>
 
-              <el-form-item :label="$t('Hours')">
-                <el-checkbox-group v-model="formCrontab.hours">
-                  <template v-for="(item, index) in HOURS">
-                    <br v-if="item === 'sep'">
-                    <el-checkbox v-else
-                      border
-                      class="crontab-item-checkbox"
-                      :key="item.expr"
-                      :label="item.expr"
-                      @change="autoFixCrontab">{{ item.name }}</el-checkbox>
-                  </template>
-                </el-checkbox-group>
-              </el-form-item>
+                <el-form-item :label="$t('Minutes')">
+                  <el-checkbox-group v-model="formCrontab.minutes">
+                    <template v-for="(item, index) in MINUTES">
+                      <br v-if="item === 'sep'">
+                      <el-checkbox v-else
+                        border
+                        class="crontab-item-checkbox"
+                        :key="item.expr"
+                        :label="item.expr"
+                        :size="index === 0 ? null : 'mini'"
+                        @change="onUICrontabChange">{{ item.name }}</el-checkbox>
+                    </template>
+                  </el-checkbox-group>
+                </el-form-item>
 
-              <el-form-item :label="$t('Days')">
-                <el-checkbox-group v-model="formCrontab.days">
-                  <template v-for="(item, index) in DAYS">
-                    <br v-if="item === 'sep'">
-                    <el-checkbox v-else
-                      border
-                      class="crontab-item-checkbox"
-                      :key="item.expr"
-                      :label="item.expr"
-                      @change="autoFixCrontab">{{ item.name }}</el-checkbox>
-                  </template>
-                </el-checkbox-group>
-              </el-form-item>
+                <el-form-item :label="$t('Hours')">
+                  <el-checkbox-group v-model="formCrontab.hours">
+                    <template v-for="(item, index) in HOURS">
+                      <br v-if="item === 'sep'">
+                      <el-checkbox v-else
+                        border
+                        class="crontab-item-checkbox"
+                        :key="item.expr"
+                        :label="item.expr"
+                        :size="index === 0 ? null : 'mini'"
+                        @change="onUICrontabChange">{{ item.name }}</el-checkbox>
+                    </template>
+                  </el-checkbox-group>
+                </el-form-item>
 
-              <el-form-item :label="$t('Months')">
-                <el-checkbox-group v-model="formCrontab.months">
-                  <template v-for="(item, index) in MONTHS">
-                    <br v-if="item === 'sep'">
-                    <el-checkbox v-else
-                      border
-                      class="crontab-item-checkbox"
-                      :key="item.expr"
-                      :label="item.expr"
-                      @change="autoFixCrontab">{{ item.name }}</el-checkbox>
-                  </template>
-                </el-checkbox-group>
-              </el-form-item>
+                <el-form-item :label="$t('Days')">
+                  <el-checkbox-group v-model="formCrontab.days">
+                    <template v-for="(item, index) in DAYS">
+                      <br v-if="item === 'sep'">
+                      <el-checkbox v-else
+                        border
+                        class="crontab-item-checkbox"
+                        :key="item.expr"
+                        :label="item.expr"
+                        :size="index === 0 ? null : 'mini'"
+                        @change="onUICrontabChange">{{ item.name }}</el-checkbox>
+                    </template>
+                  </el-checkbox-group>
+                </el-form-item>
 
-              <el-form-item :label="$t('Weekdays')">
-                <el-checkbox-group v-model="formCrontab.weeks">
-                  <template v-for="(item, index) in WEEKS">
-                    <br v-if="item === 'sep'">
-                    <el-checkbox v-else
-                      border
-                      class="crontab-item-checkbox"
-                      :key="item.expr"
-                      :label="item.expr"
-                      @change="autoFixCrontab">{{ item.name }}</el-checkbox>
-                  </template>
-                </el-checkbox-group>
-              </el-form-item>
+                <el-form-item :label="$t('Months')">
+                  <el-checkbox-group v-model="formCrontab.months">
+                    <template v-for="(item, index) in MONTHS">
+                      <br v-if="item === 'sep'">
+                      <el-checkbox v-else
+                        border
+                        class="crontab-item-checkbox"
+                        :key="item.expr"
+                        :label="item.expr"
+                        :size="index === 0 ? null : 'mini'"
+                        @change="onUICrontabChange">{{ item.name }}</el-checkbox>
+                    </template>
+                  </el-checkbox-group>
+                </el-form-item>
 
-              <el-form-item label="Crontab">
-                <code class="crontab-expr-parts crontab-expr-parts-minutes">{{ formCrontabExprParts.minutes }}</code>
-                <code class="crontab-expr-parts crontab-expr-parts-hours">{{ formCrontabExprParts.hours }}</code>
-                <code class="crontab-expr-parts crontab-expr-parts-days">{{ formCrontabExprParts.days }}</code>
-                <code class="crontab-expr-parts crontab-expr-parts-months">{{ formCrontabExprParts.months }}</code>
-                <code class="crontab-expr-parts crontab-expr-parts-weeks">{{ formCrontabExprParts.weeks }}</code>
+                <el-form-item :label="$t('Weekdays')">
+                  <el-checkbox-group v-model="formCrontab.weeks">
+                    <template v-for="(item, index) in WEEKS">
+                      <br v-if="item === 'sep'">
+                      <el-checkbox v-else
+                        border
+                        class="crontab-item-checkbox"
+                        :key="item.expr"
+                        :label="item.expr"
+                        :size="index === 0 ? null : 'mini'"
+                        @change="onUICrontabChange">{{ item.name }}</el-checkbox>
+                    </template>
+                  </el-checkbox-group>
+                </el-form-item>
+
+                <el-form-item label="Crontab">
+                  <span class="crontab-expr-parts crontab-expr-parts-minutes">{{ uiCrontabParts.minutes }}</span>
+                  <span class="crontab-expr-parts crontab-expr-parts-hours">{{ uiCrontabParts.hours }}</span>
+                  <span class="crontab-expr-parts crontab-expr-parts-days">{{ uiCrontabParts.days }}</span>
+                  <span class="crontab-expr-parts crontab-expr-parts-months">{{ uiCrontabParts.months }}</span>
+                  <span class="crontab-expr-parts crontab-expr-parts-weeks">{{ uiCrontabParts.weeks }}</span>
+                </el-form-item>
+              </template>
+              <el-form-item v-show="crontabMode === 'advanced'" label="Crontab" prop="crontab">
+                <el-input maxlength="60" v-model="form.crontab" :placeholder="$t('Fill in Crontab expressions directly')"></el-input>
               </el-form-item>
             </template>
             <el-form-item v-else label="固定 Crontab">
-              <code class="crontab-expr-parts crontab-expr-parts-minutes">{{ fixedCrontabExprParts.minutes }}</code>
-              <code class="crontab-expr-parts crontab-expr-parts-hours">{{ fixedCrontabExprParts.hours }}</code>
-              <code class="crontab-expr-parts crontab-expr-parts-days">{{ fixedCrontabExprParts.days }}</code>
-              <code class="crontab-expr-parts crontab-expr-parts-months">{{ fixedCrontabExprParts.months }}</code>
-              <code class="crontab-expr-parts crontab-expr-parts-weeks">{{ fixedCrontabExprParts.weeks }}</code>
+              <span class="crontab-expr-parts crontab-expr-parts-minutes">{{ fixedCrontabParts.minutes }}</span>
+              <span class="crontab-expr-parts crontab-expr-parts-hours">{{ fixedCrontabParts.hours }}</span>
+              <span class="crontab-expr-parts crontab-expr-parts-days">{{ fixedCrontabParts.days }}</span>
+              <span class="crontab-expr-parts crontab-expr-parts-months">{{ fixedCrontabParts.months }}</span>
+              <span class="crontab-expr-parts crontab-expr-parts-weeks">{{ fixedCrontabParts.weeks }}</span>
             </el-form-item>
             <!-- Crontab配置结束 -->
 
@@ -386,6 +414,8 @@ shortcutDays: '{n} 天'
 </template>
 
 <script>
+import * as CronParser from 'cron-parser';
+
 export default {
   name: 'CrontabConfigSetup',
   components: {
@@ -425,6 +455,7 @@ export default {
         this.T.jsonClear(this.form);
         this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG');
         this.data = {};
+        this.crontabMode = 'simple';
 
       } else {
         this.pageMode = 'setup';
@@ -434,6 +465,7 @@ export default {
         if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
+        this.crontabMode = this.matchSimpleMode ? 'simple' : 'advanced';
 
         let nextForm = {};
         Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
@@ -493,16 +525,16 @@ export default {
         alert: { okMessage: this.$t('Crontab Config created') },
       };
 
-      // 添加函数调用参数kwargsJSON
+      // 添加函数调用参数 kwargsJSON
       try {
         opt.body.data.funcCallKwargsJSON = JSON.parse(this.form.funcCallKwargsJSON);
       } catch(err) {
         return this.T.alert(`${this.$t('Invalid argument format')}<br>${err.toString()}`);
       }
 
-      if (!this.fixedCrontabExpr) {
-        // 添加Crontab表达式
-        opt.body.data.crontab = this.formCrontabExpr.trim() || null;
+      // 简单模式生成 Crontab 表达式
+      if (!this.fixedCrontabExpr && this.crontabMode === 'simple') {
+        opt.body.data.crontab = this.uiCrontabExpr.trim() || null;
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/crontab-configs/do/add', opt);
@@ -521,16 +553,16 @@ export default {
         alert : { okMessage: this.$t('Crontab Config saved') },
       };
 
-      // 添加函数调用参数kwargsJSON
+      // 添加函数调用参数 kwargsJSON
       try {
         opt.body.data.funcCallKwargsJSON = JSON.parse(this.form.funcCallKwargsJSON);
       } catch(err) {
         return this.T.alert(`${this.$t('Invalid argument format')}<br>${err.toString()}`);
       }
 
-      if (!this.fixedCrontabExpr) {
-        // 添加Crontab表达式
-        opt.body.data.crontab = this.formCrontabExpr.trim() || null;
+      // 简单模式生成 Crontab 表达式
+      if (!this.fixedCrontabExpr && this.crontabMode === 'simple') {
+        opt.body.data.crontab = this.uiCrontabExpr.trim() || null;
       }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/crontab-configs/:id/do/modify', opt);
@@ -586,7 +618,7 @@ export default {
       this.showAddTag = false;
       this.newTag     = '';
     },
-    autoFixCrontab() {
+    onUICrontabChange() {
       let sortFunc = (a, b) => {
         return parseInt(a) - parseInt(b);
       }
@@ -617,7 +649,7 @@ export default {
 
       this.formCrontabCache = this.T.jsonCopy(this.formCrontab);
     },
-    getNumberList(fixedItems, start, end, step, wrapEach) {
+    _getNumberList(fixedItems, start, end, step, wrapEach) {
       step = step || 1;
 
       let list = fixedItems || [];
@@ -649,6 +681,47 @@ export default {
         4: 'weeks',
       };
     },
+
+    MINUTES() {
+      return this._getNumberList([
+        {expr: '*', name: this.$t('Every minute')},
+        'sep',
+        {expr: '*/2', name: this.$t('Every 2 minutes')},
+        {expr: '*/3', name: this.$t('Every 3 minutes')},
+        {expr: '*/5', name: this.$t('Every 5 minutes')},
+        'sep',
+        {expr: '*/10', name: this.$t('Every 10 minutes')},
+        {expr: '*/15', name: this.$t('Every 15 minutes')},
+        {expr: '*/30', name: this.$t('Every 30 minutes')},
+        'sep',
+      ], 0, 59, 5, 6);
+    },
+    HOURS() {
+      return this._getNumberList([
+        {expr: '*', name: this.$t('Every hour')},
+        'sep',
+        {expr: '*/2', name: this.$t('Every 2 hours')},
+        {expr: '*/3', name: this.$t('Every 3 hours')},
+        {expr: '*/6', name: this.$t('Every 6 hours')},
+        {expr: '*/8', name: this.$t('Every 8 hours')},
+        'sep',
+      ], 0, 23, 1, 6);
+    },
+    DAYS() {
+      return this._getNumberList([
+        {expr: '*', name: this.$t('Every day')},
+        'sep',
+      ], 1, 31, 1, 5);
+    },
+    MONTHS() {
+      return this._getNumberList([
+        {expr: '*', name: this.$t('Every month')},
+        'sep',
+        {expr: '*/3', name: this.$t('Every 3 months')},
+        {expr: '*/6', name: this.$t('Every 6 months')},
+        'sep',
+      ], 1, 12, 1, 6);
+    },
     WEEKS() {
       return [
         {expr: '*', name: this.$t('Every weekday')},
@@ -663,40 +736,18 @@ export default {
         {expr: '0', name: this.$t('SUN')},
       ];
     },
-    MONTHS() {
-      return this.getNumberList([
-        {expr: '*', name: this.$t('Every month')},
-        'sep',
-        {expr: '*/3', name: this.$t('Every 3 months')},
-        {expr: '*/6', name: this.$t('Every 6 months')},
-        'sep',
-      ], 1, 12, 1, 6);
-    },
-    DAYS() {
-      return this.getNumberList([
-        {expr: '*', name: this.$t('Every day')},
-        'sep',
-      ], 1, 31, 1, 5);
-    },
-    HOURS() {
-      return this.getNumberList([
-        {expr: '*', name: this.$t('Every hour')},
-        'sep',
-        {expr: '*/2', name: this.$t('Every 2 hours')},
-        {expr: '*/3', name: this.$t('Every 3 hours')},
-        {expr: '*/6', name: this.$t('Every 6 hours')},
-        'sep',
-      ], 0, 23, 1, 6);
-    },
-    MINUTES() {
-      return this.getNumberList([
-        {expr: '*', name: this.$t('Every minute')},
-        'sep',
-        {expr: '*/5', name: this.$t('Every 5 minutes')},
-        {expr: '*/15', name: this.$t('Every 15 minutes')},
-        {expr: '*/30', name: this.$t('Every 30 minutes')},
-        'sep',
-      ], 0, 59, 5, 6);
+    matchSimpleMode() {
+      let crontabParts = this.data.crontab.split(' ');
+      for (let i = 0; i < crontabParts.length; i++ ) {
+        let _field = this.CRONTAB_PARTS_MAP[i];
+        let contabSimpleModeOptions = this[_field.toUpperCase()];
+        let _partList = crontabParts[i].split(',');
+
+        if (contabSimpleModeOptions.filter(item => _partList.indexOf(item.expr) >= 0).length != _partList.length) {
+          return false;
+        }
+      }
+      return true;
     },
 
     pageTitle() {
@@ -726,36 +777,36 @@ export default {
         return null;
       }
     },
-    fixedCrontabExprParts() {
+    fixedCrontabParts() {
       if (!this.fixedCrontabExpr) {
         return null;
       } else {
         let _parts = this.fixedCrontabExpr.split(' ');
         return {
-          weeks  : _parts[4],
-          months : _parts[3],
-          days   : _parts[2],
-          hours  : _parts[1],
           minutes: _parts[0],
+          hours  : _parts[1],
+          days   : _parts[2],
+          months : _parts[3],
+          weeks  : _parts[4],
         };
       }
     },
-    formCrontabExprParts() {
+    uiCrontabParts() {
       return {
-        weeks  : this.formCrontab.weeks.join(','),
-        months : this.formCrontab.months.join(','),
-        days   : this.formCrontab.days.join(','),
-        hours  : this.formCrontab.hours.join(','),
         minutes: this.formCrontab.minutes.join(','),
+        hours  : this.formCrontab.hours.join(','),
+        days   : this.formCrontab.days.join(','),
+        months : this.formCrontab.months.join(','),
+        weeks  : this.formCrontab.weeks.join(','),
       };
     },
-    formCrontabExpr() {
+    uiCrontabExpr() {
       return [
-        this.formCrontabExprParts.minutes,
-        this.formCrontabExprParts.hours,
-        this.formCrontabExprParts.days,
-        this.formCrontabExprParts.months,
-        this.formCrontabExprParts.weeks,
+        this.uiCrontabParts.minutes,
+        this.uiCrontabParts.hours,
+        this.uiCrontabParts.days,
+        this.uiCrontabParts.months,
+        this.uiCrontabParts.weeks,
       ].join(' ').trim();
     },
     datetimePickerOptions() {
@@ -796,15 +847,17 @@ export default {
       showAddTag : false,
       newTag     : '',
 
+      crontabMode: 'simple',
+
       form: {
         id                : null,
         funcId            : null,
         funcCallKwargsJSON: null,
+        crontab           : null,
         tagsJSON          : [],
         expireTime        : null,
         taskRecordLimit   : this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG'),
         note              : null,
-        // crontab 单独处理
       },
 
       formCrontabCache: {
@@ -887,9 +940,31 @@ export default {
             },
           }
         ],
+        crontab: [
+          {
+            trigger: 'change',
+            validator: (rule, value, callback) => {
+              if (this.crontabMode === 'advanced') {
+                try {
+                  let parsedSecond = CronParser.parseExpression(value).fields.second;
+                  if (parsedSecond.length !== 1 || parsedSecond[0] !== 0) {
+                    return callback(new Error(this.$t('Crontab expression does support second field')));
+                  }
+
+                } catch(err) {
+                  return callback(new Error(this.$t('Invalid Crontab expression')));
+                }
+              }
+              return callback();
+            },
+          }
+        ],
       }
     }
   },
+  mounted() {
+    window.vmc = this;
+  }
 }
 </script>
 
@@ -914,8 +989,9 @@ export default {
   float: right
 }
 .crontab-expr-parts {
-  font-size: xx-large;
+  font-size: 35px;
   margin-right: 20px;
+  vertical-align: middle;
 }
 .crontab-expr-parts-weeks {
   color: brown;

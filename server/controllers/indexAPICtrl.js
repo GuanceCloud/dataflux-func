@@ -393,7 +393,6 @@ exports.systemInfo = function(req, res, next) {
     _TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG: CONFIG._TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG,
     _TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH         : CONFIG._TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH,
 
-
     // 来自路由
     _RESOURCE_UPLOAD_FILE_SIZE_LIMIT: toolkit.toBytes(ROUTE.resourceAPI.upload.files.$limitSize),
   };
