@@ -230,6 +230,14 @@ class WhereSQLGenerator(object):
         'notcontains_ci': 'notlike_ci',
 
         'in': 'in_',
+
+        'jsonarrayhas'   : 'json_array_has',
+        'jsonarrayhasany': 'json_array_has_any',
+        'jsonarrayhasany': 'json_array_has_all',
+        'jsonsearchone'  : 'json_search_one',
+        'jsonsearchnone' : 'json_search_none',
+        'jsonsearchany'  : 'json_search_any',
+        'jsonsearchall'  : 'json_search_all',
     }
 
     @classmethod
@@ -372,6 +380,60 @@ class WhereSQLGenerator(object):
         v = toolkit.as_array(v)
         values = [escape_sql_param(x) for x in v]
         return f"{f} NOT IN ({', '.join(values)})"
+
+    @classmethod
+    def json_array_has(cls, f, v):
+        return f"JSON_CONTAINS({f}, {escape_sql_param(v)})"
+
+    @classmethod
+    def json_array_has_any(cls, f, v):
+        v = toolkit.as_array(v)
+        sql_parts = []
+        for vv in v:
+            sql_parts.append(f"JSON_CONTAINS({f}, {escape_sql_param(vv)})")
+
+        return ' OR '.join(sql_parts)
+
+    @classmethod
+    def json_array_has_any(cls, f, v):
+        v = toolkit.as_array(v)
+        sql_parts = []
+        for vv in v:
+            sql_parts.append(f"JSON_CONTAINS({f}, {escape_sql_param(vv)})")
+
+        return ' AND '.join(sql_parts)
+
+    @classmethod
+    def json_search_one(cls, f, v):
+        _field, _path = f.split('->')
+        return f"JSON_SEARCH({_field}, 'one', {escape_sql_param(v)}, NULL, {escape_sql_param(_path)}) IS NOT NULL"
+
+    @classmethod
+    def json_search_none(cls, f, v):
+        _field, _path = f.split('->')
+        return f"JSON_SEARCH({_field}, 'one', {escape_sql_param(v)}, NULL, {escape_sql_param(_path)}) IS NULL"
+
+    @classmethod
+    def json_search_any(cls, f, v):
+        v = toolkit.as_array(v)
+
+        _field, _path = f.split('->')
+        sql_parts = []
+        for vv in v:
+            sql_parts.append(f"JSON_SEARCH({_field}, 'one', {escape_sql_param(vv)}, NULL, {escape_sql_param(_path)}) IS NOT NULL")
+
+        return ' OR '.join(sql_parts)
+
+    @classmethod
+    def json_search_all(cls, f, v):
+        v = toolkit.as_array(v)
+
+        _field, _path = f.split('->')
+        sql_parts = []
+        for vv in v:
+            sql_parts.append(f"JSON_SEARCH({_field}, 'one', {escape_sql_param(vv)}, NULL, {escape_sql_param(_path)}) IS NOT NULL")
+
+        return ' ALL '.join(sql_parts)
 
 from .guance_helper          import GuanceHelper
 from .datakit_helper         import DataKitHelper

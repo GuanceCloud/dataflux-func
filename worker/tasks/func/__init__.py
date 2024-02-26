@@ -1034,11 +1034,13 @@ class BaseFuncEntityHelper(object):
 
         return None
 
-    def query(self, filters=None):
+    def query(self, fields=None, filters=None):
+        fields = toolkit.as_array_str(fields) or '*'
+
         sql = '''
-            SELECT * FROM ??
+            SELECT ?? FROM ??
             '''
-        sql_params = [ self._table ]
+        sql_params = [ fields, self._table ]
 
         if filters:
             where_clause_list = []

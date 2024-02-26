@@ -737,6 +737,8 @@ export default {
       ];
     },
     matchSimpleMode() {
+      if (!this.data || !this.data.crontab) return false;
+
       let crontabParts = this.data.crontab.split(' ');
       for (let i = 0; i < crontabParts.length; i++ ) {
         let _field = this.CRONTAB_PARTS_MAP[i];
@@ -944,7 +946,7 @@ export default {
           {
             trigger: 'change',
             validator: (rule, value, callback) => {
-              if (this.crontabMode === 'advanced') {
+              if (this.crontabMode === 'advanced' && value) {
                 try {
                   let parsedSecond = CronParser.parseExpression(value).fields.second;
                   if (parsedSecond.length !== 1 || parsedSecond[0] !== 0) {
