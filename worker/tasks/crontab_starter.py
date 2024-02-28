@@ -28,14 +28,6 @@ class CrontabStarter(BaseTask):
         pause_all_crontab_configs_flag = self.cache_db.get(cache_key)
         return bool(pause_all_crontab_configs_flag)
 
-    def filter_crontab_config(self, crontab_config):
-        crontab = crontab_config.get('crontab')
-        if not crontab or not toolkit.is_valid_crontab(crontab):
-            return False
-
-        timezone = crontab_config.get('timezone') or CONFIG['TIMEZONE']
-        return toolkit.is_match_crontab(crontab, self.trigger_time, timezone)
-
     def prepare_contab_config(self, crontab_config):
         crontab_config['funcCallKwargs'] = crontab_config.get('funcCallKwargsJSON') or {}
         if isinstance(crontab_config['funcCallKwargs'], str):
@@ -48,6 +40,14 @@ class CrontabStarter(BaseTask):
         crontab_config['crontab'] = crontab_config.get('tempCrontab') or crontab_config['funcExtraConfig'].get('fixedCrontab') or crontab_config.get('crontab')
 
         return crontab_config
+
+    def filter_crontab_config(self, crontab_config):
+        crontab = crontab_config.get('crontab')
+        if not crontab or not toolkit.is_valid_crontab(crontab):
+            return False
+
+        timezone = crontab_config.get('timezone') or CONFIG['TIMEZONE']
+        return toolkit.is_match_crontab(crontab, self.trigger_time, timezone)
 
     def get_integration_crontab_configs(self):
         sql = '''
@@ -270,7 +270,17 @@ class CrontabManualStarter(CrontabStarter):
         if not crontab_configs:
             return None
 
-        crontab_config = self.prepare_contab_config(crontab_configs[0])
+        crontab_config = crontab_configs[0]
+
+        # 优先使用临时 Crontab
+        cache_key = toolkit.get_global_cache_key('tempConfig', 'crontabConfig')
+        temp_config = self.cache_db.hget(cache_key, crontab_config['id']) or {}
+        if temp_config:
+            temp_config = toolkit.json_loads(temp_config)
+            if not temp_config['expireTime'] or temp_config['expireTime'] >= self.trigger_time:
+                crontab_config['tempCrontab'] = temp_config['tempCrontab']
+
+        crontab_config = self.prepare_contab_config(crontab_config)
         return crontab_config
 
     def run(self, **kwargs):

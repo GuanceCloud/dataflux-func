@@ -1,3 +1,7 @@
+<i18n locale="zh-CN" lang="yaml">
+min: 分
+</i18n>
+
 <template>
   <span>
     <template v-if="T.notNothing(duration)">
@@ -84,16 +88,22 @@ export default {
       return parseInt((this.dataS % this.YEAR_SECONDS) / this.DAY_SECONDS);
     },
     hours() {
+      if (this.dataS > 3600 * 24 * 365) return null;
+
       if (this.T.isNothing(this.duration)) return null;
       if (this.dataS < this.HOUR_SECONDS) return 0;
       return parseInt((this.dataS % this.DAY_SECONDS) / this.HOUR_SECONDS);
     },
     minutes() {
+      if (this.dataS > 3600 * 24) return null;
+
       if (this.T.isNothing(this.duration)) return null;
       if (this.dataS < this.MINUTE_SECONDS) return 0;
       return parseInt((this.dataS % this.HOUR_SECONDS) / this.MINUTE_SECONDS);
     },
     seconds() {
+      if (this.dataS > 3600) return null;
+
       if (this.T.isNothing(this.duration)) return null;
       if (Number.isInteger(this.dataS)) {
         return this.dataS % this.MINUTE_SECONDS;
