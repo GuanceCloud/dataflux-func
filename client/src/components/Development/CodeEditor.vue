@@ -1,11 +1,3 @@
-<i18n locale="en" lang="yaml">
-addedLines   : 'Added {n} line | Added {n} lines'
-removedLines : ', Removed {n} Line | , Removed {n} Lines'
-codeLines    : '{n} line | {n} lines'
-codeLinesPrev: 'previously {n} line | previously {n} lines'
-codeLinesCurr: ', currently {n} line| , currently {n} lines'
-</i18n>
-
 <i18n locale="zh-CN" lang="yaml">
 Fold Code   : 折叠代码
 Fold Level 2: 折叠层级 2
@@ -32,11 +24,6 @@ End editing                                                                     
 Code Editor setting                                                                  : 代码编辑器设置
 This is a built-in Script, code will be reset when the system restarts               : 这是一个内置脚本，代码会在系统重启后复位
 This Script is locked by other user ({user})                                         : 当前脚本被其他用户（{user}）锁定
-addedLines                                                                           : '新增 {n} 行'
-removedLines                                                                         : '，删除 {n} 行'
-codeLines                                                                            : '共 {n} 行代码'
-codeLinesPrev                                                                        : '修改前共 {n} 行代码'
-codeLinesCurr                                                                        : '，修改后共 {n} 行代码'
 Script is modified but NOT published yet                                             : 脚本已修改但尚未发布
 Script is published                                                                  : 脚本已发布
 Diff between published and previously published                                      : 发布前后差异
@@ -126,6 +113,9 @@ Duplicated Func names: 函數名重複
 Duplicated names of Funcs decorated by @DFF.API(...): 被@DFF.API(...)裝飾的函數存在重名
 End editing: 結束編輯
 Executed Func: 執行函數
+Fold Code: 摺疊代碼
+Fold Level 2: 摺疊層級 2
+Fold Level 3: 摺疊層級 3
 Func exection result or log message will be shown here: 函數執行結果與日誌信息將顯示在此處
 Func is running. If it is not responding for a long time, please try refreshing.: 函數執行中，長時間無響應後再嘗試刷新頁面
 ? Func is running. It will wait at most {seconds} for the result. If it is not responding for a long time, please try refreshing.
@@ -159,7 +149,6 @@ Save and publish Script: 保存併發布
 Saved Draft Code: 已保存的草稿代碼
 Saving Script failed: 保存腳本失敗
 Script Error: 腳本錯誤
-Script Setup: 腳本設置
 Script executing failed. Please check your code: 腳本執行失敗，請檢查代碼是否存在錯誤
 Script has been reset to previous version: 腳本已經復位到上一個版本
 Script is modified but NOT published yet: 腳本已修改但尚未發佈
@@ -186,17 +175,13 @@ This Script is locked by other user ({user}): 當前腳本被其他用户（{use
 This Script is not published, it will take effect after the Script is published: 當前腳本尚未發佈，腳本只有發佈後才會生效
 This is a built-in Script, code will be reset when the system restarts: 這是一個內置腳本，代碼會在系統重啓後復位
 Time Cost: 函數執行耗時
+Unfold All: 全部展開
 Viewport are too narrow: 當前可視寬度太窄
 Waiting Func response timeout: 等待函數響應超時
 Waiting Timeout: 等待超時
 Worker no response, please check the status of this system: 工作單元沒有響應，請檢查系統狀態
 Writing test cases to test your Func is recommended: 建議編寫測試用例來測試您的函數
 You can continue with other operations: 你可以繼續進行其他操作
-addedLines: 新增 {n} 行
-codeLines: 共 {n} 行代碼
-codeLinesCurr: ，修改後共 {n} 行代碼
-codeLinesPrev: 修改前共 {n} 行代碼
-removedLines: ，刪除 {n} 行
 </i18n>
 <i18n locale="zh-TW" lang="yaml">
 Are you sure you want to publish the Script?: 是否確認釋出此指令碼？
@@ -219,6 +204,9 @@ Duplicated Func names: 函式名重複
 Duplicated names of Funcs decorated by @DFF.API(...): 被@DFF.API(...)裝飾的函式存在重名
 End editing: 結束編輯
 Executed Func: 執行函式
+Fold Code: 摺疊程式碼
+Fold Level 2: 摺疊層級 2
+Fold Level 3: 摺疊層級 3
 Func exection result or log message will be shown here: 函式執行結果與日誌資訊將顯示在此處
 Func is running. If it is not responding for a long time, please try refreshing.: 函式執行中，長時間無響應後再嘗試重新整理頁面
 ? Func is running. It will wait at most {seconds} for the result. If it is not responding for a long time, please try refreshing.
@@ -252,7 +240,6 @@ Save and publish Script: 儲存併發布
 Saved Draft Code: 已儲存的草稿程式碼
 Saving Script failed: 儲存指令碼失敗
 Script Error: 指令碼錯誤
-Script Setup: 指令碼設定
 Script executing failed. Please check your code: 指令碼執行失敗，請檢查程式碼是否存在錯誤
 Script has been reset to previous version: 指令碼已經復位到上一個版本
 Script is modified but NOT published yet: 指令碼已修改但尚未釋出
@@ -279,17 +266,13 @@ This Script is locked by other user ({user}): 當前指令碼被其他使用者�
 This Script is not published, it will take effect after the Script is published: 當前指令碼尚未釋出，指令碼只有釋出後才會生效
 This is a built-in Script, code will be reset when the system restarts: 這是一個內建指令碼，程式碼會在系統重啟後復位
 Time Cost: 函式執行耗時
+Unfold All: 全部展開
 Viewport are too narrow: 當前可視寬度太窄
 Waiting Func response timeout: 等待函式響應超時
 Waiting Timeout: 等待超時
 Worker no response, please check the status of this system: 工作單元沒有響應，請檢查系統狀態
 Writing test cases to test your Func is recommended: 建議編寫測試用例來測試您的函式
 You can continue with other operations: 你可以繼續進行其他操作
-addedLines: 新增 {n} 行
-codeLines: 共 {n} 行程式碼
-codeLinesCurr: ，修改後共 {n} 行程式碼
-codeLinesPrev: 修改前共 {n} 行程式碼
-removedLines: ，刪除 {n} 行
 </i18n>
 <!-- Generated by OpenCC END -->
 

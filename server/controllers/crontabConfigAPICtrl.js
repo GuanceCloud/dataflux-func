@@ -41,26 +41,6 @@ exports.list = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 追加任务触发记录
-    function(asyncCallback) {
-      var dataIds = toolkit.arrayElementValues(listData, 'id');
-      var cacheKey = toolkit.getGlobalCacheKey('cache', 'recentTaskTriggered', [ 'origin', 'crontabConfig' ]);
-      res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        listData.forEach(function(d) {
-          d.recentTaskTriggered = null;
-
-          var recentTaskTriggered = cacheRes[d.id];
-          if (!recentTaskTriggered) return;
-
-          d.recentTaskTriggered = JSON.parse(recentTaskTriggered);
-          d.recentTaskTriggered.reverse();
-        });
-
-        return asyncCallback();
-      });
-    },
     // 追加最后任务状态
     function(asyncCallback) {
       var dataIds = toolkit.arrayElementValues(listData, 'id');
@@ -108,6 +88,44 @@ exports.list = function(req, res, next) {
 
     var ret = toolkit.initRet(listData, listPageInfo);
     res.locals.sendJSON(ret);
+  });
+}
+
+exports.listRecentTriggered = function(req, res, next) {
+  var id = req.params.id;
+
+  var cacheKey = toolkit.getGlobalCacheKey('cache', 'recentTaskTriggered', [ 'origin', 'crontabConfig' ]);
+  res.locals.cacheDB.hget(cacheKey, id, function(err, cacheRes) {
+    if (err) return next(err);
+
+    var data = cacheRes;
+    if (!data) {
+      data = {};
+    } else {
+      data = JSON.parse(data);
+    }
+
+    // 清除旧版数据
+    if (Array.isArray(data)) {
+      data = {};
+      res.locals.cacheDB.hdel(cacheKey, id);
+    }
+
+    let recentTriggered = [];
+    for (let execMode in data) {
+      toolkit.deltaOfDeltaDecode(toolkit.repeatDecode(data[execMode])).forEach(function(ts) {
+        recentTriggered.push([ ts, execMode ]);
+      });
+    }
+
+    recentTriggered.sort(function(a, b) {
+      if (a[0] < b[0]) return 1;
+      else if (a[0] > b[0]) return -1;
+      else return 0
+    });
+
+    var ret = toolkit.initRet(recentTriggered);
+    return res.locals.sendJSON(ret);
   });
 }
 

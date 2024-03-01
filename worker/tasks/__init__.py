@@ -366,41 +366,50 @@ class BaseTask(object):
             self.logger.debug(f'[TASK RECORD] Buffered: `{cache_key}`')
 
     def upload_guance_data(self, category, data):
-        if not self.guance_data_upload_url:
-            return
-
-        if not data:
-            return
-
-        data = toolkit.as_array(data)
-
-        self.logger.debug(f'[UPLOAD GUANCE DATA]: {len(data)} {category} point(s)')
-
-        for p in data:
-            # 添加 tags.site_name
-            site_name = self.system_settings.get('GUANCE_DATA_SITE_NAME')
-            if site_name:
-                p['tags']['site_name'] = site_name
-
-            # 根据 task_status 增补适用于观测云的 status 值
-            if 'task_status' in p['tags']:
-                try:
-                    p['tags']['status'] = GUANCE_DATA_STATUS_MAP[p['tags']['task_status']]
-                except Exception as e:
-                    p['tags']['status'] = GUANCE_DATA_STATUS_DEFAULT
-
-        # 上报数据
         try:
-            dataway = DataWay(url=self.guance_data_upload_url)
-            status_code, resp_data = dataway.post_line_protocol(path=f'/v1/write/{category}', points=data)
-            if status_code > 200:
-                self.logger.error(resp_data)
+            if not self.guance_data_upload_url:
+                return
+
+            if not data:
+                return
+
+            data = toolkit.as_array(data)
+
+            self.logger.debug(f'[UPLOAD GUANCE DATA]: {len(data)} {category} point(s)')
+
+            for p in data:
+                # 添加 tags.site_name
+                site_name = self.system_settings.get('GUANCE_DATA_SITE_NAME')
+                if site_name:
+                    p['tags']['site_name'] = site_name
+
+                # 根据 task_status 增补适用于观测云的 status 值
+                if 'task_status' in p['tags']:
+                    try:
+                        p['tags']['status'] = GUANCE_DATA_STATUS_MAP[p['tags']['task_status']]
+                    except Exception as e:
+                        p['tags']['status'] = GUANCE_DATA_STATUS_DEFAULT
+
+            # 上报数据
+            try:
+                dataway = DataWay(url=self.guance_data_upload_url)
+                status_code, resp_data = dataway.post_line_protocol(path=f'/v1/write/{category}', points=data)
+                if status_code > 200:
+                    self.logger.error(resp_data)
+
+            except Exception as e:
+                for line in traceback.format_exc().splitlines():
+                    self.logger.error(line)
+
+                raise
 
         except Exception as e:
+            # 非重要功能
             for line in traceback.format_exc().splitlines():
-                self.logger.error(line)
+                self.logger.warning(line)
 
-            raise
+            if CONFIG['MODE'] == 'dev':
+                raise
 
     def response(self, task_resp):
         cache_key = toolkit.get_cache_key('task', 'response', [ 'name', self.name, 'id', self.task_id ])

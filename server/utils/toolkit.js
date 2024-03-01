@@ -2449,3 +2449,39 @@ var range = toolkit.range = function(length) {
   });
   return a;
 };
+
+var deltaOfDeltaDecode = toolkit.deltaOfDeltaDecode = function deltaOfDeltaDecode(data) {
+  function deltaDecode(_data) {
+    let decoded = [];
+    for (let i = 0; i < _data.length; i++) {
+      let d = _data[i];
+
+      if (i == 0) {
+        decoded.push(d);
+      } else {
+        decoded.push(d + decoded.slice(-1)[0]);
+      }
+    }
+
+    return decoded;
+  }
+
+  return deltaDecode(deltaDecode(data));
+};
+
+var repeatDecode = toolkit.repeatDecode = function repeatDecode(data) {
+  let decoded = [];
+  for (let i = 0; i < data.length; i++) {
+    let d = data[i];
+
+    if ('number' === typeof d) {
+      decoded.push(d);
+    } else {
+      for (let j = 0; j < d[1]; j++) {
+        decoded.push(d[0]);
+      }
+    }
+  }
+
+  return decoded;
+};

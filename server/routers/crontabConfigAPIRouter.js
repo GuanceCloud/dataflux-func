@@ -10,6 +10,10 @@ routeLoader.load(ROUTE.crontabConfigAPI.list, [
   crontabConfigAPICtrl.list,
 ]);
 
+routeLoader.load(ROUTE.crontabConfigAPI.listRecentTriggered, [
+  crontabConfigAPICtrl.listRecentTriggered,
+]);
+
 routeLoader.load(ROUTE.crontabConfigAPI.add, [
   crontabConfigAPICtrl.add,
 ]);

@@ -103,23 +103,43 @@ class FuncRunner(FuncBaseTask):
 
         return '\n\n'.join(sections)
 
-    def cache_recent_task_triggered(self):
-        if self.origin != 'crontabConfig':
-            return
+    def cache_recent_crontab_triggered(self):
+        try:
+            # 从缓存中获取上次记录
+            cache_key = toolkit.get_global_cache_key('cache', 'recentTaskTriggered', [ 'origin', self.origin ])
+            cache_value = self.cache_db.hget(cache_key, self.origin_id)
+            if cache_value:
+                cache_value = toolkit.json_loads(cache_value)
 
-        # 执行模式
-        self.crontab_exec_mode = self.kwargs.get('crontabExecMode')
+            if not isinstance(cache_value, dict):
+                cache_value = {}
 
-        cache_key = toolkit.get_global_cache_key('cache', 'recentTaskTriggered', [ 'origin', self.origin ])
-        cache_value = self.cache_db.hget(cache_key, self.origin_id)
-        if cache_value:
-            cache_value = toolkit.json_loads(cache_value)
+            # 解压缩
+            for _exec_mode in list(cache_value.keys()):
+                cache_value[_exec_mode] = toolkit.delta_of_delta_decode(toolkit.repeat_decode(cache_value[_exec_mode]))
 
-        cache_value = cache_value or []
-        cache_value.append([ self.trigger_time, self.crontab_exec_mode ])
-        cache_value = cache_value[-CONFIG['_RECENT_TASK_STARTS_LIMIT']:]
+            # 追加数据
+            exec_mode = self.kwargs.get('crontabExecMode')
+            if exec_mode not in cache_value:
+                cache_value[exec_mode] = []
 
-        self.cache_db.hset(cache_key, self.origin_id, toolkit.json_dumps(cache_value))
+            cache_value[exec_mode].append(self.trigger_time)
+
+            # 去除过期数据 / 压缩
+            for _exec_mode in list(cache_value.keys()):
+                cache_value[_exec_mode] = list(filter(lambda ts: ts > self.trigger_time - CONFIG['_RECENT_CRONTAB_TRIGGERED_EXPIRES'], cache_value[_exec_mode]))
+                cache_value[_exec_mode] = toolkit.repeat_encode(toolkit.delta_of_delta_encode(cache_value[_exec_mode]))
+
+            # 重新写入缓存
+            self.cache_db.hset(cache_key, self.origin_id, toolkit.json_dumps(cache_value))
+
+        except Exception as e:
+            # 非重要功能
+            for line in traceback.format_exc().splitlines():
+                self.logger.warning(line)
+
+            if CONFIG['MODE'] == 'dev':
+                raise
 
     def cache_last_task_status(self, status, exception=None):
         if self.origin not in ( 'authLink', 'crontabConfig', 'batch'):
@@ -241,11 +261,8 @@ class FuncRunner(FuncBaseTask):
         # 函数任务可能非常多，且可能同时包含大量日志
         # 因此直接上报观测云，而不进入缓冲区
         data = self.create_task_record_guance_data()
-        if data:
-            try:
-                self.upload_guance_data('logging', data)
-            except Exception as e:
-                self.guance_data_upload_error = e
+        if self.guance_data_upload_url and data:
+            self.upload_guance_data('logging', data)
 
         # 任务记录（函数）
         self._buff_task_record_func()
@@ -266,8 +283,9 @@ class FuncRunner(FuncBaseTask):
         super().run(**kwargs)
 
         ### 任务开始
-        # 记录任务启动
-        self.cache_recent_task_triggered()
+        # 记录 Crontab 触发时间
+        if self.origin == 'crontabConfig':
+            self.cache_recent_crontab_triggered()
 
         func_resp = None
         try:

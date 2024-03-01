@@ -1917,3 +1917,7 @@ export function renderMarkdown(text, options) {
     return marked.parse(text, options);
   }
 };
+
+export function textLength(str) {
+  return str.replace(/[\u0391-\uFFE5]/g, '__').length;
+};

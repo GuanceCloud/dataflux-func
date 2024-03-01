@@ -65,7 +65,7 @@ class SystemMetric(BaseInternalTask):
                     'timestamp': self.trigger_time,
                 })
 
-        if self.guance_data_upload_url:
+        if self.guance_data_upload_url and guance_data:
             self.upload_guance_data('metric', guance_data)
 
     def get_metric_cache_db(self):
@@ -133,7 +133,7 @@ class SystemMetric(BaseInternalTask):
                     'timestamp': self.trigger_time,
                 })
 
-        if self.guance_data_upload_url:
+        if self.guance_data_upload_url and guance_data:
             self.upload_guance_data('metric', guance_data)
 
     def get_metric_db(self):
@@ -173,7 +173,7 @@ class SystemMetric(BaseInternalTask):
                     'timestamp': self.trigger_time,
                 })
 
-        if self.guance_data_upload_url:
+        if self.guance_data_upload_url and guance_data:
             self.upload_guance_data('metric', guance_data)
 
     def run(self, **kwargs):
@@ -334,14 +334,11 @@ class FlushDataBuffer(BaseInternalTask):
             return 0
 
         # 搜集数据
-        cache_res = self._flush_data_buffer(cache_key)
-        if not cache_res:
+        guance_data = self._flush_data_buffer(cache_key)
+        if not guance_data:
             return 0
 
-        try:
-            self.upload_guance_data('logging', cache_res)
-        except Exception as e:
-            pass
+        self.upload_guance_data('logging', guance_data)
 
         return len(cache_res)
 
@@ -400,11 +397,8 @@ class FlushDataBuffer(BaseInternalTask):
                 self.cache_db.ts_add(cache_key, c['count'], timestamp=c['timestamp'], mode='addUp')
 
         # 写入观测云
-        if guance_data:
-            try:
-                self.upload_guance_data('metric', guance_data)
-            except Exception as e:
-                pass
+        if self.guance_data_upload_url and guance_data:
+            self.upload_guance_data('metric', guance_data)
 
         return len(cache_res)
 

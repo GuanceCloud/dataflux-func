@@ -43,10 +43,11 @@ lastStarted  : '{t}执行'
 lastSucceeded: '{t}执行成功'
 lastFailed   : '{t}执行失败'
 
-Recent Triggered Time: 最近触发时间
-Trigger Time         : 触发时间
-Since Prev Crontab   : 距上次 Crontab 触发
-Triggered Manually   : 手动触发
+No Recent Triggered Time Info: 无最近触发时间信息
+Recent Triggered Time        : 最近触发时间
+Trigger Time                 : 触发时间
+Since Prev Crontab           : 距上次 Crontab 触发
+Triggered Manually           : 手动触发
 
 Using Crontab Config, you can have functions executed at regular intervals: 使用自动触发配置，可以让函数定时执行
 </i18n>
@@ -68,6 +69,7 @@ Crontab Configs has been paused globally, will resume in {0}: 自動觸發配置
 Expires: 過期
 Fixed: 固定
 No Crontab Config has ever been added: 從未添加過任何自動觸發配置
+No Recent Triggered Time Info: 無最近觸發時間信息
 Not Set: 未配置
 Pause all: 全部暫停
 Pause for 1 day: 暫停 1 天
@@ -106,6 +108,7 @@ Crontab Configs has been paused globally, will resume in {0}: 自動觸發配置
 Expires: 過期
 Fixed: 固定
 No Crontab Config has ever been added: 從未新增過任何自動觸發配置
+No Recent Triggered Time Info: 無最近觸發時間資訊
 Not Set: 未配置
 Pause all: 全部暫停
 Pause for 1 day: 暫停 1 天
@@ -304,13 +307,12 @@ lastSucceeded: '{t}執行成功'
                 {{ $t('No recent record') }}
               </span>
 
-              <template v-if="T.notNothing(scope.row.recentTaskTriggered)">
-                <br>
-                <el-link @click="recentTaskTriggeredData = scope.row.recentTaskTriggered; showRecentTaskTriggered = true">
-                  <i class="fa fa-fw fa-clock-o"></i>
-                  {{ $t('Recent Triggered Time') }}
-                </el-link>
-              </template>
+              <br>
+              <el-link @click="showRecentTriggered(scope.row.id)">
+                <i v-if="loadingRecentTriggeredId !== scope.row.id" class="fa fa-fw fa-clock-o"></i>
+                <i v-else class="fa fa-fw fa-circle-o-notch fa-spin"></i>
+                {{ $t('Recent Triggered Time') }}
+              </el-link>
             </template>
           </el-table-column>
 
@@ -339,33 +341,14 @@ lastSucceeded: '{t}執行成功'
       <CrontabConfigSetup ref="setup" />
 
       <el-dialog
-        :visible.sync="showRecentTaskTriggered"
+        :visible.sync="showRecentTriggeredDialog"
         :close-on-click-modal="false"
-        width="500px">
+        width="550px">
         <template slot="title">
           {{ $t('Recent Triggered Time') }}
           <span class="text-info press-esc-to-close-tip">{{ $t('Press ESC to close') }}</span>
         </template>
-          <el-table v-if="T.notNothing(recentTaskTriggeredData)" :data="recentTaskTriggeredData" size="mini">
-            <el-table-column :label="$t('Trigger Time')" width="300">
-              <template slot-scope="scope">
-                <span :class="{ 'text-good': scope.row.isManual }">{{ scope.row.triggerTimeMs | datetime }}</span>
-                <small :class="scope.row.isManual ? 'text-good' : 'text-info'">{{ $t('(') }}{{ scope.row.triggerTimeMs | fromNow }}{{ $t(')') }}</small>
-              </template>
-            </el-table-column>
-
-            <el-table-column :label="$t('Since Prev Crontab')" align="right">
-              <template slot-scope="scope">
-                <span v-if="scope.row.isManual" class="text-good">
-                  <i class="fa fa-fw fa-mouse-pointer"></i>
-                  {{ $t('Triggered Manually') }}
-                </span>
-                <span v-else>
-                  <TimeDuration :duration="scope.row.interval" unit="s" prefix="+" />
-                </span>
-              </template>
-            </el-table-column>
-          </el-table>
+          <el-input type="textarea" resize="none" size="mini" :value="recentTriggeredData" readonly autosize></el-input>
       </el-dialog>
     </el-container>
   </transition>
@@ -411,31 +394,6 @@ export default {
 
       this.data = apiRes.data;
       this.pageInfo = apiRes.pageInfo;
-
-      // 整理数据
-      this.data.forEach(d => {
-        if (this.T.isNothing(d.recentTaskTriggered)) return;
-
-        let nextRecentTaskTriggered = [];
-        for (let i = 0; i < d.recentTaskTriggered.length; i++) {
-          let triggerTimeMs = d.recentTaskTriggered[i];
-          let isManual  = false;
-          if (Array.isArray(triggerTimeMs)) {
-            isManual      = triggerTimeMs[1] === 'manual';
-            triggerTimeMs = triggerTimeMs[0];
-          }
-
-          nextRecentTaskTriggered.push({ triggerTimeMs, isManual });
-        }
-
-        let nonManualData = nextRecentTaskTriggered.filter(x => !x.isManual);
-        for (let i = 0; i < nonManualData.length; i++) {
-          if (i >= nonManualData.length - 1) break;
-          nonManualData[i].interval = nonManualData[i].triggerTimeMs - nonManualData[i + 1].triggerTimeMs;
-        }
-
-        d.recentTaskTriggered = nextRecentTaskTriggered;
-      });
 
       this.$store.commit('updateLoadStatus', true);
 
@@ -533,6 +491,87 @@ export default {
 
       await this.updatePauseTimeout();
     },
+    async showRecentTriggered(id) {
+      this.loadingRecentTriggeredId = id;
+
+      let apiRes = await this.T.callAPI_get('/api/v1/crontab-configs/:id/recent-triggered/do/list', {
+        params: { id: id },
+      });
+      if (!apiRes || !apiRes.ok) return;
+
+
+      if (this.T.isNothing(apiRes.data)) {
+        this.recentTriggeredData = this.$t('No Recent Triggered Time Info');
+
+      } else {
+        let nextRecentTriggeredData = apiRes.data;
+        // 整理数据
+        let crontabData = nextRecentTriggeredData.filter(x => x[1] === 'crontab');
+        for (let i = 0; i < crontabData.length; i++) {
+          if (i >= crontabData.length - 1) break;
+          crontabData[i].push(crontabData[i][0] - crontabData[i + 1][0]);
+        }
+
+        // 生成文本
+        const columnWidth = 50;
+        let headerLine = this.$t('Trigger Time');
+        headerLine += ' '.repeat(columnWidth - this.T.textLength(headerLine));
+        headerLine += this.$t('Since Prev Crontab');
+
+        let nextRecentTriggeredLines = [
+          headerLine,
+          '-'.repeat(this.T.textLength(headerLine)),
+        ];
+        nextRecentTriggeredData.forEach((d, index) => {
+          let line = this.T.getDateTimeString(d[0] * 1000)
+                  + this.$t('(')
+                  + this.T.fromNow(d[0] * 1000)
+                  + this.$t(')');
+          line += ' '.repeat(columnWidth - this.T.textLength(line));
+
+          if (d[1] === 'manual') {
+            line += this.$t('Triggered Manually');
+
+          } else {
+            const daySeconds    = 3600 * 24;
+            const hourSeconds   = 3600;
+            const minuteSeconds = 60;
+
+            line += `+ `;
+            let diff = d[2];
+            if (diff === 0) {
+              line += this.$tc('nSeconds', diff);
+            } else {
+              if (diff >= daySeconds) {
+                line += this.$tc('nDays', diff / (daySeconds));
+                diff = diff % (daySeconds);
+              }
+              if (diff >= hourSeconds) {
+                line += this.$tc('nHours', diff / hourSeconds);
+                diff = diff % hourSeconds;
+              }
+              if (diff >= minuteSeconds) {
+                line += this.$tc('nMinutes', diff / minuteSeconds);
+                diff = diff % minuteSeconds;
+              }
+              if (diff > 0) {
+                line += this.$tc('nSeconds', diff);
+              }
+            }
+          }
+
+          nextRecentTriggeredLines.push(line);
+        });
+
+        this.recentTriggeredData = nextRecentTriggeredLines.join('\n');
+      }
+
+      this.showRecentTriggeredDialog = true;
+
+      setImmediate(() => {
+        this.loadingRecentTriggeredId = null;
+      })
+    },
     async updatePauseTimeout() {
       let apiRes = await this.T.callAPI_get('/api/v1/temporary-flags/do/get', {
         query: { id: 'pauseAllCrontabConfigs' },
@@ -565,8 +604,9 @@ export default {
         origin      : _dataFilter.origin,
       },
 
-      showRecentTaskTriggered: false,
-      recentTaskTriggeredData: null,
+      showRecentTriggeredDialog: false,
+      loadingRecentTriggeredId : null,
+      recentTriggeredData      : null,
 
       pauseTimeout: null,
 

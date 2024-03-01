@@ -827,3 +827,61 @@ class DiffTimer(object):
             return int((curr - prev) / 60 / 60 / 24)
         else:
             return curr - prev
+
+def delta_of_delta_encode(data):
+    def delta_encde(_data):
+        encoded = []
+        prev = None
+        for i, d in enumerate(_data):
+            if i == 0:
+                encoded.append(d)
+            else:
+                encoded.append(d - prev)
+
+            prev = d
+
+        return encoded
+
+    return delta_encde(delta_encde(data))
+
+def delta_of_delta_decode(data):
+    def delta_decode(_data):
+        decoded = []
+        for i, d in enumerate(_data):
+            if i == 0:
+                decoded.append(d)
+            else:
+                decoded.append(d + decoded[-1])
+
+        return decoded
+
+    return delta_decode(delta_decode(data))
+
+def repeat_encode(data):
+    encoded = []
+    for d in data:
+        if not encoded:
+            encoded.append(d)
+        else:
+            if isinstance(encoded[-1], (int, float)):
+                if encoded[-1] == d:
+                    encoded[-1] = [ encoded[-1], 2 ]
+                else:
+                    encoded.append(d)
+            else:
+                if encoded[-1][0] == d:
+                    encoded[-1][1] += 1
+                else:
+                    encoded.append(d)
+
+    return encoded
+
+def repeat_decode(data):
+    decoded = []
+    for d in data:
+        if isinstance(d, (int, float)):
+            decoded.append(d)
+        else:
+            decoded.extend([ d[0] ] * d[1])
+
+    return decoded

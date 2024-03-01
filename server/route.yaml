@@ -3954,6 +3954,20 @@ crontabConfigAPI:
         $searchType: jsonArrayHasAll
         $searchKey : func.tagsJSON
 
+  listRecentTriggered:
+    showInDoc    : true
+    name         : List Recent Triggered Time of the Crontab Config
+    name_zhCN    : 列出自动触发配置最近触发时间
+    method       : get
+    url          : /api/v1/crontab-configs/:id/recent-triggered/do/list
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_r
+    params:
+      id:
+        $desc: 自动触发配置 ID
+        $type: string
+
   add:
     showInDoc    : true
     name         : Add Crontab Config

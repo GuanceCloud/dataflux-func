@@ -1,5 +1,5 @@
 <i18n locale="en" lang="yaml">
-messageRate: '{n} Message/min | {n} Messages/min'
+messageRate: '{n} Message/minute | {n} Message/minute | {n} Messages/minute'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">

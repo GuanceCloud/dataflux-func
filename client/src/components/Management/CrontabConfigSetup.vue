@@ -83,24 +83,31 @@ shortcutDays  : '{n} 天'
 (Fixed Crontab): （固定Crontab）
 Add Crontab Config: 添加自動觸發配置
 Add Tag: 添加標籤
+Advanced Mode: 高級模式
 Are you sure you want to delete the Crontab Config?: 是否確認刪除此自動觸發配置？
 Arguments: 參數指定
 Crontab Config created: 自動觸發配置已創建
 Crontab Config deleted: 自動觸發配置已刪除
 Crontab Config saved: 自動觸發配置已保存
+Crontab expression does support second field: Crontab 表達式不支持秒字段
 Customize ID: 定製 ID
 Date-time cannot earlier than 1970: 日期不能早於1970年
 Date-time cannot later than 2037: 時間不能晚於2037年
 Days: 按天重複
+Every 10 minutes: 每 10 分鐘
 Every 12 hours: 每 12 小時
 Every 15 minutes: 每 15 分鐘
 Every 2 hours: 每 2 小時
+Every 2 minutes: 每 2 分鐘
+Every 2 months: 每 2 個月
 Every 3 hours: 每 3 小時
+Every 3 minutes: 每 3 分鐘
 Every 3 months: 每 3 個月
 Every 30 minutes: 每 30 分鐘
 Every 5 minutes: 每 5 分鐘
 Every 6 hours: 每 6 小時
 Every 6 months: 每 6 個月
+Every 8 hours: 每 8 小時
 Every day: 每天
 Every hour: 每小時
 Every minute: 每分鐘
@@ -109,8 +116,10 @@ Every weekday: 不限星期
 Execute: 執行
 Expires: 有效期
 FRI: 週五
+Fill in Crontab expressions directly: 直接填寫 Crontab 表達式
 Hours: 按小時重複
 ID must starts with "{prefix}": ID 必須以"{prefix}"開頭
+Invalid Crontab expression: Crontab 表達式不正確
 Invalid argument format: 參數格式不正確
 JSON formated arguments (**kwargs): JSON格式的參數（**kwargs）
 Keep: 保留
@@ -125,6 +134,7 @@ Please select Func: 請選擇執行函數
 SAT: 週六
 SUN: 週日
 Setup Crontab Config: 配置自動觸發配置
+Simple Mode: 簡單模式
 THU: 週四
 TUE: 週二
 Tags: 標籤
@@ -139,24 +149,31 @@ shortcutDays: '{n} 天'
 (Fixed Crontab): （固定Crontab）
 Add Crontab Config: 新增自動觸發配置
 Add Tag: 新增標籤
+Advanced Mode: 高階模式
 Are you sure you want to delete the Crontab Config?: 是否確認刪除此自動觸發配置？
 Arguments: 引數指定
 Crontab Config created: 自動觸發配置已建立
 Crontab Config deleted: 自動觸發配置已刪除
 Crontab Config saved: 自動觸發配置已儲存
+Crontab expression does support second field: Crontab 表示式不支援秒欄位
 Customize ID: 定製 ID
 Date-time cannot earlier than 1970: 日期不能早於1970年
 Date-time cannot later than 2037: 時間不能晚於2037年
 Days: 按天重複
+Every 10 minutes: 每 10 分鐘
 Every 12 hours: 每 12 小時
 Every 15 minutes: 每 15 分鐘
 Every 2 hours: 每 2 小時
+Every 2 minutes: 每 2 分鐘
+Every 2 months: 每 2 個月
 Every 3 hours: 每 3 小時
+Every 3 minutes: 每 3 分鐘
 Every 3 months: 每 3 個月
 Every 30 minutes: 每 30 分鐘
 Every 5 minutes: 每 5 分鐘
 Every 6 hours: 每 6 小時
 Every 6 months: 每 6 個月
+Every 8 hours: 每 8 小時
 Every day: 每天
 Every hour: 每小時
 Every minute: 每分鐘
@@ -165,8 +182,10 @@ Every weekday: 不限星期
 Execute: 執行
 Expires: 有效期
 FRI: 週五
+Fill in Crontab expressions directly: 直接填寫 Crontab 表示式
 Hours: 按小時重複
 ID must starts with "{prefix}": ID 必須以"{prefix}"開頭
+Invalid Crontab expression: Crontab 表示式不正確
 Invalid argument format: 引數格式不正確
 JSON formated arguments (**kwargs): JSON格式的引數（**kwargs）
 Keep: 保留
@@ -181,6 +200,7 @@ Please select Func: 請選擇執行函式
 SAT: 週六
 SUN: 週日
 Setup Crontab Config: 配置自動觸發配置
+Simple Mode: 簡單模式
 THU: 週四
 TUE: 週二
 Tags: 標籤
