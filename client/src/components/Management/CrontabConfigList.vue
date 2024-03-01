@@ -513,9 +513,12 @@ export default {
         }
 
         // 生成文本
-        const columnWidth = 50;
-        let headerLine = this.$t('Trigger Time');
-        headerLine += ' '.repeat(columnWidth - this.T.textLength(headerLine));
+        const seqFieldWidth  = 10;
+        const timeFieldWidth = 50;
+        let headerLine = 'SEQ';
+        headerLine += ' '.repeat(seqFieldWidth - this.T.textLength(headerLine));
+        headerLine += this.$t('Trigger Time');
+        headerLine += ' '.repeat(timeFieldWidth - this.T.textLength(headerLine));
         headerLine += this.$t('Since Prev Crontab');
 
         let nextRecentTriggeredLines = [
@@ -523,14 +526,20 @@ export default {
           '-'.repeat(this.T.textLength(headerLine)),
         ];
         nextRecentTriggeredData.forEach((d, index) => {
-          let line = this.T.getDateTimeString(d[0] * 1000)
-                  + this.$t('(')
-                  + this.T.fromNow(d[0] * 1000)
-                  + this.$t(')');
-          line += ' '.repeat(columnWidth - this.T.textLength(line));
+          let line = `${nextRecentTriggeredData.length - index}`;
+          line += ' '.repeat(seqFieldWidth - this.T.textLength(line));
+
+          line += this.T.getDateTimeString(d[0] * 1000)
+                + this.$t('(')
+                + this.T.fromNow(d[0] * 1000)
+                + this.$t(')');
+          line += ' '.repeat(timeFieldWidth - this.T.textLength(line));
 
           if (d[1] === 'manual') {
             line += this.$t('Triggered Manually');
+
+          } else if (index === nextRecentTriggeredData.length - 1) {
+            // Nope
 
           } else {
             const daySeconds    = 3600 * 24;
