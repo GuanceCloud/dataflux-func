@@ -334,11 +334,11 @@ class FlushDataBuffer(BaseInternalTask):
             return 0
 
         # 搜集数据
-        guance_data = self._flush_data_buffer(cache_key)
-        if not guance_data:
+        cache_res = self._flush_data_buffer(cache_key)
+        if not cache_res:
             return 0
 
-        self.upload_guance_data('logging', guance_data)
+        self.upload_guance_data('logging', cache_res)
 
         return len(cache_res)
 

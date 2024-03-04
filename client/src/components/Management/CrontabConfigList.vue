@@ -314,7 +314,7 @@ lastSucceeded: '{t}執行成功'
               </span>
 
               <br>
-              <el-link @click="showRecentTriggered(scope.row.id)">
+              <el-link v-if="scope.row.lastTaskStatus" @click="showRecentTriggered(scope.row.id)">
                 <i v-if="loadingRecentTriggeredId !== scope.row.id" class="fa fa-fw fa-clock-o"></i>
                 <i v-else class="fa fa-fw fa-circle-o-notch fa-spin"></i>
                 {{ $t('Recent Triggered Time') }}
