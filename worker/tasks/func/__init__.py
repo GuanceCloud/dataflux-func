@@ -1336,10 +1336,11 @@ class FuncBaseTask(BaseTask):
             # 用户脚本导入
             _module = self.__imported_module_cache[import_script_id]
             if _module:
-                self.logger.debug(f'[CUSTOM IMPORT] user script `{import_script_id}` already imported')
+                # self.logger.debug(f'[CUSTOM IMPORT] user script `{import_script_id}` already imported')
+                pass
 
             else:
-                self.logger.debug(f'[CUSTOM IMPORT] import user script `{import_script_id}`')
+                # self.logger.debug(f'[CUSTOM IMPORT] import user script `{import_script_id}`')
 
                 try:
                     _module = ModuleType(import_script_id)
@@ -1370,7 +1371,7 @@ class FuncBaseTask(BaseTask):
 
         else:
             # 普通导入
-            self.logger.debug(f'[CUSTOM IMPORT] import non-user module `{import_script_id}`')
+            # self.logger.debug(f'[CUSTOM IMPORT] import non-user module `{import_script_id}`')
 
             return importlib.__import__(name, globals=globals, locals=locals, fromlist=fromlist, level=level)
 
@@ -1900,7 +1901,7 @@ class FuncBaseTask(BaseTask):
         safe_scope['__builtins__']['print']      = __print
         safe_scope['__builtins__']['print_var']  = __print_var
 
-        self.logger.debug('[SAFE SCOPE] Created')
+        # self.logger.debug('[SAFE SCOPE] Created')
 
         return safe_scope
 
@@ -1908,7 +1909,7 @@ class FuncBaseTask(BaseTask):
         safe_scope = globals or self.create_safe_scope()
         exec(script_code_obj, safe_scope)
 
-        self.logger.debug('[SAFE EXEC] Finished')
+        # self.logger.debug('[SAFE EXEC] Finished')
 
         return safe_scope
 
@@ -1944,7 +1945,7 @@ class FuncBaseTask(BaseTask):
             if isinstance(func_return.data, Exception):
                 raise func_return.data
 
-        self.logger.debug(f'[FUNC RETURN] `{func_return}`')
+        # self.logger.debug(f'[FUNC RETURN] `{func_return}`')
         return func_return
 
     def get_traceback(self, only_in_script=True):
