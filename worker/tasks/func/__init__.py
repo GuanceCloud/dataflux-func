@@ -722,6 +722,9 @@ class FuncCacheHelper(object):
     def hmget(self, key, fields, scope=None):
         return self.hget(key, fields, scope)
 
+    def hgetall(self, key, scope=None):
+        return self.hget(key, scope=scope)
+
     def hset(self, key, field, value, scope=None, not_exists=False):
         key = self._get_cache_key(key, scope)
         if not_exists:
