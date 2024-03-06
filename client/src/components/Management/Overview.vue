@@ -7,6 +7,8 @@ recentOperationCount: '(Latest {n} Operation) | (Latest {n} Operations)'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
+'Current browser-server time difference:': '当前浏览器与服务器时差：'
+
 overviewCountUnit   : 个
 workerCount         : '工作单元 {n} 个'
 processCount        : '工作进程 {n} 个'
@@ -36,6 +38,7 @@ Biz Entity: 業務實體
 Client: 客户端
 Client ID: 客户端 ID
 Cost: 耗時
+'Current browser-server time difference:': 當前瀏覽器與服務器時差：
 DELETE: 刪除操作
 Data ID: 數據 ID
 IP Address: IP地址
@@ -58,6 +61,7 @@ Biz Entity: 業務實體
 Client: 客戶端
 Client ID: 客戶端 ID
 Cost: 耗時
+'Current browser-server time difference:': 當前瀏覽器與伺服器時差：
 DELETE: 刪除操作
 Data ID: 資料 ID
 IP Address: IP地址
@@ -87,6 +91,12 @@ workerCount: 工作單元 {n} 個
 
       <!-- 列表区 -->
       <el-main>
+        <span class="browser-server-time-diff" :class="browserServerTimeDiff > 1000 ? 'text-bad' : 'text-info'">
+          <i class="fa fa-fw" :class="browserServerTimeDiff > 1000 ? 'fa-exclamation-triangle' : 'fa-exchange'"></i>
+          {{ $t('Current browser-server time difference:') }}
+          <TimeDuration :duration="browserServerTimeDiff" unit="ms" />
+        </span>
+
         <el-divider content-position="left"><h1>{{ $t('Worker Queue Info') }}</h1></el-divider>
         <el-card
           class="worker-queue-card"
@@ -138,7 +148,7 @@ workerCount: 工作單元 {n} 個
           </span>
         </el-card>
 
-        <el-divider class="overview-divider" content-position="left">
+        <el-divider content-position="left">
           <h1>
             {{ $t('Recent operations') }}
             <small>{{ $t('(') }}{{ $tc('recentOperationCount', latestOperations.length) }}{{ $t(')') }}</small>
@@ -251,6 +261,8 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
+      this.browserServerTimeDiff = new Date(apiRes.reqTime) - new Date(apiRes.clientTime);
+
       (sections || this.OVERVIEW_SECTIONS).forEach(s => {
         this[s] = apiRes.data[s];
 
@@ -341,6 +353,8 @@ export default {
   },
   data() {
     return {
+      browserServerTimeDiff: 0,
+
       workerQueueInfo : [],
       bizEntityCount  : [],
       latestOperations: [],
@@ -360,8 +374,13 @@ export default {
 </script>
 
 <style scoped>
-.overview-divider {
-  margin-top: 100px;
+.browser-server-time-diff {
+  display: block;
+  position: relative;
+  padding: 0 0 10px 10px;
+  font-size: 12px;
+  color: red;
+  z-index: 1;
 }
 
 .worker-queue-card {

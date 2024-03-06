@@ -512,7 +512,6 @@ export default {
             trigger: 'change',
             validator: (rule, value, callback) => {
               if (this.T.notNothing(value)) {
-                console.log(value)
                 if ((value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
                   return callback(new Error(this.$t('ID must starts with "{prefix}"', { prefix: this.ID_PREFIX })));
                 }

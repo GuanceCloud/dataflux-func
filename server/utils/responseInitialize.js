@@ -108,6 +108,9 @@ router.all('*', function prepareBasicClientInfo(req, res, next) {
   res.locals.traceIdShort = toolkit.getFirstPart(res.locals.traceId);
   res.set(CONFIG._WEB_TRACE_ID_HEADER, res.locals.traceId);
 
+  // clientTime
+  res.locals.clientTime = req.get(CONFIG._WEB_CLIENT_TIME_HEADER) || null;
+
   // requestTime
   res.locals.requestTime = new Date();
 
@@ -234,12 +237,14 @@ router.all('*', function prepareFunctionalComponents(req, res, next) {
     var reqCost = now.getTime() - res.locals.requestTime.getTime();
 
     var reqInfo = {
-      traceId : res.locals.traceId,
-      reqTime : res.locals.requestTime.toISOString(),
-      respTime: now.toISOString(),
-      reqCost : reqCost,
+      traceId   : res.locals.traceId,
+      clientTime: res.locals.clientTime || null,
+      reqTime   : res.locals.requestTime.toISOString(),
+      respTime  : now.toISOString(),
+      reqCost   : reqCost,
     };
     res.set(CONFIG._WEB_TRACE_ID_HEADER,      reqInfo.traceId);
+    res.set(CONFIG._WEB_CLIENT_TIME_HEADER,   reqInfo.clientTime)
     res.set(CONFIG._WEB_REQUEST_TIME_HEADER,  reqInfo.reqTime);
     res.set(CONFIG._WEB_RESPONSE_TIME_HEADER, reqInfo.respTime);
     res.set(CONFIG._WEB_REQUEST_COST_HEADER,  reqInfo.reqCost);

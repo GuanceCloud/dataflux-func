@@ -1065,10 +1065,15 @@ function _createAxiosOpt(method, pathPattern, options) {
     axiosOpt.onUploadProgress = options.onUploadProgress;
   }
 
+  axiosOpt.headers = axiosOpt.headers || {};
+
+  // 添加客户端时间
+  if (store.getters.SYSTEM_INFO('_WEB_CLIENT_TIME_HEADER')) {
+    axiosOpt.headers[store.getters.SYSTEM_INFO('_WEB_CLIENT_TIME_HEADER')] = new Date().toISOString();
+  }
+
   // 注入认证信息
   if (store.state.xAuthToken) {
-    axiosOpt.headers = axiosOpt.headers || {};
-
     axiosOpt.headers[store.getters.SYSTEM_INFO('_WEB_CLIENT_ID_HEADER')] = store.getters.clientId;
 
     let authHeaderField = store.getters.SYSTEM_INFO('_WEB_AUTH_HEADER');
@@ -1140,7 +1145,7 @@ async function _doAxios(axiosOpt) {
 
     // 升级监测
     let serverInfo = {
-      VERSION         : axiosRes.headers[store.getters.SYSTEM_INFO('_WEB_SERVER_VERSION_HEADER')],
+      VERSION          : axiosRes.headers[store.getters.SYSTEM_INFO('_WEB_SERVER_VERSION_HEADER')],
       RELEASE_TIMESTAMP: parseInt(axiosRes.headers[store.getters.SYSTEM_INFO('_WEB_SERVER_RELEASE_TIMESTAMP_HEADER')]),
     }
     store.dispatch('checkServerUpgradeInfo', serverInfo);
