@@ -289,20 +289,22 @@ successCount: 成功 {n}
                   type="danger"
                   size="mini">{{ $t('Edited') }}</el-tag>
                 <span>{{ node.label }}</span>
-                <el-tooltip v-if="data.type === 'func' && T.notNothing(data.queue)"
-                  effect="dark" :content="$t('Assigned to queue #{queue}', { queue: data.queue})" placement="top" :enterable="false">
-                  <el-tag size="mini">#{{ data.queue }}</el-tag>
-                </el-tooltip>
               </div>
             </span>
 
             <!-- 状态图标 -->
             <div>
-              <el-tooltip effect="dark" :content="data.isLockedByOther ? $t('Locked by other user ({user})', { user: data.lockedByUser }) : $t('Locked by you')" placement="top" :enterable="false">
-                <i class="fa fa-fw" :class="[ data.isLocked ? 'fa-lock':'', (data.isLockedByOther ? 'text-bad':'text-good') + (data.isLockedByScriptSet ? '-fade text-small':'') ]"></i>
+              <el-tooltip v-if="data.type === 'func' && T.notNothing(data.queue)"
+                effect="dark" :content="$t('Assigned to queue #{queue}', { queue: data.queue})" placement="top" :enterable="false">
+                <el-tag size="mini">#{{ data.queue }}</el-tag>
               </el-tooltip>
-              <el-tooltip effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
-                <i class="fa fa-fw text-bad" :class="[ data.isPinned ? 'fa-thumb-tack':'' ]"></i>
+              <el-tooltip v-if="data.isLocked"
+                effect="dark" :content="data.isLockedByOther ? $t('Locked by other user ({user})', { user: data.lockedByUser }) : $t('Locked by you')" placement="top" :enterable="false">
+                <i class="fa fa-fw fa-lock" :class="(data.isLockedByOther ? 'text-bad' : 'text-good') + (data.isLockedByScriptSet ? '-fade text-small' : '')"></i>
+              </el-tooltip>
+              <el-tooltip v-if="data.isPinned"
+                effect="dark" :content="$t('Pinned')" placement="top" :enterable="false">
+                <i class="fa fa-fw fa-thumb-tack text-bad"></i>
               </el-tooltip>
             </div>
           </div>
