@@ -87,7 +87,7 @@ def consume(context):
 
     start_task()
 
-if __name__ == '__main__':
+def main():
     # 打印提示信息
     queues = ', '.join(map(lambda q: f'#{q}', LISTINGING_QUEUES))
     pid = os.getpid()
@@ -103,3 +103,6 @@ if __name__ == '__main__':
     run_background(func=consume,
                    pool_size=CONFIG['_WORKER_CONCURRENCY'],
                    max_tasks=CONFIG['_WORKER_PROCESS_CONSUME_LIMIT'])
+
+if __name__ == '__main__':
+    main()

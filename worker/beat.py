@@ -28,6 +28,9 @@ from worker.tasks.example import ExampleSuccess
 from worker.tasks.crontab_starter import CrontabStarter
 from worker.tasks.internal import SystemMetric, FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache
 
+BEAT_MASTER_LOCK_KEY   = None
+BEAT_MASTER_LOCK_VALUE = None
+
 SYSTEM_CRONTAB = [
     # {
     #     # 示例
@@ -67,6 +70,18 @@ SYSTEM_CRONTAB = [
     },
 ]
 
+def is_master_beat():
+    REDIS.lock(BEAT_MASTER_LOCK_KEY, BEAT_MASTER_LOCK_VALUE, CONFIG['_BEAT_LOCK_EXPIRE'])
+
+    try:
+        REDIS.extend_lock_time(BEAT_MASTER_LOCK_KEY, BEAT_MASTER_LOCK_VALUE, CONFIG['_BEAT_LOCK_EXPIRE'])
+    except Exception as e:
+        # 锁为其他进程获得
+        return False
+    else:
+        # 成功续租锁
+        return True
+
 def get_matched_crontab_task_instances(t):
     result = []
     for item in SYSTEM_CRONTAB:
@@ -105,8 +120,9 @@ def tick(context):
         # 记录上次运行时间
         context['prev_tick_time'] = tick_time
 
-        # 记录运行 tick 数
-        REDIS.incr(toolkit.get_cache_key('beat', 'tick'))
+        # 防止多个 Beat 副本重复触发
+        if not is_master_beat():
+            continue
 
         # 分发配置了 Crontab 的任务
         task_instances = get_matched_crontab_task_instances(tick_time)
@@ -137,7 +153,7 @@ def tick(context):
                 if not cache_res:
                     break
 
-if __name__ == '__main__':
+def main():
     # 打印提示信息
     pid = os.getpid()
 
@@ -148,5 +164,14 @@ if __name__ == '__main__':
     # 应用初始化
     app_init.prepare()
 
+    # Beat 锁
+    global BEAT_MASTER_LOCK_KEY
+    global BEAT_MASTER_LOCK_VALUE
+    BEAT_MASTER_LOCK_KEY   = toolkit.get_cache_key('lock', 'beatMaster')
+    BEAT_MASTER_LOCK_VALUE = toolkit.gen_rand_string()
+
     # 启动后台
     run_background(func=tick, max_tasks=3600)
+
+if __name__ == '__main__':
+    main()

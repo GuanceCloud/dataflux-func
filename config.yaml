@@ -259,6 +259,9 @@ _WEB_PULL_LOG_TRACE_ID              : TRACE-PULLLOGS
 _WEB_SERVER_VERSION_HEADER          : X-Dff-Version
 _WEB_SERVER_RELEASE_TIMESTAMP_HEADER: X-Dff-Release-Timestamp
 
+# Beat 模块一般作为常量的配置
+_BEAT_LOCK_EXPIRE: 5
+
 # 订阅模块一般作为常量的配置
 _SUB_BUFFER_LIMIT         : 10000
 _SUB_RECENT_CONSUME_EXPIRE: 604800

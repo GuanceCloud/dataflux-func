@@ -963,7 +963,7 @@ class FuncThreadHelper(object):
             pool_size = CONFIG['_FUNC_TASK_THREAD_POOL_SIZE']
             FUNC_THREAD_POOL = ThreadPoolExecutor(pool_size)
 
-        key = key or toolkit.gen_data_id('async')
+        key = str(key or toolkit.gen_data_id('async'))
         self._task.logger.debug(f'[THREAD POOL] Submit Key=`{key}`')
 
         if key in self.result_map:
@@ -987,6 +987,8 @@ class FuncThreadHelper(object):
 
         keys = key or list(self.result_map.keys())
         for k in toolkit.as_array(keys):
+            k = str(k)
+
             collected_res[k] = None
 
             future_res = self.result_map.get(k)
@@ -1003,12 +1005,59 @@ class FuncThreadHelper(object):
             except Exception as e:
                 error = e
             finally:
-                collected_res[k] = (retval, error)
+                collected_res[k] = retval or error
 
         if key:
             return collected_res.get(key)
         else:
             return collected_res
+
+    def pop_result(self, wait=True):
+        global FUNC_THREAD_POOL
+
+        if not self.result_map:
+            return None
+
+        if wait is None:
+            wait = True
+
+        key_to_pop = None
+        while True:
+            for key, future_res in self.result_map.items():
+                if future_res.done():
+                    key_to_pop = key
+                    break
+
+            if key_to_pop is not None:
+                break
+
+            if wait:
+                time.sleep(1)
+            else:
+                break
+
+        if not key_to_pop:
+            return None
+
+        future_res = self.result_map.pop(key_to_pop)
+
+        retval = None
+        error  = None
+        try:
+            retval = future_res.result()
+        except Exception as e:
+            error = e
+        finally:
+            return retval or error
+
+    def is_all_finished(self):
+        if not self.result_map:
+            return True
+
+        return all([ future_res.done() for key, future_res in self.result_map.items() ])
+
+    def wait_all_finished(self):
+        self.get_result(wait=True)
 
 class BaseFuncEntityHelper(object):
     _table         = None
@@ -1853,8 +1902,8 @@ class FuncBaseTask(BaseTask):
             'REDIRECT'       : FuncRedirect,          # 重定向响应体
 
             'FUNC'     : __call_func,      # 调用函数（产生新 Task）
-            'BLUEPRINT': __call_blueprint, # 调用蓝图（产生新Task）
-            'THREAD'   : __thread_helper,  # 多线程处理模块
+            'BLUEPRINT': __call_blueprint, # 调用蓝图（产生新 Task）
+            'THREAD'   : __thread_helper,  # 多线程处理模块（不产生新 Task）
 
             'TASK'        : self,          # 当前任务
             'SYS_DB'      : self.db,       # 当前 DataFlux Func 数据库
