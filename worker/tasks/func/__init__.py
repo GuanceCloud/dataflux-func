@@ -10,7 +10,7 @@ from types import ModuleType
 import time
 import importlib
 import functools
-from concurrent.futures import ThreadPoolExecutor
+import concurrent
 
 # 3rd-party Modules
 import six
@@ -260,7 +260,7 @@ class FuncConnectorHelper(object):
         config = toolkit.json_loads(connector['configJSON'])
         config = decipher_connector_config_fields(config)
 
-        helper = helper_class(self._task.logger, config, pool_size=CONFIG['_FUNC_TASK_THREAD_POOL_SIZE'], **helper_kwargs)
+        helper = helper_class(self._task.logger, config, pool_size=CONFIG['_FUNC_TASK_CONNECTOR_POOL_SIZE'], **helper_kwargs)
         return helper
 
     def reload_config_md5(self, connector_id):
@@ -949,21 +949,40 @@ class FuncRedirect(FuncResponse):
                          content_type='html',
                          headers=headers)
 
+class FuncThreadResult(object):
+    def __init__(self, value, error=None):
+        self.value = value
+        self.error = error
+
 class FuncThreadHelper(object):
     def __init__(self, task):
         self._task = task
         self.result_map = {}
 
-    def start(self, fn, args=None, kwargs=None, key=None):
+    def set_pool_size(self, pool_size=None):
+        global FUNC_THREAD_POOL
+
+        if pool_size is None:
+            pool_size = CONFIG['_FUNC_TASK_THREAD_POOL_DEFAULT_SIZE']
+
+        if FUNC_THREAD_POOL:
+            raise Exception('Pool is already created.')
+
+        if not isinstance(pool_size, (int, float)) or pool_size <= 0:
+            raise Exception('Invalid pool size, should be an integer which is greater than 0')
+
+        pool_size = int(pool_size)
+
+        FUNC_THREAD_POOL = concurrent.futures.ThreadPoolExecutor(max_workers=pool_size)
+        self._task.logger.debug(f"[THREAD POOL] Pool Create (size={pool_size})")
+
+    def submit(self, fn, *args, **kwargs):
         global FUNC_THREAD_POOL
 
         if not FUNC_THREAD_POOL:
-            self._task.logger.debug('[THREAD POOL] Create Pool')
+            self.set_pool_size()
 
-            pool_size = CONFIG['_FUNC_TASK_THREAD_POOL_SIZE']
-            FUNC_THREAD_POOL = ThreadPoolExecutor(pool_size)
-
-        key = str(key or toolkit.gen_data_id('async'))
+        key = toolkit.gen_data_id('thread-result')
         self._task.logger.debug(f'[THREAD POOL] Submit Key=`{key}`')
 
         if key in self.result_map:
@@ -974,14 +993,11 @@ class FuncThreadHelper(object):
         kwargs = kwargs or {}
         self.result_map[key] = FUNC_THREAD_POOL.submit(fn, *args, **kwargs)
 
-    def get_result(self, wait=True, key=None):
-        global FUNC_THREAD_POOL
+        return key
 
+    def get_result(self, wait=True, key=None):
         if not self.result_map:
             return None
-
-        if wait is None:
-            wait = True
 
         collected_res = {}
 
@@ -998,14 +1014,14 @@ class FuncThreadHelper(object):
             if not future_res.done() and not wait:
                 continue
 
-            retval = None
-            error  = None
+            value = None
+            error = None
             try:
-                retval = future_res.result()
+                value = future_res.result()
             except Exception as e:
                 error = e
             finally:
-                collected_res[k] = retval or error
+                collected_res[k] = FuncThreadResult(value=value, error=error)
 
         if key:
             return collected_res.get(key)
@@ -1013,42 +1029,38 @@ class FuncThreadHelper(object):
             return collected_res
 
     def pop_result(self, wait=True):
-        global FUNC_THREAD_POOL
-
         if not self.result_map:
             return None
 
-        if wait is None:
-            wait = True
-
-        key_to_pop = None
+        finished_key = None
         while True:
+            # 查找已经结束的结果
             for key, future_res in self.result_map.items():
                 if future_res.done():
-                    key_to_pop = key
+                    finished_key = key
                     break
 
-            if key_to_pop is not None:
-                break
+            # 未找到，且需要等待
+            if not finished_key and wait:
+                for _ in concurrent.futures.wait(self.result_map.values(), return_when=concurrent.futures.FIRST_COMPLETED):
+                    break
+                continue
 
-            if wait:
-                time.sleep(1)
-            else:
-                break
+            break
 
-        if not key_to_pop:
+        if finished_key is None:
             return None
 
-        future_res = self.result_map.pop(key_to_pop)
+        future_res = self.result_map.pop(finished_key)
 
-        retval = None
-        error  = None
+        value = None
+        error = None
         try:
-            retval = future_res.result()
+            value = future_res.result()
         except Exception as e:
             error = e
         finally:
-            return retval or error
+            return FuncThreadResult(value=value, error=error)
 
     def is_all_finished(self):
         if not self.result_map:
@@ -2076,7 +2088,13 @@ class FuncBaseTask(BaseTask):
             exc_type = exc_obj = tb = None
 
     def clean_up(self):
-        pass
+        global FUNC_THREAD_POOL
+
+        if FUNC_THREAD_POOL:
+            FUNC_THREAD_POOL.shutdown(wait=True)
+            self.logger.debug(f"[THREAD POOL] Pool Shutdown")
+
+        FUNC_THREAD_POOL = None
 
     def buff_task_record(self, *args, **kwargs):
         # 函数任务不进行一般任务记录
