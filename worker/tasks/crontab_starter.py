@@ -143,6 +143,9 @@ class CrontabStarter(BaseTask):
         if not tasks:
             return
 
+        for g in toolkit.group_by_count(tasks, count=500):
+            self.logger.debug(f"[PUT TASK] {', '.join([ t.get('originId') for t in g ])}")
+
         task_reqs = []
         for t in tasks:
             crontab_config = t.get('crontabConfig')
@@ -172,8 +175,6 @@ class CrontabStarter(BaseTask):
                         'execMode',        exec_mode])
 
                 crontab_lock_value = f"{int(time.time())}-{toolkit.gen_uuid()}"
-
-                self.logger.debug(f"originId=`{origin_id}` => #{queue}")
 
                 # 任务请求
                 task_reqs.append({
