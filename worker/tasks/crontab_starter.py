@@ -57,10 +57,13 @@ class CrontabStarter(BaseTask):
                 )) AS `crontab`
 
             FROM `biz_main_func` AS `func`
+
             WHERE
                 `func`.`integration` = 'autoRun'
+
             HAVING
                 `crontab` IS NOT NULL
+
             ORDER BY
             	`func`.`id`
             '''
