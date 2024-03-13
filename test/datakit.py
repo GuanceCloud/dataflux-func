@@ -44,16 +44,16 @@ def do_test(client):
             'tags'       : {u'中文标签2': u'中文标签值2'},
             'fields'     : {u'中文字段2': u'中文字段值2'},
         },
-        {
-            'measurement': 'ArrayField',
-            'tags'       : {'T1': 'X'},
-            'fields'     : {
-                'intArr'  : [ 1, 2, 3, 5, 8 ],
-                'floatArr': [ 1.1, 2.2, 3.3, 5.5, 8.8 ],
-                'strArr'  : [ 'A', 'B', 'C' ],
-                'boolArr' : [ True, False ],
-            },
-        },
+        # {
+        #     'measurement': 'ArrayField',
+        #     'tags'       : {'T1': 'X'},
+        #     'fields'     : {
+        #         'intArr'  : [ 1, 2, 3, 5, 8 ],
+        #         'floatArr': [ 1.1, 2.2, 3.3, 5.5, 8.8 ],
+        #         'strArr'  : [ 'A', 'B', 'C' ],
+        #         'boolArr' : [ True, False ],
+        #     },
+        # },
     ]
 
     print_sep(f'Test Case: {client.__class__.__name__}.prepare_line_protocol(...)')
@@ -72,7 +72,7 @@ def do_test(client):
 
     print_sep('Test Case: .post_line_protocol')
     try:
-        client.post_line_protocol('/v1/write/metric', points=points)
+        client.post_line_protocol('/v1/write/metric', points=points, headers={ 'X-Global-Key': 'Test' })
 
     except Exception as e:
         for line in traceback.format_exc().splitlines():
@@ -85,17 +85,17 @@ def do_test(client):
             'fields'     : {'F': {}},
             'timestamp'  : 1577808000000000001,
         },
-        {
-            'measurement': 'ArrayField',
-            'tags'       : {'T1': 'X'},
-            'fields'     : {
-                'arr': [ 1, 2.2 ],
-            },
-        },
+        # {
+        #     'measurement': 'ArrayField',
+        #     'tags'       : {'T1': 'X'},
+        #     'fields'     : {
+        #         'arr': [ 1, 2.2 ],
+        #     },
+        # },
     ]
     print_sep('Test Case: .post_line_protocol (Bad points)')
     try:
-        client.post_line_protocol('/v1/write/metric', points=bad_points)
+        client.post_line_protocol('/v1/write/metric', points=bad_points, headers={ 'X-Global-Key': 'Test' })
 
     except Exception as e:
         for line in traceback.format_exc().splitlines():

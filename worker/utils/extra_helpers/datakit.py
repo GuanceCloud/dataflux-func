@@ -504,7 +504,7 @@ class BaseDataKit(object):
         }
         return prepared_data
 
-    def _write(self, path, measurement, tags=None, fields=None, timestamp=None, query=None):
+    def _write(self, path, measurement, tags=None, fields=None, timestamp=None, query=None, headers=None):
         data = {
             'measurement': measurement,
             'tags'       : tags,
@@ -517,9 +517,9 @@ class BaseDataKit(object):
 
         prepared_data = self._prepare_data(data)
 
-        return self.post_line_protocol(path=path, points=prepared_data, query=query)
+        return self.post_line_protocol(path=path, points=prepared_data, query=query, headers=headers)
 
-    def _write_many(self, path, data, query=None):
+    def _write_many(self, path, data, query=None, headers=None):
         data = as_array(data)
 
         # break obj reference
@@ -529,27 +529,27 @@ class BaseDataKit(object):
         for d in data:
             prepared_data.append(self._prepare_data(d))
 
-        return self.post_line_protocol(path=path, points=prepared_data, query=query)
+        return self.post_line_protocol(path=path, points=prepared_data, query=query, headers=headers)
 
-    def write_by_category(self, category, measurement, tags=None, fields=None, timestamp=None):
+    def write_by_category(self, category, measurement, tags=None, fields=None, timestamp=None, headers=None):
         path = '/v1/write/{0}'.format(category)
-        return self._write(path, measurement, tags, fields, timestamp)
+        return self._write(path, measurement, tags, fields, timestamp, headers=headers)
 
-    def write_by_category_many(self, category, data):
+    def write_by_category_many(self, category, data, headers=None):
         path = '/v1/write/{0}'.format(category)
-        return self._write_many(path, data)
+        return self._write_many(path, data, headers=headers)
 
-    def write_metric(self, measurement, tags=None, fields=None, timestamp=None):
-        return self._write('/v1/write/metric', measurement, tags, fields, timestamp)
+    def write_metric(self, measurement, tags=None, fields=None, timestamp=None, headers=None):
+        return self._write('/v1/write/metric', measurement, tags, fields, timestamp, headers=headers)
 
-    def write_metric_many(self, data):
-        return self._write_many('/v1/write/metric', data)
+    def write_metric_many(self, data, headers=None):
+        return self._write_many('/v1/write/metric', data, headers=headers)
 
-    def write_logging(self, measurement, tags=None, fields=None, timestamp=None):
-        return self._write('/v1/write/logging', measurement, tags, fields, timestamp)
+    def write_logging(self, measurement, tags=None, fields=None, timestamp=None, headers=None):
+        return self._write('/v1/write/logging', measurement, tags, fields, timestamp, headers=headers)
 
-    def write_logging_many(self, data):
-        return self._write_many('/v1/write/logging', data)
+    def write_logging_many(self, data, headers=None):
+        return self._write_many('/v1/write/logging', data, headers=headers)
 
     def query(self, dql, all_series=False, dict_output=False, raw=False, token=None, **kwargs):
         q = {
@@ -647,6 +647,7 @@ class BaseDataKit(object):
 
         return status_code, unpacked_dql_res
 
+    # 别名
     def write_point(self, *args, **kwargs):
         return self.write_metric(*args, **kwargs)
 
