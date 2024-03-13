@@ -92,6 +92,10 @@ def get_matched_crontab_task_instances(t):
             task_inst = item['task'](kwargs=item.get('kwargs'), trigger_time=t)
             result.append(task_inst)
 
+        else:
+            if item['task'] is CrontabStarter and t % 60 == 0:
+                print(t, CONFIG['TIMEZONE'], 'Crontab.Starter not matched!')
+
     return result
 
 class TickTimeoutException(Exception):
@@ -125,7 +129,6 @@ def tick(context):
             continue
 
         # 分发配置了 Crontab 的任务
-        print(tick_time)
         task_instances = get_matched_crontab_task_instances(tick_time)
         for task_inst in task_instances:
             # 创建任务请求

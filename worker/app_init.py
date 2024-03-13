@@ -144,10 +144,6 @@ def prepare():
         })
 
         REDIS.put_tasks({
-            'name': AutoBackupDB.name,
-        })
-
-        REDIS.put_tasks({
             'name'  : ReloadDataMD5Cache.name,
             'kwargs': { 'lockTime': 15, 'all': True },
         })
