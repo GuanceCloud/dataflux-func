@@ -768,6 +768,12 @@ kafka.publish(topic='some_topic', message='some_message')`,
         icon   : 'el-icon-time',
       },
       {
+        key    : 'expire',
+        name   : i18n.t('Expire'),
+        tagType: 'warning',
+        icon   : 'el-icon-time',
+      },
+      {
         key    : 'skip',
         name   : i18n.t('Skip'),
         tagType: 'warning',

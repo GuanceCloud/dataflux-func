@@ -412,6 +412,7 @@ en:
   # const.js - TASK_STATUS
   Success: 成功
   Failure: 失败
+  Expire : 过期
   # Timeout: 超时
   Skip   : 跳过
   Pending: 执行中

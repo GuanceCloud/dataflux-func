@@ -19,9 +19,6 @@ CONFIG = yaml_resources.get('CONFIG')
 class CrontabStarter(BaseTask):
     name = 'Crontab.Starter'
 
-    default_expires = CONFIG['_CRONTAB_STARTER_TASK_TIMEOUT']
-    default_timeout = CONFIG['_CRONTAB_STARTER_TASK_TIMEOUT']
-
     @property
     def is_paused(self):
         cache_key = toolkit.get_global_cache_key('tempFlag', 'pauseAllCrontabConfigs')
@@ -74,6 +71,7 @@ class CrontabStarter(BaseTask):
         # 准备 / 过滤自动触发配置
         crontab_configs = map(self.prepare_contab_config, crontab_configs)
         crontab_configs = filter(self.filter_crontab_config, crontab_configs)
+
         return crontab_configs
 
     def fetch_crontab_configs(self, next_seq):
@@ -98,6 +96,9 @@ class CrontabStarter(BaseTask):
                 AND `cron`.`isDisabled` = FALSE
                 AND `func`.`id`         IS NOT NULL
                 AND IFNULL(UNIX_TIMESTAMP(`cron`.`expireTime`) > UNIX_TIMESTAMP(), TRUE)
+
+            ORDER BY
+                `cron`.`seq` ASC
 
             LIMIT ?
             '''
@@ -126,9 +127,10 @@ class CrontabStarter(BaseTask):
 
                 c['tempCrontab'] = temp_config['tempCrontab']
 
-        # 准备 / 过滤自动触发配置
-        crontab_configs = map(self.prepare_contab_config, crontab_configs)
-        crontab_configs = filter(self.filter_crontab_config, crontab_configs)
+            # 准备 / 过滤自动触发配置
+            crontab_configs = map(self.prepare_contab_config, crontab_configs)
+            crontab_configs = filter(self.filter_crontab_config, crontab_configs)
+
         return crontab_configs, latest_seq
 
     def put_tasks(self, tasks, ignore_crontab_delay=False):
@@ -146,7 +148,7 @@ class CrontabStarter(BaseTask):
 
             # 超时时间 / 过期时间
             timeout = crontab_config['funcExtraConfig'].get('timeout') or CONFIG['_FUNC_TASK_TIMEOUT_DEFAULT']
-            expires = timeout
+            expires = crontab_config['funcExtraConfig'].get('expires') or CONFIG['_FUNC_TASK_EXPIRES_DEFAULT']
 
             # 确定执行队列
             queue = crontab_config['funcExtraConfig'].get('queue') or CONFIG['_FUNC_TASK_QUEUE_CRONTAB']
@@ -188,7 +190,7 @@ class CrontabStarter(BaseTask):
                     'queue'          : queue,
                     'delay'          : crontab_delay + delay,
                     'timeout'        : timeout,
-                    'expires'        : expires,
+                    'expires'        : crontab_delay + delay + expires,
                     'taskRecordLimit': crontab_config.get('taskRecordLimit'),
                 })
 

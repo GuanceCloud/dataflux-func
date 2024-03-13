@@ -37,6 +37,10 @@ class TaskTimeoutException(Exception):
     def __init__(self, *args, **kwargs):
         super().__init__('Task execution takes too much time and has been interrupted by force')
 
+class TaskExpireException(Exception):
+    def __init__(self, *args, **kwargs):
+        super().__init__('Task waited takes too much time and has been interrupted by force')
+
 class BaseTask(object):
     '''
     Base task class
@@ -476,6 +480,10 @@ class BaseTask(object):
 
         # 调用子类 run() 函数
         try:
+            # 检查任务过期
+            if self.expires and self.wait_cost > self.expires * 1000:
+                raise TaskExpireException()
+
             self.logger.info(f'[START] {self.name}')
             self.result = self.run(**self.kwargs)
 
@@ -488,6 +496,17 @@ class BaseTask(object):
         except TaskTimeoutException as e:
             # 任务超时
             self.status = 'timeout'
+
+            # 可替换错误信息、堆栈信息
+            self.exception = self.exception or e
+            self.traceback = self.traceback or traceback.format_exc()
+
+            for line in self.traceback.splitlines():
+                self.logger.error(line)
+
+        except TaskExpireException as e:
+            # 任务过期
+            self.status = 'expire'
 
             # 可替换错误信息、堆栈信息
             self.exception = self.exception or e

@@ -1056,7 +1056,9 @@ class AutoRun(BaseInternalTask):
             if f['timeout']:
                 timeout = int(f['timeout'])
 
-            expires = timeout
+            expires = CONFIG['_FUNC_TASK_EXPIRES_DEFAULT']
+            if f['expires']:
+                expires = int(f['expires'])
 
             task_req = {
                 'name': 'Func.Runner',

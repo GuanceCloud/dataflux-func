@@ -123,6 +123,7 @@ zh-HK:
   Example: 示例
   Exit: 退出
   Experimental Features: 實驗性功能
+  Expire: 過期
   Export: 導出
   Extract output folder already existed: 解壓輸出目錄已經存在
   Failure: 失敗
@@ -556,6 +557,7 @@ zh-TW:
   Example: 示例
   Exit: 退出
   Experimental Features: 實驗性功能
+  Expire: 過期
   Export: 匯出
   Extract output folder already existed: 解壓輸出目錄已經存在
   Failure: 失敗

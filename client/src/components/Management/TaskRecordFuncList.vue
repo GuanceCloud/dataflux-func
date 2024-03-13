@@ -17,6 +17,8 @@ connector    : Connector
 'End Time: '    : 'End Time    : '
 'Delay Time: '  : 'Delay Time  : '
 'Queuing Time: ': 'Queuing Time: '
+'Task Timeout: ': 'Task Timeout: '
+'Task Expires: ': 'Task Expires: '
 'Run Cost: '    : 'Run Cost    : '
 'Task Type: '   : 'Task Type   : '
 'Task Status: ' : 'Task Status : '
@@ -78,6 +80,8 @@ connector    : 连接器
 'Trigger Time: '   : '触发时间：'
 'Start Time: '     : '开始时间：'
 'End Time: '       : '结束时间：'
+'Task Timeout: '   : '任务超时：'
+'Task Expires: '   : '任务过期：'
 'Delay Time: '     : '延迟执行：'
 'Queuing Time: '   : '排队等待：'
 'Run Cost: '       : '执行耗时：'
@@ -123,8 +127,10 @@ Show Detail: 顯示詳情
 'Start Time: ': 開始時間：
 Sub Task: 子任務
 Task: 任務
+'Task Expires: ': 任務過期：
 Task Record cleared: 任務記錄已清空
 'Task Status: ': 任務狀態：
+'Task Timeout: ': 任務超時：
 'Task Type: ': 任務類型：
 Traceback: 調用堆棧
 Trigger Time: 觸發時間
@@ -177,8 +183,10 @@ Show Detail: 顯示詳情
 'Start Time: ': 開始時間：
 Sub Task: 子任務
 Task: 任務
+'Task Expires: ': 任務過期：
 Task Record cleared: 任務記錄已清空
 'Task Status: ': 任務狀態：
+'Task Timeout: ': 任務超時：
 'Task Type: ': 任務型別：
 Traceback: 呼叫堆疊
 Trigger Time: 觸發時間
@@ -479,6 +487,13 @@ export default {
       // 队列
       lines.push(`${this.$t('Queue: ')}#${d.queue}`);
 
+      // 任务类型
+      lines.push(`${this.$t('Task Type: ')}${d.rootTaskId === 'ROOT' ? this.$t('Main Task') : this.$t('Sub Task')}`);
+
+      // 任务超时 / 过期
+      lines.push(`${this.$t('Task Timeout: ')}${d.timeout} ${this.$t('s')}`);
+      lines.push(`${this.$t('Task Expires: ')}${d.expires} ${this.$t('s')}`);
+
       // 时间
       lines.push(`${this.$t('Trigger Time: ')}${this.T.getDateTimeString(d.triggerTimeMs)} ${this.$t('(')}${this.T.fromNow(d.triggerTimeMs)}${this.$t(')')}`);
       lines.push(`${this.$t('Start Time: ')}${this.T.getDateTimeString(d.startTimeMs)} ${this.$t('(')}${this.T.fromNow(d.startTimeMs)}${this.$t(')')}`);
@@ -494,9 +509,6 @@ export default {
       // 耗时
       lines.push(`${this.$t('Queuing Time: ')}${d.queuingTime} ${this.$t('ms')}`);
       lines.push(`${this.$t('Run Cost: ')}${d.runCostMs} ${this.$t('ms')}`);
-
-      // 任务类型
-      lines.push(`${this.$t('Task Type: ')}${d.rootTaskId === 'ROOT' ? this.$t('Main Task') : this.$t('Sub Task')}`);
 
       // 任务状态
       lines.push(`${this.$t('Task Status: ')}${this.$t(d.status)}`);

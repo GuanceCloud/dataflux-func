@@ -283,15 +283,37 @@ function createFuncRunnerTaskReq(locals, options, callback) {
       }
     }
 
-    // 任务过期 taskReq.expires
-    switch(options.origin) {
-      case 'batch':
-        delete taskReq.expires;
-        break;
+    // 任务执行超时 taskReq.expires
+    //    优先级：调用时指定 > 函数配置 > 默认值
+    if (toolkit.notNothing(options.expires)) {
+      // 调用时指定
+      options.expires = parseInt(options.expires);
 
-      default:
-        taskReq.expires = taskReq.timeout;
-        break;
+      if (options.expires < CONFIG._FUNC_TASK_EXPIRES_MIN) {
+        return callback(new E('EClientBadRequest', 'Invalid options, expires is too small', { min: CONFIG._FUNC_TASK_EXPIRES_MIN }));
+      }
+      if (options.expires > CONFIG._FUNC_TASK_EXPIRES_MAX) {
+        return callback(new E('EClientBadRequest', 'Invalid options, expires is too large', { max: CONFIG._FUNC_TASK_EXPIRES_MAX }));
+      }
+
+      taskReq.expires = options.expires;
+
+    } else if (toolkit.notNothing(func.extraConfigJSON.expires)) {
+      // 函数配置
+      taskReq.expires = parseInt(func.extraConfigJSON.expires);
+
+    } else {
+      // 默认值
+      switch(options.origin) {
+        case 'batch':
+          // 批处理不会过期
+          delete taskReq.expires;
+          break;
+
+        default:
+          taskReq.expires = CONFIG._FUNC_TASK_EXPIRES_DEFAULT;
+          break;
+      }
     }
 
     // 返回类型 taskReq.returnType

@@ -1440,14 +1440,14 @@ class FuncBaseTask(BaseTask):
             return importlib.__import__(name, globals=globals, locals=locals, fromlist=fromlist, level=level)
 
     def _export_as_api(self, safe_scope, title,
-        # 控制类参数
-        fixed_crontab=None, delayed_crontab=None, timeout=None, api_timeout=None, cache_result=None, queue=None,
-        # 标记类参数
-        category=None, tags=None,
-        # 集成处理参数
-        integration=None, integration_config=None,
-        # 文档控制类参数
-        is_hidden=False):
+                    # 控制类参数
+                    fixed_crontab=None, delayed_crontab=None, timeout=None, api_timeout=None, expires=None, cache_result=None, queue=None,
+                    # 标记类参数
+                    category=None, tags=None,
+                    # 集成处理参数
+                    integration=None, integration_config=None,
+                    # 文档控制类参数
+                    is_hidden=False):
         ### 参数检查/预处理 ###
         extra_config = {}
 
@@ -1499,6 +1499,20 @@ class FuncBaseTask(BaseTask):
                 raise e
 
             extra_config['timeout'] = timeout
+
+        # 任务过期
+        if expires is not None:
+            if not isinstance(expires, six.integer_types):
+                e = InvalidAPIOptionException('`expires` should be an integer or long')
+                raise e
+
+            _min_expires = CONFIG['_FUNC_TASK_EXPIRES_MIN']
+            _max_expires = CONFIG['_FUNC_TASK_EXPIRES_MAX']
+            if not (_min_expires <= expires <= _max_expires):
+                e = InvalidAPIOptionException(f'`expires` should be between `{_min_expires}` and `{_max_expires}` (seconds)')
+                raise e
+
+            extra_config['expires'] = expires
 
         # 结果缓存
         if cache_result is not None:
@@ -1683,7 +1697,9 @@ class FuncBaseTask(BaseTask):
         if func_extra_config.get('timeout'):
             timeout = func_extra_config['timeout']
 
-        expires = timeout
+        expires = CONFIG['_FUNC_TASK_EXPIRES_DEFAULT']
+        if func_extra_config.get('expires'):
+            expires = func_extra_config['expires']
 
         # 任务请求
         task_req = {
