@@ -117,6 +117,7 @@ def tick(context):
     prev_tick_time = context.get('prev_tick_time') or (next_timestamp - 1)
     for tick_time in range(prev_tick_time, next_timestamp):
         tick_time += 1
+        print(tick_time)
 
         # 记录上次运行时间
         context['prev_tick_time'] = tick_time
