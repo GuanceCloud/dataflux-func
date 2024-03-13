@@ -63,13 +63,13 @@ exports.list = function(req, res, next) {
     // 追加临时 Crontab 配置
     function(asyncCallback) {
       var dataIds  = toolkit.arrayElementValues(listData, 'id');
-      var cacheKey = toolkit.getGlobalCacheKey('tempConfig', 'crontabConfig');
+      var cacheKey = toolkit.getGlobalCacheKey('tempConfig', 'dynamicCrontab');
       res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         var now = parseInt(Date.now() / 1000);
         listData.forEach(function(d) {
-          d.tempCrontab = null;
+          d.dynamicCrontab = null;
 
           var tempConfig = cacheRes[d.id];
           if (!tempConfig) return;
@@ -77,7 +77,7 @@ exports.list = function(req, res, next) {
           tempConfig = JSON.parse(tempConfig);
           if (tempConfig.expireTime && tempConfig.expireTime < now) return;
 
-          d.tempCrontab = tempConfig.tempCrontab;
+          d.dynamicCrontab = tempConfig.value;
         });
 
         return asyncCallback();

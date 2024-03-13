@@ -623,9 +623,46 @@ class AutoClean(BaseInternalTask):
             '''
         self.db.query(sql)
 
-    def clear_expired_temp_configs(self):
-        # TODO
-        pass
+    def clear_expired_dynamic_crontab(self):
+        cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
+        cache_res = self.cache_db.hgetall(cache_key)
+        if not cache_res:
+            return
+
+        crontab_config_ids_to_delete = []
+        for crontab_config_id, temp_config in cache_res.items():
+            temp_config = toolkit.json_loads(temp_config)
+            if temp_config['expireTime'] and temp_config['expireTime'] < self.trigger_time:
+                crontab_config_ids_to_delete.append(crontab_config_id)
+
+        if crontab_config_ids_to_delete:
+            self.cache_db.hdel(cache_key, crontab_config_ids_to_delete)
+
+    def clear_outdated_recent_triggered_data(self):
+        origin_table_map = {
+            'authLink'     : 'biz_main_auth_link',
+            'crontabConfig': 'biz_main_crontab_config',
+            'batch'        : 'biz_main_batch',
+        }
+        for origin, table in origin_table_map.items():
+            cache_key = toolkit.get_global_cache_key('cache', 'recentTaskTriggered', [ 'origin', origin ])
+
+            # 获取所有 ID 记录
+            sql = 'SELECT id FROM ??'
+            db_res = self.db.query(sql, [ table ])
+
+            if not db_res:
+                # 删除所有
+                self.cache_db.delete(cache_key)
+
+            else:
+                # 删除不存在
+                all_ids = { d['id'] for d in db_res}
+                cached_ids = set(self.cache_db.hkeys(cache_key))
+                outdated_ids = cached_ids - all_ids
+
+                if outdated_ids:
+                    self.cache_db.hdel(cache_key, outdated_ids)
 
     def run(self, **kwargs):
         # 上锁
@@ -651,6 +688,12 @@ class AutoClean(BaseInternalTask):
 
         # 清理已过期的函数存储
         self.safe_call(self.clear_expired_func_store)
+
+        # 清除已经过期的动态 Crontab 配置
+        self.safe_call(self.clear_expired_dynamic_crontab)
+
+        # 清理已过时的最近触发记录
+        self.safe_call(self.clear_outdated_recent_triggered_data)
 
 class AutoBackupDB(BaseInternalTask):
     name = 'Internal.AutoBackupDB'

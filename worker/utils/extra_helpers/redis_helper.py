@@ -254,16 +254,6 @@ class RedisHelper(object):
     def mget(self, keys, *args):
         return self.run('mget', keys, *args)
 
-    def get_by_pattern(self, pattern):
-        if not self.skip_log:
-            self.logger.debug('[REDIS] GET by pattern `{}`'.format(pattern))
-
-        keys = self.keys(pattern)
-        if len(keys) <= 0:
-            return None
-        else:
-            return self.mget(keys)
-
     def mset(self, key_values, **kwargs):
         return self.run('mset', key_values, **kwargs)
 
@@ -277,16 +267,6 @@ class RedisHelper(object):
         if not isinstance(keys, list):
             keys = [keys]
         return self.run('delete', *keys)
-
-    def del_by_pattern(self, pattern):
-        if not self.skip_log:
-            self.logger.debug('[REDIS] DEL by pattern `{}`'.format(pattern))
-
-        keys = self.keys(pattern)
-        if len(keys) <= 0:
-            return None
-        else:
-            return self.delete(keys)
 
     def expire(self, key, expires):
         if expires <= 0:
@@ -416,6 +396,26 @@ class RedisHelper(object):
 
     def info(self):
         return self.run('info')
+
+    def get_by_pattern(self, pattern):
+        if not self.skip_log:
+            self.logger.debug('[REDIS] GET by pattern `{}`'.format(pattern))
+
+        keys = self.keys(pattern)
+        if len(keys) <= 0:
+            return None
+        else:
+            return self.mget(keys)
+
+    def del_by_pattern(self, pattern):
+        if not self.skip_log:
+            self.logger.debug('[REDIS] DEL by pattern `{}`'.format(pattern))
+
+        keys = self.keys(pattern)
+        if len(keys) <= 0:
+            return None
+        else:
+            return self.delete(keys)
 
     def lock(self, lock_key, lock_value, max_lock_time):
         if max_lock_time <= 0:

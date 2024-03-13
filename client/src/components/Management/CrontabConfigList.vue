@@ -19,7 +19,7 @@ Pause for 12 hours  : 暂停 12 小时
 Pause for 1 day     : 暂停 1 天
 
 Fixed      : 固定
-Temp       : 临时
+Dynamic    : 动态
 Not Set    : 未配置
 Config     : 配置
 Created    : 创建
@@ -68,6 +68,7 @@ Crontab Config enabled: 自動觸發配置已啓用
 Crontab Configs can temporarily pause globally: 自動觸發配置可以臨時全局暫停
 Crontab Configs has been paused globally: 自動觸發配置已全局暫停
 Crontab Configs has been paused globally, will resume in {0}: 自動觸發配置已全局暫停，將在 {0} 後繼續
+Dynamic: 動態
 Expires: 過期
 Fixed: 固定
 No Crontab Config has ever been added: 從未添加過任何自動觸發配置
@@ -87,7 +88,6 @@ Show Full Records: 顯示完整記錄
 Show all contents: 展示全部內容
 Since Prev Crontab: 距上次 Crontab 觸發
 Task Record: 任務記錄
-Temp: 臨時
 Trigger Time: 觸發時間
 Triggered Manually: 手動觸發
 Using Crontab Config, you can have functions executed at regular intervals: 使用自動觸發配置，可以讓函數定時執行
@@ -109,6 +109,7 @@ Crontab Config enabled: 自動觸發配置已啟用
 Crontab Configs can temporarily pause globally: 自動觸發配置可以臨時全域性暫停
 Crontab Configs has been paused globally: 自動觸發配置已全域性暫停
 Crontab Configs has been paused globally, will resume in {0}: 自動觸發配置已全域性暫停，將在 {0} 後繼續
+Dynamic: 動態
 Expires: 過期
 Fixed: 固定
 No Crontab Config has ever been added: 從未新增過任何自動觸發配置
@@ -128,7 +129,6 @@ Show Full Records: 顯示完整記錄
 Show all contents: 展示全部內容
 Since Prev Crontab: 距上次 Crontab 觸發
 Task Record: 任務記錄
-Temp: 臨時
 Trigger Time: 觸發時間
 Triggered Manually: 手動觸發
 Using Crontab Config, you can have functions executed at regular intervals: 使用自動觸發配置，可以讓函式定時執行
@@ -254,9 +254,9 @@ lastSucceeded: '{t}執行成功'
           <el-table-column :label="$t('Config')" width="240">
             <template slot-scope="scope">
               <span class="text-info">Crontab{{ $t(':') }}</span>
-              <template v-if="scope.row.tempCrontab">
-                <code class="text-bad">{{ scope.row.tempCrontab }}</code>
-                <el-tag type="danger" size="mini">{{ $t('Temp') }}</el-tag>
+              <template v-if="scope.row.dynamicCrontab">
+                <code class="text-bad">{{ scope.row.dynamicCrontab }}</code>
+                <el-tag type="danger" size="mini">{{ $t('Dynamic') }}</el-tag>
               </template>
               <template v-else-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCrontab">
                 <code class="text-main">{{ scope.row.func_extraConfigJSON.fixedCrontab }}</code>

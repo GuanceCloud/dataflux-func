@@ -34,7 +34,7 @@ class CrontabStarter(BaseTask):
         if isinstance(crontab_config['funcExtraConfig'], str):
             crontab_config['funcExtraConfig'] = toolkit.json_loads(crontab_config['funcExtraConfig']) or {}
 
-        crontab_config['crontab'] = crontab_config.get('tempCrontab') or crontab_config['funcExtraConfig'].get('fixedCrontab') or crontab_config.get('crontab')
+        crontab_config['crontab'] = crontab_config.get('dynamicCrontab') or crontab_config['funcExtraConfig'].get('fixedCrontab') or crontab_config.get('crontab')
 
         return crontab_config
 
@@ -117,7 +117,7 @@ class CrontabStarter(BaseTask):
 
             # 优先使用临时 Crontab
             crontab_config_ids = [ c['id'] for c in crontab_configs]
-            cache_key = toolkit.get_global_cache_key('tempConfig', 'crontabConfig')
+            cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
             cache_res = self.cache_db.hmget(cache_key, crontab_config_ids) or {}
 
             for c in crontab_configs:
@@ -130,7 +130,7 @@ class CrontabStarter(BaseTask):
                 if temp_config['expireTime'] and temp_config['expireTime'] < self.trigger_time:
                     continue
 
-                c['tempCrontab'] = temp_config['tempCrontab']
+                c['dynamicCrontab'] = temp_config['value']
 
             # 准备 / 过滤自动触发配置
             crontab_configs = map(self.prepare_contab_config, crontab_configs)
@@ -280,12 +280,12 @@ class CrontabManualStarter(CrontabStarter):
         crontab_config = crontab_configs[0]
 
         # 优先使用临时 Crontab
-        cache_key = toolkit.get_global_cache_key('tempConfig', 'crontabConfig')
+        cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
         temp_config = self.cache_db.hget(cache_key, crontab_config['id']) or {}
         if temp_config:
             temp_config = toolkit.json_loads(temp_config)
             if not temp_config['expireTime'] or temp_config['expireTime'] >= self.trigger_time:
-                crontab_config['tempCrontab'] = temp_config['tempCrontab']
+                crontab_config['dynamicCrontab'] = temp_config['value']
 
         crontab_config = self.prepare_contab_config(crontab_config)
         return crontab_config

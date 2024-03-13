@@ -406,7 +406,7 @@ class BaseTask(object):
                             'path'  : f'/v1/write/{category}',
                             'points': single_point,
                         }
-                        status_code, resp_data = retry_call(dataway.post_line_protocol, fkwargs=fkwargs, tries=3, delay=.33)
+                        status_code, resp_data = retry_call(dataway.post_line_protocol, fkwargs=fkwargs, tries=3, delay=1)
                         if status_code > 200:
                             self.logger.error(resp_data)
 
@@ -415,7 +415,7 @@ class BaseTask(object):
                         'path'  : f'/v1/write/{category}',
                         'points': data,
                     }
-                    status_code, resp_data = retry_call(dataway.post_line_protocol, fkwargs=fkwargs, tries=3, delay=.33)
+                    status_code, resp_data = retry_call(dataway.post_line_protocol, fkwargs=fkwargs, tries=3, delay=1)
                     if status_code > 200:
                         self.logger.error(resp_data)
 
