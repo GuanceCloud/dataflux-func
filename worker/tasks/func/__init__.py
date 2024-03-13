@@ -1133,7 +1133,7 @@ class FuncCrontabConfigHelper(BaseFuncEntityHelper):
 
         cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
         cache_value = {
-            'expireTime': 0 if not expires else int(time.time()) + expires,
+            'expireTime': None if not expires else int(time.time()) + expires,
             'value'     : temp_crontab,
         }
         self._task.cache_db.hset(cache_key, entity_id, toolkit.json_dumps(cache_value))
@@ -1158,7 +1158,7 @@ class FuncCrontabConfigHelper(BaseFuncEntityHelper):
         cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
         temp_config_map = self._task.cache_db.hgetall(cache_key)
         if not temp_config_map:
-            return None
+            return {}
 
         for entity_id in list(temp_config_map.keys()):
             temp_config = toolkit.json_loads(temp_config_map[entity_id])
