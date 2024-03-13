@@ -1032,10 +1032,8 @@ class AutoRun(BaseInternalTask):
         sql = '''
             SELECT
                  `func`.`id`
-                ,JSON_EXTRACT(
-                    `func`.`extraConfigJSON`,
-                    '$.timeout'
-                ) AS `timeout`
+                ,JSON_EXTRACT(`func`.`extraConfigJSON`, '$.timeout') AS `timeout`
+                ,JSON_EXTRACT(`func`.`extraConfigJSON`, '$.expires') AS `expires`
             FROM biz_main_func AS `func`
             WHERE
                     `func`.`integration` = 'autoRun'
