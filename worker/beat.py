@@ -117,7 +117,6 @@ def tick(context):
     prev_tick_time = context.get('prev_tick_time') or (next_timestamp - 1)
     for tick_time in range(prev_tick_time, next_timestamp):
         tick_time += 1
-        print(tick_time)
 
         # 记录上次运行时间
         context['prev_tick_time'] = tick_time
@@ -128,7 +127,6 @@ def tick(context):
 
         # 分发配置了 Crontab 的任务
         task_instances = get_matched_crontab_task_instances(tick_time)
-        print(tick_time, arrow.get(tick_time).to('Asia/Shanghai').format('HH:mm:ss'), ', '.join(inst.__class__.__name__ for inst in task_instances))
 
         for task_inst in task_instances:
             # 创建任务请求
