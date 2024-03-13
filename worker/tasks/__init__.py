@@ -7,6 +7,7 @@ import pprint
 
 # 3rd-party Modules
 import arrow
+from retry.api import retry_call
 
 # Project Modules
 from worker.utils import toolkit, yaml_resources
@@ -397,9 +398,26 @@ class BaseTask(object):
             # 上报数据
             try:
                 dataway = DataWay(url=self.guance_data_upload_url)
-                status_code, resp_data = dataway.post_line_protocol(path=f'/v1/write/{category}', points=data)
-                if status_code > 200:
-                    self.logger.error(resp_data)
+
+                # 日志数据量大，每条数据单独上报
+                if category == 'logging':
+                    for single_point in data:
+                        fkwargs = {
+                            'path'  : f'/v1/write/{category}',
+                            'points': single_point,
+                        }
+                        status_code, resp_data = retry_call(dataway.post_line_protocol, fkwargs=fkwargs, tries=3, delay=.33)
+                        if status_code > 200:
+                            self.logger.error(resp_data)
+
+                else:
+                    fkwargs = {
+                        'path'  : f'/v1/write/{category}',
+                        'points': data,
+                    }
+                    status_code, resp_data = retry_call(dataway.post_line_protocol, fkwargs=fkwargs, tries=3, delay=.33)
+                    if status_code > 200:
+                        self.logger.error(resp_data)
 
             except Exception as e:
                 for line in traceback.format_exc().splitlines():

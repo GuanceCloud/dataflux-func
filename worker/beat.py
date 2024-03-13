@@ -127,7 +127,6 @@ def tick(context):
 
         # 分发配置了 Crontab 的任务
         task_instances = get_matched_crontab_task_instances(tick_time)
-
         for task_inst in task_instances:
             # 创建任务请求
             task_req = task_inst.create_task_request()
