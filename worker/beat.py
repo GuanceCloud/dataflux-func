@@ -6,6 +6,7 @@ import time
 import math
 
 # 3rd-party Modules
+import arrow
 import timeout_decorator
 
 # Disable InsecureRequestWarning
@@ -92,10 +93,6 @@ def get_matched_crontab_task_instances(t):
             task_inst = item['task'](kwargs=item.get('kwargs'), trigger_time=t)
             result.append(task_inst)
 
-        else:
-            if item['task'] is CrontabStarter and t % 60 == 0:
-                print(t, CONFIG['TIMEZONE'], 'Crontab.Starter not matched!')
-
     return result
 
 class TickTimeoutException(Exception):
@@ -130,6 +127,8 @@ def tick(context):
 
         # 分发配置了 Crontab 的任务
         task_instances = get_matched_crontab_task_instances(tick_time)
+        print(tick_time, arrow.get(tick_time).to('Asia/Shanghai').format('HH:mm:ss'), ', '.join(inst.__class__.__name__ for inst in task_instances))
+
         for task_inst in task_instances:
             # 创建任务请求
             task_req = task_inst.create_task_request()
