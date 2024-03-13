@@ -61,6 +61,8 @@ class CrontabStarter(BaseTask):
                 `func`.`integration` = 'autoRun'
             HAVING
                 `crontab` IS NOT NULL
+            ORDER BY
+            	`func`.`id`
             '''
         crontab_configs = self.db.query(sql)
 
@@ -168,7 +170,7 @@ class CrontabStarter(BaseTask):
 
                 crontab_lock_value = f"{int(time.time())}-{toolkit.gen_uuid()}"
 
-                self.logger.debug(f"[TASK REQ] funcId=`{crontab_config['funcId']}`, origin=`{origin}/{origin_id}`, queue=`{queue}`, crontabDelay=`{crontab_delay}`, delay=`{delay}`")
+                self.logger.debug(f"[TASK REQ] seq=`{crontab_config.get('seq') or 0}`, funcId=`{crontab_config['funcId']}`, origin=`{origin}/{origin_id}`, queue=`{queue}`, crontabDelay=`{crontab_delay}`, delay=`{delay}`")
 
                 # 任务请求
                 task_reqs.append({
