@@ -959,6 +959,13 @@ class FuncThreadHelper(object):
         self._task = task
         self.result_map = {}
 
+    @property
+    def is_all_finished(self):
+        if not self.result_map:
+            return True
+
+        return all([ future_res.done() for key, future_res in self.result_map.items() ])
+
     def set_pool_size(self, pool_size=None):
         global FUNC_THREAD_POOL
 
@@ -995,7 +1002,7 @@ class FuncThreadHelper(object):
 
         return key
 
-    def get_result(self, wait=True, key=None):
+    def _get_result(self, key=None, wait=True):
         if not self.result_map:
             return None
 
@@ -1027,6 +1034,12 @@ class FuncThreadHelper(object):
             return collected_res.get(key)
         else:
             return collected_res
+
+    def get_result(self, key, wait=True):
+        return self._get_result(key=key, wait=wait)
+
+    def get_all_results(self, wait=True):
+        return self._get_result(wait=wait).values()
 
     def pop_result(self, wait=True):
         if not self.result_map:
@@ -1062,14 +1075,8 @@ class FuncThreadHelper(object):
         finally:
             return FuncThreadResult(value=value, error=error)
 
-    def is_all_finished(self):
-        if not self.result_map:
-            return True
-
-        return all([ future_res.done() for key, future_res in self.result_map.items() ])
-
     def wait_all_finished(self):
-        self.get_result(wait=True)
+        self._get_result(wait=True)
 
 class BaseFuncEntityHelper(object):
     _table         = None
