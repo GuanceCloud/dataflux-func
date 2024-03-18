@@ -19,11 +19,15 @@ var fileServiceMod = require('../models/fileServiceMod');
 var crudHandler = exports.crudHandler = fileServiceMod.createCRUDHandler();
 
 exports.list   = crudHandler.createListHandler();
-exports.modify = crudHandler.createModifyHandler();
 exports.delete = crudHandler.createDeleteHandler();
 
 exports.add = function(req, res, next) {
   var data = req.body.data;
+
+  // 防止路径穿越
+  if (data.root && data.root.match(/\.\./g)) {
+    return next(new E('EBizCondition.ParentDirectorySymbolNotAllowed', 'Parent directory symbol (..) is not allowed in path'));
+  }
 
   var fileServiceModel = fileServiceMod.createModel(res.locals);
 
@@ -56,6 +60,30 @@ exports.add = function(req, res, next) {
 
     var ret = toolkit.initRet({
       id: data.id,
+    });
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.modify = function(req, res, next) {
+  var id   = req.params.id;
+  var data = req.body.data;
+
+  // 防止路径穿越
+  if (data.root && data.root.match(/\.\./g)) {
+    return next(new E('EBizCondition.ParentDirectorySymbolNotAllowed', 'Parent directory symbol (..) is not allowed in path'));
+  }
+
+  async.series([
+    // 数据入库
+    function(asyncCallback) {
+      fileServiceModel.modify(id, data, asyncCallback);
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet({
+      id: id,
     });
     return res.locals.sendJSON(ret);
   });

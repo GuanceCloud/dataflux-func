@@ -1849,7 +1849,13 @@ exports.integratedAuthMid = function(req, res, next) {
 
 // 文件服务
 exports.fileService = function(req, res, next) {
-  var id      = req.params.id;
+  var id = req.params.id;
+
+  // 防止路径穿越
+  if (req.params[0] && req.params[0].match(/\.\./g)) {
+    return next(new E('EBizCondition.ParentDirectorySymbolNotAllowed', 'Parent directory symbol (..) is not allowed in path'));
+  }
+
   var relPath = '/' + req.params[0];
 
   var fileServiceModel = fileServiceMod.createModel(res.locals);
@@ -1860,7 +1866,13 @@ exports.fileService = function(req, res, next) {
         return next(new E('EBizCondition.FileServiceDisabled', 'This File Service is disabled'))
     }
 
-    var absPath = path.join(CONFIG.RESOURCE_ROOT_PATH, (dbRes.root || '.'), relPath);
+    var rootPath = path.join(CONFIG.RESOURCE_ROOT_PATH, (dbRes.root || '.'));
+    var absPath  = path.join(CONFIG.RESOURCE_ROOT_PATH, (dbRes.root || '.'), relPath);
+
+    // 防止访问其他目录
+    if (absPath.indexOf(rootPath) !== 0) {
+      return next(new E('EBizCondition.AccessingOutOfScopePathNotAllowed', 'Accessing out-of-scope file system is not allowed'))
+    }
 
     // 根据目标分别做不同处理
     fs.lstat(absPath, function(err, stats) {

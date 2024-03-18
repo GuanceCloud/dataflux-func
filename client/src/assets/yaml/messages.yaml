@@ -118,5 +118,7 @@ en: {}
   Zip file already existed                                                                                : 压缩文件已经存在
   Resource operation Failed                                                                               : 资源操作失败
   Init Script Market failed                                                                               : 初始化脚本市场失败
+  Parent directory symbol (..) is not allowed in path                                                     : 禁止在根路径中使用上层目录符（..）
+  Accessing out-of-scope file system is not allowed                                                       : 禁止访问超出范围的文件系统
 
   'Exception: Guance API Key NOT match to API Key ID!': '错误：观测云 API Key ID 与 API Key 不匹配'
