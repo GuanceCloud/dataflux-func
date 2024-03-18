@@ -107,6 +107,10 @@ REDIS_TS_MIN_INTERVAL: 60     # 时间戳最小间隔（秒）
 # 是否禁用集成登录
 DISABLE_INTEGRATED_SIGNIN: false
 
+# 因密码错误而临时锁定用户的次数 / 最大等待时间
+BAD_SINGIN_TEMPORARILY_LOCK_COUNT   : 3
+BAD_SINGIN_TEMPORARILY_LOCK_MAX_WAIT: 900
+
 # 自动配置
 AUTO_SETUP               : false
 AUTO_SETUP_ADMIN_USERNAME: ''

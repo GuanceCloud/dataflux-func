@@ -7,6 +7,7 @@ respCodeMap:
   EUserAuth           : 401.14  # Not signed in or x-auth-token is not sent.
   EUserPrivilege      : 401.15  # No privilege to execute current operation.
   EUserDisabled       : 401.16  # User is disabled.
+  EUserLocked         : 401.17  # User is locked.
 
   EBiz                : 403.20  ## Common business error.
   EBizCondition       : 403.21  # Condition is not satisfied.

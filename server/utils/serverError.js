@@ -24,9 +24,9 @@ ServerError.prototype = new Error();
 
 ServerError.prototype.setDetail = function(keyOrObj, value) {
   this.detail = this.detail || {};
-  if ('string' === keyOrObj) {
+  if ('string' === typeof keyOrObj) {
     this.detail[keyOrObj] = value;
-  } else if ('object' === keyOrObj) {
+  } else if ('object' === typeof keyOrObj) {
     Object.assign(this.detail, keyOrObj);
   }
 };

@@ -20,8 +20,26 @@ exports.signIn = function(req, res, next) {
   var username = req.body.signIn.username;
   var password = req.body.signIn.password;
 
+  var cacheKey_badSignInCount = toolkit.getCacheKey('cache', 'badSignInCount', [ 'username', username ]);
+  var cacheKey_signInWait     = toolkit.getCacheKey('cache', 'signInWait', [ 'username', username ]);
+
+  var signInWaitTimeout = 0;
+
   var dbUser = null;
   async.series([
+    // Check signin wait
+    function(asyncCallback) {
+      res.locals.cacheDB.ttl(cacheKey_signInWait, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        signInWaitTimeout = parseInt(cacheRes);
+        if (signInWaitTimeout > 0) {
+          return asyncCallback(new E('EUserLocked', 'User has been temporarily locked', { signInWaitTimeout: signInWaitTimeout }));
+        }
+
+        return asyncCallback();
+      });
+    },
     // Check username
     function(asyncCallback) {
       userModel.getByField('username', username, null, function(err, dbRes) {
@@ -84,8 +102,47 @@ exports.signIn = function(req, res, next) {
       });
     },
   ], function(err) {
-    if (err) return next(err);
-    return res.locals.sendJSON(ret);
+    if (!err) {
+      // 清空用户密码错误次数
+      res.locals.cacheDB.del(cacheKey_badSignInCount);
+      return res.locals.sendJSON(ret);
+    }
+
+    // 记录用户密码错误次数，并设置等待时间
+    var signInErr = err;
+    var nextSignInWaitTimeout = 0;
+    async.series([
+      function(asyncCallback) {
+        if (signInErr.reason === 'EUserPassword') {
+          // 密码错误，记录错误次数
+          res.locals.cacheDB.incr(cacheKey_badSignInCount, function(err, cacheRes) {
+            if (err) return asyncCallback(err);
+
+            var errorCount = parseInt(cacheRes);
+            if (errorCount >= CONFIG.BAD_SINGIN_TEMPORARILY_LOCK_COUNT) {
+              nextSignInWaitTimeout = Math.min(CONFIG.BAD_SINGIN_TEMPORARILY_LOCK_MAX_WAIT, 2 ** (errorCount - CONFIG.BAD_SINGIN_TEMPORARILY_LOCK_COUNT) * 60);
+            }
+
+            return res.locals.cacheDB.setex(cacheKey_signInWait, nextSignInWaitTimeout, 'x', asyncCallback);
+          });
+
+        } else {
+          // 其他错误，直接返回剩余等待时间
+          res.locals.cacheDB.ttl(cacheKey_signInWait, function(err, cacheDB) {
+            if (err) return asyncCallback(err);
+
+            nextSignInWaitTimeout = Math.max(0, parseInt(cacheDB));
+
+            return asyncCallback();
+          });
+        }
+      },
+    ], function(err) {
+      if (err) res.locals.logger.logError(err);
+
+      signInErr.setDetail({ signInWaitTimeout: nextSignInWaitTimeout });
+      return next(signInErr);
+    });
   });
 };
 
