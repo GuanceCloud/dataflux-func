@@ -121,7 +121,7 @@ ASSERT_TYPE_MAPS = {
 }
 def _assert_type(data, data_type, name):
     if not isinstance(data, ASSERT_TYPE_MAPS[data_type]['type']):
-        e = Exception('`{0}` {1}, got {2}'.format(name, ASSERT_TYPE_MAPS[data_type]['message'], type(data).__name__))
+        e = Exception('`{0}` {1}, got {2} (repr: `{3}`)'.format(name, ASSERT_TYPE_MAPS[data_type]['message'], type(data).__name__, repr(data)))
         raise e
     return data
 
@@ -677,4 +677,4 @@ class DataKit(BaseDataKit):
         query = {
             'input': self.source,
         }
-        super()._write(query=query, *args, **kwargs)
+        super()._write_many(query=query, *args, **kwargs)
