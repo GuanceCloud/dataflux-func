@@ -7,20 +7,20 @@ en:
   '(': ' ('
 
   # const.js - AUTH_LINK_THROTTLING
-  timePerSecond: '{n} time/second | {n} time/second | {n} times/second'
-  timePerMinute: '{n} time/minute | {n} time/minute | {n} times/minute'
-  timePerHour  : '{n} time/hour | {n} time/hour | {n} times/hour'
-  timePerDay   : '{n} time/day | {n} time/day | {n} times/day'
-  timePerMonth : '{n} time/month | {n} time/month | {n} times/month'
-  timePerYear  : '{n} time/year | {n} time/year | {n} times/year'
+  timePerSecond: '{n} time/second | {n} times/second'
+  timePerMinute: '{n} time/minute | {n} times/minute'
+  timePerHour  : '{n} time/hour | {n} times/hour'
+  timePerDay   : '{n} time/day | {n} times/day'
+  timePerMonth : '{n} time/month | {n} times/month'
+  timePerYear  : '{n} time/year | {n} times/year'
 
   # 时长
-  nSeconds: '{n} second | {n} second | {n} seconds'
-  nMinutes: '{n} minute | {n} minute | {n} minutes'
-  nHours  : '{n} hour | {n} hour | {n} hours'
-  nDays   : '{n} day | {n} day | {n} days'
-  nMonths : '{n} month | {n} month | {n} months'
-  nYears  : '{n} year | {n} year | {n} years'
+  nSeconds: '{n} second | {n} seconds'
+  nMinutes: '{n} minute | {n} minutes'
+  nHours  : '{n} hour | {n} hours'
+  nDays   : '{n} day | {n} days'
+  nMonths : '{n} month | {n} months'
+  nYears  : '{n} year | {n} years'
 
   # 功能提示
   FeatureNotice_monkeyPatch            : '<h1>No Monkey Patches in Scripts</h1><p>For performance reasons, the script does <strong style="color: red">NOT</strong> run in a sandbox or isolated environment.</p><p>Using monkey patches may cause problems to the entire system.</p>'

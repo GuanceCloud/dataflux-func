@@ -1639,15 +1639,18 @@ class FuncBaseTask(BaseTask):
         now = time.time()
 
         # 输出当前时间
-        message_time = arrow.get(now).to(CONFIG['TIMEZONE']).format('YYYY-MM-DD HH:mm:ss.SSS')
+        message_time = arrow.get(now).to(CONFIG['TIMEZONE']).format('MM-DD HH:mm:ss')
 
-        # 计算时间差
-        delta = 0
-        if self.__prev_log_time:
-            delta = int((now - self.__prev_log_time) * 1000)
+        # 计算时间差 / 累计耗时
+        if not self.__prev_log_time:
+            self.__prev_log_time = self.start_time
+
+        delta = int((now - self.__prev_log_time) * 1000)
+        total = int((now - self.start_time) * 1000)
+
         self.__prev_log_time = now
 
-        line = f'[{message_time}] [+{delta}ms] {message}'
+        line = f'[{message_time}] [+{delta}ms] [{total}ms] {message}'
         safe_scope['DFF'].print_logs.append(line)
 
     def _print(self, safe_scope, *args, **kwargs):

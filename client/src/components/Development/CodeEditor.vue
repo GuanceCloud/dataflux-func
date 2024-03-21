@@ -27,8 +27,9 @@ This Script is locked by other user ({user})                                    
 Script is modified but NOT published yet                                             : 脚本已修改但尚未发布
 Script is published                                                                  : 脚本已发布
 Diff between published and previously published                                      : 发布前后差异
-Clear highlighted                                                                    : 清除高亮
-Close                                                                                : 关闭
+Copy All                                                                             : 复制全部
+Copy Last One                                                                        : 复制最后一次
+Clear                                                                                : 清除
 Output                                                                               : 输出
 Func exection result or log message will be shown here                               : 函数执行结果与日志信息将显示在此处
 
@@ -100,9 +101,10 @@ Arguments (JSON): 參數（JSON格式）
 'Arguments should be inputed like {"arg": value}.': '參數以 {"參數名": 參數值} 方式填寫。'
 Can not parse return value: 函數返回值無法解析
 Check input: 輸入檢查
-Clear highlighted: 清除高亮
-Close: 關閉
+Clear: 清除
 Code Editor setting: 代碼編輯器設置
+Copy All: 複製全部
+Copy Last One: 複製最後一次
 Current editing Script has been downloaded: 當前正在編輯的腳本已經下載
 DIFF: 差異
 Detail information is shown in the output box bellow: 詳細信息可在下方輸出窗口中查看
@@ -191,9 +193,10 @@ Arguments (JSON): 引數（JSON格式）
 'Arguments should be inputed like {"arg": value}.': '引數以 {"引數名": 引數值} 方式填寫。'
 Can not parse return value: 函式返回值無法解析
 Check input: 輸入檢查
-Clear highlighted: 清除高亮
-Close: 關閉
+Clear: 清除
 Code Editor setting: 程式碼編輯器設定
+Copy All: 複製全部
+Copy Last One: 複製最後一次
 Current editing Script has been downloaded: 當前正在編輯的指令碼已經下載
 DIFF: 差異
 Detail information is shown in the output box bellow: 詳細資訊可在下方輸出視窗中檢視
@@ -493,13 +496,13 @@ You can continue with other operations: 你可以繼續進行其他操作
       <template slot="paneR">
         <div class="code-editor-output">
           <div class="code-editor-output-close">
-            <el-link type="info" :underline="true" @click.stop="clearHighlight()"><i class="fa fa-eraser"></i> {{ $t('Clear highlighted') }}</el-link>
-            &#12288;
-            <el-link type="info" :underline="true" @click.stop="clearScriptOutput()"><i class="fa fa-times"></i> {{ $t('Close') }}</el-link>
+            <CopyButton type="info" size="mini" :title="$t('Copy Last One')" :content="this.scriptOutputLastOneText" tip-placement="bottom" />
+            <CopyButton type="info" size="mini" :title="$t('Copy All')" :content="this.scriptOutputText" tip-placement="bottom" />
+            <el-button type="info" size="mini" @click.stop="clearScriptOutput()"><i class="fa fa-eraser"></i> {{ $t('Clear') }}</el-button>
           </div>
           <el-tabs tab-position="left" type="border-card">
             <el-tab-pane :label="`${$t('Output')} ${funcCallSeq > 0 ? `#${funcCallSeq}` : ''}`" ref="codeEditorTextOutput">
-              <pre v-html.trim="this.scriptOutputText || $t('Func exection result or log message will be shown here')"></pre>
+              <pre v-html.trim="this.scriptOutputHTML || $t('Func exection result or log message will be shown here')"></pre>
             </el-tab-pane>
           </el-tabs>
         </div>
@@ -902,14 +905,12 @@ export default {
       // 弹框提示
       this.T.notify(this.$t('Script has been reset to previous version'));
     },
-    clearHighlight() {
-      this.updateHighlightLineConfig('selectedFuncLine', null);
-      this.updateHighlightLineConfig('exceptionLine', null);
-    },
     clearScriptOutput() {
       this.scriptOutput = [];
 
-      this.clearHighlight();
+      this.updateHighlightLineConfig('selectedFuncLine', null);
+      this.updateHighlightLineConfig('exceptionLine', null);
+
       this.resizeVueSplitPane(100);
     },
     outputResult(type, name, result) {
@@ -925,16 +926,18 @@ export default {
       let traceback       = result.traceback;       // 调用堆栈
 
       // print 日志添加格式
-      printLogs = printLogs.map(l => {
+      let printLogsHTML = printLogs.map(l => {
         // 由于日志开头格式固定，此处直接使用字符串处理，而不用正则
         let lineParts = l.split(' ');
-        let timeTag     = `<span class="text-main">${lineParts[0]} ${lineParts[1]}</span>`
-        let timeDiffTag = `<span class="text-good">${lineParts[2]}</span>`
-        let logContent = htmlEscaper.escape(lineParts.slice(3).join(' '));
+        let timeTag      = `<span class="text-main">${lineParts[0]} ${lineParts[1]}</span>`
+        let timeDiffTag  = `<span class="text-good">${lineParts[2]}</span>`
+        let timeTotalTag = `<span class="text-good">${lineParts[3]}</span>`
+        let logContent = htmlEscaper.escape(lineParts.slice(4).join(' '));
 
-        return [timeTag, timeDiffTag, logContent].join(' ');
+        return [timeTag, timeDiffTag, timeTotalTag, logContent].join(' ');
       });
-      printLogs = printLogs.join('\n') || null;
+      printLogs     = printLogs.join('\n')     || null;
+      printLogsHTML = printLogsHTML.join('\n') || null;
 
       let output = {
         seq            : this.funcCallSeq,
@@ -943,6 +946,7 @@ export default {
         peakMemroyUsage: peakMemroyUsage,
         cost           : cost,
         printLogs      : printLogs,
+        printLogsHTML  : printLogsHTML,
         returnValue    : returnValue,
         traceback      : traceback,
       };
@@ -1198,6 +1202,76 @@ export default {
         backgroundClass: 'current-func-background highlight-code-line-blink',
       });
     },
+    _convertScriptOutputToMarkdown(o) {
+      // 分割线
+      let divider = `# #${o.seq}`;
+
+      // 标题
+      let titleLabel = '';
+      switch(o.type) {
+        case 'publish':
+          titleLabel = this.$t('Publish Script') + this.$t(':');
+          break;
+
+        case 'execute':
+          titleLabel = this.$t('Executed Func') + this.$t(':');
+          break;
+      }
+      let title = `${titleLabel}\`${o.name}\``;
+
+      // print 日志
+      let printLogs = '\`\`\`\n' + o.printLogs + '\n\`\`\`';
+
+      // 执行内存消耗
+      let peakMemoryUsageInfo = '';
+      if (o.peakMemroyUsage) {
+        peakMemoryUsageInfo = `${this.$t('Peak Memory Allocated')}${this.$t(':')}${this.T.byteSizeHuman(o.peakMemroyUsage)}`;
+      }
+
+      // 执行耗时
+      let costInfo = '';
+      if (o.cost) {
+        costInfo = `${this.$t('Time Cost')}${this.$t(':')}${this.$tc('nSeconds', o.cost)}`;
+        if (o.cost > 3) {
+          costInfo += `\n\n> ${this.$t('It took too much time for running (more than 3s), may not be suitable for synchronous calling scenario')}`;
+        }
+      }
+
+      // 函数返回值
+      let returnValueInfo = null;
+      let returnValue = o.returnValue;
+      if (returnValue) {
+        returnValueInfo = `${this.$t('Return Value (pprint.saferepr)')}${this.$t(':')}\n\n\`\`\`\n${returnValue}\n\`\`\``;
+      }
+
+      // 调用堆栈
+      let tracebackTitle = null;
+      let traceback = o.traceback;
+      if (traceback) {
+        tracebackTitle = `${this.$t('Stack')}`;
+        traceback = '\`\`\`\n' + traceback + '\n\`\`\`';
+      }
+
+      let section = [ divider, title ]
+      if (printLogs) {
+        section.push(printLogs);
+      }
+      if (costInfo || peakMemoryUsageInfo) {
+        if (peakMemoryUsageInfo) section.push(peakMemoryUsageInfo);
+        if (costInfo)            section.push(costInfo);
+      }
+      if (returnValueInfo) {
+        section.push(returnValueInfo);
+      }
+      if (tracebackTitle) {
+        section.push(tracebackTitle,  traceback);
+      }
+
+      // 过滤空白内容
+      section = section.filter(x => 'string' === typeof x).join('\n\n').trimStart();
+
+      return section;
+    }
   },
   computed: {
     SPLIT_PANE_MAX_PERCENT  : () => 80,
@@ -1256,11 +1330,27 @@ export default {
     codeDraftLines() {
       return (this.data.codeDraft || '').split('\n').length;
     },
+    scriptOutputLastOneText() {
+      if (this.scriptOutput.length <= 0) return '';
+
+      let outputText = this._convertScriptOutputToMarkdown(this.scriptOutput.slice(-1)[0]);
+      return outputText;
+    },
     scriptOutputText() {
       let sections = [];
       this.scriptOutput.forEach(o => {
+        let section = this._convertScriptOutputToMarkdown(o);
+        sections.push(section);
+      });
+
+      let outputText = sections.join('\n\n');
+      return outputText;
+    },
+    scriptOutputHTML() {
+      let sections = [];
+      this.scriptOutput.forEach(o => {
         // 分割线
-        let divider = `<span class="code-editor-output-info">#<span class="code-editor-output-seq">${o.seq}</span> ${'-'.repeat(20)}</span>`;
+        let divider = `<span class="code-editor-output-info">#<span class="code-editor-output-seq">${o.seq}</span></span>`;
 
         // 标题
         let titleLabel = '';
@@ -1276,8 +1366,7 @@ export default {
         let title = `<span class="code-editor-output-info">${titleLabel} <code>${o.name}</code></span>`;
 
         // print 日志
-        // 【已经经过预处理，此处已经是纯文本，无需进一步处理】
-        let printLogs = o.printLogs;
+        let printLogsHTML = o.printLogsHTML;
 
         // 执行内存消耗
         let peakMemoryUsageInfo = '';
@@ -1295,18 +1384,16 @@ export default {
         }
 
         // 函数返回值
-        // 【已经经过预处理，此处已经是纯文本，无需进一步处理】
         let returnValueInfo = null;
         let returnValue = o.returnValue;
         if (returnValue) {
           // HTML 转义
           returnValue = htmlEscaper.escape(returnValue);
 
-          returnValueInfo = `<span class="code-editor-output-info">${this.$t('Return Value (pprint.saferepr)')}${this.$t(':')}</span><code>${returnValue}</code>`;
+          returnValueInfo = `<span class="code-editor-output-info">${this.$t('Return Value (pprint.saferepr)')}${this.$t(':')}</span><br><code>${returnValue}</code>`;
         }
 
         // 调用堆栈
-        // 【已经经过预处理，此处已经是纯文本，无需进一步处理】
         let tracebackTitle = null;
         let traceback = o.traceback;
         if (traceback) {
@@ -1322,8 +1409,8 @@ export default {
         }
 
         let section = [ divider, title ]
-        if (printLogs) {
-          section.push('', printLogs);
+        if (printLogsHTML) {
+          section.push('', printLogsHTML);
         }
         if (costInfo || peakMemoryUsageInfo) {
           section.push('');
@@ -1343,15 +1430,15 @@ export default {
         sections.push(section);
       });
 
-      let sectionText = sections.join('\n\n');
+      let outputHTML = sections.join('\n\n');
 
       // 限制输出总量
-      let lines = sectionText.split('\n');
+      let lines = outputHTML.split('\n');
       if (lines.length > this.TEXT_OUTPUT_LIMIT) {
-        sectionText = lines.slice(-1 * this.TEXT_OUTPUT_LIMIT).join('\n');
+        outputHTML = lines.slice(-1 * this.TEXT_OUTPUT_LIMIT).join('\n');
       }
 
-      return sectionText;
+      return outputHTML;
     },
 
     isValidFuncCallKwargsJSON() {

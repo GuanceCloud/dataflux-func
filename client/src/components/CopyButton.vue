@@ -12,7 +12,7 @@
         :type="type || 'text'"
         :size="size || 'mini'"
         :data-clipboard-text="content">
-        <span :style="{ 'font-size': fontSize || '14px' }">
+        <span :style="{ 'font-size': fontSize || '12px' }">
           <i class="fa fa-fw fa-clipboard"></i> {{ title }}
         </span>
       </el-button>
