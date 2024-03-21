@@ -42,7 +42,7 @@ class FuncRunner(FuncBaseTask):
         return self.result['responseControl']
 
     @property
-    def full_print_logs(self):
+    def full_print_log_lines(self):
         if self.script_scope is None:
             return None
 
@@ -50,15 +50,14 @@ class FuncRunner(FuncBaseTask):
         if not print_logs and not self.traceback:
             return None
 
-        log_data = []
+        lines = []
         if print_logs:
-            log_data.append('\n'.join(print_logs))
+            lines.extend(print_logs)
 
         if self.traceback:
-            log_data.append('[Traceback]')
-            log_data.append(self.traceback)
+            lines.append(f'[Traceback]\n{self.traceback}')
 
-        return '\n'.join(log_data)
+        return lines
 
     @property
     def reduced_print_logs(self):
@@ -176,7 +175,7 @@ class FuncRunner(FuncBaseTask):
                 'origin_id'    : self.origin_id,
             },
             'fields': {
-                'message': self.full_print_logs,
+                'message': self.full_print_log_lines,
 
                 'func_call_kwargs': toolkit.json_dumps(self.func_call_kwargs),
                 'crontab'         : self.kwargs.get('crontab'),

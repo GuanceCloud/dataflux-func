@@ -399,18 +399,43 @@ class BaseTask(object):
             try:
                 dataway = DataWay(url=self.guance_data_upload_url)
 
-                # 日志数据量大，每条数据单独上报
                 if category == 'logging':
+                    # 日志数据量大，每条数据单独上报并切分
                     for single_point in data:
-                        fkwargs = {
-                            'path'  : f'/v1/write/{category}',
-                            'points': single_point,
-                        }
-                        status_code, resp_data = retry_call(dataway.post_line_protocol, fkwargs=fkwargs, tries=3, delay=1)
-                        if status_code > 200:
-                            self.logger.error(resp_data)
+                        # 尝试提取并切分 message
+                        logging_message = None
+                        try:
+                            logging_message = toolkit.str_split_by_bytes(single_point['fields']['message'], page_bytes=CONFIG['_MONITOR_GUANCE_LOGGING_SPLIT_BYTES'])
+                        except Exception as e:
+                            for line in traceback.format_exc().splitlines():
+                                self.logger.error(line)
+
+                        if logging_message:
+                            # 存在 message，拆分写入
+                            base_timestamp = single_point['timestamp'] * 1000 * 1000
+                            for i, _message in enumerate(toolkit.as_array(logging_message)):
+                                single_point['fields']['message'] = _message
+                                single_point['timestamp'] = base_timestamp + i # 保持有序
+                                fkwargs = {
+                                    'path'  : f'/v1/write/{category}',
+                                    'points': single_point,
+                                }
+                                status_code, resp_data = retry_call(dataway.post_line_protocol, fkwargs=fkwargs, tries=3, delay=1)
+                                if status_code > 200:
+                                    self.logger.error(resp_data)
+
+                        else:
+                            # 不存在 message，直接写入
+                            fkwargs = {
+                                'path'  : f'/v1/write/{category}',
+                                'points': single_point,
+                            }
+                            status_code, resp_data = retry_call(dataway.post_line_protocol, fkwargs=fkwargs, tries=3, delay=1)
+                            if status_code > 200:
+                                self.logger.error(resp_data)
 
                 else:
+                    # 其他类型数据直接上报
                     fkwargs = {
                         'path'  : f'/v1/write/{category}',
                         'points': data,

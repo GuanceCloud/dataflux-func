@@ -885,3 +885,48 @@ def repeat_decode(data):
             decoded.extend([ d[0] ] * d[1])
 
     return decoded
+
+def str_byte_size(s, encoding='utf-8'):
+    return len(s.encode(encoding))
+
+def str_split_by_bytes(content, page_bytes, page_header=True):
+    # 按行切分
+    content_lines = content
+    if isinstance(content, str):
+        content_lines = content.splitlines()
+
+    # 每行字节数
+    content_line_bytes = list(map(lambda x: str_byte_size(x), content_lines))
+
+    # 最大页头字节数
+    page_header_bytes = 0
+    if page_header:
+        page_header_bytes = len(f'[{len(content_lines)}/{len(content_lines)}]\n')
+
+    pages = []
+
+    tmp_bytes = 0
+    start_i = 0
+    for end_i, line_bytes in enumerate(content_line_bytes):
+        if tmp_bytes > 0 and tmp_bytes + line_bytes + (end_i - start_i) > (page_bytes - page_header_bytes):
+            pages.append(content_lines[start_i:end_i])
+            start_i = end_i
+            tmp_bytes = line_bytes
+
+        else:
+            tmp_bytes += line_bytes
+
+    else:
+        if tmp_bytes > 0:
+            pages.append(content_lines[start_i:])
+
+    joined_pages = []
+    for page_num, page_lines in enumerate(pages, start=1):
+        if len(pages) > 1:
+            p = f'[{page_num}/{len(pages)}]\n' + '\n'.join(page_lines)
+        else:
+            p = '\n'.join(page_lines)
+
+        joined_pages.append(p)
+
+    return joined_pages
