@@ -14,8 +14,8 @@ import tracemalloc
 
 # Project Modules
 from worker.utils import toolkit, yaml_resources
-from worker.tasks import TaskTimeoutException
-from worker.tasks.func import FuncBaseTask, BaseFuncResponse, FuncResponse, NotFoundException
+from worker.tasks import TaskTimeout
+from worker.tasks.func import FuncBaseTask, BaseFuncResponse, FuncResponse
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -49,7 +49,7 @@ class FuncDebugger(FuncBaseTask):
 
         except Exception as e:
             _status = 'failure'
-            if isinstance(e, TaskTimeoutException):
+            if isinstance(e, TaskTimeout):
                 _status = 'timeout'
 
             # 由于任务本身始终成功，此处需要手工输出堆栈到日志（warning）

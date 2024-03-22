@@ -24,7 +24,7 @@ from worker import app_init
 CONFIG = yaml_resources.get('CONFIG')
 
 from worker import LOGGER, REDIS, LISTINGING_QUEUES, run_background
-from worker.tasks import TaskTimeoutException
+from worker.tasks import TaskTimeout
 
 # 任务表
 from worker.tasks.example         import ExampleSuccess, ExampleFailure, ExampleTimeout
@@ -81,7 +81,7 @@ def consume(context):
     task_inst = task_cls.from_task_request(task_req)
 
     # 执行任务
-    @timeout_decorator.timeout(task_inst.timeout, timeout_exception=TaskTimeoutException)
+    @timeout_decorator.timeout(task_inst.timeout, timeout_exception=TaskTimeout)
     def start_task():
         task_inst.start()
 

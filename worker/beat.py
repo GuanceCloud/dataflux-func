@@ -95,10 +95,10 @@ def get_matched_crontab_task_instances(t):
 
     return result
 
-class TickTimeoutException(Exception):
+class TickTimeout(Exception):
     pass
 
-@timeout_decorator.timeout(60, timeout_exception=TickTimeoutException)
+@timeout_decorator.timeout(60, timeout_exception=TickTimeout)
 def tick(context):
     '''
     定时触发器（每秒触发）

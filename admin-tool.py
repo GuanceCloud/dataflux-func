@@ -45,7 +45,7 @@ def colored(s, color=None):
 
     return color + '{}\033[0m'.format(s)
 
-class CommandCanceledException(Exception):
+class CommandCanceled(Exception):
     pass
 
 def command(F):
@@ -59,7 +59,7 @@ def confirm(force=False):
     # 确认
     user_input = input('Are you sure you want to do this? (yes/no): ')
     if user_input != 'yes':
-        raise CommandCanceledException()
+        raise CommandCanceled()
 
 def reset_db_data(table, data):
     try:
@@ -250,7 +250,7 @@ if __name__ == '__main__':
     try:
         main(options)
 
-    except (KeyboardInterrupt, CommandCanceledException) as e:
+    except (KeyboardInterrupt, CommandCanceled) as e:
         print(colored('Canceled', 'yellow'))
 
     except Exception as e:

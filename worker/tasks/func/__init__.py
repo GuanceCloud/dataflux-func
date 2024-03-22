@@ -119,28 +119,28 @@ os.makedirs(download_temp_folder, exist_ok=True)
 class DataFluxFuncBaseException(Exception):
     pass
 
-class NotFoundException(DataFluxFuncBaseException):
+class EntityNotFound(DataFluxFuncBaseException):
     pass
 
-class FuncRecursiveCallException(DataFluxFuncBaseException):
+class FuncCircularCall(DataFluxFuncBaseException):
     pass
 
-class CallChainTooLongException(DataFluxFuncBaseException):
+class FuncCallChainTooLong(DataFluxFuncBaseException):
     pass
 
-class ThreadResultKeyDuplicatedException(DataFluxFuncBaseException):
+class DuplicatedFuncName(DataFluxFuncBaseException):
     pass
 
-class ConnectorNotSupportException(DataFluxFuncBaseException):
+class DuplicatedThreadResultKey(DataFluxFuncBaseException):
     pass
 
-class InvalidConnectorOptionException(DataFluxFuncBaseException):
+class ConnectorNotSupport(DataFluxFuncBaseException):
     pass
 
-class InvalidAPIOptionException(DataFluxFuncBaseException):
+class InvalidConnectorConfig(DataFluxFuncBaseException):
     pass
 
-class DuplicatedFuncException(DataFluxFuncBaseException):
+class InvalidAPIOption(DataFluxFuncBaseException):
     pass
 
 class DFFWraper(object):
@@ -244,7 +244,7 @@ class FuncConnectorHelper(object):
         sql_params = [ connector_id ]
         connector = self._task.db.query(sql, sql_params)
         if not connector:
-            e = NotFoundException(f'Connector not found: `{connector_id}`')
+            e = EntityNotFound(f'Connector not found: `{connector_id}`')
             raise e
 
         connector = connector[0]
@@ -253,7 +253,7 @@ class FuncConnectorHelper(object):
         helper_type  = connector['type']
         helper_class = CONNECTOR_HELPER_CLASS_MAP.get(helper_type)
         if not helper_class:
-            e = ConnectorNotSupportException(f'Connector type not support: `{helper_type}`')
+            e = ConnectorNotSupport(f'Connector type not support: `{helper_type}`')
             raise e
 
         # 创建连接器 Helper
@@ -284,14 +284,14 @@ class FuncConnectorHelper(object):
 
     def save(self, connector_id, connector_type, config, title=None, description=None):
         if connector_type not in CONNECTOR_HELPER_CLASS_MAP:
-            e = ConnectorNotSupportException(f'Connector type `{connector_type}` not supported')
+            e = ConnectorNotSupport(f'Connector type `{connector_type}` not supported')
             raise e
 
         if not config:
             config = {}
 
         if not isinstance(config, dict):
-            raise InvalidConnectorOptionException('Connector config should be a dict')
+            raise InvalidConnectorConfig('Connector config should be a dict')
 
         # 加密字段
         for k in CONNECTOR_CIPHER_FIELDS:
@@ -993,7 +993,7 @@ class FuncThreadHelper(object):
         self._task.logger.debug(f'[THREAD POOL] Submit Key=`{key}`')
 
         if key in self.result_map:
-            e = ThreadResultKeyDuplicatedException(f'Thread result key already existed: `{key}`')
+            e = DuplicatedThreadResultKey(f'Thread result key already existed: `{key}`')
             raise e
 
         args   = args   or []
@@ -1460,7 +1460,7 @@ class FuncBaseTask(BaseTask):
 
         # 函数标题
         if title is not None and not isinstance(title, (six.string_types, six.text_type)):
-            e = InvalidAPIOptionException('`title` should be a string or unicode')
+            e = InvalidAPIOption('`title` should be a string or unicode')
             raise e
 
         ##############
@@ -1470,11 +1470,11 @@ class FuncBaseTask(BaseTask):
         # 固定Crontab
         if fixed_crontab is not None:
             if not toolkit.is_valid_crontab(fixed_crontab):
-                e = InvalidAPIOptionException('`fixed_crontab` is not a valid crontab expression')
+                e = InvalidAPIOption('`fixed_crontab` is not a valid crontab expression')
                 raise e
 
             if len(fixed_crontab.split(' ')) > 5:
-                e = InvalidAPIOptionException('`fixed_crontab` does not support second part')
+                e = InvalidAPIOption('`fixed_crontab` does not support second part')
                 raise e
 
             extra_config['fixedCrontab'] = fixed_crontab
@@ -1487,7 +1487,7 @@ class FuncBaseTask(BaseTask):
 
             for d in delayed_crontab:
                 if not isinstance(d, int):
-                    e = InvalidAPIOptionException('Elements of `delayed_crontab` should be int')
+                    e = InvalidAPIOption('Elements of `delayed_crontab` should be int')
                     raise e
 
             extra_config['delayedCrontab'] = delayed_crontab
@@ -1496,13 +1496,13 @@ class FuncBaseTask(BaseTask):
         timeout = timeout or api_timeout # 兼容 api_timeout
         if timeout is not None:
             if not isinstance(timeout, six.integer_types):
-                e = InvalidAPIOptionException('`timeout` should be an integer or long')
+                e = InvalidAPIOption('`timeout` should be an integer or long')
                 raise e
 
             _min_timeout = CONFIG['_FUNC_TASK_TIMEOUT_MIN']
             _max_timeout = CONFIG['_FUNC_TASK_TIMEOUT_MAX']
             if not (_min_timeout <= timeout <= _max_timeout):
-                e = InvalidAPIOptionException(f'`timeout` should be between `{_min_timeout}` and `{_max_timeout}` (seconds)')
+                e = InvalidAPIOption(f'`timeout` should be between `{_min_timeout}` and `{_max_timeout}` (seconds)')
                 raise e
 
             extra_config['timeout'] = timeout
@@ -1510,13 +1510,13 @@ class FuncBaseTask(BaseTask):
         # 任务过期
         if expires is not None:
             if not isinstance(expires, six.integer_types):
-                e = InvalidAPIOptionException('`expires` should be an integer or long')
+                e = InvalidAPIOption('`expires` should be an integer or long')
                 raise e
 
             _min_expires = CONFIG['_FUNC_TASK_EXPIRES_MIN']
             _max_expires = CONFIG['_FUNC_TASK_EXPIRES_MAX']
             if not (_min_expires <= expires <= _max_expires):
-                e = InvalidAPIOptionException(f'`expires` should be between `{_min_expires}` and `{_max_expires}` (seconds)')
+                e = InvalidAPIOption(f'`expires` should be between `{_min_expires}` and `{_max_expires}` (seconds)')
                 raise e
 
             extra_config['expires'] = expires
@@ -1524,7 +1524,7 @@ class FuncBaseTask(BaseTask):
         # 结果缓存
         if cache_result is not None:
             if not isinstance(cache_result, (int, float)):
-                e = InvalidAPIOptionException('`cache_result` should be an int or a float')
+                e = InvalidAPIOption('`cache_result` should be an int or a float')
                 raise e
 
             extra_config['cacheResult'] = cache_result
@@ -1532,12 +1532,12 @@ class FuncBaseTask(BaseTask):
         # 指定队列
         if queue is not None:
             if queue == 0:
-                e = InvalidAPIOptionException("`queue` can't be 0 because the #0 queue is a system queue")
+                e = InvalidAPIOption("`queue` can't be 0 because the #0 queue is a system queue")
                 raise e
 
             available_queues = list(range(CONFIG['_WORKER_QUEUE_COUNT']))
             if queue not in available_queues:
-                e = InvalidAPIOptionException(f'`queue` should be one of {toolkit.json_dumps(available_queues)}')
+                e = InvalidAPIOption(f'`queue` should be one of {toolkit.json_dumps(available_queues)}')
                 raise e
 
             extra_config['queue'] = queue
@@ -1548,7 +1548,7 @@ class FuncBaseTask(BaseTask):
 
         # 函数分类
         if category is not None and not isinstance(category, (six.string_types, six.text_type)):
-            e = InvalidAPIOptionException('`category` should be a string or unicode')
+            e = InvalidAPIOption('`category` should be a string or unicode')
             raise e
 
         if category is None:
@@ -1557,12 +1557,12 @@ class FuncBaseTask(BaseTask):
         # 函数标签
         if tags is not None:
             if not isinstance(tags, (tuple, list)):
-                e = InvalidAPIOptionException('`tags` should be a tuple or a list')
+                e = InvalidAPIOption('`tags` should be a tuple or a list')
                 raise e
 
             for tag in tags:
                 if not isinstance(tag, (six.string_types, six.text_type)):
-                    e = InvalidAPIOptionException('Element of `tags` should be a string or unicode')
+                    e = InvalidAPIOption('Element of `tags` should be a string or unicode')
                     raise e
 
             tags = list(set(tags))
@@ -1575,7 +1575,7 @@ class FuncBaseTask(BaseTask):
         # 功能集成
         if integration is not None:
             if not isinstance(integration, (six.string_types, six.text_type)):
-                e = InvalidAPIOptionException('`integration` should be a string or unicode')
+                e = InvalidAPIOption('`integration` should be a string or unicode')
                 raise e
 
             integration = FIX_INTEGRATION_KEY_MAP.get(integration.lower()) or integration
@@ -1598,7 +1598,7 @@ class FuncBaseTask(BaseTask):
 
             # 记录至已导出函数列表
             if f_name in safe_scope['DFF'].api_func_set:
-                e = DuplicatedFuncException(f'Two or more functions named `{f_name}`')
+                e = DuplicatedFuncName(f'Two or more functions named `{f_name}`')
                 raise e
 
             safe_scope['DFF'].api_func_set.add(f_name)
@@ -1674,12 +1674,12 @@ class FuncBaseTask(BaseTask):
 
         # 检查函数链长度
         if len(call_chain) >= CONFIG['_FUNC_TASK_CALL_CHAIN_LIMIT']:
-            e = CallChainTooLongException(call_chain_info)
+            e = FuncCallChainTooLong(call_chain_info)
             raise e
 
         # 检查重复调用
         if func_id in call_chain:
-            e = FuncRecursiveCallException(f'{call_chain_info} -> [{func_id}]')
+            e = FuncCircularCall(f'{call_chain_info} -> [{func_id}]')
             raise e
 
         # 检查并获取函数信息
@@ -1695,7 +1695,7 @@ class FuncBaseTask(BaseTask):
         sql_params = [func_id]
         db_res = self.db.query(sql, sql_params)
         if len(db_res) <= 0:
-            e = NotFoundException(f'Function not found: `{func_id}`')
+            e = EntityNotFound(f'Function not found: `{func_id}`')
             raise e
 
         func = db_res[0]
@@ -2009,7 +2009,7 @@ class FuncBaseTask(BaseTask):
         # 目标脚本
         self.script = self.load_script(self.script_id, draft=use_code_draft)
         if not self.script:
-            e = NotFoundException(f'Script not found: `{self.script_id}`')
+            e = EntityNotFound(f'Script not found: `{self.script_id}`')
             raise e
 
         # 执行脚本
@@ -2022,7 +2022,7 @@ class FuncBaseTask(BaseTask):
         if self.func_name:
             entry_func = self.script_scope.get(self.func_name)
             if not entry_func:
-                e = NotFoundException(f'Function not found: `{self.script_id}.{self.func_name}`')
+                e = EntityNotFound(f'Function not found: `{self.script_id}.{self.func_name}`')
                 raise e
 
             # 执行函数

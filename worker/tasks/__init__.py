@@ -30,15 +30,15 @@ GUANCE_DATA_STATUS_MAP = {
     'success': 'ok',
 }
 
-class PreviousTaskNotFinishedException(Exception):
+class PreviousTaskNotFinished(Exception):
     def __init__(self, *args, **kwargs):
         super().__init__('Previous task not finished, skip current task')
 
-class TaskTimeoutException(Exception):
+class TaskTimeout(Exception):
     def __init__(self, *args, **kwargs):
         super().__init__('Task execution takes too much time and has been interrupted by force')
 
-class TaskExpireException(Exception):
+class TaskExpired(Exception):
     def __init__(self, *args, **kwargs):
         super().__init__('Task waited takes too much time and has been interrupted by force')
 
@@ -273,7 +273,7 @@ class BaseTask(object):
         lock_value = toolkit.gen_uuid()
 
         if not self.cache_db.lock(lock_key, lock_value, max_age):
-            raise PreviousTaskNotFinishedException()
+            raise PreviousTaskNotFinished()
 
         self._lock_key   = lock_key
         self._lock_value = lock_value
@@ -525,18 +525,18 @@ class BaseTask(object):
         try:
             # 检查任务过期
             if self.expires and self.wait_cost > self.expires * 1000:
-                raise TaskExpireException()
+                raise TaskExpired()
 
             self.logger.info(f'[START] {self.name}')
             self.result = self.run(**self.kwargs)
 
-        except PreviousTaskNotFinishedException as e:
+        except PreviousTaskNotFinished as e:
             # 任务重复运行错误，警告即可
             self.status = 'skip'
             self.exception = e
             self.logger.warning(self.exception)
 
-        except TaskTimeoutException as e:
+        except TaskTimeout as e:
             # 任务超时
             self.status = 'timeout'
 
@@ -547,7 +547,7 @@ class BaseTask(object):
             for line in self.traceback.splitlines():
                 self.logger.error(line)
 
-        except TaskExpireException as e:
+        except TaskExpired as e:
             # 任务过期
             self.status = 'expire'
 
