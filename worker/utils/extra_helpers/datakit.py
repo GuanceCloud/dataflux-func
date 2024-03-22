@@ -207,7 +207,7 @@ def colored(s, name):
         raise AttributeError("Color '{}' not supported.".format(name))
 
 class BaseDataKit(object):
-    def __init__(self, url=None, host=None, port=None, protocol=None, timeout=None, debug=False, dry_run=False, write_size=None):
+    def __init__(self, url=None, host=None, port=None, protocol=None, timeout=None, debug=False, dry_run=False, write_size=None, raise_for_status=True):
         self.url        = url        or None
         self.host       = host       or 'localhost'
         self.port       = port       or None
@@ -216,6 +216,8 @@ class BaseDataKit(object):
         self.debug      = debug      or False
         self.dry_run    = dry_run    or False
         self.write_size = write_size or 100
+
+        self.raise_for_status = raise_for_status or False
 
         if url:
             splited_url = urlsplit(url)
@@ -415,8 +417,8 @@ class BaseDataKit(object):
 
                 print(colored(output, color))
 
-        if resp_status_code >= 400:
-            e = Exception(resp_status_code, ensure_str(resp_raw_data))
+        if resp_status_code >= 400 and self.raise_for_status:
+            e = Exception(f'Status Code: {resp_status_code}, Response: {ensure_str(resp_raw_data)}')
             raise e
 
         return resp_status_code, resp_data
