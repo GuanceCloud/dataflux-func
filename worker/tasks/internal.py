@@ -941,6 +941,10 @@ class AutoBackupDB(BaseInternalTask):
         os.remove(sql_file_path)
 
     def run(self, **kwargs):
+        if CONFIG['_DISABLE_DB_AUTO_BACKUP']:
+            self.logger.warning('DB Auto Backup Disabled.')
+            return
+
         # 上锁
         self.lock(max_age=60)
 
