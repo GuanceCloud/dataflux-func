@@ -55,8 +55,9 @@ LOG_FILE_FORMAT: text
 # 终端日志是否着色
 LOG_CONSOLE_COLOR: false
 
-# 数据库自动备份保留数量
+# 数据库自动备份保留数量 / 大小
 DB_AUTO_BACKUP_LIMIT: 168
+DB_AUTO_BACKUP_SIZE_LIMIT: 5GB
 
 # 数据库自动备份目录
 # 必须使用绝对路径

@@ -14,6 +14,7 @@ import zipfile
 
 # 3rd-party Modules
 import arrow
+from datasize import DataSize
 
 # Project Modules
 from worker.utils import toolkit, yaml_resources
@@ -833,6 +834,74 @@ class AutoBackupDB(BaseInternalTask):
 
         return table_dumps_parts
 
+    def limit_backups(self):
+        backup_dir = CONFIG['DB_AUTO_BACKUP_DIR']
+        if not os.path.exists(backup_dir):
+            return
+
+        # 先删除，后备份方式，需要 - 1
+        backup_limit = CONFIG['DB_AUTO_BACKUP_LIMIT'] - 1
+
+        # 获取备份文件名
+        zip_file_names = []
+        sql_file_names = []
+        with os.scandir(backup_dir) as _dir:
+            for _f in _dir:
+                if not _f.is_file():
+                    continue
+                if not _f.name.startswith(CONFIG['_DB_AUTO_BACKUP_PREFIX']):
+                    continue
+
+                if _f.name.endswith('.zip'):
+                    zip_file_names.append(_f.name)
+                elif _f.name.endswith('.sql'):
+                    sql_file_names(_f.name)
+
+        # 删除多余备份
+        zip_file_names.sort()
+        if len(zip_file_names) > backup_limit:
+            for file_name in zip_file_names[0:-backup_limit]:
+                file_path = os.path.join(backup_dir, file_name)
+                os.remove(file_path)
+
+        # 删除多余 .sql 文件
+        for file_name in sql_file_names:
+            file_path = os.path.join(backup_dir, file_name)
+            os.remove(file_path)
+
+    def limit_backup_size(self):
+        backup_dir = CONFIG['DB_AUTO_BACKUP_DIR']
+        if not os.path.exists(backup_dir):
+            return
+
+        # 允许的备份总大小
+        limit_size = DataSize(CONFIG['DB_AUTO_BACKUP_SIZE_LIMIT'])
+
+        zip_file_names = []
+        with os.scandir(backup_dir) as _dir:
+            for _f in _dir:
+                if not _f.is_file():
+                    continue
+                if not _f.name.startswith(CONFIG['_DB_AUTO_BACKUP_PREFIX']):
+                    continue
+
+                if _f.name.endswith('.zip'):
+                    zip_file_names.append(_f.name)
+
+        # 计算大小并删除多余备份
+        backup_size = 0
+        is_full     = False
+        zip_file_names.sort(reverse=True)
+        for file_name in zip_file_names:
+            file_path = os.path.join(backup_dir, file_name)
+            file_size = os.path.getsize(file_path)
+
+            if not is_full and backup_size + file_size < limit_size:
+                backup_size += file_size
+            else:
+                is_full = True
+                os.remove(file_path)
+
     def run_backup(self, tables):
         # 保证目录
         backup_dir = CONFIG['DB_AUTO_BACKUP_DIR']
@@ -871,26 +940,6 @@ class AutoBackupDB(BaseInternalTask):
         # 删除待压缩文件
         os.remove(sql_file_path)
 
-    def limit_backups(self):
-        backup_dir = CONFIG['DB_AUTO_BACKUP_DIR']
-        if not os.path.exists(backup_dir):
-            return
-
-        # 获取备份文件名
-        backup_file_names = []
-        with os.scandir(backup_dir) as _dir:
-            for _f in _dir:
-                if _f.is_file() and _f.name.startswith(CONFIG['_DB_AUTO_BACKUP_PREFIX']) \
-                    and (_f.name.endswith('.sql') or _f.name.endswith('.zip')):
-                    backup_file_names.append(_f.name)
-
-        # 删除多余备份
-        backup_file_names.sort()
-        if len(backup_file_names) > CONFIG['DB_AUTO_BACKUP_LIMIT']:
-            for file_name in backup_file_names[0:-1 * CONFIG['DB_AUTO_BACKUP_LIMIT']]:
-                file_path = os.path.join(backup_dir, file_name)
-                os.remove(file_path)
-
     def run(self, **kwargs):
         # 上锁
         self.lock(max_age=60)
@@ -898,11 +947,12 @@ class AutoBackupDB(BaseInternalTask):
         # 需要导出的表
         tables = self.get_tables()
 
-        # 导出
-        self.run_backup(tables)
-
         # 自动删除旧备份
-        self.limit_backups()
+        self.safe_call(self.limit_backups)
+        self.safe_call(self.limit_backup_size)
+
+        # 导出
+        self.safe_call(self.run_backup, tables)
 
 class ReloadDataMD5Cache(BaseInternalTask):
     '''
