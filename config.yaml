@@ -1,3 +1,11 @@
+# 支持以环境变量 DFF_ 前缀覆盖对应配置项，如：
+#   DFF_APP_NAME=MyFunc 可覆盖配置 APP_NAME
+
+# 配置分类如下：
+#   无特殊前缀       ：用户可以根据需求自行修改的项目                            （如：APP_NAME）
+#   以 _ 为前缀      ：不推荐用户修改，仅在特殊用途、观测云附属 Func 中修改的项目（如：_IS_INSTALLED）
+#   以 _GUANCE 为前缀：仅用于观测云附属 Func 的项目                              （如：_GUANCE_WEB_BIND_ENV）
+
 APP_NAME: DataFluxFunc
 
 # 配置文件路径
@@ -63,28 +71,28 @@ DB_AUTO_BACKUP_SIZE_LIMIT: 5GB
 # 必须使用绝对路径
 DB_AUTO_BACKUP_DIR: '/data/sqldump/'
 
-# Web服务器访问URL
+# Web服务器访问 URL
 # 即用户在访问时，浏览器地址栏中需要输入的地址
 # 注意：当系统部署在反向代理服务器后时，服务器绑定的地址、端口可能会不同
 WEB_BASE_URL      : ''
 WEB_INNER_BASE_URL: http://server-inner.func2:8088
 
-# Web服务器绑定IP
+# Web 服务器绑定 IP
 # 如：
 #   0.0.0.0  : 为公开访问
 #   127.0.0.1: 为仅本地访问
 # 注意：当系统部署在反向代理服务器后时，应配置为 127.0.0.1
 WEB_BIND: '0.0.0.0'
 
-# Web服务器绑定端口
+# Web 服务器绑定端口
 # 注意：当系统部署在反向代理服务器后时，绑定端口与浏览器中输入地址的端口不必相同
 WEB_PORT: 8088
 
-# CORS配置
+# CORS 配置
 WEB_CORS_ORIGIN     : true
 WEB_CORS_CREDENTIALS: true
 
-# MySQL连接配置
+# MySQL 连接配置
 MYSQL_HOST    : '127.0.0.1'
 MYSQL_PORT    : 3306
 MYSQL_USER    : root
@@ -282,17 +290,9 @@ _WORKER_FETCH_TASK_TIMEOUT   : 15
 _WORKER_PROCESS_CONSUME_LIMIT: 10000
 
 # 监控模块一般作为常量的配置
-_MONITOR_REPORT_INTERVAL                    : 15
-_MONITOR_MATCHED_ROUTE_EXPIRES              : 86400
-_MONITOR_SLOW_API_COUNT_EXPIRES             : 604800
-_MONITOR_GUANCE_MEASUREMENT_FUNC_CALL       : DFF_func_call
-_MONITOR_GUANCE_MEASUREMENT_WORKER_QUEUE    : DFF_worker_queue
-_MONITOR_GUANCE_MEASUREMENT_CACHE_DB        : DFF_cache_db
-_MONITOR_GUANCE_MEASUREMENT_CACHE_DB_KEY    : DFF_cache_db_key
-_MONITOR_GUANCE_MEASUREMENT_DB_TABLE        : DFF_db_table
-_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD     : DFF_task_record
-_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD_FUNC: DFF_task_record_func
-_MONITOR_GUANCE_LOGGING_SPLIT_BYTES         : 100000
+_MONITOR_REPORT_INTERVAL       : 15
+_MONITOR_MATCHED_ROUTE_EXPIRES : 86400
+_MONITOR_SLOW_API_COUNT_EXPIRES: 604800
 
 # 任务模块一般作为常量的配置
 _TASK_QUEUE_DEFAULT               : 0
@@ -426,3 +426,19 @@ _DISABLE_STARTUP_TASKS: false
 
 # REMAP
 __REMAP: null
+
+# 观测云专用配置
+# 自观测上报指标集
+_GUANCE_SELF_MONITOR_MEASUREMENT_FUNC_CALL       : DFF_func_call
+_GUANCE_SELF_MONITOR_MEASUREMENT_WORKER_QUEUE    : DFF_worker_queue
+_GUANCE_SELF_MONITOR_MEASUREMENT_CACHE_DB        : DFF_cache_db
+_GUANCE_SELF_MONITOR_MEASUREMENT_CACHE_DB_KEY    : DFF_cache_db_key
+_GUANCE_SELF_MONITOR_MEASUREMENT_DB_TABLE        : DFF_db_table
+_GUANCE_SELF_MONITOR_MEASUREMENT_TASK_RECORD     : DFF_task_record
+_GUANCE_SELF_MONITOR_MEASUREMENT_TASK_RECORD_FUNC: DFF_task_record_func
+
+# 自观测日志切分大小（字节）
+_GUANCE_SELF_MONITOR_LOGGING_SPLIT_BYTES: 100000
+
+# Web 绑定环境变量
+_GUANCE_WEB_BIND_ENV: GUANCE_BIND_IP

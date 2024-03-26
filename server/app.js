@@ -320,13 +320,18 @@ function startApplication() {
 
   require('./messageHandlers/socketIOHandler')(app, server);
 
+  // 优先使用观测云集群指定的绑定地址
+  if (CONFIG._GUANCE_WEB_BIND_ENV && process.env[CONFIG._GUANCE_WEB_BIND_ENV]) {
+    CONFIG.WEB_BIND = process.env[CONFIG._GUANCE_WEB_BIND_ENV];
+  }
+
   var listenOpt = {
     host: CONFIG.WEB_BIND,
     port: CONFIG.WEB_PORT,
   };
   server.listen(listenOpt, function() {
     // Print some message of the server
-    console.log(toolkit.strf('Web Server is listening on port [ {0} ]  (Press CTRL+C to quit)', CONFIG.WEB_PORT));
+    console.log(toolkit.strf('Web Server is listening on {0}:{1} (Press CTRL+C to quit)', CONFIG.WEB_BIND, CONFIG.WEB_PORT));
     console.log(toolkit.strf('PID: {0}', process.pid));
     console.log('Have fun!');
 

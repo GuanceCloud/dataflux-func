@@ -92,7 +92,7 @@ def main():
     queues = ', '.join(map(lambda q: f'#{q}', LISTINGING_QUEUES))
     pid = os.getpid()
 
-    print(f'Worker is listening on queues [ {queues} ] (Press CTRL+C to quit)')
+    print(f'Worker is listening on queues {queues} (Press CTRL+C to quit)')
     print(f'PID: {pid}')
     print('Have fun!')
 
