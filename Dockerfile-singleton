@@ -23,12 +23,11 @@ RUN wget https://urls.guance.com/ --no-use-server-timestamps -O /usr/src/app/gua
 RUN find /usr/src -name ".travis.yml" -type f -exec rm -f {} \; && \
     find /usr/src -name '.coveralls.yml' -type f -exec rm -f {} \;
 
-# 切换为非 root 用户
+# 准备非 root 用户/组
 RUN groupadd -r -g 1000 guance && \
     useradd -r -g guance -u 1000 -s /sbin/nologin guance && \
     mkdir -p /usr/src && chown -R guance:guance /usr/src && \
     mkdir -p /data    && chown -R guance:guance /data
-USER guance
 
 # 启动脚本
 COPY docker-entrypoint.sh /usr/local/bin/
