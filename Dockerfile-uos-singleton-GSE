@@ -19,6 +19,17 @@ RUN wget https://urls.guance.com/ --no-use-server-timestamps -O /usr/src/app/gua
     ln -s /usr/src/base/node_modules ./node_modules && \
     ln -s /usr/src/base/client/node_modules ./client/node_modules
 
+# 删除第三方包中多余内容
+RUN find /usr/src -name ".travis.yml" -type f -exec rm -f {} \; && \
+    find /usr/src -name '.coveralls.yml' -type f -exec rm -f {} \;
+
+# 切换为非 root 用户
+RUN groupadd -r -g 1000 guance && \
+    useradd -r -g guance -u 1000 -s /sbin/nologin guance && \
+    mkdir -p /usr/src && chown -R guance:guance /usr/src && \
+    mkdir -p /data    && chown -R guance:guance /data
+USER guance
+
 # 启动脚本
 COPY docker-entrypoint.sh /usr/local/bin/
 ENTRYPOINT ["docker-entrypoint.sh"]
