@@ -24,6 +24,12 @@ DataFlux Func 前身为 [观测云](https://guance.com/) 下属的一个计算�
 - [文档库](https://func.guance.com/doc/)
 - [观测云官方网站](https://guance.com/)
 
+## 声明
+
+由于部分第三方包的 `.travis.yml` 和 `.coveralls.yml` 文件中包含了 `repo_token` 内容，无法通过部分客户的安全扫描。
+
+因此，在构建 docker 镜像时，我们删除了这些文件。
+
 ## LICENSE
 
 [AGPL v3](LICENSE)
@@ -55,6 +61,12 @@ For documentations on DataFlux Func, please refer to the following links.
 - [Development Guide](https://func.guance.com/doc/development-guide-basic/)
 - [Documentation Library](https://func.guance.com/doc/)
 - [Guance Official Site](https://guance.com/)
+
+## Announcement
+
+Due to the `repo_token` content contained in the `.travis.yml` and `.coveralls.yml` files of some third-party packages, they cannot pass the security scans of some customers.
+
+Therefore, we remove these files when building the docker image.
 
 ## LICENSE
 
