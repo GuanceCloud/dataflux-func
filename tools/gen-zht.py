@@ -1,7 +1,38 @@
 import os
 import json
+import argparse
+
 import yaml
 import opencc
+
+OPTIONS = None
+
+COLOR_MAP = {
+    'grey'   : '\033[0;30m',
+    'red'    : '\033[0;31m',
+    'green'  : '\033[0;32m',
+    'yellow' : '\033[0;33m',
+    'blue'   : '\033[0;34m',
+    'magenta': '\033[0;35m',
+    'cyan'   : '\033[0;36m',
+}
+def colored(s, color=None):
+    if not color:
+        color = 'yellow'
+
+    color = COLOR_MAP[color]
+
+    return color + '{}\033[0m'.format(s)
+
+def get_options_by_command_line():
+    global OPTIONS
+
+    arg_parser = argparse.ArgumentParser(description='Traditional Chinese Translation Generator')
+
+    args = vars(arg_parser.parse_args())
+    args = dict(filter(lambda x: x[1] is not None, args.items()))
+
+    OPTIONS = args
 
 BASE_PATH_YAML = 'client/src/assets/yaml'
 BASE_PATH_VUE  = 'client/src'
@@ -133,8 +164,11 @@ def add_zht_for_vue():
             _f.write(output.rstrip() + '\n')
 
 def main():
+    get_options_by_command_line()
+
     gen_zht_for_yaml()
     add_zht_for_vue()
 
 if __name__ == '__main__':
     main()
+    print(colored('Done', 'green'))

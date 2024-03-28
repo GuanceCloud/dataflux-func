@@ -111,3 +111,4 @@ client/report.*.json
 init-scripts/*.zip
 init-scripts/*.py
 init-scripts/*.sh
+OPENSOURCE.cache.json

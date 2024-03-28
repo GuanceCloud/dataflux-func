@@ -5,7 +5,7 @@ DataFlux Func uses the following open source projects.
 ## Client
 
 | Project                  | Version | License           | Homepage                                                                                                                                                                   |
-|:-------------------------|:--------|:------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| :------------------------| :-------| :-----------------| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | @intlify/vue-i18n-loader | 1.1.0   | MIT               | [https://github.com/intlify/vue-i18n-loader#readme](https://github.com/intlify/vue-i18n-loader#readme)                                                                     |
 | @logicflow/core          | 1.2.10  | Apache-2.0        | [https://docs.logic-flow.cn](https://docs.logic-flow.cn)                                                                                                                   |
 | @logicflow/extension     | 1.2.10  | Apache-2.0        | [https://docs.logic-flow.cn](https://docs.logic-flow.cn)                                                                                                                   |
@@ -15,10 +15,11 @@ DataFlux Func uses the following open source projects.
 | clipboard                | 2.0.11  | MIT               | [https://clipboardjs.com](https://clipboardjs.com)                                                                                                                         |
 | codemirror               | 5.65.7  | MIT               | [https://codemirror.net/5/](https://codemirror.net/5/)                                                                                                                     |
 | core-js                  | 3.24.1  | MIT               | [https://github.com/zloirock/core-js#readme](https://github.com/zloirock/core-js#readme)                                                                                   |
+| cron-parser              | 4.9.0   | MIT               | [https://github.com/harrisiirak/cron-parser#readme](https://github.com/harrisiirak/cron-parser#readme)                                                                     |
 | cssmin                   | 0.4.3   | BSD License       | [https://github.com/jbleuzen/node-cssmin](https://github.com/jbleuzen/node-cssmin)                                                                                         |
 | diff                     | 4.0.2   | BSD-3-Clause      | [https://github.com/kpdecker/jsdiff#readme](https://github.com/kpdecker/jsdiff#readme)                                                                                     |
 | echarts                  | 4.9.0   | Apache-2.0        | [http://echarts.apache.org](http://echarts.apache.org)                                                                                                                     |
-| element-ui               | 2.15.13 | MIT               | [http://element.eleme.io](http://element.eleme.io)                                                                                                                         |
+| element-ui               | 2.15.14 | MIT               | [http://element.eleme.io](http://element.eleme.io)                                                                                                                         |
 | file-saver               | 2.0.5   | MIT               | [https://github.com/eligrey/FileSaver.js#readme](https://github.com/eligrey/FileSaver.js#readme)                                                                           |
 | font-awesome             | 4.7.0   | (OFL-1.1 AND MIT) | [http://fontawesome.io/](http://fontawesome.io/)                                                                                                                           |
 | html-escaper             | 3.0.3   | MIT               | [https://github.com/WebReflection/html-escaper](https://github.com/WebReflection/html-escaper)                                                                             |
@@ -42,7 +43,7 @@ DataFlux Func uses the following open source projects.
 ## Server
 
 | Project                  | Version     | License      | Homepage                                                                                                                 |
-|:-------------------------|:------------|:-------------|:-------------------------------------------------------------------------------------------------------------------------|
+| :------------------------| :-----------| :------------| :------------------------------------------------------------------------------------------------------------------------|
 | @socket.io/redis-adapter | 7.2.0       | MIT          | [https://github.com/socketio/socket.io-redis-adapter#readme](https://github.com/socketio/socket.io-redis-adapter#readme) |
 | adm-zip                  | 0.5.9       | MIT          | [https://github.com/cthackers/adm-zip](https://github.com/cthackers/adm-zip)                                             |
 | async                    | 2.6.4       | MIT          | [https://caolan.github.io/async/](https://caolan.github.io/async/)                                                       |
@@ -98,25 +99,26 @@ DataFlux Func uses the following open source projects.
 ## Worker
 
 | Project           | Version  | License                                                         | Homepage                                                                                           |
-|:------------------|:---------|:----------------------------------------------------------------|:---------------------------------------------------------------------------------------------------|
+| :-----------------| :--------| :---------------------------------------------------------------| :--------------------------------------------------------------------------------------------------|
 | arrow             | 0.17.0   | Apache 2.0                                                      | [https://arrow.readthedocs.io](https://arrow.readthedocs.io)                                       |
 | clickhouse-driver | 0.1.5    | MIT                                                             | [https://github.com/mymarilyn/clickhouse-driver](https://github.com/mymarilyn/clickhouse-driver)   |
 | croniter          | 1.4.1    | MIT License                                                     | [http://github.com/kiorky/croniter](http://github.com/kiorky/croniter)                             |
 | cx-Oracle         | 7.3.0    | BSD License                                                     | [https://oracle.github.io/python-cx_Oracle](https://oracle.github.io/python-cx_Oracle)             |
+| datasize          | 1.0.0    | LGPL-3.0                                                        | [https://github.com/aphor/datasize](https://github.com/aphor/datasize)                             |
 | DBUtils           | 3.0.3    | MIT License                                                     | [https://webwareforpython.github.io/DBUtils/](https://webwareforpython.github.io/DBUtils/)         |
-| func-timeout      | 4.3.5    | LGPLv2                                                          | [https://github.com/kata198/func_timeout](https://github.com/kata198/func_timeout)                 |
+| func-timeout      | 4.3.5    | LGPL-3.0                                                        | [https://github.com/kata198/func_timeout](https://github.com/kata198/func_timeout)                 |
 | funcsigs          | 1.0.2    | ASL                                                             | [http://funcsigs.readthedocs.org](http://funcsigs.readthedocs.org)                                 |
 | httpie            | 3.2.1    | BSD                                                             | [https://httpie.io/](https://httpie.io/)                                                           |
-| influxdb          | 5.3.1    | MIT License                                                     | [https://github.com/influxdb/influxdb-python](https://github.com/influxdb/influxdb-python)         |
+| influxdb          | 5.3.1    | MIT                                                             | [https://github.com/influxdb/influxdb-python](https://github.com/influxdb/influxdb-python)         |
 | Jinja2            | 2.11.3   | BSD-3-Clause                                                    | [https://palletsprojects.com/p/jinja/](https://palletsprojects.com/p/jinja/)                       |
-| kafka-python3     | 3.0.0    | Apache License 2.0                                              | [https://github.com/dpkp/kafka-python](https://github.com/dpkp/kafka-python)                       |
+| kafka-python3     | 3.0.0    | Apache-2.0                                                      | [https://github.com/dpkp/kafka-python](https://github.com/dpkp/kafka-python)                       |
 | MarkupSafe        | 2.0.1    | BSD-3-Clause                                                    | [https://palletsprojects.com/p/markupsafe/](https://palletsprojects.com/p/markupsafe/)             |
 | nanoid            | 2.0.0    | MIT                                                             | [https://github.com/puyuan/py-nanoid](https://github.com/puyuan/py-nanoid)                         |
 | paho-mqtt         | 1.6.1    | Eclipse Public License v2.0 / Eclipse Distribution License v1.0 | [http://eclipse.org/paho](http://eclipse.org/paho)                                                 |
-| psutil            | 5.9.1    | BSD                                                             | [https://github.com/giampaolo/psutil](https://github.com/giampaolo/psutil)                         |
+| psutil            | 5.9.1    | BSD-3-Clause                                                    | [https://github.com/giampaolo/psutil](https://github.com/giampaolo/psutil)                         |
 | psycopg2          | 2.9.3    | LGPL with exceptions                                            | [https://psycopg.org/](https://psycopg.org/)                                                       |
 | pycryptodomex     | 3.15.0   | BSD, Public Domain                                              | [https://www.pycryptodome.org](https://www.pycryptodome.org)                                       |
-| pykafka           | 2.8.0    | Apache License 2.0                                              | [https://github.com/Parsely/pykafka](https://github.com/Parsely/pykafka)                           |
+| pykafka           | 2.8.0    | Apache-2.0                                                      | [https://github.com/Parsely/pykafka](https://github.com/Parsely/pykafka)                           |
 | pymongo           | 3.12.3   | Apache License, Version 2.0                                     | [http://github.com/mongodb/mongo-python-driver](http://github.com/mongodb/mongo-python-driver)     |
 | pymssql           | 2.2.5    | LGPL                                                            | [http://pymssql.readthedocs.io](http://pymssql.readthedocs.io)                                     |
 | PyMySQL           | 1.0.2    | MIT                                                             | [https://github.com/PyMySQL/PyMySQL/](https://github.com/PyMySQL/PyMySQL/)                         |
