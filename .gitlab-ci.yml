@@ -349,7 +349,7 @@ otherPortableFile_dev:
     - tools/ossutil64 cp portable/${IMAGE_LIST_FILE}-dev        ${OSS_WORKDIR_BASE_URL}/portable-dev/x86_64/${IMAGE_LIST_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${VERSION_FILE}                        ${OSS_WORKDIR_BASE_URL}/portable-dev/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     # 刷新 CDN 缓存
-    - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r tools/requirements.txt
+    - pip install -i http://mirrors.cloud.aliyuncs.com/pypi/simple/ --trusted-host mirrors.cloud.aliyuncs.com -r tools/requirements.txt
     - python tools/cdn-refresh-tool.py
       Directory ${CDN_REFRESH_BASE_PATH}/portable-dev/
       -i ${ZY_STATIC_CDN_AK_ID}
@@ -377,7 +377,7 @@ otherPortableFile_singleton:
     - tools/ossutil64 cp portable/${IMAGE_LIST_FILE}-aarch64    ${OSS_WORKDIR_BASE_URL}/portable/aarch64/${IMAGE_LIST_FILE}   -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${VERSION_FILE}                        ${OSS_WORKDIR_BASE_URL}/portable/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     # 刷新 CDN 缓存
-    - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r tools/requirements.txt
+    - pip install -i http://mirrors.cloud.aliyuncs.com/pypi/simple/ --trusted-host mirrors.cloud.aliyuncs.com -r tools/requirements.txt
     - python tools/cdn-refresh-tool.py
       Directory ${CDN_REFRESH_BASE_PATH}/portable/
       -i ${ZY_STATIC_CDN_AK_ID}
@@ -405,7 +405,7 @@ otherPortableFile_singleton_GSE:
     - tools/ossutil64 cp portable/${IMAGE_LIST_FILE}-GSE-aarch64 ${OSS_WORKDIR_BASE_URL}/portable-GSE/aarch64/${IMAGE_LIST_FILE}   -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     - tools/ossutil64 cp ${VERSION_FILE}                         ${OSS_WORKDIR_BASE_URL}/portable-GSE/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     # 刷新 CDN 缓存
-    - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r tools/requirements.txt
+    - pip install -i http://mirrors.cloud.aliyuncs.com/pypi/simple/ --trusted-host mirrors.cloud.aliyuncs.com -r tools/requirements.txt
     - python tools/cdn-refresh-tool.py
       Directory ${CDN_REFRESH_BASE_PATH}/portable-GSE/
       -i ${ZY_STATIC_CDN_AK_ID}
@@ -422,7 +422,7 @@ otherResourceFile:
     # 上传文件
     - tools/ossutil64 cp -r ${SDK_DIR} ${OSS_WORKDIR_BASE_URL}/${SDK_DIR} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     # 刷新 CDN 缓存
-    - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r tools/requirements.txt
+    - pip install -i http://mirrors.cloud.aliyuncs.com/pypi/simple/ --trusted-host mirrors.cloud.aliyuncs.com -r tools/requirements.txt
     - python tools/cdn-refresh-tool.py
       Directory ${CDN_REFRESH_BASE_PATH}/${SDK_DIR}
       -i ${ZY_STATIC_CDN_AK_ID}
