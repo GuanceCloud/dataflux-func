@@ -18,7 +18,6 @@ def get_config(c):
         'protocol'  : c.get('protocol'),
         'path'      : c.get('path'),
         'token'     : c.get('token'),
-        'rp'        : c.get('rp'),
         'access_key': c.get('accessKey'),
         'secret_key': c.get('secretKey'),
         'timeout'   : c.get('timeout') or 3,
@@ -26,14 +25,11 @@ def get_config(c):
     })
 
 class DataWayHelper(object):
-    def __init__(self, logger, config, token=None, rp=None, timeout=None, *args, **kwargs):
+    def __init__(self, logger, config, token=None, timeout=None, *args, **kwargs):
         self.logger = logger
 
         if token:
             config['token'] = token
-
-        if rp:
-            config['rp'] = rp
 
         if timeout:
             config['timeout'] = timeout

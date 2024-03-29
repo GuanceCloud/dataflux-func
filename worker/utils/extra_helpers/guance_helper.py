@@ -22,17 +22,13 @@ def get_config_dataway(c):
     return toolkit.no_none_or_whitespace({
         'url'    : c.get('guanceOpenWayURL'),
         'token'  : c.get('token'),
-        'rp'     : c.get('rp'),
         'timeout': c.get('timeout') or 3,
         'debug'  : c.get('debug')   or False,
     })
 
 class GuanceHelper(object):
-    def __init__(self, logger, config, rp=None, timeout=None, *args, **kwargs):
+    def __init__(self, logger, config, timeout=None, *args, **kwargs):
         self.logger = logger
-
-        if rp:
-            config['rp'] = rp
 
         if timeout:
             config['timeout'] = timeout
