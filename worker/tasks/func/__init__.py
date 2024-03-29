@@ -926,7 +926,7 @@ class FuncResponseLargeData(BaseFuncResponse):
 
     def cache_to_file(self, cache_expires=0):
         # 保证至少 60 秒缓存缓存
-        if cache_expires < 60:
+        if not isinstance(cache_expires, (int, float)) or cache_expires < 60:
             cache_expires = 60
 
         tmp_dir    = CONFIG['DOWNLOAD_TEMP_ROOT_FOLDER']

@@ -304,12 +304,13 @@ class FuncRunner(FuncBaseTask):
 
             # 响应大型数据，需要将数据缓存为文件
             if isinstance(func_resp, FuncResponseLargeData):
+                cache_result_expires = 0
                 try:
                     cache_result_expires = self.script['funcExtraConfig'][self.func_id]['cacheResult']
                 except (KeyError, TypeError) as e:
                     pass
-                else:
-                    func_resp.cache_to_file(cache_result_expires or 0)
+
+                func_resp.cache_to_file(cache_result_expires or 0)
 
         except Exception as e:
             # 缓存任务状态
