@@ -26,11 +26,50 @@ function blankLine {
 }
 
 function log {
-    echo -e "\033[33m$1\033[0m"
+    echo -e "\033[33m$1\033[0m$2"
+}
+function log_update_line {
+    echo -e "\r\033[33m$1\033[0m$2\c"
 }
 function error {
     echo -e "\033[31m$1\033[0m"
 }
+
+function delay_run {
+    for i in {10..1}; do
+        if [ $i -eq 1 ]; then
+            log_update_line "You have ${i} second to interrupt this action by pressing CTRL + C   "
+        else
+            log_update_line "You have ${i} seconds to interrupt this action by pressing CTRL + C  "
+        fi
+        sleep 1
+    done
+    log ""
+}
+
+# 初始化
+__PREV_DIR=${PWD}
+__PORTABLE_DIR=$(cd `dirname $0`; pwd)
+__SERVER_SECRET=`echo ${RANDOM} | md5sum | cut -c 1-16`
+__MYSQL_PASSWORD=`echo ${RANDOM} | md5sum | cut -c 1-16`
+
+__CONFIG_FILE=data/user-config.yaml
+__DOCKER_STACK_FILE=docker-stack.yaml
+__DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
+
+__PROJECT_NAME=dataflux-func
+
+__DOCKER_VERSION=23.0.6
+__DOCKER_BIN_FILE=docker-${__DOCKER_VERSION}.tgz
+__SYSTEMD_FILE=docker.service
+
+__LOGROTATE_FILE=/etc/logrotate.d/${__PROJECT_NAME}
+
+__DATAFLUX_FUNC_IMAGE_GZIP_FILE=dataflux-func.tar.gz
+__MYSQL_IMAGE_GZIP_FILE=mysql.tar.gz
+__REDIS_IMAGE_GZIP_FILE=redis.tar.gz
+__IMAGE_LIST_FILE=image-list
+__VERSION_FILE=version
 
 # 处理选项
 OPT_MINI=FALSE
@@ -137,34 +176,14 @@ while [ $# -ge 1 ]; do
     esac
 done
 
-# 配置
-__PREV_DIR=${PWD}
-__PORTABLE_DIR=$(cd `dirname $0`; pwd)
-__SERVER_SECRET=`echo ${RANDOM} | md5sum | cut -c 1-16`
-__MYSQL_PASSWORD=`echo ${RANDOM} | md5sum | cut -c 1-16`
-
-__CONFIG_FILE=data/user-config.yaml
-__DOCKER_STACK_FILE=docker-stack.yaml
-__DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
-
-__PROJECT_NAME=dataflux-func
-
-__DOCKER_BIN_FILE=docker-20.10.8.tgz
-__SYSTEMD_FILE=docker.service
-
-__LOGROTATE_FILE=/etc/logrotate.d/${__PROJECT_NAME}
-
-__DATAFLUX_FUNC_IMAGE_GZIP_FILE=dataflux-func.tar.gz
-__MYSQL_IMAGE_GZIP_FILE=mysql.tar.gz
-__REDIS_IMAGE_GZIP_FILE=redis.tar.gz
-__IMAGE_LIST_FILE=image-list
-__VERSION_FILE=version
-
+# 安装参数
+# 端口
 _PORT=8088
 if [ ${OPT_PORT} != "DEFAULT" ]; then
     _PORT=${OPT_PORT}
 fi
 
+# 安装目录
 _INSTALL_DIR=/usr/local/${__PROJECT_NAME}
 if [ ${OPT_INSTALL_DIR} != "DEFAULT" ]; then
     # 指定安装位置
@@ -182,7 +201,7 @@ log "Port        : ${_PORT}"
 log "Install dir : ${_INSTALL_DIR}/"
 log "Version     : `cat ${__PORTABLE_DIR}/${__VERSION_FILE}`"
 
-# 安装前根据 etc 检查
+# 检查安装目录
 if [ ${INSTALLED_DIR} ] && [ ${INSTALLED_DIR} != ${_INSTALL_DIR} ]; then
     log ""
     log "You are reinstalling/upgrading DataFlux Func into a different directory by mistake."
@@ -209,9 +228,51 @@ fi
 # 进入脚本所在目录
 cd ${__PORTABLE_DIR}
 
-# 安装 Docker
-if [ ! `command -v docker` ]; then
-    log "Install and prepare docker"
+# 检查 Docker 版本 / 安装 Docker
+if [ `command -v docker` ]; then
+    CURR_DOCKER_VERSION=`docker --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]'`
+    if [ ${CURR_DOCKER_VERSION} != ${__DOCKER_VERSION} ]; then
+        log ""
+        log "The current version of the DataFlux Func requires another version of Docker"
+        log "  Current Docker (docker --version):"
+        log "    -> ${CURR_DOCKER_VERSION}"
+        log "  DataFlux Func requires:"
+        log "    -> ${__DOCKER_VERSION} "
+        log ""
+        log "Upgrading Docker will stop the docker service and shut down all running containers, this will make your service unavailable!"
+        log ""
+        log "Do you want to upgrade the Docker from ${CURR_DOCKER_VERSION} to ${__DOCKER_VERSION}? "
+        log "  -> abort  : Stop and do nothing"
+        log "  -> skip   : Skip upgrading Docker, use current version of Docker and continue to install DataFlux Func"
+        log "  -> upgrade: Upgrade Docker and install DataFlux Func"
+        read -p "Your choice: " ACTION
+
+        if [ "${ACTION}" == "upgrade" ]; then
+            log "[Upgrade Docker and install DataFlux Func]"
+            delay_run
+
+            # 停止 Docker 服务
+            log "Stop Docker service"
+            systemctl stop docker
+
+            # 更新 Docker
+            log "Upgrade Docker service"
+            tar -zxvf ${__DOCKER_BIN_FILE}
+            cp docker/* /usr/bin/
+            systemctl start docker
+
+        elif [ "${ACTION}" == "skip" ]; then
+            log "[Skip upgrading Docker, use current version of Docker and continue to install DataFlux Func]"
+            delay_run
+
+        else
+            log "[Stop and do nothing]"
+            exit 0
+        fi
+    fi
+
+else
+    log "Install and prepare docker ${__DOCKER_VERSION}"
     tar -zxvf ${__DOCKER_BIN_FILE}
     cp docker/* /usr/bin/
 

@@ -24,6 +24,22 @@ function error {
     echo -e "\033[31m$1\033[0m"
 }
 
+# 初始化
+__PREV_DIR=${PWD}
+
+__PORTABLE_BASE_URL=https://static.guance.com/dataflux-func/portable
+
+__DOCKER_VERSION=23.0.6
+__DOCKER_BIN_FILE=docker-${__DOCKER_VERSION}.tgz
+__DATAFLUX_FUNC_IMAGE_GZIP_FILE=dataflux-func.tar.gz
+__MYSQL_IMAGE_GZIP_FILE=mysql.tar.gz
+__REDIS_IMAGE_GZIP_FILE=redis.tar.gz
+__IMAGE_LIST_FILE=image-list
+__SYSTEMD_FILE=docker.service
+__DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
+__RUN_PORTABLE_FILE=run-portable.sh
+__VERSION_FILE=version
+
 # 处理选项
 OPT_ARCH=DEFAULT
 OPT_DOWNLOAD_DIR=DEFAULT
@@ -65,20 +81,7 @@ while [ $# -ge 1 ]; do
     esac
 done
 
-# 配置
-__PREV_DIR=${PWD}
-
-__PORTABLE_BASE_URL=https://static.guance.com/dataflux-func/portable
-__DOCKER_BIN_FILE=docker-20.10.8.tgz
-__DATAFLUX_FUNC_IMAGE_GZIP_FILE=dataflux-func.tar.gz
-__MYSQL_IMAGE_GZIP_FILE=mysql.tar.gz
-__REDIS_IMAGE_GZIP_FILE=redis.tar.gz
-__IMAGE_LIST_FILE=image-list
-__SYSTEMD_FILE=docker.service
-__DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
-__RUN_PORTABLE_FILE=run-portable.sh
-__VERSION_FILE=version
-
+# 下载配置
 # 版本
 case ${OPT_FOR} in
     dev|GSE )
@@ -115,10 +118,25 @@ case ${_ARCH} in
         ;;
 esac
 
-# 获取版本号
-_VERSION=`curl -s ${__PORTABLE_BASE_URL}/${__VERSION_FILE}`
+# 下载所需文件至临时目录
+TMP_FOLDER=tmp-`echo ${RANDOM} | md5sum | cut -c 1-16`
+mkdir ${TMP_FOLDER}
+cd ${TMP_FOLDER}
 
-# 创建下载目录
+download ${__PORTABLE_BASE_URL}/${_ARCH}/${__DOCKER_BIN_FILE} ${__DOCKER_BIN_FILE}
+download ${__PORTABLE_BASE_URL}/${_ARCH}/${__DATAFLUX_FUNC_IMAGE_GZIP_FILE} ${__DATAFLUX_FUNC_IMAGE_GZIP_FILE}
+download ${__PORTABLE_BASE_URL}/${_ARCH}/${__MYSQL_IMAGE_GZIP_FILE} ${__MYSQL_IMAGE_GZIP_FILE}
+download ${__PORTABLE_BASE_URL}/${_ARCH}/${__REDIS_IMAGE_GZIP_FILE} ${__REDIS_IMAGE_GZIP_FILE}
+download ${__PORTABLE_BASE_URL}/${_ARCH}/${__IMAGE_LIST_FILE} ${__IMAGE_LIST_FILE}
+download ${__PORTABLE_BASE_URL}/${__SYSTEMD_FILE} ${__SYSTEMD_FILE}
+download ${__PORTABLE_BASE_URL}/${__DOCKER_STACK_EXAMPLE_FILE} ${__DOCKER_STACK_EXAMPLE_FILE}
+download ${__PORTABLE_BASE_URL}/${__RUN_PORTABLE_FILE} ${__RUN_PORTABLE_FILE}
+download ${__PORTABLE_BASE_URL}/${__VERSION_FILE} ${__VERSION_FILE}
+
+# 获取版本号
+_VERSION=`cat ${__VERSION_FILE}`
+
+# 修改下载目录名称
 if [ ${OPT_DOWNLOAD_DIR} != "DEFAULT" ]; then
     __DOWNLOAD_DIR=${OPT_DOWNLOAD_DIR}
 else
@@ -131,25 +149,17 @@ fi
 if [ -d ${__DOWNLOAD_DIR} ]; then
     rm -rf ${__DOWNLOAD_DIR}
 fi
-mkdir ${__DOWNLOAD_DIR}
-cd ${__DOWNLOAD_DIR}
 
-# 下载所需文件
-download ${__PORTABLE_BASE_URL}/${_ARCH}/${__DOCKER_BIN_FILE} ${__DOCKER_BIN_FILE}
-download ${__PORTABLE_BASE_URL}/${_ARCH}/${__DATAFLUX_FUNC_IMAGE_GZIP_FILE} ${__DATAFLUX_FUNC_IMAGE_GZIP_FILE}
-download ${__PORTABLE_BASE_URL}/${_ARCH}/${__MYSQL_IMAGE_GZIP_FILE} ${__MYSQL_IMAGE_GZIP_FILE}
-download ${__PORTABLE_BASE_URL}/${_ARCH}/${__REDIS_IMAGE_GZIP_FILE} ${__REDIS_IMAGE_GZIP_FILE}
-download ${__PORTABLE_BASE_URL}/${_ARCH}/${__IMAGE_LIST_FILE} ${__IMAGE_LIST_FILE}
-download ${__PORTABLE_BASE_URL}/${__SYSTEMD_FILE} ${__SYSTEMD_FILE}
-download ${__PORTABLE_BASE_URL}/${__DOCKER_STACK_EXAMPLE_FILE} ${__DOCKER_STACK_EXAMPLE_FILE}
-download ${__PORTABLE_BASE_URL}/${__RUN_PORTABLE_FILE} ${__RUN_PORTABLE_FILE}
-download ${__PORTABLE_BASE_URL}/${__VERSION_FILE} ${__VERSION_FILE}
+cd ..
+mv ${TMP_FOLDER} ${__DOWNLOAD_DIR}
+cd ${__DOWNLOAD_DIR}
 
 # 回显示下载文件
 version=`cat ${__VERSION_FILE}`
 log "\nDownload DataFlux Func Portable finished"
 log "    Arch   : ${_ARCH}"
 log "    Version: ${version}"
+log "    Docker Version: ${__DOCKER_VERSION}"
 log "\nFiles:"
 ls -hl
 log "\nPlease copy ${PWD} to your portable media (e.g. USB-Key)"
