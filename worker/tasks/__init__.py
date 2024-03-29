@@ -383,6 +383,9 @@ class BaseTask(object):
             self.logger.debug(f'[UPLOAD GUANCE DATA]: {len(data)} {category} point(s)')
 
             for p in data:
+                p['tags']   = p.get('tags')   or {}
+                p['fields'] = p.get('fields') or {}
+
                 # 添加 tags.site_name
                 site_name = self.system_settings.get('GUANCE_DATA_SITE_NAME')
                 if site_name:
@@ -395,6 +398,10 @@ class BaseTask(object):
                     except Exception as e:
                         p['tags']['status'] = GUANCE_DATA_STATUS_DEFAULT
 
+                # 日志数据保证 message 有值
+                if category == 'logging' and p['fields'].get('message') is None:
+                    p['fields']['message'] = ''
+
             # 上报数据
             try:
                 dataway = DataWay(url=self.guance_data_upload_url)
@@ -403,9 +410,9 @@ class BaseTask(object):
                     # 日志数据量大，每条数据单独上报并切分
                     for single_point in data:
                         # 尝试提取并切分 message
-                        logging_message = None
+                        logging_message = single_point['fields']['message'] or ''
                         try:
-                            logging_message = toolkit.str_split_by_bytes(single_point['fields']['message'], page_bytes=CONFIG['_GUANCE_SELF_MONITOR_LOGGING_SPLIT_BYTES'])
+                            logging_message = toolkit.str_split_by_bytes(logging_message, page_bytes=CONFIG['_GUANCE_SELF_MONITOR_LOGGING_SPLIT_BYTES'])
                         except Exception as e:
                             for line in traceback.format_exc().splitlines():
                                 self.logger.error(line)
