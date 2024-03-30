@@ -238,18 +238,28 @@ if [ `command -v docker` ]; then
         log "    -> ${CURR_DOCKER_VERSION}"
         log "  DataFlux Func requires:"
         log "    -> ${__DOCKER_VERSION} "
-        log ""
-        log "Upgrading Docker will stop the docker service and shut down all running containers, this will make your service unavailable!"
-        log ""
-        log "Do you want to upgrade the Docker from ${CURR_DOCKER_VERSION} to ${__DOCKER_VERSION}? "
-        log "  -> abort  : Stop and do nothing"
-        log "  -> skip   : Skip upgrading Docker, use current version of Docker and continue to install DataFlux Func"
-        log "  -> upgrade: Upgrade Docker and install DataFlux Func"
-        read -p "Your choice: " ACTION
+
+
+        if [ ${OPT_AUTO_SETUP} = "TRUE" ]; then
+            ACTION="upgrade"
+
+        else
+            log ""
+            log "Upgrading Docker will stop the docker service and shut down all running containers, this will make your service unavailable!"
+            log ""
+            log "Do you want to upgrade the Docker from ${CURR_DOCKER_VERSION} to ${__DOCKER_VERSION}? "
+            log "  -> abort  : Stop and do nothing"
+            log "  -> skip   : Skip upgrading Docker, use current version of Docker and continue to install DataFlux Func"
+            log "  -> upgrade: Upgrade Docker and install DataFlux Func"
+            read -p "Your choice: " ACTION
+        fi
 
         if [ "${ACTION}" == "upgrade" ]; then
             log "[Upgrade Docker and install DataFlux Func]"
-            delay_run
+
+            if [ ${OPT_AUTO_SETUP} = "FALSE" ]; then
+                delay_run
+            fi
 
             # 停止 Docker 服务
             log "Stop Docker service"
