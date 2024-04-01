@@ -61,9 +61,8 @@ The Func accepts extra arguments not listed above: 本函数允许传递额外�
 'Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed': 只能输入数字、英文、点（.）、下划线（_）以及连字符（-）
 Please select Func: 请选择执行函数
 'Please input arguments, input "{}" when no argument': '请输入参数，无参数时填写 "{}"'
-Only date-time between 1970 and 2037 are allowed: 只能选择1970年至2037年之间的日期
-Date-time cannot earlier than 1970: 日期不能早于1970年
-Date-time cannot later than 2037: 时间不能晚于2037年
+Date cannot earlier than 1970: 日期不能早于 1970 年
+Date cannot later than 2099: 日期不能晚于 2099 年
 Crontab expression does support second field: Crontab 表达式不支持秒字段
 Invalid Crontab expression                  : Crontab 表达式不正确
 
@@ -91,8 +90,8 @@ Crontab Config deleted: 自動觸發配置已刪除
 Crontab Config saved: 自動觸發配置已保存
 Crontab expression does support second field: Crontab 表達式不支持秒字段
 Customize ID: 定製 ID
-Date-time cannot earlier than 1970: 日期不能早於1970年
-Date-time cannot later than 2037: 時間不能晚於2037年
+Date cannot earlier than 1970: 日期不能早於 1970 年
+Date cannot later than 2099: 日期不能晚於 2099 年
 Days: 按天重複
 Every 10 minutes: 每 10 分鐘
 Every 12 hours: 每 12 小時
@@ -127,7 +126,6 @@ MON: 週一
 Minutes: 按分鐘重複
 Months: 按月重複
 Note: 備註
-Only date-time between 1970 and 2037 are allowed: 只能選擇1970年至2037年之間的日期
 Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed: 只能輸入數字、英文、點（.）、下劃線（_）以及連字符（-）
 Please input arguments, input "{}" when no argument: 請輸入參數，無參數時填寫 "{}"
 Please select Func: 請選擇執行函數
@@ -157,8 +155,8 @@ Crontab Config deleted: 自動觸發配置已刪除
 Crontab Config saved: 自動觸發配置已儲存
 Crontab expression does support second field: Crontab 表示式不支援秒欄位
 Customize ID: 定製 ID
-Date-time cannot earlier than 1970: 日期不能早於1970年
-Date-time cannot later than 2037: 時間不能晚於2037年
+Date cannot earlier than 1970: 日期不能早於 1970 年
+Date cannot later than 2099: 日期不能晚於 2099 年
 Days: 按天重複
 Every 10 minutes: 每 10 分鐘
 Every 12 hours: 每 12 小時
@@ -193,7 +191,6 @@ MON: 週一
 Minutes: 按分鐘重複
 Months: 按月重複
 Note: 備註
-Only date-time between 1970 and 2037 are allowed: 只能選擇1970年至2037年之間的日期
 Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed: 只能輸入數字、英文、點（.）、下劃線（_）以及連字元（-）
 Please input arguments, input "{}" when no argument: 請輸入引數，無引數時填寫 "{}"
 Please select Func: 請選擇執行函式
@@ -407,7 +404,8 @@ shortcutDays: '{n} 天'
                 v-model="form.expireTime"
                 type="datetime"
                 align="left"
-                format="yyyy-MM-dd HH:mm"
+                format="yyyy-MM-dd HH:mm:ss"
+                default-time="23:59:59"
                 :clearable="true"
                 :picker-options="datetimePickerOptions">
               </el-date-picker>
@@ -836,13 +834,12 @@ export default {
       const shortcutDaysList = [1, 3, 7, 30, 90, 365];
       let shortcuts = [];
       shortcutDaysList.forEach((days) => {
-        const date = new Date();
-        date.setTime(now + 3600 * 24 * days * 1000);
+        let date = this.M().add(days, 'days').hours(23).minutes(59).seconds(59).toDate();
 
         shortcuts.push({
           text: this.$tc('shortcutDays', days),
           onClick(picker) {
-            picker.$emit('pick', date)
+            picker.$emit('pick', date);
           }
         });
       });
@@ -924,14 +921,13 @@ export default {
         expireTime: [
           {
             trigger: 'change',
-            message  : this.$t('Only date-time between 1970 and 2037 are allowed'),
             validator: (rule, value, callback) => {
               if (value) {
                 let ts = this.M(value).unix();
                 if (ts < this.T.MIN_UNIX_TIMESTAMP) {
-                  return callback(new Error(this.$t('Date-time cannot earlier than 1970')));
+                  return callback(new Error(this.$t('Date cannot earlier than 1970')));
                 } else if (ts > this.T.MAX_UNIX_TIMESTAMP) {
-                  return callback(new Error(this.$t('Date-time cannot later than 2037')));
+                  return callback(new Error(this.$t('Date cannot later than 2099')));
                 }
               }
               return callback();

@@ -28,7 +28,7 @@ var SYS_START_TIME = parseInt(Date.now() / 1000);
 
 var SHORT_UNIX_TIMESTAMP_OFFSET = toolkit.SHORT_UNIX_TIMESTAMP_OFFSET = 1503982020;
 
-var MIN_UNIX_TIMESTAMP    = toolkit.MIN_UNIX_TIMESTAMP    = moment('1980-01-01T00:00:00Z').unix();
+var MIN_UNIX_TIMESTAMP    = toolkit.MIN_UNIX_TIMESTAMP    = moment('1970-01-01T00:00:00Z').unix();
 var MIN_UNIX_TIMESTAMP_MS = toolkit.MIN_UNIX_TIMESTAMP_MS = MIN_UNIX_TIMESTAMP * 1000;
 var MAX_UNIX_TIMESTAMP    = toolkit.MAX_UNIX_TIMESTAMP    = moment('2099-12-31T23:59:59Z').unix();
 var MAX_UNIX_TIMESTAMP_MS = toolkit.MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000;
@@ -997,6 +997,22 @@ var getSafeValue = toolkit.getSafeValue = function getSafeValue(v, defaultValue)
     return v;
   }
 };
+
+/**
+ * Get Date object and safe for MySQL timestamp type
+ * @param  {*} v
+ */
+var getSafeDateTime = toolkit.getSafeDateTime = function getSafeDateTime(v) {
+  var m = getMoment(v);
+  var ts = m.unix();
+  if (ts < MIN_UNIX_TIMESTAMP) {
+    throw Error(strf('Datetime should not be earlier than {0}', getISO8601(MIN_UNIX_TIMESTAMP)));
+  } else if (ts > MAX_UNIX_TIMESTAMP) {
+    throw Error(strf('Datetime should not be later than {0}', getISO8601(MAX_UNIX_TIMESTAMP)));
+  }
+  return m.toDate();
+};
+
 
 function _padLength(text, length) {
   var count = text.length;

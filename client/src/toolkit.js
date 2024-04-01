@@ -73,7 +73,7 @@ import byteSize from 'byte-size'
 import '@/assets/css/dff-hint.css'
 import '@/assets/js/dff-anyword.js'
 
-export const MIN_UNIX_TIMESTAMP    = moment('1980-01-01T00:00:00Z').unix();
+export const MIN_UNIX_TIMESTAMP    = moment('1970-01-01T00:00:00Z').unix();
 export const MIN_UNIX_TIMESTAMP_MS = MIN_UNIX_TIMESTAMP * 1000;
 export const MAX_UNIX_TIMESTAMP    = moment('2099-12-31T23:59:59Z').unix();
 export const MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000;
