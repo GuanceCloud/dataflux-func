@@ -188,19 +188,19 @@ you must first create an Auth Link for the Python function and access the Python
               <br>
               <el-tooltip placement="right" effect="dark" v-if="scope.row.lastTaskStatus">
                 <div slot="content">
-                  <span class="datetime-tip">{{ scope.row.lastTaskStatus.timestamp | datetime }}</span>
+                  <span class="datetime-tip">{{ scope.row.lastTaskStatus.timestamp * 1000 | datetime }}</span>
                 </div>
                 <span v-if="scope.row.lastTaskStatus.status === 'started'" class="text-main">
                   <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
-                  {{ $t('lastStarted', { t: T.fromNow(scope.row.lastTaskStatus.timestamp) }) }}
+                  {{ $t('lastStarted', { t: T.fromNow(scope.row.lastTaskStatus.timestamp * 1000) }) }}
                 </span>
                 <span v-else-if="scope.row.lastTaskStatus.status === 'success'" class="text-good">
                   <i class="fa fa-fw fa-check"></i>
-                  {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastTaskStatus.timestamp) }) }}
+                  {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastTaskStatus.timestamp * 1000) }) }}
                 </span>
                 <span v-else-if="scope.row.lastTaskStatus.status === 'failure'" class="text-bad">
                   <i class="fa fa-fw fa-times"></i>
-                  {{ $t('lastFailed', { t: T.fromNow(scope.row.lastTaskStatus.timestamp) }) }}
+                  {{ $t('lastFailed', { t: T.fromNow(scope.row.lastTaskStatus.timestamp * 1000) }) }}
                 </span>
               </el-tooltip>
               <span v-else class="text-info">
