@@ -9,7 +9,8 @@ Install Python Package           : 安装 Python 包
 Installed Python Packages        : 已安装的 Python 包
 Package                          : 包
 Version                          : 版本
-Built-in                         : 内置
+Built-in Version                 : 内置版本
+User-installed Version           : 用户安装的版本
 Exactly match                    : 完全匹配
 Load Installed Python Packages   : 加载已安装的 Python 包列表
 Loading Installed Python Packages: 正在加载已安装的 Python 包列表
@@ -20,9 +21,10 @@ package or package==1.2.3 : package 或 package==1.2.3
 'Package installed: {pkg}': 包已安装：{pkg}
 '{Func Container ID}'     : Func 容器 ID
 
-You can also install the package by following command: 您也可以使用以下命令来安装
-Previous installing may still running                : 之前的安装似乎仍然在运行
-Are you sure you want to install the package now?    : 是否确定现在就安装？
+You can also install the package by following command                : 您也可以使用以下命令来安装
+Previous installing may still running                                : 之前的安装似乎仍然在运行
+Are you sure you want to install the package now?                    : 是否确定现在就安装？
+Built-in versions have a higher priority than user-installed versions: 内置版本比用户安装的版本具有更高优先级
 
 installCost: （耗时 {n} 秒）
 </i18n>
@@ -31,7 +33,8 @@ installCost: （耗时 {n} 秒）
 <i18n locale="zh-HK" lang="yaml">
 Add --upgrade option: 添加 --upgrade 選項
 Are you sure you want to install the package now?: 是否確定現在就安裝？
-Built-in: 內置
+Built-in Version: 內置版本
+Built-in versions have a higher priority than user-installed versions: 內置版本比用户安裝的版本具有更高優先級
 Custom PIP Index URL: 自定義 PIP Index URL
 Exactly match: 完全匹配
 Install Python Package: 安裝 Python 包
@@ -44,6 +47,7 @@ Package: 包
 Previous installing may still running: 之前的安裝似乎仍然在運行
 Reset Install Status: 復位安裝狀態
 Show Error: 顯示錯誤信息
+User-installed Version: 用户安裝的版本
 Version: 版本
 You can also install the package by following command: 您也可以使用以下命令來安裝
 installCost: （耗時 {n} 秒）
@@ -53,7 +57,8 @@ package or package==1.2.3: package 或 package==1.2.3
 <i18n locale="zh-TW" lang="yaml">
 Add --upgrade option: 新增 --upgrade 選項
 Are you sure you want to install the package now?: 是否確定現在就安裝？
-Built-in: 內建
+Built-in Version: 內建版本
+Built-in versions have a higher priority than user-installed versions: 內建版本比使用者安裝的版本具有更高優先順序
 Custom PIP Index URL: 自定義 PIP Index URL
 Exactly match: 完全匹配
 Install Python Package: 安裝 Python 包
@@ -66,6 +71,7 @@ Package: 包
 Previous installing may still running: 之前的安裝似乎仍然在執行
 Reset Install Status: 復位安裝狀態
 Show Error: 顯示錯誤資訊
+User-installed Version: 使用者安裝的版本
 Version: 版本
 You can also install the package by following command: 您也可以使用以下命令來安裝
 installCost: （耗時 {n} 秒）
@@ -154,26 +160,30 @@ package or package==1.2.3: package 或 package==1.2.3
           </el-link>
         </div>
 
-        <br>
-        <el-table class="common-table" :data="installedPackages" v-if="installedPackages.length > 0">
-          <el-table-column :label="$t('Package')" sortable sort-by="name">
-            <template slot-scope="scope">
-              <code>{{ scope.row.name }}</code>
-            </template>
-          </el-table-column>
+        <template v-if="installedPackages.length > 0">
+          <br>
+          <el-table class="common-table" :data="installedPackages">
+            <el-table-column :label="$t('Package')" sortable sort-by="name" width="420">
+              <template slot-scope="scope">
+                <code>{{ scope.row.name }}</code>
+              </template>
+            </el-table-column>
 
-          <el-table-column :label="$t('Version')">
-            <template slot-scope="scope">
-              <code>{{ scope.row.version }}</code>
-            </template>
-          </el-table-column>
+            <el-table-column :label="$t('Built-in Version')" width="200">
+              <template slot-scope="scope">
+                <code>{{ scope.row.builtinVersion }}</code>
+              </template>
+            </el-table-column>
 
-          <el-table-column :label="$t('Built-in')" align="center" sortable sort-by="isBuiltin" width="100">
-            <template slot-scope="scope">
-              <span class="text-good" v-if="scope.row.isBuiltin">{{ $t('Yes') }}</span>
-            </template>
-          </el-table-column>
-        </el-table>
+            <el-table-column :label="$t('User-installed Version')" width="200">
+              <template slot-scope="scope">
+                <el-tooltip effect="dark" :content="$t('Built-in versions have a higher priority than user-installed versions')" placement="top" :disabled="!scope.row.isOverrided">
+                  <code :class="{'overrided': scope.row.isOverrided}">{{ scope.row.userInstalledVersion }}</code>
+                </el-tooltip>
+              </template>
+            </el-table-column>
+          </el-table>
+        </template>
       </el-main>
 
       <el-dialog
@@ -291,6 +301,10 @@ export default {
       this.isLoadingInstalldPackages = false;
 
       if (!apiRes || !apiRes.ok) return;
+
+      apiRes.data.forEach(d => {
+        d.isOverrided = d.builtinVersion !== d.userInstalledVersion && !!d.builtinVersion;
+      });
 
       this.installedPackages = apiRes.data;
     },
@@ -449,6 +463,9 @@ export default {
 }
 .install-cost {
   white-space: nowrap;
+}
+.overrided {
+  text-decoration: line-through red 2px;
 }
 </style>
 

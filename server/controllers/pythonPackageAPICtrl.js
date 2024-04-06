@@ -22,8 +22,8 @@ exports.listInstalled = function(req, res, next) {
   var packageVersionMap = {};
 
   var pipFreezes = [
-    { isBuiltin: true,  cmd: 'pip', cmdArgs: [ 'freeze' ] },
-    { isBuiltin: false, cmd: 'pip', cmdArgs: [ 'freeze', '--path', packageInstallPath] },
+    { type: 'builtinVersion',       cmd: 'pip', cmdArgs: [ 'freeze' ] },
+    { type: 'userInstalledVersion', cmd: 'pip', cmdArgs: [ 'freeze', '--path', packageInstallPath] },
   ]
   async.eachSeries(pipFreezes, function(pipFreeze, asyncCallback) {
     toolkit.childProcessSpawn(pipFreeze.cmd, pipFreeze.cmdArgs, null, function(err, stdout) {
@@ -32,12 +32,13 @@ exports.listInstalled = function(req, res, next) {
       stdout.trim().split('\n').forEach(function(pkg) {
         if (toolkit.isNothing(pkg)) return;
 
-        var parts = pkg.split('==');
-        packageVersionMap[parts[0]] = {
-          name     : parts[0],
-          version  : parts[1],
-          isBuiltin: pipFreeze.isBuiltin,
-        };
+        var parts = pkg.split(/===?/);
+        var name    = parts[0];
+        var version = parts[1];
+        if (!packageVersionMap[name]) {
+          packageVersionMap[name] = { name: name };
+        }
+        packageVersionMap[name][pipFreeze.type] = version;
       });
 
       return asyncCallback();
