@@ -146,11 +146,11 @@ else
     fi
 fi
 
+cd ..
 if [ -d ${__DOWNLOAD_DIR} ]; then
     rm -rf ${__DOWNLOAD_DIR}
 fi
 
-cd ..
 mv ${TMP_FOLDER} ${__DOWNLOAD_DIR}
 cd ${__DOWNLOAD_DIR}
 
