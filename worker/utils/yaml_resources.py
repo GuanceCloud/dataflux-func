@@ -184,7 +184,7 @@ def load_config(config_file_path):
 
 def get(key):
     key = key.replace('.yaml', '')
-    resource = FILE_CACHE[key]
+    resource = FILE_CACHE.get(key)
 
     return resource
 

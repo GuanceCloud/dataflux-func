@@ -1,7 +1,8 @@
 'use strict';
 
 /* Built-in Modules */
-var os = require('os');
+var os   = require('os');
+var path = require('path');
 
 /* 3rd-party Modules */
 var async   = require('async');
@@ -14,8 +15,13 @@ var yamlResources = require('./utils/yamlResources');
 var toolkit       = require('./utils/toolkit');
 var routeLoader   = require('./utils/routeLoader');
 
-var ROUTE  = yamlResources.get('ROUTE');
-var CONFIG = yamlResources.get('CONFIG');
+var ROUTE   = yamlResources.get('ROUTE');
+var CONFIG  = yamlResources.get('CONFIG');
+var TZ_ABBR = yamlResources.get('TZ_ABBR');
+
+if (!TZ_ABBR) {
+  TZ_ABBR = yamlResources.loadFile('TZ_ABBR', path.join(__dirname, '../tz-abbr.yaml'));
+}
 
 function getDBConnection() {
   var mysqlConfig = {
@@ -131,14 +137,19 @@ exports.prepare = function(callback) {
               break;
 
             default:
-              var m = timezone.match(/^(\+|\-)(\d{1}:\d{2})$/);
-              if (m) timezone = `${m[1]}0${m[2]}`;
+              if (TZ_ABBR[timezone]) {
+                timezone = TZ_ABBR[timezone];
 
-              var m = timezone.match(/^(\+|\-)(\d{1})$/);
-              if (m) timezone = `${m[1]}0${m[2]}:00`;
+              } else {
+                var m = timezone.match(/^(\+|\-)(\d{1}:\d{2})$/);
+                if (m) timezone = `${m[1]}0${m[2]}`;
 
-              var m = timezone.match(/^(\+|\-)(\d{2})$/);
-              if (m) timezone = `${m[1]}${m[2]}:00`;
+                var m = timezone.match(/^(\+|\-)(\d{1})$/);
+                if (m) timezone = `${m[1]}0${m[2]}:00`;
+
+                var m = timezone.match(/^(\+|\-)(\d{2})$/);
+                if (m) timezone = `${m[1]}${m[2]}:00`;
+              }
 
               break;
           }
@@ -223,8 +234,7 @@ exports.afterServe = function(app, server) {
   setInterval(recordSystemMetrics, CONFIG._MONITOR_REPORT_INTERVAL * 1000);
   recordSystemMetrics();
 
-  var path = require('path');
-  var fs   = require('fs-extra');
+  var fs = require('fs-extra');
 
   /***** 启动时自动运行 *****/
   function printError(err) {

@@ -1,0 +1,104 @@
+ACDT : '+10:30' # 澳大利亚中部夏令时（Australian Central Daylight Time，夏令时）
+ACST : '+09:30' # 澳大利亚中部标准时间（Australian Central Standard Time）
+ACT  : '-05:00' # 阿卡时间（Acre Time）
+ACWST: '+08:45' # 澳大利亚中西部标准时间（Australian Central Western Standard Time）
+ADT  : '-03:00' # 大西洋夏令时间（Atlantic Daylight Time，夏令时）
+AEDT : '+11:00' # 澳大利亚东部夏令时（Australian Eastern Daylight Time，夏令时）
+AEST : '+10:00' # 澳大利亚东部标准时间（Australian Eastern Standard Time）
+AFT  : '+04:30' # 阿富汗时间（Afghanistan Time）
+AKDT : '-08:00' # 阿拉斯加夏令时（Alaska Daylight Time，夏令时）
+AKST : '-09:00' # 阿拉斯加标准时间（Alaska Standard Time）
+AMST : '-03:00' # 亚马逊夏令时（Amazon Summer Time，夏令时）
+AMT  : '-04:00' # 亚马逊时间（Amazon Time）
+ART  : '-03:00' # 阿根廷时间（Argentina Time）
+AST  : '-04:00' # 大西洋标准时间（Atlantic Standard Time）
+# AST  : '+03:00' # 阿拉伯标准时间（Arabia Standard Time）
+AWST : '+08:00' # 澳大利亚西部标准时间（Australian Western Standard Time）
+AZOST: '-00:00' # 亚速尔群岛夏令时（Azores Summer Time，夏令时）
+AZOT : '-01:00' # 亚速尔群岛时间（Azores Time）
+BOT  : '-04:00' # 玻利维亚时间（Bolivia Time）
+BRST : '-02:00' # 巴西利亚夏令时（Brasília Summer Time，夏令时）
+BRT  : '-03:00' # 巴西利亚时间（Brasília Time）
+BST  : '+01:00' # 英国夏令时间（British Summer Time，夏令时）
+BTT  : '+06:00' # 不丹时间（Bhutan Time）
+CAT  : '+02:00' # 中非时间（Central Africa Time）
+CDT  : '-05:00' # 中部夏令时间（Central Daylight Time，夏令时）
+# CDT  : '-04:00' # 古巴夏令时（Cuba Daylight Time，夏令时）
+CEST : '+02:00' # 欧洲中部夏令时间（Central European Summer Time，夏令时）
+CET  : '+01:00' # 欧洲中部时间（Central European Time）
+CHADT: '+13:45' # 查塔姆岛夏令时（Chatham Island Daylight Time，夏令时）
+CHAST: '+12:45' # 查塔姆岛标准时间（Chatham Island Standard Time）
+CHOST: '+09:00' # 乔巴山夏令时（Choibalsan Summer Time，夏令时）
+CHOT : '+08:00' # 乔巴山时间（Choibalsan Time）
+CHUT : '+10:00' # 丘克时间（Chuuk Time）
+CKT  : '-10:00' # 库克群岛时间（Cook Island Time）
+CLST : '-03:00' # 智利夏令时（Chile Summer Time，夏令时）
+CLT  : '-04:00' # 智利标准时间（Chile Standard Time）
+CST  : '+08:00' # 中国标准时间（China Standard Time）
+# CST  : '-06:00' # 中部标准时间（Central Standard Time）
+# CST  : '-05:00' # 古巴标准时间（Cuba Standard Time）
+ChST : '+10:00' # 查莫罗标准时间（Chamorro Standard Time）
+EASST: '-05:00' # 复活岛夏令时（Easter Island Summer Time，夏令时）
+EAST : '-06:00' # 复活节岛标准时间（Easter Island Standard Time）
+EAT  : '+03:00' # 非洲东部时间（Eastern Africa Time）
+ECT  : '-05:00' # 厄瓜多尔时间（Ecuador Time）
+EDT  : '-04:00' # 东部夏令时间（Eastern Daylight Time，夏令时）
+EEST : '+03:00' # 东欧夏令时（Eastern European Summer Time，夏令时）
+EET  : '+02:00' # 东欧时间（Eastern European Time）
+EST  : '-05:00' # 东部标准时间（Eastern Standard Time）
+FKST : '-03:00' # 福克兰群岛夏令时（Falkland Islands Summer Time）
+GFT  : '-03:00' # 法属圭亚那时间（French Guiana Time）
+GILT : '+12:00' # 吉尔伯特群岛时间（Gilbert Island Time）
+GMT  : '+00:00' # 格林威治标准时间（Greenwich Mean Time）
+GST  : '+04:00' # 海湾标准时间（Gulf Standard Time）
+HKT  : '+08:00' # 香港时间（Hong Kong Time）
+HST  : '-10:00' # 夏威夷标准时间（Hawaii Standard Time）
+ICT  : '+07:00' # 印度支那时间（Indochina Time）
+IDT  : '+03:00' # 以色列夏令时（Israel Daylight Time，夏令时）
+IRDT : '+04:30' # 伊朗夏令时（Iran Daylight Time，夏令时）
+IRST : '+03:30' # 伊朗标准时间（Iran Standard Time）
+IST  : '+05:30' # 印度标准时间（India Standard Time）
+# IST  : '+01:00' # 爱尔兰标准时间（Irish Standard Time，夏令时）
+# IST  : '+02:00' # 以色列标准时间（Israel Standard Time）
+JST  : '+09:00' # 日本标准时间（Japan Standard Time）
+KOST : '+11:00' # 科斯雷时间（Kosrae Time）
+KST  : '+08:30' # 韩国标准时间（Korea Standard Time）
+LINT : '+14:00' # 莱恩群岛时间（Line Islands Time）
+MDT  : '-06:00' # 山区夏令时（Mountain Daylight Time，夏令时）
+MHT  : '+12:00' # 马绍尔群岛时间（Marshall Islands Time）
+MSK  : '+03:00' # 莫斯科标准时间（Moscow Standard Time）
+MST  : '-07:00' # 山地标准时间（Mountain Standard Time）
+MYT  : '+08:00' # 马来西亚时间（Malaysia Time）
+NDT  : '-02:30' # 纽芬兰夏令时（Newfoundland Daylight Time，夏令时）
+NPT  : '+05:45' # 尼泊尔时间（Nepal Time）
+NST  : '-03:30' # 纽芬兰标准时间（Newfoundland Standard Time）
+NUT  : '-11:00' # 纽埃时间（Niue Time）
+NZDT : '+13:00' # 新西兰夏令时（New Zealand Daylight Time，夏令时）
+NZST : '+12:00' # 新西兰标准时间（New Zealand Standard Time）
+PDT  : '-07:00' # 太平洋夏令时（Pacific Daylight Time，夏令时）
+PET  : '-05:00' # 秘鲁时间（Peru Time）
+PGT  : '+10:00' # 巴布亚新几内亚时间（Papua New Guinea Time）
+PHT  : '+08:00' # 菲律宾时间（Philippine Time）
+PKT  : '+05:00' # 巴基斯坦标准时间（Pakistan Standard Time）
+PONT : '+11:00' # 波纳佩标准时间（Pohnpei Standard Time）
+PST  : '-08:00' # 太平洋标准时间（Pacific Standard Time）
+SAST : '+02:00' # 南非标准时间（South Africa Standard Time）
+SBT  : '+11:00' # 所罗门群岛时间（Solomon Islands Time）
+SGT  : '+08:00' # 新加坡时间（Singapore Time）
+SRT  : '-03:00' # 苏里南时间（Suriname Time）
+SST  : '-11:00' # 萨摩亚标准时间（Samoa Standard Time）
+TAHT : '-10:00' # 塔希提岛时间（Tahiti Time）
+TLT  : '+09:00' # 东帝汶时间（East Timor Time）
+TVT  : '+12:00' # 图瓦卢时间（Tuvalu Time）
+ULAST: '+09:00' # 乌兰巴托夏令时（Ulaanbaatar Summer Time，夏令时）
+ULAT : '+08:00' # 乌兰巴托时间（Ulaanbaatar Time）
+UYST : '-02:00' # 乌拉圭夏令时（Uruguay Summer Time，夏令时）
+UYT  : '-03:00' # 乌拉圭时间（Uruguay Time）
+VET  : '-04:00' # 委内瑞拉标准时间（Venezuelan Standard Time）
+WAST : '+02:00' # 西非夏令时（West Africa Summer Time，夏令时）
+WAT  : '+01:00' # 西非时间（West Africa Time）
+WEST : '+01:00' # 西欧夏令时间（Western European Summer Time，夏令时）
+WET  : '-00:00' # 西欧时间（Western European Time）
+WIB  : '+07:00' # 印尼西部时间（Western Indonesian Time）
+WIT  : '+09:00' # 印度尼西亚东部时间（Eastern Indonesian Time）
+WITA : '+08:00' # 印度尼西亚中部时间（Central Indonesian Time）

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Built-in Modules
+import os
 import re
 
 # 3rd-party Modules
@@ -14,7 +15,13 @@ from worker import LOGGER, REDIS
 from worker.utils import toolkit, yaml_resources
 from worker.tasks.internal import SystemMetric, AutoBackupDB, ReloadDataMD5Cache, AutoRun, AutoClean
 
-CONFIG = yaml_resources.get('CONFIG')
+CONFIG  = yaml_resources.get('CONFIG')
+TZ_ABBR = yaml_resources.get('TZ_ABBR')
+
+# Init
+if not TZ_ABBR:
+    BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+    TZ_ABBR = yaml_resources.load_file('TZ_ABBR', os.path.join(BASE_PATH, '../tz-abbr.yaml'))
 
 def get_db_connection():
     mysql_config = {
@@ -112,17 +119,21 @@ def prepare():
                     timezone = '+08:00'
 
                 else:
-                    m = re.match(r'^(\+|\-)(\d{1}:\d{2})$', timezone)
-                    if m:
-                        timezone = f'{m[1]}0{m[2]}'
+                    if timezone in TZ_ABBR:
+                        timezone = TZ_ABBR[timezone]
 
-                    m = re.match(r'^(\+|\-)(\d{1})$', timezone)
-                    if m:
-                        timezone = f'{m[1]}0{m[2]}:00'
+                    else:
+                        m = re.match(r'^(\+|\-)(\d{1}:\d{2})$', timezone)
+                        if m:
+                            timezone = f'{m[1]}0{m[2]}'
 
-                    m = re.match(r'^(\+|\-)(\d{2})$', timezone)
-                    if m:
-                        timezone = f'{m[1]}{m[2]}:00'
+                        m = re.match(r'^(\+|\-)(\d{1})$', timezone)
+                        if m:
+                            timezone = f'{m[1]}0{m[2]}:00'
+
+                        m = re.match(r'^(\+|\-)(\d{2})$', timezone)
+                        if m:
+                            timezone = f'{m[1]}{m[2]}:00'
 
                 if not re.match(r'^(\+|\-)(\d{2}:\d{2})$', timezone):
                     if zoneinfo.gettz(timezone):
