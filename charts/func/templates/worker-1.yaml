@@ -2,29 +2,26 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: {{ include "func.fullname" . }}-worker-beat
-  name: {{ include "func.fullname" . }}-worker-beat
+    app: {{ include "func.fullname" . }}-worker-1
+  name: {{ include "func.fullname" . }}-worker-1
 spec:
-  replicas: {{ .Values.worker_beat.replicas }}
+  replicas: {{ .Values.worker_1.replicas }}
   selector:
     matchLabels:
-      app: {{ include "func.fullname" . }}-worker-beat
+      app: {{ include "func.fullname" . }}-worker-1
   template:
     metadata:
       labels:
-        app: {{ include "func.fullname" . }}-worker-beat
+        app: {{ include "func.fullname" . }}-worker-1
     spec:
-{{/*      initContainers:*/}}
-{{/*      - name: init-service*/}}
-{{/*        image: curlimages/curl:latest #busybox:1.35.0*/}}
-{{/*        command: ['sh', '-c', 'until curl -I server:8088; do echo waiting for init-service && sleep 2; done']*/}}
       containers:
       - args:
-        - ./run-beat.sh
+        - ./run-worker-by-queue.sh
+        - "1"
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        name: {{ include "func.fullname" . }}-worker-beat
-        resources: {}
+        name: {{ include "func.fullname" . }}-worker-1
+        resources: {{ toYaml .Values.worker_1.resources | nindent 10 }}    
         volumeMounts:
         #- mountPath: /data/user-config.yaml
         #  name: user-config
@@ -35,6 +32,7 @@ spec:
         - mountPath: /usr/share/zoneinfo/Asia/Shanghai
           name: timezone
         {{- end }}
+      dnsPolicy: ClusterFirst
       restartPolicy: Always
       schedulerName: default-scheduler
       volumes:
@@ -56,18 +54,13 @@ spec:
       nodeSelector:
       {{- toYaml . | nindent 8 }}
       {{- end }}
-      dnsPolicy: ClusterFirst
-{{- if .Values.imagePullSecrets }}
-      imagePullSecrets:
-        - name: {{ .Values.imagePullSecrets.name }}
-{{- end }}
 
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "func.fullname" . }}-worker-beat
+  name: {{ include "func.fullname" . }}-worker-1
 spec:
   ports:
   - name: default
@@ -75,5 +68,6 @@ spec:
     protocol: TCP
     targetPort: 42
   selector:
-    app: {{ include "func.fullname" . }}-worker-beat
+    app: {{ include "func.fullname" . }}-worker-1
   type: ClusterIP
+

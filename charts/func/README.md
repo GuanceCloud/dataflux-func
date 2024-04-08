@@ -138,16 +138,18 @@ $ helm delete <RELEASE_NAME> -n func
 | `server.service.nodePort`           | Func server nodePort 端口号  | `31080`                                          |
 | `worker_0.enabled`                  | 是否启用Func worker_0服务    | `true`                                           |
 | `worker_0.replicas`                 | Func worker_0 副本数         | `1`                                              |
-| `worker_1_5.enabled`                | 是否启用Func worker_1_5服务  | `true`                                           |
-| `worker_1_5.replicas`               | Func worker_1_5 副本数       | `1`                                              |
-| `worker_6.enabled`                  | 是否启用Func worker_6服务    | `true`                                           |
-| `worker_6.replicas`                 | Func worker_6 副本数         | `2`                                              |
-| `worker_7.enabled`                  | 是否启用Func worker_7服务    | `true`                                           |
-| `worker_7.replicas`                 | Func worker_7 副本数         | `1`                                              |
-| `worker_8_9.enabled`                | 是否启用Func worker_8_9服务  | `true`                                           |
-| `worker_8_9.replicas`               | Func worker_8_9 副本数       | `1`                                              |
-| `worker_beat.enabled`               | 是否启用Func worker_beat服务 | `true`                                           |
-| `worker_beat.replicas`              | Func worker_beat 副本数      | `1`                                              |
+| `worker_1.enabled`                | 是否启用Func worker_1服务  | `true`                                           |
+| `worker_1.replicas`               | Func worker_1 副本数       | `1`                                              |
+| `worker_2.enabled`                  | 是否启用Func worker_2服务    | `true`                                           |
+| `worker_2.replicas`                 | Func worker_2 副本数         | `2`                                              |
+| `worker_3.enabled`                  | 是否启用Func worker_3服务    | `true`                                           |
+| `worker_3.replicas`                 | Func worker_3 副本数         | `1`                                              |
+| `worker_5.enabled`                | 是否启用Func worker_5服务  | `true`                                           |
+| `worker_5.replicas`               | Func worker_5 副本数       | `1`                                              |
+| `worker_6.enabled`                | 是否启用Func worker_6服务  | `true`                                           |
+| `worker_6.replicas`               | Func worker_6 副本数       | `1`                                              |
+| `beat.enabled`               | 是否启用Func worker_beat服务 | `true`                                           |
+| `beat.replicas`              | Func worker_beat 副本数      | `1`                                              |
 
 使用--set key=value[,key=value]参数指定每个参数以进行helm安装。例如不使用内置mysql、redis部署
 

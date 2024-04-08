@@ -33,7 +33,7 @@ spec:
         - containerPort: 3306
           name: 3306tcp
           protocol: TCP
-        resources: {}
+        resources: {{ toYaml .Values.mysql.resources | nindent 8 }}
         volumeMounts:
         - mountPath: /var/lib/mysql
           name: data
@@ -46,11 +46,14 @@ spec:
       - name: data
         hostPath:
           path: {{ .Values.storage.hostPath.path }}/mysql
-      {{- end }}
-      {{- with .Values.storage.hostPath.nodeSelector }}
+      {{ if .Values.storage.hostPath.nodeSelector}}
       nodeSelector:
-      {{- toYaml . | nindent 8 }}
+      {{- toYaml .Values.storage.hostPath.nodeSelector | nindent 8}}
+      {{- else }}
+      {{- fail "nodeSelector must be set when pvc is not enabled "}}      
+      {{- end }}          
       {{- end }}
+
 {{- if .Values.imagePullSecrets }}
       imagePullSecrets:
         - name: {{ .Values.imagePullSecrets.name }}

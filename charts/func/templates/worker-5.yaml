@@ -2,31 +2,26 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: {{ include "func.fullname" . }}-worker-8-9
-  name: {{ include "func.fullname" . }}-worker-8-9
+    app: {{ include "func.fullname" . }}-worker-5
+  name: {{ include "func.fullname" . }}-worker-5
 spec:
-  replicas: {{ .Values.worker_8_9.replicas }}
+  replicas: {{ .Values.worker_5.replicas }}
   selector:
     matchLabels:
-      app: {{ include "func.fullname" . }}-worker-8-9
+      app: {{ include "func.fullname" . }}-worker-5
   template:
     metadata:
       labels:
-        app: {{ include "func.fullname" . }}-worker-8-9
+        app: {{ include "func.fullname" . }}-worker-5
     spec:
-{{/*      initContainers:*/}}
-{{/*      - name: init-service*/}}
-{{/*        image: curlimages/curl:latest #busybox:1.35.0*/}}
-{{/*        command: ['sh', '-c', 'until curl -I server:8088; do echo waiting for init-service && sleep 2; done']*/}}
       containers:
       - args:
         - ./run-worker-by-queue.sh
-        - "8"
-        - "9"
+        - "5"
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
-        name: {{ include "func.fullname" . }}-worker-8-9
-        resources: {}
+        name: {{ include "func.fullname" . }}-worker-5
+        resources: {{ toYaml .Values.worker_5.resources | nindent 10 }}
         volumeMounts:
         #- mountPath: /data/user-config.yaml
         #  name: user-config
@@ -65,7 +60,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "func.fullname" . }}-worker-8-9
+  name: {{ include "func.fullname" . }}-worker-5
 spec:
   ports:
   - name: default
@@ -73,5 +68,5 @@ spec:
     protocol: TCP
     targetPort: 42
   selector:
-    app: {{ include "func.fullname" . }}-worker-8-9
+    app: {{ include "func.fullname" . }}-worker-5
   type: ClusterIP
