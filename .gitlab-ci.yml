@@ -179,8 +179,6 @@ singleton:
       -t ${IMAGE_PUBLIC}:${V_MAJOR_MINOR_PATCH}
       -f Dockerfile-singleton .
       --push
-    # 推送生产 Helm
-    - sh build-charts.sh ${V_MAJOR_MINOR_PATCH} ${V_MAJOR_MINOR_PATCH} func-prod-chart
   tags:
     - cloudcare-multiarch
 
