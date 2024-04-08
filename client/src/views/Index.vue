@@ -153,6 +153,7 @@ retryMinutes: 請在 {n} 分鐘後重試
           </el-form-item>
         </el-form>
       </div>
+      <p class="text-main version-info">{{ $t('Version') }}{{ $t(':') }}{{ FULL_VERSION }}</p>
     </div>
   </div>
 </template>
@@ -303,6 +304,13 @@ export default {
     },
   },
   computed: {
+    FULL_VERSION() {
+      if (this.$store.getters.SYSTEM_INFO('EDITION')) {
+        return `${this.$store.getters.SYSTEM_INFO('VERSION')} (${this.$store.getters.SYSTEM_INFO('EDITION')})`;
+      } else {
+        return this.$store.getters.SYSTEM_INFO('VERSION');
+      }
+    },
     BUILTIN_SIGN_IN_FUNC_ID() {
       return 'builtIn';
     },
@@ -455,6 +463,12 @@ export default {
 }
 .fth-man-icon-verification-code:before {
     content: "\E90E";
+}
+
+.version-info {
+  text-align: right;
+  margin: 5px 15px 0 0;
+  font-size: 12px;
 }
 </style>
 <style>
