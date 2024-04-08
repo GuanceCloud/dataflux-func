@@ -96,7 +96,13 @@ mysql:
   image:
     repository: pubrepo.jiagouyun.com/dataflux-func/mysql
     tag: "5.7.26"
-
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "4000m"
+      memory: "4Gi"
 
 #Built in Redis configuration
 redis:
@@ -105,6 +111,13 @@ redis:
   image:
     repository: pubrepo.jiagouyun.com/dataflux-func/redis
     tag: "5.0.7"
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "4000m"
+      memory: "4Gi"
 
 
 # Func core services
@@ -120,37 +133,99 @@ server:
     type: NodePort
     ## Only used if service.type is 'NodePort'
     nodePort: 31080
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "4000m"
+      memory: "4Gi"
 
 #worker-0.yaml
 # System task processing
 worker_0:
   enabled: true
   replicas: 2
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "4000m"
+      memory: "4Gi"
 
-# work-1-5.yaml
-worker_1_5:
+# work-1.yaml
+worker_1:
   enabled: true
   replicas: 2
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "4000m"
+      memory: "4Gi"
+
+# work-2.yaml
+worker_2:
+  enabled: true
+  replicas: 2
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "4000m"
+      memory: "4Gi"
+
+
+# work-3.yaml
+worker_3:
+  enabled: true
+  replicas: 2
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "4000m"
+      memory: "4Gi"
+
+# work-5.yaml
+worker_5:
+  enabled: true
+  replicas: 1
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "4000m"
+      memory: "4Gi"
 
 # work-6.yaml
 worker_6:
   enabled: true
   replicas: 2
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "4000m"
+      memory: "4Gi"
 
 
-# work-7.yaml
-worker_7:
-  enabled: true
-  replicas: 2
-
-# work-8-9.yaml
-worker_8_9:
-  enabled: true
-  replicas: 2
-
-# work-beat.yaml
+# beat.yaml
 # timer
-worker_beat:
+beat:
   enabled: true
   replicas: 1
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "4000m"
+      memory: "4Gi"
 

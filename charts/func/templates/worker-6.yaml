@@ -14,10 +14,6 @@ spec:
       labels:
         app: {{ include "func.fullname" . }}-worker-6
     spec:
-{{/*      initContainers:*/}}
-{{/*      - name: init-service*/}}
-{{/*        image: curlimages/curl:latest #busybox:1.35.0*/}}
-{{/*        command: ['sh', '-c', 'until curl -I server:8088; do echo waiting for init-service && sleep 2; done']*/}}
       containers:
       - args:
         - ./run-worker-by-queue.sh
@@ -25,7 +21,7 @@ spec:
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         name: {{ include "func.fullname" . }}-worker-6
-        resources: {}
+        resources: {{ toYaml .Values.worker_6.resources | nindent 10 }}
         volumeMounts:
         #- mountPath: /data/user-config.yaml
         #  name: user-config
@@ -49,11 +45,11 @@ spec:
           hostPath:
             path: {{ .Values.storage.hostPath.path }}/resources
       {{- end }}
-      {{- if (eq .Values.timeZone "UTC") }}
+        {{- if (eq .Values.timeZone "UTC") }}
         - name: timezone
           hostPath:
             path: /usr/share/zoneinfo/UTC
-      {{- end}}
+        {{- end}}
       {{- with .Values.storage.hostPath.nodeSelector }}
       nodeSelector:
       {{- toYaml . | nindent 8 }}
@@ -74,4 +70,3 @@ spec:
   selector:
     app: {{ include "func.fullname" . }}-worker-6
   type: ClusterIP
-
