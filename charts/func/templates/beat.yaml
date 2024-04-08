@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ include "func.fullname" . }}-beat
+  name: {{ include "func.fullname" . }}-beat
+spec:
+  replicas: {{ .Values.beat.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "func.fullname" . }}-beat
+  template:
+    metadata:
+      labels:
+        app: {{ include "func.fullname" . }}-beat
+    spec:
+      containers:
+      - args:
+        - ./run-beat.sh
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        name: {{ include "func.fullname" . }}-beat
+        resources: {{ toYaml .Values.mysql.resources | nindent 10 }}     
+        volumeMounts:
+        - mountPath: /data
+          name: data
+        {{- if (eq .Values.timeZone "UTC") }}
+        - mountPath: /usr/share/zoneinfo/Asia/Shanghai
+          name: timezone
+        {{- end }}
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      volumes:
+      {{- if .Values.storage.pvc.enabled }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "func.fullname" . }}-resources
+        {{- else }}
+        - name: data
+          hostPath:
+            path: {{ .Values.storage.hostPath.path }}/resources
+      {{- end }}
+      {{- if (eq .Values.timeZone "UTC") }}
+        - name: timezone
+          hostPath:
+            path: /usr/share/zoneinfo/UTC
+      {{- end}}
+      {{- with .Values.storage.hostPath.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      dnsPolicy: ClusterFirst
+{{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecrets.name }}
+{{- end }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "func.fullname" . }}-beat
+spec:
+  ports:
+  - name: default
+    port: 42
+    protocol: TCP
+    targetPort: 42
+  selector:
+    app: {{ include "func.fullname" . }}-beat
+  type: ClusterIP

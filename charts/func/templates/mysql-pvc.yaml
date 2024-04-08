@@ -1,0 +1,18 @@
+{{- if .Values.mysql.enabled }}
+{{- if .Values.storage.pvc.enabled }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ include "func.fullname" . }}-mysql
+  annotations:
+    volume.beta.kubernetes.io/storage-class: "{{ .Values.storage.pvc.storageClass }}"
+spec:
+  storageClassName: "{{ .Values.storage.pvc.storageClass }}"
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: "{{ .Values.storage.pvc.mysql.storageRequests }}"
+
+{{- end }}
+{{- end }}

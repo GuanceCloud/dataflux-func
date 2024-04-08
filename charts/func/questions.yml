@@ -1,0 +1,122 @@
+questions:
+#image Configurationss
+- variable: defaultImage
+  default: true
+  description: "使用默认Func镜像或指定自定义镜像"
+  label: Use Default Func Image
+  type: boolean
+  show_subquestion_if: false
+  group: "Container Images"
+  subquestions:
+  - variable: image.repository
+    default: "Func images"
+    description: "Func images name"
+    type: string
+    label: Func Image Name
+  - variable: image.tag
+    default: "latest"
+    description: "Func Image Tag"
+    type: string
+    label: Func Image Tag
+
+# 存储设置
+- variable: storage.pvc.enabled
+  required: true
+  default: true
+  description: "启用共享存储， 注意共享存储和主机挂载只能选择一种"
+  type: boolean
+  label: Enable Pvc
+  group: "Func Storage"
+
+- variable: storage.pvc.storageClass
+  required: true
+  default: ""
+  description: "共享存储类名称"
+  type: storageclass
+  label: StorageClass
+  group: "Func Storage"
+  show_if: "storage.pvc.enabled=true"
+
+
+
+- variable: storage.hostPath.enabled
+  required: true
+  default: false
+  description: "启用主机目录挂载，注意启用之后一定要设置nodeSelector，共享存储和主机挂载只能选择一种"
+  type: boolean
+  label: Enable HostPath
+  group: "Func Storage"
+
+
+- variable: storage.hostPath.path
+  required: true
+  default: ""
+  description: "主机目录"
+  type: string
+  label: HostPath
+  group: "Func Storage"
+  show_if: "storage.hostPath.enabled=true"
+
+
+
+- variable: storage.hostPath.nodeSelector
+  required: true
+  default: ""
+  description: "节点选择，如 beta.kubernetes.io/arch: amd64"
+  type: string
+  label: NodeSelector
+  group: "Func Storage"
+  show_if: "storage.hostPath.enabled=true"
+
+
+
+#Func Configuration
+- variable: mysql.enabled
+#  required: true
+  default: true
+  description: "是否在集群部署mysql数据库"
+  type: boolean
+  label: Enabled Mysql
+  group: "Func Configuration"
+
+- variable: redis.enabled
+  #  required: true
+  default: true
+  description: "是否在集群部署redis数据库"
+  type: boolean
+  label: Enabled Redis
+  group: "Func Configuration"
+
+
+# Func Network
+- variable: ingress.enabled
+  default: false
+  description: "是否启用 ingress 访问"
+  type: boolean
+  label: Enable Ingress
+  group: "Func Network"
+
+- variable: ingress.hostName
+  default: ""
+  description: "访问域名"
+  type: string
+  label: Enable Ingress
+  group: "Func Network"
+  show_if: "ingress.enabled=true"
+
+- variable: server.service.nodePortEnable
+  default: false
+  description: "是否启用 nodePort 访问"
+  type: boolean
+  label: Enable NodePort
+  group: "Func Network"
+
+- variable: server.service.nodePort
+  default: 31080
+  description: "nodePort 端口号"
+  type: int
+  min: 30000
+  max: 32767
+  label: Service NodePort
+  group: "Func Network"
+  show_if: "server.service.nodePortEnable=true"

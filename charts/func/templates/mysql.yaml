@@ -1,0 +1,79 @@
+{{- if .Values.mysql.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ include "func.fullname" . }}-mysql
+  name: {{ include "func.fullname" . }}-mysql
+spec:
+  replicas: {{ .Values.mysql.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "func.fullname" . }}-mysql
+  template:
+    metadata:
+      labels:
+        app: {{ include "func.fullname" . }}-mysql
+    spec:
+      containers:
+      - args:
+        - "--character-set-server=utf8mb4"
+        - "--collation-server=utf8mb4_unicode_ci"
+        - "--performance-schema=off"
+        - "--table-open-cache=400"
+        name: mysql
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: {{ .Values.func.MYSQL_PASSWORD | quote }}
+        - name: MYSQL_DATABASE
+          value:  {{ .Values.func.MYSQL_DATABASE | quote }}
+        image: "{{ .Values.mysql.image.repository }}:{{ .Values.mysql.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - containerPort: 3306
+          name: 3306tcp
+          protocol: TCP
+        resources: {{ toYaml .Values.mysql.resources | nindent 8 }}
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: data
+      volumes:
+      {{- if .Values.storage.pvc.enabled }}
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ include "func.fullname" . }}-mysql
+      {{- else }}
+      - name: data
+        hostPath:
+          path: {{ .Values.storage.hostPath.path }}/mysql
+      {{ if .Values.storage.hostPath.nodeSelector}}
+      nodeSelector:
+      {{- toYaml .Values.storage.hostPath.nodeSelector | nindent 8}}
+      {{- else }}
+      {{- fail "nodeSelector must be set when pvc is not enabled "}}      
+      {{- end }}          
+      {{- end }}
+
+{{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecrets.name }}
+{{- end }}
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "func.fullname" . }}-mysql
+spec:
+  ports:
+  - name: 3306tcp
+    port: 3306
+    protocol: TCP
+    targetPort: 3306
+  selector:
+    app: {{ include "func.fullname" . }}-mysql
+  type: ClusterIP
+
+{{- end }}

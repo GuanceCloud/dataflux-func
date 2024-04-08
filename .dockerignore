@@ -91,7 +91,11 @@ client/public/theme-light.min.css
 client/public/theme-dark.min.css
 
 # Other
-docker-stack.yaml
-.gitlab-ci.yml
-release.sh
+portable
+test
 client/report.*.json
+.gitlab-ci.yml
+docker-stack.yaml
+release.sh
+build-charts.sh
+charts

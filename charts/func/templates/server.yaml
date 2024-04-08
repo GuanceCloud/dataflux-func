@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ include "func.fullname" . }}-server
+  name: {{ include "func.fullname" . }}-server
+spec:
+  replicas: {{ .Values.server.replicas }}
+  selector:
+    matchLabels:
+      app: {{ include "func.fullname" . }}-server
+  template:
+    metadata:
+      labels:
+        app: {{ include "func.fullname" . }}-server
+    spec:
+      initContainers:
+      - name: init-service
+        image: busybox:1.35.0
+        command: ['sh', '-c', 'data=`grep -Ev "^#" /data/user-config.yaml | grep _IS_INSTALLED | grep true 2>/dev/null` ;if [[ -z "$data" ]] && [[ ! -e  /data/user-config.yaml ]];then cp /data/user-config-template.yaml /data/user-config.yaml && chmod 777 /data/user-config.yaml; fi']
+        volumeMounts:
+        - mountPath: /data
+          name: data
+        - mountPath: /data/user-config-template.yaml
+          name: user-config
+          subPath: user-config-template.yaml
+        {{- if (eq .Values.timeZone "UTC") }}
+        - mountPath: /usr/share/zoneinfo/Asia/Shanghai
+          name: timezone
+        {{- end }}
+      containers:
+      - args:
+        - ./run-server.sh
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        name: {{ include "func.fullname" . }}-server
+        ports:
+        - containerPort: 8088
+          name: 8088tcp8088
+          protocol: TCP
+        resources: {{ toYaml .Values.server.resources | nindent 10 }}
+        tty: true
+        volumeMounts:
+        - mountPath: /data
+          name: data
+        - mountPath: /data/user-config-template.yaml
+          name: user-config
+          subPath: user-config-template.yaml
+          readOnly: false
+        {{- if (eq .Values.timeZone "UTC") }}
+        - mountPath: /usr/share/zoneinfo/Asia/Shanghai
+          name: timezone
+        {{- end }}
+
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      volumes:
+      - configMap:
+          name: {{ include "func.fullname" . }}-user-config
+          #items:
+          #  - key: user-config-template.yaml
+          #    path: user-config-template.yaml
+          defaultMode: 0666
+        name: user-config
+      {{- if .Values.storage.pvc.enabled }}
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ include "func.fullname" . }}-resources
+      {{- else }}
+      - name: data
+        hostPath:
+          path: {{ .Values.storage.hostPath.path }}/resources
+      {{- end }}
+      {{- if (eq .Values.timeZone "UTC") }}
+      - name: timezone
+        hostPath:
+          path: /usr/share/zoneinfo/UTC
+      {{- end }}
+      {{- with .Values.storage.hostPath.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+
+{{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecrets.name }}
+{{- end }}
