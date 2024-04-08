@@ -55,7 +55,7 @@ class SystemMetric(BaseInternalTask):
             # 观测云
             if self.guance_data_upload_url:
                 guance_data.append({
-                    'measurement': CONFIG['_GUANCE_SELF_MONITOR_MEASUREMENT_WORKER_QUEUE'],
+                    'measurement': CONFIG['_SELF_MONITOR_GUANCE_MEASUREMENT_WORKER_QUEUE'],
                     'tags': {
                         'queue'    : str(queue),
                         'redis_key': worker_queue,
@@ -86,7 +86,7 @@ class SystemMetric(BaseInternalTask):
         # 观测云
         if self.guance_data_upload_url:
             guance_data = {
-                'measurement': CONFIG['_GUANCE_SELF_MONITOR_MEASUREMENT_CACHE_DB'],
+                'measurement': CONFIG['_SELF_MONITOR_GUANCE_MEASUREMENT_CACHE_DB'],
                 'tags': {
                     'target': f"{CONFIG['REDIS_HOST']}:{CONFIG['REDIS_PORT']}/{CONFIG['REDIS_DATABASE']}",
                 },
@@ -123,7 +123,7 @@ class SystemMetric(BaseInternalTask):
             # 观测云
             if self.guance_data_upload_url:
                 guance_data.append({
-                    'measurement': CONFIG['_GUANCE_SELF_MONITOR_MEASUREMENT_CACHE_DB_KEY'],
+                    'measurement': CONFIG['_SELF_MONITOR_GUANCE_MEASUREMENT_CACHE_DB_KEY'],
                     'tags': {
                         'target': f"{CONFIG['REDIS_HOST']}: {CONFIG['REDIS_PORT']}/{CONFIG['REDIS_DATABASE']}",
                         'prefix': prefix,
@@ -157,7 +157,7 @@ class SystemMetric(BaseInternalTask):
             # 观测云
             if self.guance_data_upload_url:
                 guance_data.append({
-                    'measurement': CONFIG['_GUANCE_SELF_MONITOR_MEASUREMENT_DB_TABLE'],
+                    'measurement': CONFIG['_SELF_MONITOR_GUANCE_MEASUREMENT_DB_TABLE'],
                     'tags': {
                         'target' : f"{CONFIG['MYSQL_HOST']}: {CONFIG['MYSQL_PORT']}/{CONFIG['MYSQL_DATABASE']}",
                         'name'   : d['Name'],
@@ -374,7 +374,7 @@ class FlushDataBuffer(BaseInternalTask):
             # 生成观测云数据
             if self.guance_data_upload_url:
                 guance_data.append({
-                    'measurement': CONFIG['_GUANCE_SELF_MONITOR_MEASUREMENT_FUNC_CALL'],
+                    'measurement': CONFIG['_SELF_MONITOR_GUANCE_MEASUREMENT_FUNC_CALL'],
                     'tags': {
                         'script_set_id' : d['scriptSetId'],
                         'script_id'     : d['scriptId'],

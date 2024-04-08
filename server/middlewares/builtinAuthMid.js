@@ -290,7 +290,7 @@ exports.byLocalhostAuthToken = function byLocalhostAuthToken(req, res, next) {
   var localhostAuthToken         = toolkit.safeReadFileSync(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_PATH).trim();
 
   // Skip if no Localhost Auth Token
-  if (req.hostname !== 'localhost' || !receivedLocalhostAuthToken || !localhostAuthToken) return next();
+  if (!receivedLocalhostAuthToken || !localhostAuthToken) return next();
 
   if (CONFIG.MODE === 'dev') {
     res.locals.logger.debug('[MID] IN buildinAuth.byLocalhostAuthToken');

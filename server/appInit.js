@@ -334,12 +334,18 @@ exports.afterServe = function(app, server) {
             cmd = 'python';
           }
 
-          var scriptPath = path.join(initScriptDir, script);
+          var baseURL = CONFIG.GUANCE_FUNC_BASE_URL_FOR_INIT_SCRIPTS;
+          if (!baseURL) {
+            var webBind = CONFIG.WEB_BIND === '0.0.0.0' ? 'localhost' : CONFIG.WEB_BIND;
+            baseURL = `http://${webBind}:${CONFIG.WEB_PORT}`;
+          }
+
+          var scriptPath  = path.join(initScriptDir, script);
           var projectPath = path.join(__dirname, '..');
           var opt = {
             cwd: initScriptDir,
             env: {
-              BASE_URL   : `http://${CONFIG.WEB_BIND === '0.0.0.0' ? 'localhost' : CONFIG.WEB_BIND}:${CONFIG.WEB_PORT}`,
+              BASE_URL   : baseURL,
               AUTH_HEADER: CONFIG._WEB_LOCALHOST_AUTH_TOKEN_HEADER,
               AUTH_TOKEN : localhostAuthToken,
               PATH       : process.env.PATH,

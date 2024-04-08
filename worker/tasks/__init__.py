@@ -322,7 +322,7 @@ class BaseTask(object):
         log_text = '\n'.join(log_data)
 
         data = {
-            'measurement': CONFIG['_GUANCE_SELF_MONITOR_MEASUREMENT_TASK_RECORD'],
+            'measurement': CONFIG['_SELF_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD'],
             'tags': {
                 'id'         : self.task_id,
                 'name'       : self.name,
@@ -412,7 +412,7 @@ class BaseTask(object):
                         # 尝试提取并切分 message
                         logging_message = single_point['fields']['message'] or ''
                         try:
-                            logging_message = toolkit.str_split_by_bytes(logging_message, page_bytes=CONFIG['_GUANCE_SELF_MONITOR_LOGGING_SPLIT_BYTES'])
+                            logging_message = toolkit.str_split_by_bytes(logging_message, page_bytes=CONFIG['_SELF_MONITOR_GUANCE_LOGGING_SPLIT_BYTES'])
                         except Exception as e:
                             for line in traceback.format_exc().splitlines():
                                 self.logger.error(line)

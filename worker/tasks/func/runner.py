@@ -161,7 +161,7 @@ class FuncRunner(FuncBaseTask):
             return None
 
         data = {
-            'measurement': CONFIG['_GUANCE_SELF_MONITOR_MEASUREMENT_TASK_RECORD_FUNC'],
+            'measurement': CONFIG['_SELF_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD_FUNC'],
             'tags': {
                 'id'           : self.task_id,
                 'name'         : self.name,

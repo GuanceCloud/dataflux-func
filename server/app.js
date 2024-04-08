@@ -37,6 +37,11 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
 
   CONFIG = _config;
 
+  // 优先使用观测云集群指定的 Web 绑定地址
+  if (CONFIG.GUANCE_FUNC_WEB_BIND_ENV && process.env[CONFIG.GUANCE_FUNC_WEB_BIND_ENV]) {
+    CONFIG.WEB_BIND = process.env[CONFIG.GUANCE_FUNC_WEB_BIND_ENV];
+  }
+
   require('./appInit').prepare(function() {
     startApplication();
   });
@@ -319,11 +324,6 @@ function startApplication() {
   var server = http.createServer(app);
 
   require('./messageHandlers/socketIOHandler')(app, server);
-
-  // 优先使用观测云集群指定的绑定地址
-  if (CONFIG._GUANCE_WEB_BIND_ENV && process.env[CONFIG._GUANCE_WEB_BIND_ENV]) {
-    CONFIG.WEB_BIND = process.env[CONFIG._GUANCE_WEB_BIND_ENV];
-  }
 
   var listenOpt = {
     host: CONFIG.WEB_BIND,
