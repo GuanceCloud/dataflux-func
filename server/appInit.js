@@ -298,13 +298,13 @@ exports.afterServe = function(app, server) {
       function(asyncCallback) {
         var lockKey   = toolkit.getCacheKey('lock', 'initScripts');
         var lockValue = toolkit.genRandString();
-        var lockAge   = CONFIG._AUTORUN_SCRIPTS_LOCK_AGE;
+        var lockAge   = CONFIG._INIT_SCRIPTS_LOCK_AGE;
 
         app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
           if (err) return asyncCallback(err);
 
           if (!cacheRes) {
-            var e = new Error('Autorun Scriptst is just launched');
+            var e = new Error('Init Scriptst is just launched');
             e.isWarning = true;
             return asyncCallback(e);
           }
@@ -316,7 +316,7 @@ exports.afterServe = function(app, server) {
       function(asyncCallback) {
         setTimeout(asyncCallback, 3000);
       },
-      // 执行 Autorun 脚本
+      // 执行初始化脚本
       function(asyncCallback) {
         var localhostAuthToken = toolkit.safeReadFileSync(CONFIG._WEB_LOCALHOST_AUTH_TOKEN_PATH).trim();
 
@@ -339,7 +339,7 @@ exports.afterServe = function(app, server) {
           var opt = {
             cwd: initScriptDir,
             env: {
-              BASE_URL   : `http://localhost:${CONFIG.WEB_PORT}`,
+              BASE_URL   : `http://${CONFIG.WEB_BIND === '0.0.0.0' ? 'localhost' : CONFIG.WEB_BIND}:${CONFIG.WEB_PORT}`,
               AUTH_HEADER: CONFIG._WEB_LOCALHOST_AUTH_TOKEN_HEADER,
               AUTH_TOKEN : localhostAuthToken,
               PATH       : process.env.PATH,
