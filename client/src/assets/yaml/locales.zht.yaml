@@ -169,6 +169,8 @@ zh-HK:
   HTTP Query: HTTP Query 參數
   HTTP Request: HTTP 請求
   HTTP Service: HTTP 服務
+  ? HTTPS is recommended for Script Market based on git, and accessing the git service via HTTP on the public network should be avoided
+  : 基於 git 服務的腳本市場建議使用 HTTPS，並且應當避免在公網通過 HTTP 訪問 git 服務
   Hidden: 已隱藏
   Hide: 隱藏
   Idle: 閒置
@@ -372,6 +374,7 @@ zh-HK:
   exit: 退出
   export: 導出
   filter: 過濾
+  git (HTTPS recommended): git（建議使用 HTTPS）
   h: 小時
   hidden: 已隱藏
   hide: 隱藏
@@ -602,6 +605,8 @@ zh-TW:
   HTTP Query: HTTP Query 引數
   HTTP Request: HTTP 請求
   HTTP Service: HTTP 服務
+  ? HTTPS is recommended for Script Market based on git, and accessing the git service via HTTP on the public network should be avoided
+  : 基於 git 服務的指令碼市場建議使用 HTTPS，並且應當避免在公網透過 HTTP 訪問 git 服務
   Hidden: 已隱藏
   Hide: 隱藏
   Idle: 閒置
@@ -805,6 +810,7 @@ zh-TW:
   exit: 退出
   export: 匯出
   filter: 過濾
+  git (HTTPS recommended): git（建議使用 HTTPS）
   h: 小時
   hidden: 已隱藏
   hide: 隱藏
