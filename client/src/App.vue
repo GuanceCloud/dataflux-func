@@ -743,6 +743,9 @@ p.form-item {
 .text-small {
   font-size: small;
 }
+.text-smaller {
+  font-size: smaller;
+}
 .text-large {
   font-size: large;
 }

@@ -147,7 +147,7 @@ Should start with http:// or https://: 必須以 http:// 或 https://開頭
               </el-form-item>
 
               <el-form-item :label="$t('Branch')" v-if="hasConfigField(selectedType, 'branch')" prop="configJSON.branch">
-                <el-input :placeholder="$t('Default')"
+                <el-input placeholder="master"
                   v-model="form.configJSON.branch"></el-input>
               </el-form-item>
 
@@ -338,8 +338,7 @@ export default {
     },
     async addData() {
       if (this.form.type === 'git'
-        && this.form.configJSON.user
-        && this.form.configJSON.password
+        && this.setAdmin
         && !this.$root.checkUserProfileForGit()) return;
 
       let _formData = this._getFromData();
@@ -354,6 +353,10 @@ export default {
       this.show = false;
     },
     async modifyData() {
+      if (this.data.type === 'git'
+        && this.data.isAdmin
+        && !this.$root.checkUserProfileForGit()) return;
+
       let _formData = this._getFromData();
       delete _formData.id;
       delete _formData.type;

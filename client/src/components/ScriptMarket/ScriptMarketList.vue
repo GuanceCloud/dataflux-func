@@ -160,7 +160,7 @@ ScriptSetCount: 不包含任何指令碼集 | 包含 {n} 個指令碼集 | 包�
                     <CopyButton :content="scope.row.configJSON.url" />
                     <br>
                     <span class="text-info">{{ $t('Branch') }}</span>
-                    &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.branch || $t('Default') }}</code>
+                    &nbsp;<code class="text-main code-font">{{ scope.row.configJSON.branch || 'master' }}</code>
                   </template>
                   <template v-if="scope.row.type === 'aliyunOSS'">
                     <span class="text-info">{{ $t('Endpoint') }}</span>
