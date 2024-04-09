@@ -278,7 +278,6 @@ zh-HK:
   Script Logs: 腳本日誌
   Script Market: 腳本市場
   Script Market based on HTTP Service is readonly: 基於 HTTP 服務的腳本市場為只讀
-  Script Market based on git supports HTTPS only: 基於 git 的腳本市場僅支持 HTTPS
   Script Set: 腳本集
   Script Set Export: 腳本集導出
   Script Set Export History: 腳本集導出歷史
@@ -712,7 +711,6 @@ zh-TW:
   Script Logs: 指令碼日誌
   Script Market: 指令碼市場
   Script Market based on HTTP Service is readonly: 基於 HTTP 服務的指令碼市場為只讀
-  Script Market based on git supports HTTPS only: 基於 git 的指令碼市場僅支援 HTTPS
   Script Set: 指令碼集
   Script Set Export: 指令碼集匯出
   Script Set Export History: 指令碼集匯出歷史

@@ -461,10 +461,11 @@ en:
   Status Code 5xx     : 状态码 5xx
 
   # const.js - SCRIPT_MARKET_TYPE
-  Alibaba Cloud OSS: 阿里云 OSS
-  HTTP Service     : HTTP 服务
-  Script Market based on git supports HTTPS only : 基于 git 的脚本市场仅支持 HTTPS
-  Script Market based on HTTP Service is readonly: 基于 HTTP 服务的脚本市场为只读
+  Alibaba Cloud OSS      : 阿里云 OSS
+  HTTP Service           : HTTP 服务
+  git (HTTPS recommended): git（建议使用 HTTPS）
+  HTTPS is recommended for Script Market based on git, and accessing the git service via HTTP on the public network should be avoided: 基于 git 服务的脚本市场建议使用 HTTPS，并且应当避免在公网通过 HTTP 访问 git 服务
+  Script Market based on HTTP Service is readonly    : 基于 HTTP 服务的脚本市场为只读
 
   # const.js - BLUEPRINT_ELEMENT_TYPE, 节点
   Simple Line: 简单连线

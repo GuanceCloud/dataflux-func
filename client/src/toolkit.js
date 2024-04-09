@@ -1238,9 +1238,11 @@ export async function callAPI(method, pathPattern, options) {
                     : i18n.t(axiosRes.data.message);
 
         // 进一步添加小字详细信息
-        if (axiosRes.data.detail && axiosRes.data.detail.exception) {
-          message += `<br><small>${i18n.t(axiosRes.data.detail.exception.replace(/\n/g, '<br>'))}<small>`;
-        }
+        [ 'message', 'exception' ].forEach(detailField => {
+          if (axiosRes.data.detail && axiosRes.data.detail[detailField]) {
+            message += `<br><small class="text-smaller">${i18n.t(axiosRes.data.detail[detailField].replace(/\n/g, '<br>'))}<small>`;
+          }
+        });
 
         // 简单提示，不需要区分标题和内容
         if (!message) {
@@ -1406,9 +1408,11 @@ export async function callAPI_getAll(pathPattern, options) {
                       : i18n.t(axiosRes.data.message);
 
           // 进一步添加小字详细信息
-          if (axiosRes.data.detail && axiosRes.data.detail.exception) {
-            message += `<br><small>${axiosRes.data.detail.exception}<small>`;
-          }
+          [ 'message', 'exception' ].forEach(detailField => {
+            if (axiosRes.data.detail && axiosRes.data.detail[detailField]) {
+              message += `<br><small class="text-smaller">${i18n.t(axiosRes.data.detail[detailField].replace(/\n/g, '<br>'))}<small>`;
+            }
+          });
 
           // 简单提示，不需要区分标题和内容
           if (!message) {

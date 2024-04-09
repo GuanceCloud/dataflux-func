@@ -2370,7 +2370,7 @@ var createGitHandler = toolkit.createGitHandler = function(baseDir, timeout) {
 
   var git = simpleGit({
     baseDir: baseDir,
-    timeout: { block: 15 * 1000 },
+    timeout: { block: 30 * 1000 },
   })
 
   return git;
@@ -2387,7 +2387,6 @@ var safeReadFileSync = toolkit.safeReadFileSync = function(filePath, type) {
     data = fs.readFileSync(filePath).toString();
   } catch(err) {
     console.log(`Reading ${filePath} failed. Origin error:\n${err.toString()}`);
-    return null;
   }
 
   try {
