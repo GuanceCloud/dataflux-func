@@ -2,7 +2,6 @@
 zh-HK:
   Accessing git repo timeout: 訪問 git 庫超時
   Accessing out-of-scope file system is not allowed: 禁止訪問超出範圍的文件系統
-  Admin of the Script Market is already taken by other DataFlux Func: 管理權已經被其他 DataFlux Func 獲取
   Admin user cannot been modified directly: 管理員用户無法直接修改
   Async task failed: 異步任務失敗
   At least one condition should been specified: 至少需要指定一個條件
@@ -32,6 +31,7 @@ zh-HK:
   'Exception: Guance API Key NOT match to API Key ID!': 錯誤：觀測雲 API Key ID 與 API Key 不匹配
   Export failed: 導出失敗
   Failed to access data, please refresh the page and try again.: 訪問數據失敗，請嘗試刷新頁面後再試一次
+  Failed to access git repo: 訪問 git 倉庫失敗
   Failed to communicate with the server, please refresh the page and try again.: 與服務器通訊失敗，請嘗試刷新頁面後再試一次。
   Failed to setting Admin: 獲取管理權失敗
   File not exists: 文件不存在
@@ -82,6 +82,7 @@ zh-HK:
   No such Batch: 不存在批處理
   No such Crontab Config: 不存在自動觸發配置
   No such Func: 不存在函數
+  No such branch in the git repo: git 倉庫中不存在此分支
   No such data: 不存在數據
   No such router. Please make sure that the METHOD is correct and no spelling missing in the URL: 不存在路由，請檢查 HTTP 請求方法以及 URL 拼寫是否正確
   Operation Record cannot be deleted: 操作記錄無法刪除
@@ -104,6 +105,7 @@ zh-HK:
   This Auth Link is disabled: 此授權鏈接已被禁用
   This Batch is disabled: 此批處理已被禁用
   This File Service is disabled: 此文件服務已被禁用
+  This Script Market has been administered by other DataFlux Func: 此腳本市場已由其他 DataFlux Func 管理
   This Script Market is locked by other user: 此腳本市場已被其他用户鎖定
   This Script Set is locked by other user: 此腳本集已被其他用户鎖定
   This Script is locked by other user: 此腳本已被其他用户鎖定
@@ -121,7 +123,6 @@ zh-HK:
 zh-TW:
   Accessing git repo timeout: 訪問 git 庫超時
   Accessing out-of-scope file system is not allowed: 禁止訪問超出範圍的檔案系統
-  Admin of the Script Market is already taken by other DataFlux Func: 管理權已經被其他 DataFlux Func 獲取
   Admin user cannot been modified directly: 管理員使用者無法直接修改
   Async task failed: 非同步任務失敗
   At least one condition should been specified: 至少需要指定一個條件
@@ -151,6 +152,7 @@ zh-TW:
   'Exception: Guance API Key NOT match to API Key ID!': 錯誤：觀測雲 API Key ID 與 API Key 不匹配
   Export failed: 匯出失敗
   Failed to access data, please refresh the page and try again.: 訪問資料失敗，請嘗試重新整理頁面後再試一次
+  Failed to access git repo: 訪問 git 倉庫失敗
   Failed to communicate with the server, please refresh the page and try again.: 與伺服器通訊失敗，請嘗試重新整理頁面後再試一次。
   Failed to setting Admin: 獲取管理權失敗
   File not exists: 檔案不存在
@@ -201,6 +203,7 @@ zh-TW:
   No such Batch: 不存在批處理
   No such Crontab Config: 不存在自動觸發配置
   No such Func: 不存在函式
+  No such branch in the git repo: git 倉庫中不存在此分支
   No such data: 不存在資料
   No such router. Please make sure that the METHOD is correct and no spelling missing in the URL: 不存在路由，請檢查 HTTP 請求方法以及 URL 拼寫是否正確
   Operation Record cannot be deleted: 操作記錄無法刪除
@@ -223,6 +226,7 @@ zh-TW:
   This Auth Link is disabled: 此授權連結已被禁用
   This Batch is disabled: 此批處理已被禁用
   This File Service is disabled: 此檔案服務已被禁用
+  This Script Market has been administered by other DataFlux Func: 此指令碼市場已由其他 DataFlux Func 管理
   This Script Market is locked by other user: 此指令碼市場已被其他使用者鎖定
   This Script Set is locked by other user: 此指令碼集已被其他使用者鎖定
   This Script is locked by other user: 此指令碼已被其他使用者鎖定

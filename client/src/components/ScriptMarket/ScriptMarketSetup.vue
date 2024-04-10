@@ -114,7 +114,7 @@ Should start with http:// or https://: 必須以 http:// 或 https://開頭
 
             <template v-if="selectedType">
               <el-form-item v-if="C.SCRIPT_MARKET_TYPE_MAP.get(selectedType).logo">
-                <el-image class="script-market-logo" :class="common.getScriptMarketClass(form)" :src="common.getScriptMarketLogo(form)"></el-image>
+                <el-image class="script-market-logo" :class="`logo-${form.type}`" :src="common.getScriptMarketLogo(form)"></el-image>
               </el-form-item>
 
               <el-form-item>
@@ -540,18 +540,6 @@ export default {
 }
 .script-market-logo.logo-git {
   height: 60px !important;
-}
-.script-market-logo.logo-github-com {
-  height: 70px !important;
-}
-.script-market-logo.logo-gitlab-com {
-  height: 80px !important;
-}
-.script-market-logo.logo-gitee-com {
-  height: 60px !important;
-}
-.script-market-logo.logo-bitbucket-org {
-  height: 50px !important;
 }
 .script-market-logo.logo-aliyunOSS {
   height: 80px !important;

@@ -280,38 +280,25 @@ export function isFuncArgumentPlaceholder(v) {
 export function getScriptMarketLogo(scriptMarket) {
   if (scriptMarket.type === 'git') {
     try {
-      let url = new URL(scriptMarket.configJSON.url);
-
-      let brandLogo = C.SCRIPT_MARKET_TYPE_MAP.get('git').brandLogo[url.host];
-      if (brandLogo) return brandLogo;
+      let brandLogo = C.SCRIPT_MARKET_TYPE_MAP.get('git').brandLogo;
+      for (let keyword in brandLogo) {
+        if (scriptMarket.configJSON.url.indexOf(keyword) >= 0) {
+          return brandLogo[keyword];
+        }
+      }
 
     } catch (err) {
       // Nope
+      console.log(err)
     }
   }
 
   return C.SCRIPT_MARKET_TYPE_MAP.get(scriptMarket.type).logo;
 }
 
-export function getScriptMarketClass(scriptMarket) {
-  if (scriptMarket.type === 'git') {
-    try {
-      let url = new URL(scriptMarket.configJSON.url);
-
-      let brandLogo = C.SCRIPT_MARKET_TYPE_MAP.get('git').brandLogo[url.host];
-      if (brandLogo) return `logo-${url.host.replace('.', '-')}`;
-
-    } catch (err) {
-      // Nope
-    }
-  }
-
-  return `logo-${scriptMarket.type}`;
-}
-
 export function getScriptMarketTitle(scriptMarket) {
   if (scriptMarket.title) {
-    return scriptMarket.title
+    return scriptMarket.title;
   } else {
     switch(scriptMarket.type) {
       case 'git':

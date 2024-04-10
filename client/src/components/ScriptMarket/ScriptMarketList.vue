@@ -136,7 +136,7 @@ ScriptSetCount: 不包含任何指令碼集 | 包含 {n} 個指令碼集 | 包�
             <template slot-scope="scope">
               <div class="script-market-logo-wrap">
                 <i v-if="scope.row.isOfficial" class="fa fa-fw fa-3x fa-star text-watch"></i>
-                <el-image v-else class="script-market-logo" :class="common.getScriptMarketClass(scope.row)" :src="common.getScriptMarketLogo(scope.row)"></el-image>
+                <el-image v-else class="script-market-logo" :class="`logo-${scope.row.type}`" :src="common.getScriptMarketLogo(scope.row)"></el-image>
               </div>
             </template>
           </el-table-column>
@@ -501,20 +501,7 @@ export default {
   width: auto;
 }
 .script-market-logo.logo-git {
-  height: 70px !important;
-}
-.script-market-logo.logo-github-com {
-  height: 70px !important;
-}
-.script-market-logo.logo-gitlab-com,
-.script-market-logo.logo-jihulab-com {
-  height: 80px !important;
-}
-.script-market-logo.logo-gitee-com {
   height: 60px !important;
-}
-.script-market-logo.logo-bitbucket-org {
-  height: 50px !important;
 }
 .script-market-logo.logo-aliyunOSS {
   height: 80px !important;

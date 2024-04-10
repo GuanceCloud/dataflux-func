@@ -57,6 +57,8 @@ import logo_httpService from '@/assets/img/logo-http.png'
 import logo_github      from '@/assets/img/logo-github.png'
 import logo_gitlab      from '@/assets/img/logo-gitlab.png'
 import logo_gitee       from '@/assets/img/logo-gitee.png'
+import logo_gitea       from '@/assets/img/logo-gitea.png'
+import logo_gogs        from '@/assets/img/logo-gogs.png'
 import logo_bitbucket   from '@/assets/img/logo-bitbucket.png'
 
 export default {
@@ -1115,11 +1117,13 @@ kafka.publish(topic='some_topic', message='some_message')`,
         tip       : i18n.t('HTTPS is recommended for Script Market based on git, and accessing the git service via HTTP on the public network should be avoided'),
         isReadonly: false,
         brandLogo: {
-          'github.com'   : logo_github,
-          'gitlab.com'   : logo_gitlab,
-          'jihulab.com'  : logo_gitlab,
-          'gitee.com'    : logo_gitee,
-          'bitbucket.org': logo_bitbucket,
+          'github'   : logo_github,
+          'gitlab'   : logo_gitlab,
+          'jihulab'  : logo_gitlab,
+          'gitee'    : logo_gitee,
+          'gitea'    : logo_gitea,
+          'gogs'     : logo_gogs,
+          'bitbucket': logo_bitbucket,
         },
         configFields: {
           url     : { default: null, isRequired: true },
