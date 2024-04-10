@@ -448,6 +448,6 @@ deploy_release:
   only:
     - /^deploy_\d+/
   script:
-    - sh cd.sh -d
+    - sh deploy-saas.sh -d
   tags:
     - cloudcare-multiarch
