@@ -977,6 +977,7 @@ exports.overview = function(req, res, next) {
   ];
 
   var overview = {
+    serviceInfo     : [],
     workerQueueInfo : [],
     bizEntityCount  : [],
     latestOperations: [],
@@ -988,6 +989,21 @@ exports.overview = function(req, res, next) {
   var nonScriptSetOrigins                      = [];
   var nonScriptSetOriginIds                    = [];
   async.series([
+    // 获取运行中服务列表
+    function(asyncCallback) {
+      var cacheKeyPattern = toolkit.getMonitorCacheKey('heartbeat', 'serviceInfo', [ 'hostname', '*', 'pid', '*' ]);
+      res.locals.cacheDB.keys(cacheKeyPattern, function(err, keys) {
+        if (err) return asyncCallback(err);
+
+        async.each(keys, function(key, eachCallback) {
+          res.locals.cacheDB.getWithTTL(key, function(err, cacheRes) {
+            if (err) return eachCallback(err);
+
+
+          })
+        })
+      });
+    },
     // 获取系统配置
     function(asyncCallback) {
       var keys = [

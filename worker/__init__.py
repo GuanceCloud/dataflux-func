@@ -47,6 +47,8 @@ def heartbeat():
     global MAIN_PROCESS
     global MONITOR_REPORT_TIMESTAMP
 
+    hostname = socket.gethostname()
+
     # Init
     if MAIN_PROCESS is None:
         MAIN_PROCESS = psutil.Process()
@@ -57,25 +59,42 @@ def heartbeat():
     if t - MONITOR_REPORT_TIMESTAMP > CONFIG['_MONITOR_REPORT_INTERVAL']:
         MONITOR_REPORT_TIMESTAMP = t
 
-        if LISTINGING_QUEUES and WORKER_ID:
-            # 记录每个队列 Worker 数量
-            _expires = int(CONFIG['_MONITOR_REPORT_INTERVAL'] * 1.5)
-            for q in LISTINGING_QUEUES:
-                cache_key = toolkit.get_monitor_cache_key('heartbeat', 'workerOnQueue', tags=['workerQueue', q, 'workerId', WORKER_ID])
-                REDIS.setex(cache_key, _expires, CONFIG['_WORKER_CONCURRENCY'])
+        # 监控报告过期时间
+        monitor_report_expires = int(CONFIG['_MONITOR_REPORT_INTERVAL'] * 3)
 
-                cache_pattern = toolkit.get_monitor_cache_key('heartbeat', 'workerOnQueue', tags=['workerQueue', q, 'workerId', '*'])
+        # 记录主机，PID，所启动服务
+        service_name = sys.argv[0].split('/').pop()
+        if 'beat.py' == service_name:
+            service_name = 'beat'
+        elif 'app.py' == service_name:
+            service_name = 'worker'
+
+        service_info = {
+            'name': service_name,
+            'args': sys.argv[1:]
+        }
+        cache_key = toolkit.get_monitor_cache_key('heartbeat', 'serviceInfo', tags=[ 'hostname', hostname, 'pid', os.getpid() ])
+        REDIS.setex(cache_key, monitor_report_expires, toolkit.json_dumps(service_info))
+
+        # 记录每个队列 Worker / 进程数量
+        if LISTINGING_QUEUES and WORKER_ID:
+
+            for q in LISTINGING_QUEUES:
+                cache_key = toolkit.get_monitor_cache_key('heartbeat', 'workerOnQueue', tags=[ 'workerQueue', q, 'workerId', WORKER_ID ])
+                REDIS.setex(cache_key, monitor_report_expires, CONFIG['_WORKER_CONCURRENCY'])
+
+                cache_pattern = toolkit.get_monitor_cache_key('heartbeat', 'workerOnQueue', tags=[ 'workerQueue', q, 'workerId', '*' ])
                 worker_process_count_list = REDIS.get_by_pattern(cache_pattern)
 
-                cache_key = toolkit.get_monitor_cache_key('heartbeat', 'workerCountOnQueue', tags=['workerQueue', q])
+                cache_key = toolkit.get_monitor_cache_key('heartbeat', 'workerCountOnQueue', tags=[ 'workerQueue', q ])
                 worker_count = len(worker_process_count_list)
-                REDIS.setex(cache_key, _expires, worker_count)
+                REDIS.setex(cache_key, monitor_report_expires, worker_count)
 
-                cache_key = toolkit.get_monitor_cache_key('heartbeat', 'processCountOnQueue', tags=['workerQueue', q])
+                cache_key = toolkit.get_monitor_cache_key('heartbeat', 'processCountOnQueue', tags=[ 'workerQueue', q ])
                 process_count = 0
                 for count in worker_process_count_list:
                     process_count += int(count)
-                REDIS.setex(cache_key, _expires, process_count)
+                REDIS.setex(cache_key, monitor_report_expires, process_count)
 
         # 记录 CPU / 使用
         total_cpu_percent = MAIN_PROCESS.cpu_percent()
@@ -108,10 +127,10 @@ def heartbeat():
         hostname          = socket.gethostname()
         total_cpu_percent = round(total_cpu_percent, 2)
 
-        cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'workerCPUPercent', 'hostname', hostname])
+        cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', [ 'metric', 'workerCPUPercent', 'hostname', hostname ])
         REDIS.ts_add(cache_key, total_cpu_percent, timestamp=t)
 
-        cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'workerMemoryPSS', 'hostname', hostname])
+        cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', [ 'metric', 'workerMemoryPSS', 'hostname', hostname ])
         REDIS.ts_add(cache_key, total_memory_pss, timestamp=t)
 
 def check_restart_flag(shutdown_event):
