@@ -14,7 +14,6 @@ recentOperationCount: 最近 {n} 条
 Overview         : 总览
 Services         : 服务
 Hostname         : 主机名
-Process ID       : 进程 ID
 Up Time          : 运行时长
 Worker Queues    : 工作队列
 Worker           : 工作单元
@@ -51,7 +50,6 @@ MODIFY: 修改操作
 Operation: 操作
 Overview: 總覽
 Process: 工作進程
-Process ID: 進程 ID
 Recent operations: 最近操作記錄
 Request: 請求
 Response: 響應
@@ -79,7 +77,6 @@ MODIFY: 修改操作
 Operation: 操作
 Overview: 總覽
 Process: 工作程序
-Process ID: 程序 ID
 Recent operations: 最近操作記錄
 Request: 請求
 Response: 響應
@@ -122,12 +119,7 @@ recentOperationCount: 最近 {n} 條
               <tr :class>
                 <td>{{ $t('Hostname') }}</td>
                 <td>{{ $t(':') }}</td>
-                <td><code>{{ service.hostname }}</code></td>
-              </tr>
-              <tr>
-                <td>{{ $t('Process ID') }}</td>
-                <td>{{ $t(':') }}</td>
-                <td>{{ service.pid }}</td>
+                <td><code>{{ service.hostname }} (PID: {{ service.pid }})</code></td>
               </tr>
               <tr>
                 <td>{{ $t('Up Time') }}</td>
@@ -483,8 +475,8 @@ export default {
 }
 
 .service-card {
-  width: 260px;
-  height: 180px;
+  width: 320px;
+  height: 145px;
   display: inline-block;
   margin: 10px 10px;
   position: relative;
@@ -498,11 +490,15 @@ export default {
   font-size: 30px;
 }
 .service-active {
-  width: 220px;
   position: absolute;
-  bottom: 10px;
+  top: 15px;
+  right: 15px;
 }
 
+.service-info tr > td,
+.worker-queue-info tr > td {
+  vertical-align: top;
+}
 .service-info tr > td:first-child,
 .worker-queue-info tr > td:first-child {
   white-space: nowrap;
@@ -555,7 +551,7 @@ export default {
 
 <style>
 .service-active .el-progress-bar {
-  width: 160px;
+  width: 100px;
 }
 .service-active .el-progress__text {
   font-size: 12px !important;
