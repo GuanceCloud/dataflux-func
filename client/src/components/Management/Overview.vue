@@ -17,8 +17,11 @@ Collapse And Categorize: 折叠并归类
 Overview         : 总览
 Services         : 服务
 Hostname         : 主机名
-Process ID       : 主机名
+Process ID       : 进程 ID
 Up Time          : 已运行
+Up Time AVG      : 平均已运行
+Up Time MAX      : 最长已运行
+Up Time MIN      : 最短已运行
 Queues           : 队列
 Worker Queues    : 工作队列
 Worker           : 工作单元
@@ -57,7 +60,7 @@ MODIFY: 修改操作
 Operation: 操作
 Overview: 總覽
 Process: 工作進程
-Process ID: 主機名
+Process ID: 進程 ID
 Queues: 隊列
 Recent operations: 最近操作記錄
 Request: 請求
@@ -65,6 +68,9 @@ Response: 響應
 Services: 服務
 Task: 任務
 Up Time: 已運行
+Up Time AVG: 平均已運行
+Up Time MAX: 最長已運行
+Up Time MIN: 最短已運行
 Worker: 工作單元
 Worker Queues: 工作隊列
 generalCount: '{n} 個'
@@ -88,7 +94,7 @@ MODIFY: 修改操作
 Operation: 操作
 Overview: 總覽
 Process: 工作程序
-Process ID: 主機名
+Process ID: 程序 ID
 Queues: 佇列
 Recent operations: 最近操作記錄
 Request: 請求
@@ -96,6 +102,9 @@ Response: 響應
 Services: 服務
 Task: 任務
 Up Time: 已執行
+Up Time AVG: 平均已執行
+Up Time MAX: 最長已執行
+Up Time MIN: 最短已執行
 Worker: 工作單元
 Worker Queues: 工作佇列
 generalCount: '{n} 個'
@@ -123,7 +132,7 @@ recentOperationCount: 最近 {n} 條
         <el-divider content-position="left"><h1>{{ $t('Services') }} {{ $t('(') }}{{ $tc('generalCount', serviceInfo.length) }}{{ $t(')') }}</h1></el-divider>
         <div class="service-group-expand-button">
           <el-link @click="serviceGroupCollapsed = !serviceGroupCollapsed">
-            <i class="fa" :class="`fa-chevron-${serviceGroupCollapsed ? 'left' : 'right'}`"></i><i class="fa" :class="`fa-chevron-${serviceGroupCollapsed ? 'right' : 'left'}`"></i>
+            <i class="fa fa-angle-left" :class="{ 'fa-flip-horizontal': serviceGroupCollapsed }"></i><i class="fa fa-angle-left" :class="{ 'fa-flip-horizontal': !serviceGroupCollapsed }" style="margin-left: 2px;"></i>
             {{ serviceGroupCollapsed ? $t('Expand All') : $t('Collapse And Categorize') }}
           </el-link>
         </div>
@@ -137,29 +146,46 @@ recentOperationCount: 最近 {n} 條
               <div class="service-info">
                 <span class="service-name">{{ service.name }}</span>
                 <table>
-                  <tr :class>
+                  <tr v-if="serviceGroupCollapsed && group.length > 1">
+                    <td>{{ $t('Up Time AVG') }}</td>
+                    <td>{{ $t(':') }}</td>
+                    <td>{{ T.duration(serviceUptime_avg[service.name]) }}</td>
+                  </tr>
+                  <tr v-if="serviceGroupCollapsed && group.length > 1">
+                    <td>{{ $t('Up Time MAX') }}</td>
+                    <td>{{ $t(':') }}</td>
+                    <td>{{ T.duration(serviceUptime_max[service.name]) }}</td>
+                  </tr>
+                  <tr v-if="serviceGroupCollapsed && group.length > 1">
+                    <td>{{ $t('Up Time MIN') }}</td>
+                    <td>{{ $t(':') }}</td>
+                    <td>{{ T.duration(serviceUptime_min[service.name]) }}</td>
+                  </tr>
+
+                  <tr v-if="!serviceGroupCollapsed">
                     <td>{{ $t('Hostname') }}</td>
                     <td>{{ $t(':') }}</td>
                     <td><code>{{ service.hostname }}</code></td>
                   </tr>
-                  <tr :class>
+                  <tr v-if="!serviceGroupCollapsed">
                     <td>{{ $t('Process ID') }}</td>
                     <td>{{ $t(':') }}</td>
                     <td><code>{{ service.pid }}</code></td>
                   </tr>
-                  <tr>
+                  <tr v-if="!serviceGroupCollapsed || group.length === 1">
                     <td>{{ $t('Up Time') }}</td>
                     <td>{{ $t(':') }}</td>
                     <td>{{ T.duration(service.uptime * 1000) }}</td>
                   </tr>
-                  <tr v-if="service.queues">
+                  <tr v-if="!serviceGroupCollapsed && service.queues">
                     <td>{{ $t('Queues')}}</td>
                     <td>{{ $t(':') }}</td>
                     <td><code>{{ service.queues.map(q => `#${q}`).join(' ') }}</code></td>
                   </tr>
                 </table>
+
                 <div class="service-active">
-                  <el-progress :percentage="service.activePercent" :format="serviceActiveFormat" :color="serviceActiveColor"></el-progress>
+                  <el-progress :percentage="serviceGroupCollapsed ? 100 : service.activePercent" :format="serviceActiveFormat" :color="serviceActiveColor"></el-progress>
                 </div>
               </div>
             </el-card>
@@ -461,6 +487,27 @@ export default {
     serviceInfo_beat() {
       return this.serviceInfo.filter(s => s.name === 'beat');
     },
+    serviceUptime_avg() {
+      return {
+        server: parseInt(this.serviceInfo_servers.reduce((acc, x) => acc + x.uptime, 0) / this.serviceInfo_servers.length * 1000),
+        worker: parseInt(this.serviceInfo_workers.reduce((acc, x) => acc + x.uptime, 0) / this.serviceInfo_workers.length * 1000),
+        beat  : parseInt(this.serviceInfo_beat.reduce((acc, x)    => acc + x.uptime, 0) / this.serviceInfo_beat.length    * 1000),
+      }
+    },
+    serviceUptime_max() {
+      return {
+        server: Math.max.apply(null, this.serviceInfo_servers.map(x => x.uptime)) * 1000,
+        worker: Math.max.apply(null, this.serviceInfo_workers.map(x => x.uptime)) * 1000,
+        beat  : Math.max.apply(null, this.serviceInfo_beat.map(x => x.uptime))    * 1000,
+      }
+    },
+    serviceUptime_min() {
+      return {
+        server: Math.min.apply(null, this.serviceInfo_servers.map(x => x.uptime)) * 1000,
+        worker: Math.min.apply(null, this.serviceInfo_workers.map(x => x.uptime)) * 1000,
+        beat  : Math.min.apply(null, this.serviceInfo_beat.map(x => x.uptime))    * 1000,
+      }
+    },
   },
   props: {
   },
@@ -480,6 +527,8 @@ export default {
   mounted() {
     this.autoRefreshTimer = setInterval(() => {
       this.loadData([ 'serviceInfo', 'workerQueueInfo' ], { mute: true });
+      console.log(this.serviceInfo_servers)
+
     }, 5 * 1000);
   },
   beforeDestroy() {
@@ -554,6 +603,9 @@ export default {
 .service-group-collapsed {
   display: inline-block;
 }
+.service-group-collapsed .el-card {
+  height: 130px;
+}
 .service-group-rest {
   display: none;
 }
@@ -563,8 +615,8 @@ export default {
   display: inline-block;
   margin: 10px 0 10px 0;
   position: relative;
-  border: none;
-  box-shadow: none;
+  border: none !important;
+  box-shadow: none !important;
 }
 .service-group-count-text {
   font-size: 32px;
