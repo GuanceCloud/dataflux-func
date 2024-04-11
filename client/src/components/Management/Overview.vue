@@ -603,9 +603,6 @@ export default {
 .service-group-collapsed {
   display: inline-block;
 }
-.service-group-collapsed .el-card {
-  height: 130px;
-}
 .service-group-rest {
   display: none;
 }
