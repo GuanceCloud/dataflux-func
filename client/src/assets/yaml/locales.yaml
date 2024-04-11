@@ -142,6 +142,8 @@ en:
   Manage  : 管理
   Admin   : 管理
   Reset   : 复位
+  Expand  : 展开
+  Collapse: 收缩
   Restore Default: 恢复默认
   Check Update   : 检查更新
 
@@ -195,6 +197,8 @@ en:
   manage  : 管理
   admin   : 管理
   reset   : 复位
+  expand  : 展开
+  collapse: 收缩
   restore default: 恢复默认
   check update   : 检查更新
 

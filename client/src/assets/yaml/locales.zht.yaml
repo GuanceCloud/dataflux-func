@@ -64,6 +64,7 @@ zh-HK:
   Closed: 已關閉
   Code: 代碼
   Code Node: 代碼節點
+  Collapse: 收縮
   Comma separated string array: 逗號分隔字符串數組
   Complete User Profile for git committing: 補全用於 git 提交的用户信息
   Confirm: 確定
@@ -122,6 +123,7 @@ zh-HK:
   Error: 錯誤
   Example: 示例
   Exit: 退出
+  Expand: 展開
   Experimental Features: 實驗性功能
   Expire: 過期
   Export: 導出
@@ -357,6 +359,7 @@ zh-HK:
   clone: 克隆
   close: 關閉
   closed: 已關閉
+  collapse: 收縮
   copy: 複製
   create: 創建
   d: 天
@@ -373,6 +376,7 @@ zh-HK:
   enabled: 已啓用
   enter: 進入
   exit: 退出
+  expand: 展開
   export: 導出
   filter: 過濾
   git (HTTPS recommended): git（建議使用 HTTPS）
@@ -506,6 +510,7 @@ zh-TW:
   Closed: 已關閉
   Code: 程式碼
   Code Node: 程式碼節點
+  Collapse: 收縮
   Comma separated string array: 逗號分隔字串陣列
   Complete User Profile for git committing: 補全用於 git 提交的使用者資訊
   Confirm: 確定
@@ -564,6 +569,7 @@ zh-TW:
   Error: 錯誤
   Example: 示例
   Exit: 退出
+  Expand: 展開
   Experimental Features: 實驗性功能
   Expire: 過期
   Export: 匯出
@@ -799,6 +805,7 @@ zh-TW:
   clone: 克隆
   close: 關閉
   closed: 已關閉
+  collapse: 收縮
   copy: 複製
   create: 建立
   d: 天
@@ -815,6 +822,7 @@ zh-TW:
   enabled: 已啟用
   enter: 進入
   exit: 退出
+  expand: 展開
   export: 匯出
   filter: 過濾
   git (HTTPS recommended): git（建議使用 HTTPS）

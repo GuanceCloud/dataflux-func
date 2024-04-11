@@ -11,12 +11,16 @@ generalCount        : '{n} 个'
 generalCountUnit    : ' 个'
 recentOperationCount: 最近 {n} 条
 
+Expand All             : 展开所有服务
+Collapse And Categorize: 折叠并归类
+
 Overview         : 总览
 Services         : 服务
 Hostname         : 主机名
 Process ID       : 主机名
 Up Time          : 已运行
 Queues           : 队列
+Worker Queues    : 工作队列
 Worker           : 工作单元
 Process          : 工作进程
 Task             : 任务
@@ -40,10 +44,12 @@ Response         : 响应
 Biz Entity: 業務實體
 Client: 客户端
 Client ID: 客户端 ID
+Collapse And Categorize: 摺疊並歸類
 Cost: 耗時
 'Current browser-server time difference:': 當前瀏覽器與服務器時差：
 DELETE: 刪除操作
 Data ID: 數據 ID
+Expand All: 展開所有服務
 Hostname: 主機名
 IP Address: IP 地址
 Jam: 擁堵
@@ -60,6 +66,7 @@ Services: 服務
 Task: 任務
 Up Time: 已運行
 Worker: 工作單元
+Worker Queues: 工作隊列
 generalCount: '{n} 個'
 generalCountUnit: ' 個'
 recentOperationCount: 最近 {n} 條
@@ -68,10 +75,12 @@ recentOperationCount: 最近 {n} 條
 Biz Entity: 業務實體
 Client: 客戶端
 Client ID: 客戶端 ID
+Collapse And Categorize: 摺疊並歸類
 Cost: 耗時
 'Current browser-server time difference:': 當前瀏覽器與伺服器時差：
 DELETE: 刪除操作
 Data ID: 資料 ID
+Expand All: 展開所有服務
 Hostname: 主機名
 IP Address: IP 地址
 Jam: 擁堵
@@ -88,6 +97,7 @@ Services: 服務
 Task: 任務
 Up Time: 已執行
 Worker: 工作單元
+Worker Queues: 工作佇列
 generalCount: '{n} 個'
 generalCountUnit: ' 個'
 recentOperationCount: 最近 {n} 條
@@ -111,40 +121,56 @@ recentOperationCount: 最近 {n} 條
         </span>
 
         <el-divider content-position="left"><h1>{{ $t('Services') }} {{ $t('(') }}{{ $tc('generalCount', serviceInfo.length) }}{{ $t(')') }}</h1></el-divider>
-        <el-card
-          class="service-card"
-          shadow="hover"
-          v-for="service, i in serviceInfo"
-          :key="i">
-          <div class="service-info">
-            <span class="service-name">{{ service.name }}</span>
-            <table>
-              <tr :class>
-                <td>{{ $t('Hostname') }}</td>
-                <td>{{ $t(':') }}</td>
-                <td><code>{{ service.hostname }}</code></td>
-              </tr>
-              <tr :class>
-                <td>{{ $t('Process ID') }}</td>
-                <td>{{ $t(':') }}</td>
-                <td><code>{{ service.pid }}</code></td>
-              </tr>
-              <tr>
-                <td>{{ $t('Up Time') }}</td>
-                <td>{{ $t(':') }}</td>
-                <td>{{ T.duration(service.uptime * 1000) }}</td>
-              </tr>
-              <tr v-if="service.queues">
-                <td>{{ $t('Queues')}}</td>
-                <td>{{ $t(':') }}</td>
-                <td><code>{{ service.queues.map(q => `#${q}`).join(' ') }}</code></td>
-              </tr>
-            </table>
-            <div class="service-active">
-              <el-progress :percentage="service.activePercent" :format="serviceActiveFormat" :color="serviceActiveColor"></el-progress>
-            </div>
+        <div class="service-group-expand-button">
+          <el-link @click="serviceGroupCollapsed = !serviceGroupCollapsed">
+            <i class="fa" :class="`fa-chevron-${serviceGroupCollapsed ? 'left' : 'right'}`"></i><i class="fa" :class="`fa-chevron-${serviceGroupCollapsed ? 'right' : 'left'}`"></i>
+            {{ serviceGroupCollapsed ? $t('Expand All') : $t('Collapse And Categorize') }}
+          </el-link>
+        </div>
+        <template v-for="group in [ serviceInfo_servers, serviceInfo_workers, serviceInfo_beat]">
+          <div :class="{ 'service-group-collapsed': serviceGroupCollapsed }">
+            <el-card
+              class="service-card"
+              :class="{ 'service-group-rest': serviceGroupCollapsed && i > 0 }"
+              shadow="hover"
+              v-for="service, i in group" :key="i">
+              <div class="service-info">
+                <span class="service-name">{{ service.name }}</span>
+                <table>
+                  <tr :class>
+                    <td>{{ $t('Hostname') }}</td>
+                    <td>{{ $t(':') }}</td>
+                    <td><code>{{ service.hostname }}</code></td>
+                  </tr>
+                  <tr :class>
+                    <td>{{ $t('Process ID') }}</td>
+                    <td>{{ $t(':') }}</td>
+                    <td><code>{{ service.pid }}</code></td>
+                  </tr>
+                  <tr>
+                    <td>{{ $t('Up Time') }}</td>
+                    <td>{{ $t(':') }}</td>
+                    <td>{{ T.duration(service.uptime * 1000) }}</td>
+                  </tr>
+                  <tr v-if="service.queues">
+                    <td>{{ $t('Queues')}}</td>
+                    <td>{{ $t(':') }}</td>
+                    <td><code>{{ service.queues.map(q => `#${q}`).join(' ') }}</code></td>
+                  </tr>
+                </table>
+                <div class="service-active">
+                  <el-progress :percentage="service.activePercent" :format="serviceActiveFormat" :color="serviceActiveColor"></el-progress>
+                </div>
+              </div>
+            </el-card>
+            <el-card v-if="group.length > 0 && serviceGroupCollapsed" class="service-group-count">
+              <span class="service-group-count-text">
+                &times;
+                {{ group.length }}
+              </span>
+            </el-card>
           </div>
-        </el-card>
+        </template>
 
         <el-divider content-position="left"><h1>{{ $t('Worker Queues') }}</h1></el-divider>
         <el-card
@@ -426,12 +452,22 @@ export default {
         { color: '#ff0000', percentage: 100 }
       ];
     },
+    serviceInfo_servers() {
+      return this.serviceInfo.filter(s => s.name === 'server');
+    },
+    serviceInfo_workers() {
+      return this.serviceInfo.filter(s => s.name === 'worker');
+    },
+    serviceInfo_beat() {
+      return this.serviceInfo.filter(s => s.name === 'beat');
+    },
   },
   props: {
   },
   data() {
     return {
       browserServerTimeDiff: 0,
+      serviceGroupCollapsed: true,
 
       workerQueueInfo : [],
       serviceInfo     : [],
@@ -512,6 +548,31 @@ export default {
   white-space: nowrap;
 }
 
+.service-group-expand-button {
+  margin-left: 10px;
+}
+.service-group-collapsed {
+  display: inline-block;
+}
+.service-group-rest {
+  display: none;
+}
+.service-group-count {
+  width: 100px;
+  height: 160px;
+  display: inline-block;
+  margin: 10px 0 10px 0;
+  position: relative;
+  border: none;
+  box-shadow: none;
+}
+.service-group-count-text {
+  font-size: 32px;
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+}
+
 .biz-entity-card {
   width: 330px;
   height: 200px;
@@ -566,7 +627,8 @@ export default {
 }
 
 .worker-queue-card .el-card__body,
-.service-card .el-card__body {
+.service-card .el-card__body,
+.service-group-count .el-card__body {
   display: flex;
   justify-content: space-between;
   align-items: center;
