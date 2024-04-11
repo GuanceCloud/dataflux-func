@@ -14,8 +14,9 @@ recentOperationCount: 最近 {n} 条
 Overview         : 总览
 Services         : 服务
 Hostname         : 主机名
-Up Time          : 运行时长
-Worker Queues    : 工作队列
+Process ID       : 主机名
+Up Time          : 已运行
+Queues           : 队列
 Worker           : 工作单元
 Process          : 工作进程
 Task             : 任务
@@ -50,14 +51,15 @@ MODIFY: 修改操作
 Operation: 操作
 Overview: 總覽
 Process: 工作進程
+Process ID: 主機名
+Queues: 隊列
 Recent operations: 最近操作記錄
 Request: 請求
 Response: 響應
 Services: 服務
 Task: 任務
-Up Time: 運行時長
+Up Time: 已運行
 Worker: 工作單元
-Worker Queues: 工作隊列
 generalCount: '{n} 個'
 generalCountUnit: ' 個'
 recentOperationCount: 最近 {n} 條
@@ -77,14 +79,15 @@ MODIFY: 修改操作
 Operation: 操作
 Overview: 總覽
 Process: 工作程序
+Process ID: 主機名
+Queues: 佇列
 Recent operations: 最近操作記錄
 Request: 請求
 Response: 響應
 Services: 服務
 Task: 任務
-Up Time: 執行時長
+Up Time: 已執行
 Worker: 工作單元
-Worker Queues: 工作佇列
 generalCount: '{n} 個'
 generalCountUnit: ' 個'
 recentOperationCount: 最近 {n} 條
@@ -119,7 +122,12 @@ recentOperationCount: 最近 {n} 條
               <tr :class>
                 <td>{{ $t('Hostname') }}</td>
                 <td>{{ $t(':') }}</td>
-                <td><code>{{ service.hostname }} (PID: {{ service.pid }})</code></td>
+                <td><code>{{ service.hostname }}</code></td>
+              </tr>
+              <tr :class>
+                <td>{{ $t('Process ID') }}</td>
+                <td>{{ $t(':') }}</td>
+                <td><code>{{ service.pid }}</code></td>
               </tr>
               <tr>
                 <td>{{ $t('Up Time') }}</td>
@@ -127,7 +135,7 @@ recentOperationCount: 最近 {n} 條
                 <td>{{ T.duration(service.uptime * 1000) }}</td>
               </tr>
               <tr v-if="service.queues">
-                <td>{{ $t('Worker Queues')}}</td>
+                <td>{{ $t('Queues')}}</td>
                 <td>{{ $t(':') }}</td>
                 <td><code>{{ service.queues.map(q => `#${q}`).join(' ') }}</code></td>
               </tr>
@@ -455,7 +463,7 @@ export default {
 }
 
 .worker-queue-card {
-  width: 280px;
+  width: 300px;
   height: 150px;
   display: inline-block;
   margin: 10px 10px;
@@ -475,8 +483,8 @@ export default {
 }
 
 .service-card {
-  width: 320px;
-  height: 145px;
+  width: 300px;
+  height: 160px;
   display: inline-block;
   margin: 10px 10px;
   position: relative;
