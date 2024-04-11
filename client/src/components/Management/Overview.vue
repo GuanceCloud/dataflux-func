@@ -132,7 +132,7 @@ recentOperationCount: 最近 {n} 條
         <el-divider content-position="left"><h1>{{ $t('Services') }} {{ $t('(') }}{{ $tc('generalCount', serviceInfo.length) }}{{ $t(')') }}</h1></el-divider>
         <div class="service-group-expand-button">
           <el-link @click="serviceGroupCollapsed = !serviceGroupCollapsed">
-            <i class="fa fa-angle-left" :class="{ 'fa-flip-horizontal': serviceGroupCollapsed }"></i><i class="fa fa-angle-left" :class="{ 'fa-flip-horizontal': !serviceGroupCollapsed }" style="margin-left: 2px;"></i>
+            <i class="fa fa-angle-left" :class="{ 'fa-flip-horizontal': !serviceGroupCollapsed }"></i><i class="fa fa-angle-left" :class="{ 'fa-flip-horizontal': serviceGroupCollapsed }" style="margin-left: 2px;"></i>
             {{ serviceGroupCollapsed ? $t('Expand All') : $t('Collapse And Categorize') }}
           </el-link>
         </div>
