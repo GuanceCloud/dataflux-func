@@ -610,7 +610,7 @@ export default {
   width: 100px;
   height: 160px;
   display: inline-block;
-  margin: 10px 0 10px 0;
+  margin: 10px 30px 10px -10px;
   position: relative;
   border: none !important;
   box-shadow: none !important;
