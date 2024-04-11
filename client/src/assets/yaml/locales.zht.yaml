@@ -158,6 +158,7 @@ zh-HK:
   Get SHA1: 獲取 SHA1
   Get SHA256: 獲取 SHA256
   Get SHA512: 獲取 SHA512
+  Going Offline: 即將離線
   Guance: 觀測雲
   Guance DataKit (HTTP): 觀測雲 DataKit (HTTP)
   Guance DataWay (HTTP): 觀測雲 DataWay (HTTP)
@@ -393,11 +394,16 @@ zh-HK:
   more: 更多
   move: 移動
   ms: 毫秒
+  nD: '{n} 天'
   nDays: '{n} 天'
+  nH: '{n} 小時'
   nHours: '{n} 小時'
+  nM: '{n} 分鐘'
   nMinutes: '{n} 分鐘'
   nMonths: '{n} 月'
+  nS: '{n} 秒'
   nSeconds: '{n} 秒'
+  nY: '{n} 年'
   nYears: '{n} 年'
   open: 打開
   opened: 已打開
@@ -594,6 +600,7 @@ zh-TW:
   Get SHA1: 獲取 SHA1
   Get SHA256: 獲取 SHA256
   Get SHA512: 獲取 SHA512
+  Going Offline: 即將離線
   Guance: 觀測雲
   Guance DataKit (HTTP): 觀測雲 DataKit (HTTP)
   Guance DataWay (HTTP): 觀測雲 DataWay (HTTP)
@@ -829,11 +836,16 @@ zh-TW:
   more: 更多
   move: 移動
   ms: 毫秒
+  nD: '{n} 天'
   nDays: '{n} 天'
+  nH: '{n} 小時'
   nHours: '{n} 小時'
+  nM: '{n} 分鐘'
   nMinutes: '{n} 分鐘'
   nMonths: '{n} 月'
+  nS: '{n} 秒'
   nSeconds: '{n} 秒'
+  nY: '{n} 年'
   nYears: '{n} 年'
   open: 開啟
   opened: 已開啟

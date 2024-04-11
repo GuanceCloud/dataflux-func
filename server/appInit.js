@@ -193,8 +193,8 @@ exports.afterServe = function(app, server) {
     }
 
     var serviceInfo = {
-        name: serviceName,
-        args: process.argv.slice(2),
+        name  : serviceName,
+        uptime: toolkit.sysUpTime(),
     }
     var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'serviceInfo', [ 'hostname', hostname, 'pid', process.pid ]);
     var expires  = parseInt(CONFIG._MONITOR_REPORT_INTERVAL * 3);

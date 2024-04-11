@@ -59,17 +59,17 @@ Stay Here: 留在本页
 
 Script Set Installed Successfully!: 成功安装脚本集！
 
-This Script Set requires 3rd party Python packages                 : 本脚本集依赖第三方 Python 包
-Go to PIP Tool                                                     : 前往 PIP 工具
-This Script Set includes a Startup Script                          : 本脚本集包含启动脚本（Startup）
-'This Script Set includes a Startup Script with following configs:': 本脚本集包含启动脚本（Startup）及如下配置项目：
-Deploy Startup Script                                              : 部署启动脚本
-Deploy Crontab Config                                              : 部署自动触发配置
-Startup Script is deployed                                         : 启动脚本已部署
-Crontab Config is deployed                                         : 自动触发配置已部署
-Crontab Config is not deployed yet                                 : 自动触发配置尚未部署
-Go to Startup Script                                               : 前往启动脚本
-Go to the Crontab Config                                           : 前往自动触发配置
+This Script Set requires 3rd party Python packages                                                          : 本脚本集依赖第三方 Python 包
+Go to PIP Tool                                                                                              : 前往 PIP 工具
+This Script Set includes an example which can be used for deploying Startup Script                          : 本脚本集包含示例，可部署为启动脚本
+'This Script Set includes an example which can be used for deploying Startup Script with following configs:': 本脚本集包含示例，可部署为启动脚本，并包含以下配置项目：
+Deploy Startup Script                                                                                       : 部署启动脚本
+Deploy Crontab Config                                                                                       : 部署自动触发配置
+Startup Script is deployed                                                                                  : 启动脚本已部署
+Crontab Config is deployed                                                                                  : 自动触发配置已部署
+Crontab Config is not deployed yet                                                                          : 自动触发配置尚未部署
+Go to Startup Script                                                                                        : 前往启动脚本
+Go to the Crontab Config                                                                                    : 前往自动触发配置
 
 The published Script Set will be shown here, you can find and install the ones you need: 发布后的脚本集将在此展示，可以查找并安装需要的脚本集
 
@@ -140,8 +140,8 @@ Stay Here: 留在本頁
 The published Script Set will be shown here, you can find and install the ones you need: 發佈後的腳本集將在此展示，可以查找並安裝需要的腳本集
 This Script Market is locked by other user ({user}): 當前腳本市場已被其他用户（{user}）鎖定
 This Script Market is locked by you: 當前腳本市場已被您鎖定
-This Script Set includes a Startup Script: 本腳本集包含啓動腳本（Startup）
-'This Script Set includes a Startup Script with following configs:': 本腳本集包含啓動腳本（Startup）及如下配置項目：
+This Script Set includes an example which can be used for deploying Startup Script: 本腳本集包含示例，可部署為啓動腳本
+'This Script Set includes an example which can be used for deploying Startup Script with following configs:': 本腳本集包含示例，可部署為啓動腳本，幷包含以下配置項目：
 'This Script Set is edited locally, you can:': 此腳本集已在本地被修改，您可以：
 'This Script Set is not from current Script Market, you can:': 此腳本集並非來自【當前】腳本市場，您可以：
 This Script Set requires 3rd party Python packages: 本腳本集依賴第三方 Python 包
@@ -205,8 +205,8 @@ Stay Here: 留在本頁
 The published Script Set will be shown here, you can find and install the ones you need: 釋出後的指令碼集將在此展示，可以查詢並安裝需要的指令碼集
 This Script Market is locked by other user ({user}): 當前指令碼市場已被其他使用者（{user}）鎖定
 This Script Market is locked by you: 當前指令碼市場已被您鎖定
-This Script Set includes a Startup Script: 本指令碼集包含啟動指令碼（Startup）
-'This Script Set includes a Startup Script with following configs:': 本指令碼集包含啟動指令碼（Startup）及如下配置專案：
+This Script Set includes an example which can be used for deploying Startup Script: 本指令碼集包含示例，可部署為啟動指令碼
+'This Script Set includes an example which can be used for deploying Startup Script with following configs:': 本指令碼集包含示例，可部署為啟動指令碼，幷包含以下配置專案：
 'This Script Set is edited locally, you can:': 此指令碼集已在本地被修改，您可以：
 'This Script Set is not from current Script Market, you can:': 此指令碼集並非來自【當前】指令碼市場，您可以：
 This Script Set requires 3rd party Python packages: 本指令碼集依賴第三方 Python 包
@@ -562,10 +562,10 @@ Upgrade Script Set: 升級指令碼集
               </p>
               <p v-else>
                 <template v-if="T.isNothing(deployment.configFields)">
-                  {{ $t('This Script Set includes a Startup Script') }}
+                  {{ $t('This Script Set includes an example which can be used for deploying Startup Script') }}
                 </template>
                 <template v-else>
-                  {{ $t('This Script Set includes a Startup Script with following configs:') }}
+                  {{ $t('This Script Set includes an example which can be used for deploying Startup Script with following configs:') }}
                   <el-form :model="configReplacerForm" size="small">
                     <el-form-item v-for="f in deployment.configFields" :key="f">
                       <label v-html="renderMarkdown(getTranslation(f))"></label>

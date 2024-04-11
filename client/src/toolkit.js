@@ -782,7 +782,16 @@ export function fromNow(d) {
 export function duration(d, humanized) {
   let uiLocale = getUILocale();
   let duration = moment.duration(d).locale(uiLocale);
-  return humanized ? duration.humanize() : duration;
+  if (humanized) {
+    return duration.humanize();
+  } else {
+    var parts = [];
+    [ 'y', 'd', 'h', 'm', 's' ].forEach(t => {
+      let v = duration.get(t);
+      if (v) parts.push(i18n.tc(`n${t.toUpperCase()}`, v));
+    });
+    return parts.join(' ');
+  }
 };
 
 export function getTimeDiff(from, to, humanized) {

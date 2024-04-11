@@ -717,6 +717,7 @@ p.form-item {
   color: red !important;
   border-color: red !important;
 }
+
 .text-main {
   color: #FF6600 !important;
   /* text-shadow: #ffa5004d 0 0 10px; */
@@ -740,6 +741,7 @@ p.form-item {
 .text-bad-fade {
   color: rgb(255,0,0,.5) !important;
 }
+
 .text-small {
   font-size: small;
 }
@@ -1074,7 +1076,6 @@ kbd {
   margin-bottom: 35px !important;
 }
 .el-divider--horizontal h1 {
-  font-style: italic;
   font-weight: normal;
 }
 

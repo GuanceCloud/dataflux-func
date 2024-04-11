@@ -66,6 +66,9 @@ def exception_text(e):
 def sys_start_time():
     return SYS_START_TIME
 
+def sys_up_time():
+    return int(time.time()) - SYS_START_TIME
+
 def sys_exit_ok():
     sys.exit(0)
 

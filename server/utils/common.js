@@ -203,7 +203,7 @@ common.getScriptSetMD5 = function(scriptSet, scripts) {
     });
   }
 
-  var strToMD5 = sortedJSON.sortify(dataToMD5, { stringify: true, sortArray: false});
+  var strToMD5 = sortedJSON.sortify(dataToMD5, { stringify: true });
   var md5 = toolkit.getMD5(strToMD5);
 
   return md5;

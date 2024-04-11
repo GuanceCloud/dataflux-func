@@ -525,7 +525,7 @@ router.all('*', function prepareFunctionalComponents(req, res, next) {
 
     var renderMD5 = null;
     if (options.isStatic) {
-      renderMD5 = view + '-' + sortedJSON.sortify(toolkit.jsonCopy(pageData), {stringify: true, sortArray: false});
+      renderMD5 = view + '-' + sortedJSON.sortify(toolkit.jsonCopy(pageData), {stringify: true});
 
       if (STATIC_RENDER_LRU.get(renderMD5)) {
         res.type('html');

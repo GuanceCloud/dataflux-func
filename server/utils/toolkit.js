@@ -54,6 +54,10 @@ var sysStartTime = toolkit.sysStartTime = function sysStartTime() {
   return SYS_START_TIME;
 };
 
+var sysUpTime = toolkit.sysUpTime = function sysUpTime() {
+  return parseInt(Date.now() / 1000) - SYS_START_TIME;
+};
+
 var sysExitOK = toolkit.sysExitOK = function sysExitOK() {
   process.exit(0);
 };
@@ -924,7 +928,7 @@ var getISO8601 = toolkit.getISO8601 = function getISO8601(d) {
  */
 var getHash = toolkit.getHash = function getHash(str, algorithm) {
   if ('string' !== typeof str) {
-    str = sortedJSON.sortify(str, { stringify: true, sortArray: false});
+    str = sortedJSON.sortify(str, { stringify: true });
   }
 
   algorithm = algorithm || 'sha256';

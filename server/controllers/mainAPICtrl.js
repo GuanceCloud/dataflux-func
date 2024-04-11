@@ -210,7 +210,7 @@ function createFuncRunnerTaskReq(locals, options, callback) {
       var cacheResult = parseInt(func.extraConfigJSON.cacheResult) || false;
 
       if (cacheResult) {
-        var funcCallKwargsDump = sortedJSON.sortify(options.funcCallKwargs, { stringify: true, sortArray: false});
+        var funcCallKwargsDump = sortedJSON.sortify(options.funcCallKwargs, { stringify: true });
         var funcCallKwargsMD5  = toolkit.getMD5(funcCallKwargsDump);
 
         taskReq.kwargs.cacheResult = cacheResult;
@@ -979,7 +979,7 @@ exports.overview = function(req, res, next) {
   var overview = {
     serviceInfo     : [],
     workerQueueInfo : [],
-    bizEntityCount  : [],
+    bizEntityInfo   : [],
     latestOperations: [],
   };
 
@@ -989,21 +989,6 @@ exports.overview = function(req, res, next) {
   var nonScriptSetOrigins                      = [];
   var nonScriptSetOriginIds                    = [];
   async.series([
-    // 获取运行中服务列表
-    function(asyncCallback) {
-      var cacheKeyPattern = toolkit.getMonitorCacheKey('heartbeat', 'serviceInfo', [ 'hostname', '*', 'pid', '*' ]);
-      res.locals.cacheDB.keys(cacheKeyPattern, function(err, keys) {
-        if (err) return asyncCallback(err);
-
-        async.each(keys, function(key, eachCallback) {
-          res.locals.cacheDB.getWithTTL(key, function(err, cacheRes) {
-            if (err) return eachCallback(err);
-
-
-          })
-        })
-      });
-    },
     // 获取系统配置
     function(asyncCallback) {
       var keys = [
@@ -1032,6 +1017,53 @@ exports.overview = function(req, res, next) {
         return asyncCallback();
       });
     },
+    // 获取运行中服务列表
+    function(asyncCallback) {
+      if (sectionMap && !sectionMap.serviceInfo) return asyncCallback();
+
+      var cacheKeyPattern = toolkit.getMonitorCacheKey('heartbeat', 'serviceInfo', [ 'hostname', '*', 'pid', '*' ]);
+      res.locals.cacheDB.keys(cacheKeyPattern, function(err, keys) {
+        if (err) return asyncCallback(err);
+
+        async.each(keys, function(key, eachCallback) {
+          res.locals.cacheDB.getWithTTL(key, function(err, cacheRes) {
+            if (err) return eachCallback(err);
+
+            var parsedKey = toolkit.parseCacheKey(key);
+            overview.serviceInfo.push({
+              hostname: parsedKey.tags.hostname,
+              pid     : parsedKey.tags.pid,
+              uptime  : cacheRes.value.uptime,
+              name    : cacheRes.value.name,
+              queues  : cacheRes.value.queues,
+              ttl     : cacheRes.ttl,
+            });
+
+            return eachCallback();
+          });
+        }, function(err) {
+          if (err) return asyncCallback(err);
+
+          var serviceOrder = [ 'server', 'worker', 'beat' ];
+          overview.serviceInfo.sort(function(a, b) {
+            var serviceOrder_a = serviceOrder.indexOf(a.name);
+            var serviceOrder_b = serviceOrder.indexOf(b.name);
+
+            if (serviceOrder_a < serviceOrder_b) return -1;
+            else if (serviceOrder_a > serviceOrder_b) return 1;
+            else
+              if (a.hostname < b.hostname) return -1;
+              else if (a.hostname > b.hostname) return 1;
+              else
+                if (a.ttl > b.ttl) return -1;
+                else if (a.ttl < b.ttl) return 1;
+                else return 0
+          });
+
+          return asyncCallback();
+        });
+      });
+    },
     // 各队列工作单元数量、工作进程数量、队列长度
     function(asyncCallback) {
       if (sectionMap && !sectionMap.workerQueueInfo) return asyncCallback();
@@ -1045,8 +1077,7 @@ exports.overview = function(req, res, next) {
 
         async.series([
           function(eachCallback) {
-            var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'workerCountOnQueue', [
-                  'workerQueue', i]);
+            var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'workerCountOnQueue', [ 'workerQueue', i ]);
             res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
               if (err) return eachCallback(err);
 
@@ -1057,8 +1088,7 @@ exports.overview = function(req, res, next) {
             }, eachCallback);
           },
           function(eachCallback) {
-            var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'processCountOnQueue', [
-                  'workerQueue', i]);
+            var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'processCountOnQueue', [ 'workerQueue', i ]);
             res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
               if (err) return eachCallback(err);
 
@@ -1083,7 +1113,7 @@ exports.overview = function(req, res, next) {
     },
     // 业务实体计数
     function(asyncCallback) {
-      if (sectionMap && !sectionMap.bizEntityCount) return asyncCallback();
+      if (sectionMap && !sectionMap.bizEntityInfo) return asyncCallback();
 
       async.eachSeries(bizEntityMeta, function(meta, eachCallback) {
         var opt       = null;
@@ -1159,7 +1189,7 @@ exports.overview = function(req, res, next) {
         meta.model._list(opt, function(err, dbRes) {
           if (err) return eachCallback(err);
 
-          overview.bizEntityCount.push({
+          overview.bizEntityInfo.push({
             name        : meta.name,
             count       : dbRes[0].count,
             countEnabled: dbRes[0].countEnabled || undefined,
