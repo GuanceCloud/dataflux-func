@@ -34,7 +34,8 @@ class PreviousTaskNotFinished(Exception):
     def __init__(self, *args, **kwargs):
         super().__init__('Previous task not finished, skip current task')
 
-class TaskTimeout(Exception):
+class TaskTimeout(BaseException):
+    # NOTE 为了保证任务超时错误不会被 try ... except Exception 捕获，TaskTimeout 需要继承 BaseException 类
     def __init__(self, *args, **kwargs):
         super().__init__('Task execution takes too much time and has been interrupted by force')
 

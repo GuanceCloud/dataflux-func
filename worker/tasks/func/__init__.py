@@ -1967,8 +1967,10 @@ class FuncBaseTask(BaseTask):
         # 添加内置对象 / 函数
         safe_scope['__builtins__'] = {}
         for name in dir(six.moves.builtins):
-            # 跳过内置 import 函数，后续替换为 custom_import 函数
-            if name == 'import':
+            # 跳过：
+            # 内置 import 函数，后续替换为 custom_import 函数
+            # BaseException 类，避免用户代码越过系统限制
+            if name in ('import', 'BaseException'):
                 continue
 
             safe_scope['__builtins__'][name] = six.moves.builtins.__getattribute__(name)
