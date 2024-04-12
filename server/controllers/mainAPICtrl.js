@@ -1049,11 +1049,14 @@ exports.overview = function(req, res, next) {
             var serviceOrder_a = serviceOrder.indexOf(a.name);
             var serviceOrder_b = serviceOrder.indexOf(b.name);
 
+            var queueDumps_a = toolkit.jsonDumps(a.queues || []);
+            var queueDumps_b = toolkit.jsonDumps(b.queues || []);
+
             if (serviceOrder_a < serviceOrder_b) return -1;
             else if (serviceOrder_a > serviceOrder_b) return 1;
             else
-              if (a.hostname < b.hostname) return -1;
-              else if (a.hostname > b.hostname) return 1;
+              if (queueDumps_a < queueDumps_b) return -1;
+              else if (queueDumps_a > queueDumps_b) return 1;
               else
                 if (a.ttl > b.ttl) return -1;
                 else if (a.ttl < b.ttl) return 1;

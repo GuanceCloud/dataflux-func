@@ -75,7 +75,7 @@ def heartbeat():
         }
 
         if service_name == 'worker':
-            service_info['queues'] = sys.argv[1:]
+            service_info['queues'] = sorted(sys.argv[1:])
 
         cache_key = toolkit.get_monitor_cache_key('heartbeat', 'serviceInfo', tags=[ 'hostname', hostname, 'pid', os.getpid() ])
         REDIS.setex(cache_key, monitor_report_expires, toolkit.json_dumps(service_info))
