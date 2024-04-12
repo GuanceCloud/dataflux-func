@@ -149,17 +149,17 @@ recentOperationCount: 最近 {n} 條
                   <tr v-if="serviceGroupCollapsed && group.length > 1">
                     <td>{{ $t('Up Time') }}</td>
                     <td>{{ $t(':') }}</td>
-                    <td><code>AVG {{ T.duration(serviceGroupUptime_avg[service.name]) }}</code></td>
+                    <td><code>AVG. {{ T.duration(serviceGroupUptime_avg[service.name]) }}</code></td>
                   </tr>
                   <tr v-if="serviceGroupCollapsed && group.length > 1">
                     <td></td>
                     <td></td>
-                    <td><code>MIN {{ T.duration(serviceGroupUptime_min[service.name]) }}</code></td>
+                    <td><code>MIN. {{ T.duration(serviceGroupUptime_min[service.name]) }}</code></td>
                   </tr>
                   <tr v-if="serviceGroupCollapsed && group.length > 1">
                     <td></td>
                     <td></td>
-                    <td><code>MAX {{ T.duration(serviceGroupUptime_max[service.name]) }}</code></td>
+                    <td><code>MAX. {{ T.duration(serviceGroupUptime_max[service.name]) }}</code></td>
                   </tr>
                   <tr v-if="serviceGroupCollapsed && service.name === 'worker'">
                     <td>{{ $t('Queues')}}</td>
