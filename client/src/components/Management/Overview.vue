@@ -136,7 +136,7 @@ recentOperationCount: 最近 {n} 條
             {{ serviceGroupCollapsed ? $t('Expand All') : $t('Collapse And Categorize') }}
           </el-link>
         </div>
-        <template v-for="group in [ serviceInfo_servers, serviceInfo_workers, serviceInfo_beat]">
+        <template v-for="group in [ serviceGroup_servers, serviceGroup_workers, serviceGroup_beat]">
           <div :class="{ 'service-group-collapsed': serviceGroupCollapsed }">
             <el-card
               class="service-card"
@@ -147,19 +147,24 @@ recentOperationCount: 最近 {n} 條
                 <span class="service-name">{{ service.name }}</span>
                 <table>
                   <tr v-if="serviceGroupCollapsed && group.length > 1">
-                    <td>{{ $t('Up Time AVG') }}</td>
+                    <td>{{ $t('Up Time') }}</td>
                     <td>{{ $t(':') }}</td>
-                    <td>{{ T.duration(serviceUptime_avg[service.name]) }}</td>
+                    <td><code>AVG {{ T.duration(serviceGroupUptime_avg[service.name]) }}</code></td>
                   </tr>
                   <tr v-if="serviceGroupCollapsed && group.length > 1">
-                    <td>{{ $t('Up Time MAX') }}</td>
-                    <td>{{ $t(':') }}</td>
-                    <td>{{ T.duration(serviceUptime_max[service.name]) }}</td>
+                    <td></td>
+                    <td></td>
+                    <td><code>MIN {{ T.duration(serviceGroupUptime_min[service.name]) }}</code></td>
                   </tr>
                   <tr v-if="serviceGroupCollapsed && group.length > 1">
-                    <td>{{ $t('Up Time MIN') }}</td>
+                    <td></td>
+                    <td></td>
+                    <td><code>MAX {{ T.duration(serviceGroupUptime_max[service.name]) }}</code></td>
+                  </tr>
+                  <tr v-if="serviceGroupCollapsed && service.name === 'worker'">
+                    <td>{{ $t('Queues')}}</td>
                     <td>{{ $t(':') }}</td>
-                    <td>{{ T.duration(serviceUptime_min[service.name]) }}</td>
+                    <td><code>{{ serviceGroupQueues.map(q => `#${q}`).join(' ') }}</code></td>
                   </tr>
 
                   <tr v-if="!serviceGroupCollapsed">
@@ -175,7 +180,7 @@ recentOperationCount: 最近 {n} 條
                   <tr v-if="!serviceGroupCollapsed || group.length === 1">
                     <td>{{ $t('Up Time') }}</td>
                     <td>{{ $t(':') }}</td>
-                    <td>{{ T.duration(service.uptime * 1000) }}</td>
+                    <td><code>{{ T.duration(service.uptime * 1000) }}</code></td>
                   </tr>
                   <tr v-if="!serviceGroupCollapsed && service.queues">
                     <td>{{ $t('Queues')}}</td>
@@ -478,35 +483,42 @@ export default {
         { color: '#ff0000', percentage: 100 }
       ];
     },
-    serviceInfo_servers() {
+    serviceGroup_servers() {
       return this.serviceInfo.filter(s => s.name === 'server');
     },
-    serviceInfo_workers() {
+    serviceGroup_workers() {
       return this.serviceInfo.filter(s => s.name === 'worker');
     },
-    serviceInfo_beat() {
+    serviceGroup_beat() {
       return this.serviceInfo.filter(s => s.name === 'beat');
     },
-    serviceUptime_avg() {
+    serviceGroupUptime_avg() {
       return {
-        server: parseInt(this.serviceInfo_servers.reduce((acc, x) => acc + x.uptime, 0) / this.serviceInfo_servers.length * 1000),
-        worker: parseInt(this.serviceInfo_workers.reduce((acc, x) => acc + x.uptime, 0) / this.serviceInfo_workers.length * 1000),
-        beat  : parseInt(this.serviceInfo_beat.reduce((acc, x)    => acc + x.uptime, 0) / this.serviceInfo_beat.length    * 1000),
+        server: parseInt(this.serviceGroup_servers.reduce((acc, x) => acc + x.uptime, 0) / this.serviceGroup_servers.length * 1000),
+        worker: parseInt(this.serviceGroup_workers.reduce((acc, x) => acc + x.uptime, 0) / this.serviceGroup_workers.length * 1000),
+        beat  : parseInt(this.serviceGroup_beat.reduce((acc, x)    => acc + x.uptime, 0) / this.serviceGroup_beat.length    * 1000),
       }
     },
-    serviceUptime_max() {
+    serviceGroupUptime_min() {
       return {
-        server: Math.max.apply(null, this.serviceInfo_servers.map(x => x.uptime)) * 1000,
-        worker: Math.max.apply(null, this.serviceInfo_workers.map(x => x.uptime)) * 1000,
-        beat  : Math.max.apply(null, this.serviceInfo_beat.map(x => x.uptime))    * 1000,
+        server: Math.min.apply(null, this.serviceGroup_servers.map(x => x.uptime)) * 1000,
+        worker: Math.min.apply(null, this.serviceGroup_workers.map(x => x.uptime)) * 1000,
+        beat  : Math.min.apply(null, this.serviceGroup_beat.map(x => x.uptime))    * 1000,
       }
     },
-    serviceUptime_min() {
+    serviceGroupUptime_max() {
       return {
-        server: Math.min.apply(null, this.serviceInfo_servers.map(x => x.uptime)) * 1000,
-        worker: Math.min.apply(null, this.serviceInfo_workers.map(x => x.uptime)) * 1000,
-        beat  : Math.min.apply(null, this.serviceInfo_beat.map(x => x.uptime))    * 1000,
+        server: Math.max.apply(null, this.serviceGroup_servers.map(x => x.uptime)) * 1000,
+        worker: Math.max.apply(null, this.serviceGroup_workers.map(x => x.uptime)) * 1000,
+        beat  : Math.max.apply(null, this.serviceGroup_beat.map(x => x.uptime))    * 1000,
       }
+    },
+    serviceGroupQueues() {
+      let queues = this.serviceGroup_workers.reduce((acc, x) => acc.concat(x.queues || []), [])
+      queues = this.T.noDuplication(queues);
+      queues.sort();
+
+      return queues;
     },
   },
   props: {
@@ -527,7 +539,7 @@ export default {
   mounted() {
     this.autoRefreshTimer = setInterval(() => {
       this.loadData([ 'serviceInfo', 'workerQueueInfo' ], { mute: true });
-      console.log(this.serviceInfo_servers)
+      console.log(this.serviceGroup_servers)
 
     }, 5 * 1000);
   },
