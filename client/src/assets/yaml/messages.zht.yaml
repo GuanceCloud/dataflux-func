@@ -101,6 +101,7 @@ zh-HK:
   Sign-in function timeout: 登錄函數超時
   Socket.io connection gone: Socket.io 連接已斷開
   Specified new file or folder name already existed: 指定的新文件名或目錄名已存在
+  Startup Script deploying failed, Please contact the author: 啓動腳本部署失敗，請聯繫作者
   This Auth Link is already expired: 此授權鏈接已過期
   This Auth Link is disabled: 此授權鏈接已被禁用
   This Batch is disabled: 此批處理已被禁用
@@ -222,6 +223,7 @@ zh-TW:
   Sign-in function timeout: 登入函式超時
   Socket.io connection gone: Socket.io 連線已斷開
   Specified new file or folder name already existed: 指定的新檔名或目錄名已存在
+  Startup Script deploying failed, Please contact the author: 啟動指令碼部署失敗，請聯絡作者
   This Auth Link is already expired: 此授權連結已過期
   This Auth Link is disabled: 此授權連結已被禁用
   This Batch is disabled: 此批處理已被禁用

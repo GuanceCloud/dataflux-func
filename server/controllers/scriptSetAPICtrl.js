@@ -732,7 +732,11 @@ function doDeploy(locals, scriptSetId, options, callback) {
         if (err) return asyncCallback(err);
 
         if (taskResp.result.status === 'failure') {
-          return asyncCallback(new E('EStartupScriptDeployFailed', 'Startup Script deploying failed. Please contact the author', taskResp));
+          return asyncCallback(new E('EStartupScriptDeployFailed', 'Startup Script deploying failed, Please contact the author', {
+            // 部署错误时，提取具体 exception, traceback
+            exception: taskResp.result && taskResp.result.exception,
+            traceback: taskResp.result && taskResp.result.traceback,
+        }));
         }
 
         nextAPIFuncs = taskResp.result.apiFuncs;
