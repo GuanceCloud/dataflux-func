@@ -233,29 +233,29 @@ if [ `command -v docker` ]; then
     CURR_DOCKER_VERSION=`docker --version | grep -Eo '[0-9]+\.[0-9]+\.[0-9]'`
     if [ ${CURR_DOCKER_VERSION} != ${__DOCKER_VERSION} ]; then
         log ""
-        log "The current version of the DataFlux Func requires another version of Docker"
+        log "The current version of the DataFlux Func prefers another version of Docker"
         log "  Current Docker (docker --version):"
         log "    -> ${CURR_DOCKER_VERSION}"
-        log "  DataFlux Func requires:"
+        log "  DataFlux Func prefers:"
         log "    -> ${__DOCKER_VERSION} "
 
 
         if [ ${OPT_AUTO_SETUP} = "TRUE" ]; then
-            ACTION="upgrade"
+            ACTION="reinstall"
 
         else
             log ""
-            log "Upgrading Docker will stop the docker service and shut down all running containers, this will make your service unavailable!"
+            log "Reinstalling Docker will stop the docker service and shut down all running containers, this will make all your service unavailable!"
             log ""
-            log "Do you want to upgrade the Docker from ${CURR_DOCKER_VERSION} to ${__DOCKER_VERSION}? "
-            log "  -> abort  : Stop and do nothing"
-            log "  -> skip   : Skip upgrading Docker, use current version of Docker and continue to install DataFlux Func"
-            log "  -> upgrade: Upgrade Docker and install DataFlux Func"
+            log "Do you want to reinstall the Docker ${__DOCKER_VERSION} (current: ${CURR_DOCKER_VERSION}) ?"
+            log "  -> abort    : Stop and do nothing"
+            log "  -> skip     : Skip reinstalling Docker, use current version of Docker and continue to install DataFlux Func"
+            log "  -> reinstall: Reinstall Docker and install DataFlux Func"
             read -p "Your choice: " ACTION
         fi
 
-        if [ "${ACTION}" == "upgrade" ]; then
-            log "[Upgrade Docker and install DataFlux Func]"
+        if [ "${ACTION}" == "reinstall" ]; then
+            log "[Reinstall Docker and install DataFlux Func]"
 
             if [ ${OPT_AUTO_SETUP} = "FALSE" ]; then
                 delay_run
@@ -265,14 +265,16 @@ if [ `command -v docker` ]; then
             log "Stop Docker service"
             systemctl stop docker
 
-            # 更新 Docker
-            log "Upgrade Docker service"
+            # 重新安装 Docker
+            log "Reinstall Docker"
             tar -zxvf ${__DOCKER_BIN_FILE}
             cp docker/* /usr/bin/
+
+            log "Start Docker service"
             systemctl start docker
 
         elif [ "${ACTION}" == "skip" ]; then
-            log "[Skip upgrading Docker, use current version of Docker and continue to install DataFlux Func]"
+            log "[Skip reinstalling Docker, use current version of Docker and continue to install DataFlux Func]"
             delay_run
 
         else
