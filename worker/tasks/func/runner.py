@@ -129,8 +129,10 @@ class FuncRunner(FuncBaseTask):
             'timestamp': int(self.trigger_time),
         }
         if exception:
-            cache_value['exceptionType'] = toolkit.exception_type(exception)
-            cache_value['exceptionTEXT'] = toolkit.exception_text(exception)
+            cache_value.update({
+                'exceptionType': toolkit.exception_type(exception),
+                'exceptionTEXT': toolkit.exception_text(exception),
+            })
 
         self.cache_db.hset(cache_key, self.origin_id, toolkit.json_dumps(cache_value))
 
