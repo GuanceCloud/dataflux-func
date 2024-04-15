@@ -141,7 +141,7 @@ upgradeInfo:
       ALTER TABLE biz_main_batch_task_info
       ADD INDEX `ROOT_TASK_ID` (rootTaskId);
 
-  # 于观测云SaaS 2022-01-20 迭代中实装
+  # 于观测云 SaaS 2022-01-20 迭代中实装
   - seq: 9
     database: |-
       -- 自动触发配置/批处理支持配置任务记录数量
@@ -153,7 +153,7 @@ upgradeInfo:
       ADD COLUMN `taskInfoLimit` INT(11) DEFAULT NULL COMMENT '任务记录数量'
       AFTER `showInDoc`;
 
-  # 于观测云SaaS 2022-02-22 迭代中实装
+  # 于观测云 SaaS 2022-02-22 迭代中实装
   - seq: 10
     database: |-
       -- 优化任务记录功能
@@ -180,7 +180,7 @@ upgradeInfo:
         KEY `FUNC_ID` (`funcId`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务信息'
 
-  # 于观测云SaaS 2022-05-19 迭代中实装
+  # 于观测云 SaaS 2022-05-19 迭代中实装
   - seq: 11
     database: |-
       -- 授权链接支持配置任务记录数量
@@ -188,20 +188,20 @@ upgradeInfo:
       ADD COLUMN `taskInfoLimit` INT(11) DEFAULT NULL COMMENT '任务记录数量'
       AFTER `showInDoc`;
 
-  # 于观测云SaaS 2022-09-01 迭代中实装
+  # 于观测云 SaaS 2022-09-01 迭代中实装
   - seq: 12
     database: |-
       -- 「数据源」重命名为「连接器」
       RENAME TABLE biz_main_data_source TO biz_main_connector;
 
-  # 于观测云SaaS 2022-09-29 迭代中实装
+  # 于观测云 SaaS 2022-09-29 迭代中实装
   - seq: 13
     database: |-
       -- 扩充系统配置 value 字段
       ALTER TABLE wat_main_system_config
         MODIFY COLUMN `value` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '值';
 
-  # 于观测云SaaS 2022-12-29 迭代中实装
+  # 于观测云 SaaS 2022-12-29 迭代中实装
   - seq: 14
     database: |-
       -- 旧版遗漏
@@ -289,7 +289,7 @@ upgradeInfo:
       UPDATE biz_main_batch          SET origin = 'user'   WHERE origin = 'UI';
       UPDATE biz_main_batch          SET origin = 'UNKNOW' WHERE origin = 'API';
 
-  # 于观测云SaaS 2022-12-29 迭代中实装
+  # 于观测云 SaaS 2022-12-29 迭代中实装
   - seq: 15
     database: |-
       -- 脚本集增加和导入、安装时对比
@@ -297,7 +297,7 @@ upgradeInfo:
         ADD COLUMN `originMD5` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '来源MD5'
         AFTER `originId`;
 
-  # 于观测云SaaS 2022-12-29 迭代中实装
+  # 于观测云 SaaS 2022-12-29 迭代中实装
   - seq: 16
     database: |-
       -- 脚本市场加入锁定功能
@@ -305,7 +305,7 @@ upgradeInfo:
         ADD COLUMN `lockedByUserId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '锁定者用户ID'
         AFTER `configJSON`;
 
-  # 于观测云SaaS 2023-04-20 迭代中实装
+  # 于观测云 SaaS 2023-04-20 迭代中实装
   - seq: 17
     database: |-
       -- 添加脚本市场额外配置
@@ -313,7 +313,7 @@ upgradeInfo:
         ADD COLUMN `extraJSON` json DEFAULT NULL COMMENT '额外信息JSON'
         AFTER `configJSON`;
 
-  # 于观测云SaaS 2023-04-27 迭代中实装
+  # 于观测云 SaaS 2023-04-27 迭代中实装
   - seq: 18
     database: |-
       -- 清理任务记录
@@ -354,14 +354,14 @@ upgradeInfo:
       UPDATE `biz_main_batch`          SET `originId` = 'UNKNOWN' WHERE `originId` = 'UNKNOW';
       UPDATE `biz_main_script_set`     SET `originId` = 'UNKNOWN' WHERE `originId` = 'UNKNOW';
 
-  # 于观测云SaaS 2023-04-27 迭代中实装
+  # 于观测云 SaaS 2023-04-27 迭代中实装
   - seq: 19
     database: |-
       -- 修复以往注释错误
       ALTER TABLE `biz_main_auth_link`
         MODIFY COLUMN `throttlingJSON` json DEFAULT NULL COMMENT '限流JSON';
 
-  # 于观测云SaaS 2023-04-27 迭代中实装
+  # 于观测云 SaaS 2023-04-27 迭代中实装
   - seq: 20
     database: |-
       -- 清理任务记录
@@ -384,20 +384,20 @@ upgradeInfo:
         MODIFY COLUMN `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '任务来源',
         MODIFY COLUMN `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '任务来源ID';
 
-  # 于观测云SaaS 2023-06-20 迭代中实装
+  # 于观测云 SaaS 2023-06-20 迭代中实装
   - seq: 21
     database: |-
       -- 系统设置表更名
       RENAME TABLE `wat_main_system_config` TO `wat_main_system_setting`;
 
-  # 于观测云SaaS 2023-07-11 迭代中实装
+  # 于观测云 SaaS 2023-07-11 迭代中实装
   - seq: 22
     database: |-
       -- 删除无用的全文搜索索引
       ALTER TABLE `biz_main_script` DROP INDEX `FT`;
       ALTER TABLE `biz_main_script_publish_history` DROP INDEX `FT`;
 
-  # 于观测云SaaS 2023-08-10 迭代中实装
+  # 于观测云 SaaS 2023-08-10 迭代中实装
   - seq: 23
     database: |-
       -- 统一业务实体标题字段名
@@ -425,7 +425,7 @@ upgradeInfo:
         UNIQUE KEY `ID` (`id`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='蓝图';
 
-  # 于观测云SaaS 2023-09-07 迭代中实装
+  # 于观测云 SaaS 2023-09-07 迭代中实装
   - seq: 24
     database: |-
       -- 清理过时表
@@ -524,7 +524,7 @@ upgradeInfo:
         KEY `STATUS` (`status`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务记录（函数）';
 
-  # 于观测云SaaS 2023-11-09 迭代中实装
+  # 于观测云 SaaS 2023-11-09 迭代中实装
   - seq: 25
     database: |-
       -- 重建任务记录表（为 triggerTimeMs 添加索引并作为排序条件）
@@ -603,7 +603,7 @@ upgradeInfo:
         KEY `STATUS` (`status`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务记录（函数）';
 
-  # 于观测云SaaS 2023-11-16 迭代中实装
+  # 于观测云 SaaS 2023-11-16 迭代中实装
   - seq: 26
     database: |-
       -- 重建任务记录表（triggerTimeMs 不适宜作为排序条件，删除）
@@ -680,10 +680,91 @@ upgradeInfo:
         KEY `STATUS` (`status`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务记录（函数）';
 
-  # 于观测云SaaS 2024-11-15 迭代中实装
+  # 于观测云 SaaS 2024-01-15 迭代中实装
   - seq: 27
     database: |-
       -- 扩充 originId 字段长度
       TRUNCATE biz_main_task_record_func;
       ALTER TABLE biz_main_task_record_func
         MODIFY COLUMN `originId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '任务来源 ID';
+
+  # 于观测云 SaaS 2024-04-24 迭代中实装
+  - seq: 28
+    database: |-
+      -- 重建任务记录表（增加非关键错误信息）
+      DROP TABLE IF EXISTS `biz_main_task_record`;
+      DROP TABLE IF EXISTS `biz_main_task_record_func`;
+
+      CREATE TABLE `biz_main_task_record` (
+        `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+        `name` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '任务名',
+        `kwargsJSON` json COMMENT '调用参数JSON',
+        `triggerTimeMs` bigint(20) unsigned NOT NULL COMMENT '触发时间（UNIX毫秒时间戳）',
+        `startTimeMs` bigint(20) unsigned NOT NULL COMMENT '启动时间（UNIX毫秒时间戳）',
+        `endTimeMs` bigint(20) unsigned NOT NULL COMMENT '结束时间（UNIX毫秒时间戳）',
+        `eta` text COMMENT 'ETA',
+        `delay` bigint(20) unsigned NOT NULL COMMENT '延迟时间',
+        `queue` bigint(20) unsigned NOT NULL COMMENT '执行队列',
+        `timeout` bigint(20) unsigned NOT NULL COMMENT '超时时间',
+        `expires` bigint(20) unsigned NOT NULL COMMENT '过期时间',
+        `ignoreResult` tinyint(1) NOT NULL COMMENT '是否忽略结果',
+        `resultJSON` json COMMENT '结果JSON',
+        `status` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '状态 success|failure|timeout|skip',
+        `exceptionType` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '错误类型',
+        `exceptionTEXT` longtext COMMENT '错误TEXT',
+        `tracebackTEXT` longtext COMMENT '调用堆栈TEXT',
+        `nonCriticalErrorsTEXT` longtext COMMENT '非关键错误TEXT',
+        `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`seq`),
+        UNIQUE KEY `ID` (`id`),
+        KEY `NAME` (`name`),
+        KEY `TRIGGER_TIME_MS` (`triggerTimeMs`),
+        KEY `QUEUE` (`queue`),
+        KEY `STATUS` (`status`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务记录';
+
+      CREATE TABLE `biz_main_task_record_func` (
+        `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+        `rootTaskId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT 'ROOT' COMMENT '主任务ID',
+        `scriptSetId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '脚本集ID',
+        `scriptId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '脚本ID',
+        `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
+        `funcCallKwargsJSON` json COMMENT '调用参数JSON',
+        `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '任务来源',
+        `originId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '任务来源 ID',
+        `crontab` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '执行频率（Crontab语法）',
+        `callChainJSON` json COMMENT '函数调用链JSON',
+        `triggerTimeMs` bigint(20) unsigned NOT NULL COMMENT '触发时间（UNIX毫秒时间戳）',
+        `startTimeMs` bigint(20) unsigned NOT NULL COMMENT '启动时间（UNIX毫秒时间戳）',
+        `endTimeMs` bigint(20) unsigned NOT NULL COMMENT '结束时间（UNIX毫秒时间戳）',
+        `eta` text COMMENT 'ETA',
+        `delay` bigint(20) unsigned NOT NULL COMMENT '延迟时间',
+        `queue` bigint(20) unsigned NOT NULL COMMENT '执行队列',
+        `timeout` bigint(20) unsigned NOT NULL COMMENT '超时时间',
+        `expires` bigint(20) unsigned NOT NULL COMMENT '过期时间',
+        `ignoreResult` tinyint(1) NOT NULL COMMENT '是否忽略结果',
+        `status` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '状态 success|failure',
+        `exceptionType` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '错误类型',
+        `exceptionTEXT` longtext COMMENT '错误TEXT',
+        `tracebackTEXT` longtext COMMENT '调用堆栈TEXT',
+        `nonCriticalErrorsTEXT` longtext COMMENT '非关键错误TEXT',
+        `printLogsTEXT` longtext COMMENT 'print日志TEXT',
+        `returnValueJSON` json COMMENT '返回值JSON',
+        `responseControlJSON` json COMMENT '响应控制JSON',
+        `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`seq`),
+        UNIQUE KEY `ID` (`id`),
+        KEY `ROOT_TASK_ID` (`rootTaskId`),
+        KEY `SCRIPT_TASK_ID` (`scriptSetId`),
+        KEY `SCRIPT_ID` (`scriptId`),
+        KEY `FUNC_ID` (`funcId`),
+        KEY `ORIGIN` (`origin`),
+        KEY `ORIGIN_ID` (`originId`),
+        KEY `TRIGGER_TIME_MS` (`triggerTimeMs`),
+        KEY `QUEUE` (`queue`),
+        KEY `STATUS` (`status`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务记录（函数）';

@@ -24,9 +24,6 @@ class FuncRunner(FuncBaseTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # 观测云上报错误记录
-        self.guance_data_upload_error = None
-
     @property
     def return_value(self):
         if not self.result:
@@ -83,24 +80,6 @@ class FuncRunner(FuncBaseTask):
             data = '\n\n'.join([ reduce_tip, first_part, skip_tip, last_part ])
 
         return data
-
-    @property
-    def guance_data_upload_error_logs(self):
-        if not self.guance_data_upload_error:
-            return None
-
-        return '\n'.join([ '[Guance Data Upload Error]', repr(self.guance_data_upload_error) ])
-
-    @property
-    def reduced_print_logs_with_guance_data_upload_error(self):
-        sections = []
-        if self.reduced_print_logs:
-            sections.append(self.reduced_print_logs)
-
-        if self.guance_data_upload_error_logs:
-            sections.append(self.guance_data_upload_error_logs)
-
-        return '\n\n'.join(sections)
 
     def cache_recent_crontab_triggered(self):
         try:
@@ -210,31 +189,32 @@ class FuncRunner(FuncBaseTask):
         data = {
             '_taskRecordLimit': self.task_record_limit,
 
-            'id'                 : self.task_id,
-            'rootTaskId'         : self.root_task_id,
-            'scriptSetId'        : self.script_set_id,
-            'scriptId'           : self.script_id,
-            'funcId'             : self.func_id,
-            'funcCallKwargsJSON' : toolkit.json_dumps(self.func_call_kwargs),
-            'origin'             : self.origin,
-            'originId'           : self.origin_id,
-            'crontab'            : self.kwargs.get('crontab'),
-            'callChainJSON'      : toolkit.json_dumps(self.call_chain, keep_none=True),
-            'triggerTimeMs'      : self.trigger_time_ms,
-            'startTimeMs'        : self.start_time_ms,
-            'endTimeMs'          : self.end_time_ms,
-            'delay'              : self.delay,
-            'queue'              : self.queue,
-            'timeout'            : self.timeout,
-            'expires'            : self.expires,
-            'ignoreResult'       : self.ignore_result,
-            'status'             : self.status,
-            'exceptionType'      : self.exception_type,
-            'exceptionTEXT'      : self.exception_text,
-            'tracebackTEXT'      : self.traceback,
-            'printLogsTEXT'      : self.reduced_print_logs_with_guance_data_upload_error,
-            'returnValueJSON'    : toolkit.json_dumps(self.return_value, keep_none=True),
-            'responseControlJSON': toolkit.json_dumps(self.response_control, keep_none=True),
+            'id'                   : self.task_id,
+            'rootTaskId'           : self.root_task_id,
+            'scriptSetId'          : self.script_set_id,
+            'scriptId'             : self.script_id,
+            'funcId'               : self.func_id,
+            'funcCallKwargsJSON'   : toolkit.json_dumps(self.func_call_kwargs),
+            'origin'               : self.origin,
+            'originId'             : self.origin_id,
+            'crontab'              : self.kwargs.get('crontab'),
+            'callChainJSON'        : toolkit.json_dumps(self.call_chain, keep_none   = True),
+            'triggerTimeMs'        : self.trigger_time_ms,
+            'startTimeMs'          : self.start_time_ms,
+            'endTimeMs'            : self.end_time_ms,
+            'delay'                : self.delay,
+            'queue'                : self.queue,
+            'timeout'              : self.timeout,
+            'expires'              : self.expires,
+            'ignoreResult'         : self.ignore_result,
+            'status'               : self.status,
+            'exceptionType'        : self.exception_type,
+            'exceptionTEXT'        : self.exception_text,
+            'tracebackTEXT'        : self.traceback,
+            'nonCriticalErrorsTEXT': self.non_critical_errors,
+            'printLogsTEXT'        : self.reduced_print_logs,
+            'returnValueJSON'      : toolkit.json_dumps(self.return_value, keep_none = True),
+            'responseControlJSON'  : toolkit.json_dumps(self.response_control, keep_none=True),
         }
         cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordFunc')
         self.cache_db.push(cache_key, toolkit.json_dumps(data))

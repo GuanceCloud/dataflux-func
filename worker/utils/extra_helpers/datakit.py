@@ -97,6 +97,9 @@ RE_ESCAPE_FIELD_KEY       = RE_ESCAPE_TAG_KEY
 RE_ESCAPE_MEASUREMENT     = re.compile('([, ])')
 RE_ESCAPE_FIELD_STR_VALUE = re.compile('(["\\\\])')
 
+RE_PATH_QUERY_TOKEN          = re.compile('(tkn_[a-zA-Z0-9_-]{5})[a-zA-Z0-9_-]+([a-zA-Z0-9_-]{5})')
+RE_PATH_QUERY_TOKEN_REPLACER = r'\1*****\2'
+
 ASSERT_TYPE_MAPS = {
     'dict': {
         'type'   : (dict, OrderedDict),
@@ -373,8 +376,10 @@ class BaseDataKit(object):
         if body:
             body = ensure_binary(body)
 
+        masked_path = re.sub(RE_PATH_QUERY_TOKEN, RE_PATH_QUERY_TOKEN_REPLACER, path)
+
         if self.debug:
-            print('[Request] {0} {1}://{2}:{3}{4}'.format(method, ensure_str(self.protocol), ensure_str(self.host), str(self.port), ensure_str(path)))
+            print('[Request] {0} {1}://{2}:{3}{4}'.format(method, ensure_str(self.protocol), ensure_str(self.host), str(self.port), ensure_str(masked_path)))
             print('[Request Headers]\n{0}'.format('\n'.join(['{0}: {1}'.format(k, v) for k, v in (headers or {}).items()]) or '<EMPTY>'))
             if method.upper() != 'GET':
                 print('[Request Body]\n{0}'.format(ensure_str(body or '') or '<EMPTY>'))
@@ -393,7 +398,7 @@ class BaseDataKit(object):
                 headers = headers or {}
                 conn.request(method, path, body=body, headers=headers)
             except Exception as e:
-                raise Exception('Send request `{} {}:{}{}` failed: {}'.format(method, self.host, self.port, path, str(e)))
+                raise Exception(f'{method} {self.protocol}://{self.host}:{self.port}{masked_path} failed. Error: {str(e)}')
 
             resp = conn.getresponse()
 
@@ -418,7 +423,7 @@ class BaseDataKit(object):
                 print(colored(output, color))
 
         if resp_status_code >= 400 and self.raise_for_status:
-            e = Exception(f'Status Code: {resp_status_code}, Response: {ensure_str(resp_raw_data)}')
+            e = Exception(f'{method} {self.protocol}://{self.host}:{self.port}{masked_path} failed. Status Code: {resp_status_code}, Response: {ensure_str(resp_raw_data)}')
             raise e
 
         return resp_status_code, resp_data

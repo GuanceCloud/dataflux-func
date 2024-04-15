@@ -38,7 +38,7 @@ Log Lines   : 日志行数
 Print Log   : Print 日志
 Traceback   : 调用堆栈
 No Print Log: 无 Print 日志
-No Traceback: 无调用堆栈信息
+Non-critical Errors: 非关键错误
 
 Recent Task Record        : 近期任务记录
 Related Task Record       : 相关任务记录
@@ -57,8 +57,9 @@ Task Record cleared: 任务记录已清空
 
 Are you sure you want to clear the Task Record?: 是否确认清空任务记录？
 
-Uploading Guance data failed: 观测云数据上报失败
-No Recent Task Record: 尚无任何近期任务记录
+Non-critical errors exist                              : 存在非关键错误
+Guance Data Upload Failed                              : 观测云数据上报失败
+No Recent Task Record                                  : 尚无任何近期任务记录
 All recent Task Record will be collected and shown here: 所有近期任务会被记录，并展示在此
 
 Origin   : 来源
@@ -104,13 +105,15 @@ Exec Mode: 執行模式
 Func ID: 函數 ID
 'Func ID: ': 函數 ID ：
 'Func Title: ': 函數標題：
+Guance Data Upload Failed: 觀測雲數據上報失敗
 Log Lines: 日誌行數
 Main Task: 主任務
 Main Task Only: 僅主任務
 No Delay: 不延遲
 No Print Log: 無 Print 日誌
 No Recent Task Record: 尚無任何近期任務記錄
-No Traceback: 無調用堆棧信息
+Non-critical Errors: 非關鍵錯誤
+Non-critical errors exist: 存在非關鍵錯誤
 Only main tasks are listed: 在本頁面只展示主任務
 Origin: 來源
 Origin ID: 來源 ID
@@ -135,7 +138,6 @@ Task Record cleared: 任務記錄已清空
 Traceback: 調用堆棧
 Trigger Time: 觸發時間
 'Trigger Time: ': 觸發時間：
-Uploading Guance data failed: 觀測雲數據上報失敗
 Wait Cost: 等待耗時
 authLink: 授權鏈接
 batch: 批處理
@@ -160,13 +162,15 @@ Exec Mode: 執行模式
 Func ID: 函式 ID
 'Func ID: ': 函式 ID ：
 'Func Title: ': 函式標題：
+Guance Data Upload Failed: 觀測雲資料上報失敗
 Log Lines: 日誌行數
 Main Task: 主任務
 Main Task Only: 僅主任務
 No Delay: 不延遲
 No Print Log: 無 Print 日誌
 No Recent Task Record: 尚無任何近期任務記錄
-No Traceback: 無呼叫堆疊資訊
+Non-critical Errors: 非關鍵錯誤
+Non-critical errors exist: 存在非關鍵錯誤
 Only main tasks are listed: 在本頁面只展示主任務
 Origin: 來源
 Origin ID: 來源 ID
@@ -191,7 +195,6 @@ Task Record cleared: 任務記錄已清空
 Traceback: 呼叫堆疊
 Trigger Time: 觸發時間
 'Trigger Time: ': 觸發時間：
-Uploading Guance data failed: 觀測雲資料上報失敗
 Wait Cost: 等待耗時
 authLink: 授權連結
 batch: 批處理
@@ -296,7 +299,7 @@ timeout: 執行超時
                 :id="scope.row.func_id"
                 :title="scope.row.func_title" />
               <InfoBlock v-if="scope.row.exceptionType" type="error" :title="`${scope.row.exceptionType}: ${scope.row.exceptionTEXT}`" />
-              <InfoBlock v-if="scope.row.printLogsTEXT && scope.row.printLogsTEXT.indexOf('[Guance Data Upload Error]') >= 0" type="warning" :title="$t('Uploading Guance data failed')" />
+              <InfoBlock v-if="scope.row.nonCriticalErrorsTEXT" type="warning" :title="`${$t('Non-critical errors exist')}${$t(':')}${getNonCriticalErrorSumary(scope.row)}`" />
             </template>
           </el-table-column>
 
@@ -523,12 +526,17 @@ export default {
       }
 
       // 堆栈
-      lines.push('');
-      lines.push(`===== ${this.$t('Traceback')} =====`);
       if (d.tracebackTEXT) {
+        lines.push('');
+        lines.push(`===== ${this.$t('Traceback')} =====`);
         lines.push(d.tracebackTEXT);
-      } else {
-        lines.push(this.$t('No Traceback'))
+      }
+
+      // 非关键错误
+      if (d.nonCriticalErrorsTEXT) {
+        lines.push('');
+        lines.push(`===== ${this.$t('Non-critical Errors')} =====`);
+        lines.push(d.nonCriticalErrorsTEXT);
       }
 
       let docTEXT = lines.join('\n');
@@ -536,6 +544,16 @@ export default {
       let createTimeStr = this.M(d.createTime).format('YYYYMMDD_HHmmss');
       let fileName = `task-record.${origin}-${id}.log.${createTimeStr}`;
       this.$refs.longTextDialog.update(docTEXT, fileName);
+    },
+    getNonCriticalErrorSumary(d) {
+      if (!d.nonCriticalErrorsTEXT) return '';
+
+      let summary = [];
+      if (d.nonCriticalErrorsTEXT.indexOf('[Guance Data Upload Errors]') >= 0) {
+        summary.push(this.$t('Guance Data Upload Failed'))
+      }
+
+      return summary.join(this.$t(','));
     },
   },
   computed: {

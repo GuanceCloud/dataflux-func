@@ -130,6 +130,7 @@ class BaseTask(object):
         self.cache_db     = RedisHelper(self.logger)
         self.file_storage = FileSystemHelper(self.logger)
 
+        # 任务信息
         log_attrs = [
             'trigger_time',
             'eta',
@@ -141,6 +142,9 @@ class BaseTask(object):
             'task_record_limit',
         ]
         self.logger.debug(f"[INIT TASK] {', '.join([f'{a}=`{getattr(self, a)}`' for a in log_attrs])}")
+
+        # 观测云上报错误记录
+        self.guance_data_upload_errors = []
 
     @property
     def trigger_time_ms(self):
@@ -267,6 +271,20 @@ class BaseTask(object):
     def exception_text(self):
         return toolkit.exception_text(self.exception)
 
+    @property
+    def non_critical_errors(self):
+        parts = []
+
+        if self.guance_data_upload_errors:
+            parts.append('')
+            parts.append('[Guance Data Upload Errors]')
+            parts.extend(map(lambda x: str(x), self.guance_data_upload_errors))
+
+        if not parts:
+            return None
+        else:
+            return '\n'.join(parts[1:])
+
     def lock(self, max_age=None):
         max_age = int(max_age or 30)
 
@@ -383,6 +401,7 @@ class BaseTask(object):
 
             self.logger.debug(f'[UPLOAD GUANCE DATA]: {len(data)} {category} point(s)')
 
+            # 准备数据
             for p in data:
                 p['tags']   = p.get('tags')   or {}
                 p['fields'] = p.get('fields') or {}
@@ -404,67 +423,73 @@ class BaseTask(object):
                     p['fields']['message'] = ''
 
             # 上报数据
-            try:
-                dataway = DataWay(url=self.guance_data_upload_url)
+            dataway = DataWay(url=self.guance_data_upload_url)
 
-                if category == 'logging':
-                    # 日志数据量大，每条数据单独上报并切分
-                    for single_point in data:
-                        # 尝试提取并切分 message
-                        logging_message = single_point['fields']['message'] or ''
-                        try:
-                            logging_message = toolkit.str_split_by_bytes(logging_message, page_bytes=CONFIG['_SELF_MONITOR_GUANCE_LOGGING_SPLIT_BYTES'])
-                        except Exception as e:
-                            for line in traceback.format_exc().splitlines():
-                                self.logger.error(line)
+            if category == 'logging':
+                # 日志数据量大，每条数据单独上报并切分
+                for single_point in data:
+                    # 尝试提取并切分 message
+                    logging_message = single_point['fields']['message'] or ''
+                    try:
+                        logging_message = toolkit.str_split_by_bytes(logging_message, page_bytes=CONFIG['_SELF_MONITOR_GUANCE_LOGGING_SPLIT_BYTES'])
+                    except Exception as e:
+                        for line in traceback.format_exc().splitlines():
+                            self.logger.warning(line)
 
-                        if logging_message:
-                            # 存在 message，拆分写入
-                            base_timestamp = single_point['timestamp'] * 1000 * 1000
-                            for i, _message in enumerate(toolkit.as_array(logging_message)):
-                                single_point['fields']['message'] = _message
-                                single_point['timestamp'] = base_timestamp + i # 保持有序
-                                fkwargs = {
-                                    'path'  : f'/v1/write/{category}',
-                                    'points': single_point,
-                                }
-                                status_code, resp_data = retry_call(dataway.post_line_protocol, fkwargs=fkwargs, tries=3, delay=1)
-                                if status_code > 200:
-                                    self.logger.error(resp_data)
+                        self.guance_data_upload_errors.append(e)
 
-                        else:
-                            # 不存在 message，直接写入
+                    if logging_message:
+                        # 存在 message，拆分写入
+                        base_timestamp = single_point['timestamp'] * 1000 * 1000
+                        for i, _message in enumerate(toolkit.as_array(logging_message)):
+                            single_point['fields']['message'] = _message
+                            single_point['timestamp'] = base_timestamp + i # 保持有序
                             fkwargs = {
                                 'path'  : f'/v1/write/{category}',
                                 'points': single_point,
                             }
-                            status_code, resp_data = retry_call(dataway.post_line_protocol, fkwargs=fkwargs, tries=3, delay=1)
-                            if status_code > 200:
-                                self.logger.error(resp_data)
+                            try:
+                                retry_call(dataway.post_line_protocol, fkwargs=fkwargs, tries=3, delay=1)
+                            except Exception as e:
+                                for line in traceback.format_exc().splitlines():
+                                    self.logger.warning(line)
 
-                else:
-                    # 其他类型数据直接上报
-                    fkwargs = {
-                        'path'  : f'/v1/write/{category}',
-                        'points': data,
-                    }
-                    status_code, resp_data = retry_call(dataway.post_line_protocol, fkwargs=fkwargs, tries=3, delay=1)
-                    if status_code > 200:
-                        self.logger.error(resp_data)
+                                self.guance_data_upload_errors.append(e)
 
-            except Exception as e:
-                for line in traceback.format_exc().splitlines():
-                    self.logger.error(line)
+                    else:
+                        # 不存在 message，直接写入
+                        fkwargs = {
+                            'path'  : f'/v1/write/{category}',
+                            'points': single_point,
+                        }
+                        try:
+                            retry_call(dataway.post_line_protocol, fkwargs=fkwargs, tries=3, delay=1)
+                        except Exception as e:
+                            for line in traceback.format_exc().splitlines():
+                                self.logger.warning(line)
 
-                raise
+                            self.guance_data_upload_errors.append(e)
+
+            else:
+                # 其他类型数据直接上报
+                fkwargs = {
+                    'path'  : f'/v1/write/{category}',
+                    'points': data,
+                }
+                try:
+                    retry_call(dataway.post_line_protocol, fkwargs=fkwargs, tries=3, delay=1)
+                except Exception as e:
+                    for line in traceback.format_exc().splitlines():
+                        self.logger.warning(line)
+
+                    self.guance_data_upload_errors.append(e)
 
         except Exception as e:
             # 非重要功能
             for line in traceback.format_exc().splitlines():
                 self.logger.warning(line)
 
-            if CONFIG['MODE'] == 'dev':
-                raise
+            self.guance_data_upload_errors.append(e)
 
     def response(self, task_resp):
         cache_key = toolkit.get_cache_key('task', 'response', [ 'name', self.name, 'id', self.task_id ])
