@@ -92,7 +92,9 @@ ENV_VARIABLE_AUTO_TYPE_CASTING_FUNC_MAP = {
 }
 
 # 函数线程池
-FUNC_THREAD_POOL = None
+FUNC_THREAD_POOL       = None
+FUNC_THREAD_POOL_SIZE  = None
+FUNC_THREAD_RESULT_MAP = {}
 
 # 脚本本地缓存
 SCRIPT_LOCAL_CACHE = toolkit.LocalCache(expires=30)
@@ -950,71 +952,103 @@ class FuncRedirect(FuncResponse):
                          headers=headers)
 
 class FuncThreadResult(object):
-    def __init__(self, value, error=None):
+    def __init__(self, key, value, error=None):
+        self.key   = key
         self.value = value
         self.error = error
 
 class FuncThreadHelper(object):
     def __init__(self, task):
         self._task = task
-        self.result_map = {}
 
     @property
     def is_all_finished(self):
-        if not self.result_map:
+        global FUNC_THREAD_RESULT_MAP
+
+        if not FUNC_THREAD_RESULT_MAP:
             return True
 
-        return all([ future_res.done() for key, future_res in self.result_map.items() ])
+        return all([ future_res.done() for key, future_res in FUNC_THREAD_RESULT_MAP.items() ])
 
-    def set_pool_size(self, pool_size=None):
+    @property
+    def pool_size(self):
+        global FUNC_THREAD_POOL_SIZE
+        return FUNC_THREAD_POOL_SIZE
+
+    def set_pool_size(self, pool_size):
         global FUNC_THREAD_POOL
-
-        if pool_size is None:
-            pool_size = CONFIG['_FUNC_TASK_THREAD_POOL_DEFAULT_SIZE']
+        global FUNC_THREAD_POOL_SIZE
 
         if FUNC_THREAD_POOL:
-            raise Exception('Pool is already created.')
+            _msg = f"[THREAD POOL] Cannot set thread pool size after task submitted, skip"
+            self._task.logger.info(_msg)
+            self._task._log(self._task.script_scope, _msg)
+            return
 
-        if not isinstance(pool_size, (int, float)) or pool_size <= 0:
-            raise Exception('Invalid pool size, should be an integer which is greater than 0')
+        # 检查参数
+        try:
+            pool_size = int(pool_size)
+            if pool_size <= 0:
+                raise ValueError()
 
-        pool_size = int(pool_size)
+        except Exception as e:
+            e = Exception('Invalid pool size, should be an integer which is greater than 0')
+            raise e
 
+        FUNC_THREAD_POOL_SIZE = pool_size
+
+    def create_pool(self):
+        global FUNC_THREAD_POOL
+        global FUNC_THREAD_POOL_SIZE
+
+        if FUNC_THREAD_POOL:
+            _msg = f"[THREAD POOL] Thread pool is already created, skip"
+            self._task.logger.info(_msg)
+            self._task._log(self._task.script_scope, _msg)
+            return
+
+        pool_size = FUNC_THREAD_POOL_SIZE or CONFIG['_FUNC_TASK_THREAD_POOL_DEFAULT_SIZE']
         FUNC_THREAD_POOL = concurrent.futures.ThreadPoolExecutor(max_workers=pool_size)
-        self._task.logger.debug(f"[THREAD POOL] Pool Create (size={pool_size})")
+
+        _msg = f"[THREAD POOL] Pool created (size={pool_size})"
+        self._task.logger.debug(_msg)
+        self._task._log(self._task.script_scope, _msg)
 
     def submit(self, fn, *args, **kwargs):
         global FUNC_THREAD_POOL
+        global FUNC_THREAD_RESULT_MAP
 
         if not FUNC_THREAD_POOL:
-            self.set_pool_size()
+            self.create_pool()
 
         key = toolkit.gen_data_id('thread-result')
         self._task.logger.debug(f'[THREAD POOL] Submit Key=`{key}`')
 
-        if key in self.result_map:
+        if key in FUNC_THREAD_RESULT_MAP:
             e = DuplicatedThreadResultKey(f'Thread result key already existed: `{key}`')
             raise e
 
         args   = args   or []
         kwargs = kwargs or {}
-        self.result_map[key] = FUNC_THREAD_POOL.submit(fn, *args, **kwargs)
+        FUNC_THREAD_RESULT_MAP[key] = FUNC_THREAD_POOL.submit(fn, *args, **kwargs)
 
         return key
 
     def _get_result(self, key=None, wait=True):
-        if not self.result_map:
+        global FUNC_THREAD_RESULT_MAP
+
+        if not FUNC_THREAD_RESULT_MAP:
             return None
 
         collected_res = {}
 
-        keys = key or list(self.result_map.keys())
+        keys = key or list(FUNC_THREAD_RESULT_MAP.keys())
         for k in toolkit.as_array(keys):
             k = str(k)
 
             collected_res[k] = None
 
-            future_res = self.result_map.get(k)
+            future_res = FUNC_THREAD_RESULT_MAP.get(k)
             if future_res is None:
                 continue
 
@@ -1028,7 +1062,7 @@ class FuncThreadHelper(object):
             except Exception as e:
                 error = e
             finally:
-                collected_res[k] = FuncThreadResult(value=value, error=error)
+                collected_res[k] = FuncThreadResult(key=k, value=value, error=error)
 
         if key:
             return collected_res.get(key)
@@ -1042,20 +1076,22 @@ class FuncThreadHelper(object):
         return self._get_result(wait=wait).values()
 
     def pop_result(self, wait=True):
-        if not self.result_map:
+        global FUNC_THREAD_RESULT_MAP
+
+        if not FUNC_THREAD_RESULT_MAP:
             return None
 
         finished_key = None
         while True:
             # 查找已经结束的结果
-            for key, future_res in self.result_map.items():
+            for key, future_res in FUNC_THREAD_RESULT_MAP.items():
                 if future_res.done():
                     finished_key = key
                     break
 
             # 未找到，且需要等待
             if not finished_key and wait:
-                for _ in concurrent.futures.wait(self.result_map.values(), return_when=concurrent.futures.FIRST_COMPLETED):
+                for _ in concurrent.futures.wait(FUNC_THREAD_RESULT_MAP.values(), return_when=concurrent.futures.FIRST_COMPLETED):
                     break
                 continue
 
@@ -1064,7 +1100,7 @@ class FuncThreadHelper(object):
         if finished_key is None:
             return None
 
-        future_res = self.result_map.pop(finished_key)
+        future_res = FUNC_THREAD_RESULT_MAP.pop(finished_key)
 
         value = None
         error = None
@@ -1073,7 +1109,7 @@ class FuncThreadHelper(object):
         except Exception as e:
             error = e
         finally:
-            return FuncThreadResult(value=value, error=error)
+            return FuncThreadResult(key=finished_key, value=value, error=error)
 
     def wait_all_finished(self):
         self._get_result(wait=True)
@@ -2016,8 +2052,8 @@ class FuncBaseTask(BaseTask):
 
         # 执行脚本
         debug = use_code_draft
-        script_script_scope = self.create_safe_scope(self.script_id, debug=debug)
-        self.script_scope   = self.safe_exec(self.script['codeObj'], globals=script_script_scope)
+        _safe_scope = self.create_safe_scope(self.script_id, debug=debug)
+        self.script_scope = self.safe_exec(self.script['codeObj'], globals=_safe_scope)
 
         # 执行函数
         func_return = None
@@ -2117,12 +2153,16 @@ class FuncBaseTask(BaseTask):
 
     def clean_up(self):
         global FUNC_THREAD_POOL
+        global FUNC_THREAD_POOL_SIZE
+        global FUNC_THREAD_RESULT_MAP
 
         if FUNC_THREAD_POOL:
             FUNC_THREAD_POOL.shutdown(wait=True)
             self.logger.debug(f"[THREAD POOL] Pool Shutdown")
 
-        FUNC_THREAD_POOL = None
+        FUNC_THREAD_POOL       = None
+        FUNC_THREAD_POOL_SIZE  = None
+        FUNC_THREAD_RESULT_MAP = {}
 
     def buff_task_record(self, *args, **kwargs):
         # 函数任务不进行一般任务记录
