@@ -866,7 +866,7 @@ export default {
         this.isSaving = false;
       }, 500);
     },
-    _getFromData() {
+    _getFormData() {
       let _formData = this.T.jsonCopy(this.form);
       if (_formData.configJSON) {
         for (let k in _formData.configJSON) {
@@ -880,7 +880,7 @@ export default {
     async addData(opt) {
       opt = opt || {};
 
-      let _formData = this._getFromData();
+      let _formData = this._getFormData();
 
       // 服务器列表字段自动合并换行
       if ('string' === typeof _formData.configJSON.servers) {
@@ -899,7 +899,7 @@ export default {
     async modifyData(opt) {
       opt = opt || {};
 
-      let _formData = this._getFromData();
+      let _formData = this._getFormData();
       delete _formData.id;
       delete _formData.type;
 

@@ -344,7 +344,7 @@ export default {
           return await this.modifyData();
       }
     },
-    _getFromData() {
+    _getFormData() {
       let _formData = this.T.jsonCopy(this.form);
       if (_formData.configJSON) {
         for (let k in _formData.configJSON) {
@@ -356,7 +356,7 @@ export default {
       return _formData;
     },
     async addData() {
-      let _formData = this._getFromData();
+      let _formData = this._getFormData();
 
       let apiRes = await this.T.callAPI('post', '/api/v1/api-auth/do/add', {
         body : { data: _formData },
@@ -368,7 +368,7 @@ export default {
       this.show = false;
     },
     async modifyData() {
-      let _formData = this._getFromData();
+      let _formData = this._getFormData();
       delete _formData.id;
       delete _formData.type;
 

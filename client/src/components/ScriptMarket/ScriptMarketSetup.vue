@@ -325,7 +325,7 @@ export default {
         this.isSaving = false;
       }, 500);
     },
-    _getFromData() {
+    _getFormData() {
       let _formData = this.T.jsonCopy(this.form);
       if (_formData.configJSON) {
         for (let k in _formData.configJSON) {
@@ -341,7 +341,7 @@ export default {
         && this.setAdmin
         && !this.$root.checkUserProfileForGit()) return;
 
-      let _formData = this._getFromData();
+      let _formData = this._getFormData();
 
       let apiRes = await this.T.callAPI('post', '/api/v1/script-markets/do/add', {
         body : { data: _formData, setAdmin: this.setAdmin },
@@ -357,7 +357,7 @@ export default {
         && this.data.isAdmin
         && !this.$root.checkUserProfileForGit()) return;
 
-      let _formData = this._getFromData();
+      let _formData = this._getFormData();
       delete _formData.id;
       delete _formData.type;
 
