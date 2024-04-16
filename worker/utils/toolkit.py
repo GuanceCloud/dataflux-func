@@ -46,10 +46,9 @@ MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000
 RE_HTTP_BASIC_AUTH_MASK         = re.compile('://.+:.+@')
 RE_HTTP_BASIC_AUTH_MASK_REPLACE = '://***:***@'
 
-MASK_KEYWORDS = [
-  'secret',
-  'password',
-]
+MASK_KEYWORDS = [ 'secret', 'password', ]
+
+AES_HEADER = 'AESv2:'
 
 def exception_type(e):
     if not e:
@@ -454,7 +453,27 @@ def _pad_length(text, length):
     text += six.ensure_binary(' ' * add_count)
     return text
 
-def cipher_by_aes(text, key):
+def cipher_by_aes(text, key, salt=None):
+    text = text or ''
+    salted_key = key
+    if salt:
+        salted_key = f'~{key}~{salt}~'
+
+    salted_key = get_md5(salted_key)
+
+    text       = six.ensure_binary(text)
+    salted_key = six.ensure_binary(salted_key)
+
+    text = _pad_length(text, 16)
+
+    c = AES.new(salted_key, AES.MODE_CBC, six.ensure_binary('\0' * 16))
+    bin_data = c.encrypt(text)
+    data = binascii.b2a_base64(bin_data)
+    data = AES_HEADER + six.ensure_str(data).strip()
+
+    return data
+
+def cipher_by_aes_old(text, key, salt=None):
     text = six.ensure_binary(text)
     key  = six.ensure_binary(key)
 
@@ -464,11 +483,35 @@ def cipher_by_aes(text, key):
     c = AES.new(key, AES.MODE_CBC, six.ensure_binary('\0' * 16))
     bin_data = c.encrypt(text)
     data = binascii.b2a_base64(bin_data)
+    data = six.ensure_str(data).strip()
 
-    return data.strip()
+    return data
 
-def decipher_by_aes(data, key):
-    key = six.ensure_binary(key)
+def decipher_by_aes(data, key, salt=None):
+    if not data.startswith(AES_HEADER):
+        # 旧版加密结果
+        return decipher_by_aes_old(data, key)
+
+    data = data[len(AES_HEADER):]
+    salted_key = key
+    if salt:
+        salted_key = f'~{key}~{salt}~'
+
+    salted_key = get_md5(salted_key)
+
+    data       = six.ensure_binary(data)
+    salted_key = six.ensure_binary(salted_key)
+
+    c = AES.new(salted_key, AES.MODE_CBC, six.ensure_binary('\0' * 16))
+    bin_data = binascii.a2b_base64(data)
+    text = c.decrypt(bin_data)
+    text = six.ensure_str(text).strip()
+
+    return text
+
+def decipher_by_aes_old(data, key, salt=None):
+    data = six.ensure_binary(data)
+    key  = six.ensure_binary(key)
 
     key = _pad_length(key, 32)[:32]
 

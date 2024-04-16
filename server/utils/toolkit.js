@@ -45,10 +45,9 @@ var TRANSMISSION_RATE_RADIX_IN_BYTE = toolkit.TRANSMISSION_RATE_RADIX_IN_BYTE = 
 var RE_HTTP_BASIC_AUTH_MASK         = /:\/\/.+:.+@/g;
 var RE_HTTP_BASIC_AUTH_MASK_REPLACE = '://***:***@';
 
-var MASK_KEYWORDS = [
-  'secret',
-  'password',
-]
+var MASK_KEYWORDS = [ 'secret', 'password' ];
+
+var AES_HEADER = 'AESv2:';
 
 var sysStartTime = toolkit.sysStartTime = function sysStartTime() {
   return SYS_START_TIME;
@@ -1030,9 +1029,37 @@ function _padLength(text, length) {
  *
  * @param  {String} input - String to cipher
  * @param  {String} key   - Secret
+ * @param  {String} salt  - Salt
  * @return {String}       - Ciphered string
  */
-var cipherByAES = toolkit.cipherByAES = function cipherByAES(text, key) {
+var cipherByAES = toolkit.cipherByAES = function cipherByAES(text, key, salt) {
+  var text = text || '';
+  var saltedKey = key;
+  if (salt) {
+    saltedKey = `~${key}~${salt}~`;
+  }
+
+  text = _padLength(text, 16);
+  saltedKey = getMD5(saltedKey);
+
+  var c = crypto.createCipheriv('aes-256-cbc', saltedKey, '\0'.repeat(16));
+  c.setAutoPadding(false);
+  var data = AES_HEADER + [
+    c.update(text, 'utf8', 'base64'),
+    c.final('base64'),
+  ].join('');
+
+  return data;
+};
+
+/**
+ * Cipher by AES (old version).
+ *
+ * @param  {String} input - String to cipher
+ * @param  {String} key   - Secret
+ * @return {String}       - Ciphered string
+ */
+var cipherByAES_old = toolkit.cipherByAES_old = function cipherByAES_old(text, key) {
   text = _padLength(text, 16);
   key = _padLength(key, 32).slice(0, 32);
 
@@ -1051,9 +1078,41 @@ var cipherByAES = toolkit.cipherByAES = function cipherByAES(text, key) {
  *
  * @param  {String} input - String to decipher
  * @param  {String} key   - Secret
+ * @param  {String} salt  - Salt
  * @return {String}       - Deciphered string
  */
-var decipherByAES = toolkit.decipherByAES = function decipherByAES(data, key) {
+var decipherByAES = toolkit.decipherByAES = function decipherByAES(data, key, salt) {
+  if (data.indexOf(AES_HEADER) !== 0) {
+    // 旧版加密结果
+    return decipherByAES_old(data, key);
+  }
+
+  var data = data.slice(AES_HEADER.length);
+  var saltedKey = key;
+  if (salt) {
+    saltedKey = `~${key}~${salt}~`;
+  }
+
+  saltedKey = getMD5(saltedKey);
+
+  var c = crypto.createDecipheriv('aes-256-cbc', saltedKey, '\0'.repeat(16));
+  c.setAutoPadding(false);
+  var text = [
+    c.update(data, 'base64', 'utf8'),
+    c.final('utf8'),
+  ].join('').trim();
+
+  return text;
+};
+
+/**
+ * Decipher by AES (old version).
+ *
+ * @param  {String} input - String to decipher
+ * @param  {String} key   - Secret
+ * @return {String}       - Deciphered string
+ */
+var decipherByAES_old = toolkit.decipherByAES_old = function decipherByAES_old(data, key) {
   key = _padLength(key, 32).slice(0, 32);
 
   var c = crypto.createDecipheriv('aes-256-cbc', key, '\0'.repeat(16));
