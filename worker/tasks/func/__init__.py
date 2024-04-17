@@ -1353,6 +1353,9 @@ class FuncBaseTask(BaseTask):
         self.script       = None
         self.script_scope = None
 
+        # print 日志行
+        self.__print_log_lines = None
+
         # 用于观测云的额外信息
         self.extra_for_guance = FuncExtraForGuanceHelper(self)
 
@@ -1378,11 +1381,7 @@ class FuncBaseTask(BaseTask):
 
         return self.script_scope['DFF'].api_funcs or []
 
-    @property
-    def print_log_lines(self):
-        if not self.script_scope:
-            return []
-
+    def __make_print_log_lines(self):
         lines = self.script_scope['DFF'].print_log_lines or []
 
         mask_strings = []
@@ -1401,7 +1400,17 @@ class FuncBaseTask(BaseTask):
 
             formated_lines.append(f"[{l['time']}] [+{l['delta']}ms] [{l['total']}ms] {l['message']}")
 
-        return formated_lines
+        self.__print_log_lines = formated_lines
+
+    @property
+    def print_log_lines(self):
+        if not self.script_scope:
+            return []
+
+        if not self.__print_log_lines:
+            self.__make_print_log_lines()
+
+        return self.__print_log_lines
 
     def _get_func_defination(self, F):
         f_co   = six.get_function_code(F)

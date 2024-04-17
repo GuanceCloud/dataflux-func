@@ -24,6 +24,9 @@ class FuncRunner(FuncBaseTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.__full_print_log_lines = None
+        self.__reduced_print_logs   = None
+
     @property
     def return_value(self):
         if not self.result:
@@ -38,6 +41,19 @@ class FuncRunner(FuncBaseTask):
 
         return self.result['responseControl']
 
+    def __make_full_print_log_lines(self):
+        # 完整 print 日志【目前】仅用于上传观测云
+        # 同时，上传观测云时，日志会以行作为最小单位分割上传
+        # 因此，此处保持数组，避免反复切割字符串
+        lines = []
+        if self.print_log_lines:
+            lines.extend(self.print_log_lines)
+
+        if self.traceback:
+            lines.append(f'[Traceback]\n{self.traceback}')
+
+        self.__full_print_log_lines = lines
+
     @property
     def full_print_log_lines(self):
         if self.script_scope is None:
@@ -46,14 +62,27 @@ class FuncRunner(FuncBaseTask):
         if not self.print_log_lines and not self.traceback:
             return None
 
+        if not self.__full_print_log_lines:
+            self.__make_full_print_log_lines()
+
+        return self.__full_print_log_lines
+
+    def __make_reduced_print_logs(self):
         lines = []
-        if self.print_log_lines:
-            lines.extend(self.print_log_lines)
+        for line in self.print_log_lines:
+            lines.append(toolkit.limit_text(line, CONFIG['_TASK_RECORD_PRINT_LOG_LINE_LIMIT'], show_length=True))
 
-        if self.traceback:
-            lines.append(f'[Traceback]\n{self.traceback}')
+        reduced_logs = '\n'.join(lines).strip()
 
-        return lines
+        length = len(reduced_logs)
+        if length > CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD'] + CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']:
+            reduce_tip = f"!!! Content too long, only FIRST {CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD']} chars and LAST {CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']} are saved !!!"
+            first_part = reduced_logs[:CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD']] + '...'
+            skip_tip   = f"<skipped {length - CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD'] - CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']} chars>"
+            last_part  = '...' + reduced_logs[-CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']:]
+            reduced_logs = '\n\n'.join([ reduce_tip, first_part, skip_tip, last_part ])
+
+        self.__reduced_print_logs = reduced_logs
 
     @property
     def reduced_print_logs(self):
@@ -63,21 +92,10 @@ class FuncRunner(FuncBaseTask):
         if not self.print_log_lines:
             return None
 
-        lines = []
-        for line in self.print_log_lines:
-            lines.append(toolkit.limit_text(line, CONFIG['_TASK_RECORD_PRINT_LOG_LINE_LIMIT'], show_length=True))
+        if not self.__reduced_print_logs:
+            self.__make_reduced_print_logs()
 
-        print_logs = '\n'.join(lines).strip()
-
-        print_logs_length = len(print_logs)
-        if print_logs_length > CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD'] + CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']:
-            reduce_tip = f"!!! Content too long, only FIRST {CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD']} chars and LAST {CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']} are saved !!!"
-            first_part = print_logs[:CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD']] + '...'
-            skip_tip   = f"<skipped {print_logs_length - CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD'] - CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']} chars>"
-            last_part  = '...' + print_logs[-CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']:]
-            print_logs = '\n\n'.join([ reduce_tip, first_part, skip_tip, last_part ])
-
-        return print_logs
+        return self.__reduced_print_logs
 
     def cache_recent_crontab_triggered(self):
         try:
