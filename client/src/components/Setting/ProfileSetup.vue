@@ -94,6 +94,11 @@ export default {
         await this.loadData();
       }
     },
+    show(val) {
+      if (val && this.$refs.form) {
+        this.$refs.form.clearValidate();
+      }
+    },
   },
   methods: {
     async loadData() {

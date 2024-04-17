@@ -656,6 +656,11 @@ export default {
     FeatureNoticeDialog,
   },
   watch: {
+    show(val) {
+      if (val && this.$refs.form) {
+        this.$refs.form.clearValidate();
+      }
+    },
     selectedType: {
       immediate: true,
       async handler(newVal) {
@@ -683,9 +688,7 @@ export default {
     },
 
     updateValidator(type) {
-      if (this.$refs.form) {
-        this.$refs.form.clearValidate();
-      }
+      if (this.$refs.form) this.$refs.form.clearValidate();
 
       let fieldMap = this.C.CONNECTOR_MAP.get(type).configFields;
       if (!fieldMap) return;

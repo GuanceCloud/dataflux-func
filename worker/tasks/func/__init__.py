@@ -147,11 +147,11 @@ class InvalidAPIOption(DataFluxFuncBaseException):
 
 class DFFWraper(object):
     def __init__(self, inject_funcs=None):
-        self.api_func_set = set()
-        self.api_funcs    = []
-        self.print_logs   = []
+        self.api_func_set    = set()
+        self.api_funcs       = []
+        self.print_log_lines = []
 
-        self.inject_funcs = inject_funcs
+        self.inject_funcs = inject_funcs or {}
 
         # 增加小写别名
         for func_name in list(self.inject_funcs.keys()):
@@ -164,7 +164,7 @@ class DFFWraper(object):
         else:
             return self.inject_funcs.get(name)
 
-def decipher_connector_config_fields(config):
+def decipher_connector_config(connector_id, config):
     '''
     解密字段
     '''
@@ -175,7 +175,9 @@ def decipher_connector_config_fields(config):
 
         if config.get(f_cipher):
             try:
-                config[f] = toolkit.decipher_by_aes(config[f_cipher], CONFIG['SECRET'])
+                salt = connector_id
+                config[f] = toolkit.decipher_by_aes(config[f_cipher], CONFIG['SECRET'], salt)
+
             except UnicodeDecodeError as e:
                 raise Exception('Decipher by AES failed. SECRET maybe wrong or changed')
 
@@ -260,7 +262,7 @@ class FuncConnectorHelper(object):
 
         # 创建连接器 Helper
         config = toolkit.json_loads(connector['configJSON'])
-        config = decipher_connector_config_fields(config)
+        config = decipher_connector_config(connector['id'], config)
 
         helper = helper_class(self._task.logger, config, pool_size=CONFIG['_FUNC_TASK_CONNECTOR_POOL_SIZE'], **helper_kwargs)
         return helper
@@ -299,7 +301,9 @@ class FuncConnectorHelper(object):
         for k in CONNECTOR_CIPHER_FIELDS:
             v = config.get(k)
             if v is not None:
-                config[f'{k}Cipher'] = toolkit.cipher_by_aes(v, CONFIG['SECRET'])
+                salt = connector_id
+                config[f'{k}Cipher'] = toolkit.cipher_by_aes(v, CONFIG['SECRET'], salt)
+
             config.pop(k, None)
 
         config_json = toolkit.json_dumps(config)
@@ -439,9 +443,9 @@ class FuncEnvVariableHelper(object):
         sql = '''
             SELECT
                 `id`
+                ,`autoTypeCasting`
                 ,`valueTEXT`
                 ,MD5(IFNULL(`valueTEXT`, '')) AS valueMD5
-                ,`autoTypeCasting`
             FROM `biz_main_env_variable`
             WHERE
                 `id` = ?
@@ -456,6 +460,11 @@ class FuncEnvVariableHelper(object):
         self._task.logger.debug(f"[LOAD ENV VARIABLE] load `{env_variable_id}` from DB")
 
         env_variable = env_variable[0]
+
+        # 解密
+        if env_variable['autoTypeCasting'] == 'password':
+            salt = env_variable['id']
+            env_variable['valueTEXT'] = toolkit.decipher_by_aes(env_variable['valueTEXT'], CONFIG['SECRET'], salt)
 
         # 类型转换
         auto_type_casting = env_variable['autoTypeCasting']
@@ -1362,6 +1371,38 @@ class FuncBaseTask(BaseTask):
         ]
         self.logger.debug(f"[INIT FUNC TASK] {', '.join([f'{a}: `{getattr(self, a)}`' for a in log_attrs])}")
 
+    @property
+    def api_funcs(self):
+        if not self.script_scope:
+            return []
+
+        return self.script_scope['DFF'].api_funcs or []
+
+    @property
+    def print_log_lines(self):
+        if not self.script_scope:
+            return []
+
+        lines = self.script_scope['DFF'].print_log_lines or []
+
+        mask_strings = []
+
+        env_helper = self.script_scope['DFF'].inject_funcs.get('ENV')
+        if env_helper:
+            all_envs = env_helper._FuncEnvVariableHelper__loaded_env_variable_cache.get_all()
+            mask_strings = [ env['valueTEXT'] for env in all_envs if env['autoTypeCasting'] == 'password' ]
+            mask_strings.sort(key=len, reverse=True)
+
+        formated_lines = []
+        for l in lines:
+            if mask_strings:
+                for ms in mask_strings:
+                    l['message'] = l['message'].replace(ms, '*****')
+
+            formated_lines.append(f"[{l['time']}] [+{l['delta']}ms] [{l['total']}ms] {l['message']}")
+
+        return formated_lines
+
     def _get_func_defination(self, F):
         f_co   = six.get_function_code(F)
         f_name = f_co.co_name
@@ -1455,7 +1496,7 @@ class FuncBaseTask(BaseTask):
 
                     module_scope = self.create_safe_scope(import_script_id)
                     if parent_scope:
-                        module_scope['DFF'].print_logs = parent_scope['DFF'].print_logs
+                        module_scope['DFF'].print_log_lines = parent_scope['DFF'].print_log_lines
 
                         for k, v in parent_scope.items():
                             if k.startswith('_DFF_'):
@@ -1686,8 +1727,12 @@ class FuncBaseTask(BaseTask):
 
         self.__prev_log_time = now
 
-        line = f'[{message_time}] [+{delta}ms] [{total}ms] {message}'
-        safe_scope['DFF'].print_logs.append(line)
+        safe_scope['DFF'].print_log_lines.append({
+            'time'   : message_time,
+            'delta'  : delta,
+            'total'  : total,
+            'message': message,
+        })
 
     def _print(self, safe_scope, *args, **kwargs):
         try:
@@ -1924,23 +1969,28 @@ class FuncBaseTask(BaseTask):
         # 添加 DataFlux Func 内置方法/对象
         __connector_helper      = FuncConnectorHelper(self)
         __env_variable_helper   = FuncEnvVariableHelper(self)
-        __store_helper          = FuncStoreHelper(self, default_scope = script_name)
-        __cache_helper          = FuncCacheHelper(self, default_scope = script_name)
+        __store_helper          = FuncStoreHelper(self, default_scope=script_name)
+        __cache_helper          = FuncCacheHelper(self, default_scope=script_name)
         __config_helper         = FuncConfigHelper(self)
         __thread_helper         = FuncThreadHelper(self)
         __auth_link_helper      = FuncAuthLinkHelper(self)
         __crontab_config_helper = FuncCrontabConfigHelper(self)
         __batch_helper          = FuncBatchHelper(self)
 
-        def __log(message):
-            return self._log(safe_scope, message)
+        def __print(*args, **kwargs):
+            return self._print(safe_scope, *args, **kwargs)
+
+        def __print_var(*args, **kwargs):
+            for v in args:
+                __print(f"[VAR] type=`{type(v)}`, value=`{str(v)}`, obj_size=`{toolkit.get_obj_size(v)}`")
+
+            for name, v in kwargs.items():
+                __print(f"[VAR] {name}: type=`{type(v)}`, value=`{str(v)}`, obj_size=`{toolkit.get_obj_size(v)}`")
 
         def __eval(*args, **kwargs):
-            # 不再限制此类函数，直接调用原生函数
             return eval(*args, **kwargs)
 
         def __exec(*args, **kwargs):
-            # 不再限制此类函数，直接调用原生函数
             return exec(*args, **kwargs)
 
         def __export_as_api(title=None, **extra_config):
@@ -1952,8 +2002,13 @@ class FuncBaseTask(BaseTask):
         def __call_blueprint(blueprint_id, kwargs=None):
             return self._call_func(safe_scope, f'_bp_{blueprint_id}__main.run', kwargs)
 
+        def __custom_import(name, globals=None, locals=None, fromlist=None, level=0):
+            return self._custom_import(name, globals, locals, fromlist, level, safe_scope)
+
         inject_funcs = {
-            'LOG' : __log,  # 输出日志
+            'LOG': __print,     # 输出日志
+            'VAR': __print_var, # 输出变量
+
             'EVAL': __eval, # 执行Python表达式
             'EXEC': __exec, # 执行Python代码
 
@@ -2000,7 +2055,7 @@ class FuncBaseTask(BaseTask):
         }
         safe_scope['DFF'] = DFFWraper(inject_funcs=inject_funcs)
 
-        # 添加内置对象 / 函数
+        # 注入内置对象 / 函数
         safe_scope['__builtins__'] = {}
         for name in dir(six.moves.builtins):
             # 跳过：
@@ -2012,19 +2067,6 @@ class FuncBaseTask(BaseTask):
             safe_scope['__builtins__'][name] = six.moves.builtins.__getattribute__(name)
 
         # 替换内置对象 / 函数
-        def __custom_import(name, globals=None, locals=None, fromlist=None, level=0):
-            return self._custom_import(name, globals, locals, fromlist, level, safe_scope)
-
-        def __print(*args, **kwargs):
-            return self._print(safe_scope, *args, **kwargs)
-
-        def __print_var(*args, **kwargs):
-            for v in args:
-                __print(f"[VAR] type=`{type(v)}`, value=`{str(v)}`, obj_size=`{toolkit.get_obj_size(v)}`")
-
-            for name, v in kwargs.items():
-                __print(f"[VAR] {name}: type=`{type(v)}`, value=`{str(v)}`, obj_size=`{toolkit.get_obj_size(v)}`")
-
         safe_scope['__builtins__']['__import__'] = __custom_import
         safe_scope['__builtins__']['print']      = __print
         safe_scope['__builtins__']['print_var']  = __print_var

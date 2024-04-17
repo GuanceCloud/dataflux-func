@@ -155,6 +155,11 @@ export default {
     LongTextDialog,
   },
   watch: {
+    show(val) {
+      if (val && this.$refs.form) {
+        this.$refs.form.clearValidate();
+      }
+    },
     'form.id'(val) {
       if (!val || val.length < this.ID_PREFIX.length || val.indexOf(this.ID_PREFIX) < 0) {
         this.form.id = this.ID_PREFIX;

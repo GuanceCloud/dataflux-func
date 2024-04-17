@@ -182,13 +182,15 @@ function _doSetup(userConfig, callback) {
         },
       ], function(err) {
         if (!err) {
+          var salt = 'guance';
+          var guanceAPIKey = toolkit.cipherByAES(userConfig.GUANCE_API_KEY, userConfig.SECRET, salt);
           guanceConnectorConfig = {
             guanceNode        : guanceNode.key,
             guanceOpenAPIURL  : guanceNode.openapi,
             guanceOpenWayURL  : guanceNode.openway,
             guanceWebSocketURL: guanceNode.websocket,
             guanceAPIKeyId    : userConfig.GUANCE_API_KEY_ID,
-            guanceAPIKeyCipher: toolkit.cipherByAES(userConfig.GUANCE_API_KEY, userConfig.SECRET),
+            guanceAPIKeyCipher: guanceAPIKey,
           };
         }
 
@@ -406,13 +408,17 @@ function _doSetup(userConfig, callback) {
       if (setupErrorWrap.hasError()) return asyncCallback();
       if (!userConfig.AUTO_SETUP_AK_SECRET) return asyncCallback();
 
+      var akId = userConfig.AUTO_SETUP_AK_ID || AUTO_SETUP_DEFAULT_AK_ID;
+      var salt = akId;
+      var akSecret = toolkit.cipherByAES(userConfig.AUTO_SETUP_AK_SECRET, userConfig.SECRET, salt);
+
       var sql = 'INSERT INTO `wat_main_access_key` SET ?';
       var sqlParams = [
         {
-          id    : userConfig.AUTO_SETUP_AK_ID || AUTO_SETUP_DEFAULT_AK_ID,
+          id    : akId,
           userId: ADMIN_USER_ID,
           name  : 'Auto Setup Init AK',
-          secret: userConfig.AUTO_SETUP_AK_SECRET,
+          secret: akSecret,
         }
       ];
       dbHelper.query(sql, sqlParams, function(err, data) {

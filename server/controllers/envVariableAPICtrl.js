@@ -22,6 +22,10 @@ exports.list = crudHandler.createListHandler();
 exports.add = function(req, res, next) {
   var data = req.body.data;
 
+  if (!data.autoTypeCasting && !data.valueTEXT) {
+    return next(new E('EBizCondition', 'autoTypeCasting and valueTEXT must be specified at the same time'));
+  }
+
   var envVariableModel = envVariableMod.createModel(res.locals);
 
   async.series([
@@ -61,6 +65,10 @@ exports.add = function(req, res, next) {
 exports.modify = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data;
+
+  if (!data.autoTypeCasting && !data.valueTEXT) {
+    return next(new E('EBizCondition', 'autoTypeCasting and valueTEXT must be specified at the same time'));
+  }
 
   var envVariableModel = envVariableMod.createModel(res.locals);
 

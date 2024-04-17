@@ -273,6 +273,7 @@ zh-HK:
   Reset: 復位
   Restore Default: 恢復默認
   Run: 執行
+  Same as string, but masked in print logs: 與字符串相同，但在 print 日誌中會被隱藏具體內容
   Save: 保存
   Saved: 已保存
   Script: 腳本
@@ -719,6 +720,7 @@ zh-TW:
   Reset: 復位
   Restore Default: 恢復預設
   Run: 執行
+  Same as string, but masked in print logs: 與字串相同，但在 print 日誌中會被隱藏具體內容
   Save: 儲存
   Saved: 已儲存
   Script: 指令碼

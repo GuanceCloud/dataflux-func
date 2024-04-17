@@ -398,6 +398,7 @@ en:
 
   # const.js - ENV_VARIABLE
   'String'                                                     : '字符串'
+  'Same as string, but masked in print logs'                   : '与字符串相同，但在 print 日志中会被隐藏具体内容'
   'Integer'                                                    : '整数'
   'Will be converted by int() automatically'                   : '将自动使用 int() 进行转换'
   'Float'                                                      : '浮点数'

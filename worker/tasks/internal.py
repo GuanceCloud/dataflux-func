@@ -20,7 +20,7 @@ from datasize import DataSize
 from worker.utils import toolkit, yaml_resources
 from worker.utils.extra_helpers import HexStr, format_sql_v2 as format_sql
 from worker.tasks import BaseTask
-from worker.tasks.func import CONNECTOR_HELPER_CLASS_MAP, decipher_connector_config_fields
+from worker.tasks.func import CONNECTOR_HELPER_CLASS_MAP, decipher_connector_config
 
 CONFIG     = yaml_resources.get('CONFIG')
 IMAGE_INFO = yaml_resources.get('IMAGE_INFO')
@@ -1086,7 +1086,7 @@ class QueryConnector(BaseInternalTask):
         # 执行连接器命令
         connector_type   = connector.get('type')
         connector_config = connector.get('config')
-        connector_config = decipher_connector_config_fields(connector_config)
+        connector_config = decipher_connector_config(connector_id, connector_config)
 
         connector_helper_class = CONNECTOR_HELPER_CLASS_MAP.get(connector_type)
         if not connector_helper_class:

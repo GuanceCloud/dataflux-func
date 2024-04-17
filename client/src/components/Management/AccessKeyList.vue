@@ -169,6 +169,9 @@ export default {
     },
     showSecret(d) {
       this.$set(this.showSecretMap, d.id, true);
+      setTimeout(() => {
+        this.$set(this.showSecretMap, d.id, false);
+      }, 15 * 1000)
     },
   },
   computed: {

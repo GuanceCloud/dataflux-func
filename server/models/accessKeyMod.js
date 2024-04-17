@@ -40,6 +40,27 @@ exports.createModel = function(locals) {
 
 var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);
 
+EntityModel.prototype.get = function(id, options, callback) {
+  var self = this;
+
+  return self._get(id, options, function(err, dbRes) {
+    if (err) return callback(err);
+
+    // 解密相关字段
+    if (dbRes) {
+      if (dbRes.secretCipher.indexOf('AESv2:') === 0) {
+        var salt = id;
+        dbRes.secret = toolkit.decipherByAES(dbRes.secretCipher, CONFIG.SECRET, salt);
+      } else {
+        dbRes.secret = dbRes.secretCipher;
+      }
+      delete dbRes.secretCipher;
+    }
+
+    return callback(null, dbRes);
+  });
+};
+
 EntityModel.prototype.list = function(options, callback) {
   options = options || {};
 
@@ -48,7 +69,7 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('   ak.seq');
   sql.append('  ,ak.id');
   sql.append('  ,ak.title');
-  sql.append('  ,ak.secret');
+  sql.append('  ,ak.secretCipher');
   sql.append('  ,ak.webhookURL');
   sql.append('  ,ak.webhookEvents');
   sql.append('  ,ak.allowWebhookEcho');
@@ -67,7 +88,22 @@ EntityModel.prototype.list = function(options, callback) {
 
   options.baseSQL = sql.toString();
 
-  return this._list(options, callback);
+  return this._list(options, function(err, dbRes, pageInfo) {
+    if (err) return callback(err);
+
+    // 解密相关字段
+    dbRes.forEach(function(d) {
+      if (d.secretCipher.indexOf('AESv2:') === 0) {
+        var salt = d.id;
+        d.secret = toolkit.decipherByAES(d.secretCipher, CONFIG.SECRET, salt);
+      } else {
+        d.secret = d.secretCipher;
+      }
+      delete d.secretCipher;
+    });
+
+    return callback(null, dbRes, pageInfo);
+  });
 };
 
 EntityModel.prototype.add = function(data, callback) {
@@ -84,8 +120,12 @@ EntityModel.prototype.add = function(data, callback) {
     }
   }
 
-  data.id     = toolkit.strf('{0}-{1}', this.alias, toolkit.genRandString(16));
-  data.secret = toolkit.genRandString(32);
+  data.id = toolkit.strf('{0}-{1}', this.alias, toolkit.genRandString(16));
+  var secret = toolkit.genRandString(32);
+
+  // 加密
+  var salt = data.id;
+  data.secretCipher = toolkit.cipherByAES(secret, CONFIG.SECRET, salt);
 
   return this._add(data, callback);
 };

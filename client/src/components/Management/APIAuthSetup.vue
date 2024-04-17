@@ -255,6 +255,10 @@ export default {
   },
   watch: {
     show(val) {
+      if (val && this.$refs.form) {
+        this.$refs.form.clearValidate();
+      }
+
       if (!val) {
         this.$root.$emit('reload.apiAuthList');
       }
@@ -262,9 +266,7 @@ export default {
   },
   methods: {
     updateValidator(type) {
-      if (this.$refs.form) {
-        this.$refs.form.clearValidate();
-      }
+      if (this.$refs.form) this.$refs.form.clearValidate();
 
       let fieldMap = this.C.API_AUTH_MAP.get(type).configFields;
       if (!fieldMap) return;

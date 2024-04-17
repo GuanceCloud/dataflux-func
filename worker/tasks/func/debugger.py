@@ -69,16 +69,6 @@ class FuncDebugger(FuncBaseTask):
             return_value     = None
             response_control = None
 
-            api_funcs  = []
-            print_logs = []
-
-            if self.script_scope:
-                # 脚本解析结果
-                api_funcs = self.script_scope['DFF'].api_funcs or []
-
-                # print 日志
-                print_logs = self.script_scope['DFF'].print_logs or []
-
             if self.func_name and func_resp:
                 # NOTE: `func_debugger`对应前端只使用 repr 结果
                 return_value = pprint.saferepr(func_resp.data)
@@ -91,8 +81,8 @@ class FuncDebugger(FuncBaseTask):
                 'returnValue'    : return_value,
                 'responseControl': response_control,
 
-                'apiFuncs' : api_funcs,
-                'printLogs': print_logs,
+                'apiFuncs' : self.api_funcs,
+                'printLogs': self.print_log_lines,
 
                 'status'         : _status,
                 'exception'      : None if _exception is None else _exception_text,

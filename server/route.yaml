@@ -3019,6 +3019,7 @@ envVariableAPI:
           $type      : enum
           $in:
             - string
+            - password
             - integer
             - float
             - boolean
@@ -3063,6 +3064,7 @@ envVariableAPI:
           $type      : enum
           $in:
             - string
+            - password
             - integer
             - float
             - boolean

@@ -691,6 +691,15 @@ upgradeInfo:
   # 于观测云 SaaS 2024-04-24 迭代中实装
   - seq: 28
     database: |-
+      -- 调整列顺序
+      ALTER TABLE biz_main_env_variable
+        MODIFY COLUMN `autoTypeCasting` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'string' COMMENT '自动类型转换 string|password|integer|float|boolean|json|commaArray'
+        AFTER `description`;
+
+      -- 扩充 AccessKey Secret 字段用于存放加密后内容
+      ALTER TABLE wat_main_access_key
+        CHANGE `secret` `secretCipher` longtext;
+
       -- 重建任务记录表（增加非关键错误信息）
       DROP TABLE IF EXISTS `biz_main_task_record`;
       DROP TABLE IF EXISTS `biz_main_task_record_func`;

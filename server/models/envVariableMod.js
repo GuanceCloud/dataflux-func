@@ -38,6 +38,23 @@ exports.createModel = function(locals) {
 
 var EntityModel = exports.EntityModel = modelHelper.createSubModel(TABLE_OPTIONS);
 
+EntityModel.prototype.get = function(id, options, callback) {
+  var self = this;
+
+  return self._get(id, options, function(err, dbRes) {
+    if (err) return callback(err);
+
+    // 隐藏密码
+    if (dbRes) {
+      if (dbRes.autoTypeCasting === 'password') {
+        delete dbRes.valueTEXT;
+      }
+    }
+
+    return callback(null, dbRes);
+  });
+};
+
 EntityModel.prototype.list = function(options, callback) {
   options = options || {};
 
@@ -50,10 +67,27 @@ EntityModel.prototype.list = function(options, callback) {
 
   options.baseSQL = sql.toString();
 
-  return this._list(options, callback);
+  return this._list(options, function(err, dbRes, pageInfo) {
+    if (err) return callback(err);
+
+    // 隐藏密码
+    dbRes.forEach(function(d) {
+      if (d.autoTypeCasting === 'password') {
+        delete d.valueTEXT;
+      }
+    });
+
+    return callback(null, dbRes, pageInfo);
+  });
 };
 
 EntityModel.prototype.add = function(data, callback) {
+  if (data.valueTEXT && data.autoTypeCasting === 'password') {
+    // ID 由用户指定，无需生成
+    var salt = data.id;
+    data.valueTEXT = toolkit.cipherByAES(data.valueTEXT, CONFIG.SECRET, salt);
+  }
+
   try {
     data = _prepareData(data);
   } catch(err) {
@@ -71,6 +105,12 @@ EntityModel.prototype.add = function(data, callback) {
 };
 
 EntityModel.prototype.modify = function(id, data, callback) {
+  if (data.valueTEXT && data.autoTypeCasting === 'password') {
+    // ID 由用户指定，无需生成
+    var salt = id;
+    data.valueTEXT = toolkit.cipherByAES(data.valueTEXT, CONFIG.SECRET, salt);
+  }
+
   try {
     data = _prepareData(data);
   } catch(err) {

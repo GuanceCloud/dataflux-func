@@ -788,6 +788,10 @@ class LocalCache(object):
         self.clean()
         return self.__data.keys()
 
+    def get_all(self):
+        self.clean()
+        return [ elem['dat'] for elem in self.__data.values() ]
+
     def __len__(self):
         self.clean()
         return len(self.__data)

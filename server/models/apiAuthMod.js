@@ -83,13 +83,17 @@ EntityModel.prototype.list = function(options, callback) {
 };
 
 EntityModel.prototype.add = function(data, callback) {
+  // 预分配 ID，用于加密加盐
+  data.id = this.genDataId();
+
   // 密码字段加密
   switch(data.type) {
     case 'httpBasic':
     case 'httpDigest':
       if (Array.isArray(data.configJSON.users)) {
         data.configJSON.users.forEach(function(x) {
-          x.passwordCipher = toolkit.cipherByAES(x.password, CONFIG.SECRET);
+          var salt = `~${data.id}~${x.username}~`;
+          x.passwordCipher = toolkit.cipherByAES(x.password, CONFIG.SECRET, salt);
           delete x.password;
         });
       }
@@ -142,7 +146,8 @@ EntityModel.prototype.modify = function(id, data, callback) {
 
                 } else {
                   // 已填写密码，则加密
-                  x.passwordCipher = toolkit.cipherByAES(x.password, CONFIG.SECRET);
+                  var salt = `~${id}~${x.username}~`;
+                  x.passwordCipher = toolkit.cipherByAES(x.password, CONFIG.SECRET, salt);
                 }
 
                 delete x.password;

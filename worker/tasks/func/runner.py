@@ -43,13 +43,12 @@ class FuncRunner(FuncBaseTask):
         if self.script_scope is None:
             return None
 
-        print_logs = self.script_scope['DFF'].print_logs
-        if not print_logs and not self.traceback:
+        if not self.print_log_lines and not self.traceback:
             return None
 
         lines = []
-        if print_logs:
-            lines.extend(print_logs)
+        if self.print_log_lines:
+            lines.extend(self.print_log_lines)
 
         if self.traceback:
             lines.append(f'[Traceback]\n{self.traceback}')
@@ -61,25 +60,24 @@ class FuncRunner(FuncBaseTask):
         if self.script_scope is None:
             return None
 
-        print_logs = self.script_scope['DFF'].print_logs
-        if not print_logs:
+        if not self.print_log_lines:
             return None
 
-        data = []
-        for line in print_logs:
-            data.append(toolkit.limit_text(line, CONFIG['_TASK_RECORD_PRINT_LOG_LINE_LIMIT'], show_length=True))
+        lines = []
+        for line in self.print_log_lines:
+            lines.append(toolkit.limit_text(line, CONFIG['_TASK_RECORD_PRINT_LOG_LINE_LIMIT'], show_length=True))
 
-        data = '\n'.join(data).strip()
+        print_logs = '\n'.join(lines).strip()
 
-        data_length = len(data)
-        if data_length > CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD'] + CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']:
+        print_logs_length = len(print_logs)
+        if print_logs_length > CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD'] + CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']:
             reduce_tip = f"!!! Content too long, only FIRST {CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD']} chars and LAST {CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']} are saved !!!"
-            skip_tip   = f"<skipped {data_length - CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD'] - CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']} chars>"
-            first_part = data[:CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD']] + '...'
-            last_part  = '...' + data[-CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']:]
-            data = '\n\n'.join([ reduce_tip, first_part, skip_tip, last_part ])
+            first_part = print_logs[:CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD']] + '...'
+            skip_tip   = f"<skipped {print_logs_length - CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD'] - CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']} chars>"
+            last_part  = '...' + print_logs[-CONFIG['_TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL']:]
+            print_logs = '\n\n'.join([ reduce_tip, first_part, skip_tip, last_part ])
 
-        return data
+        return print_logs
 
     def cache_recent_crontab_triggered(self):
         try:

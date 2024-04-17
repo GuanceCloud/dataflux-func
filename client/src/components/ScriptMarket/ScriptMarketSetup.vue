@@ -226,6 +226,10 @@ export default {
   },
   watch: {
     show(val) {
+      if (val && this.$refs.form) {
+        this.$refs.form.clearValidate();
+      }
+
       if (!val) {
         this.$root.$emit('reload.scriptMarketList');
       }
@@ -233,9 +237,7 @@ export default {
   },
   methods: {
     updateValidator(type) {
-      if (this.$refs.form) {
-        this.$refs.form.clearValidate();
-      }
+      if (this.$refs.form) this.$refs.form.clearValidate();
 
       let fieldMap = this.C.SCRIPT_MARKET_TYPE_MAP.get(type).configFields;
       if (!fieldMap) return;

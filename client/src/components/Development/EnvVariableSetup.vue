@@ -9,6 +9,8 @@ Only alphabets, numbers and underscore are allowed: 只能包含大小写英文�
 Cannot not starts with a number: 不得以数字开头
 Please input Value: 请输入值
 
+Leave blank when not changing: 不修改时请留空
+
 ENV Variable created: 环境变量已创建
 ENV Variable saved  : 环境变量已保存
 ENV Variable deleted: 环境变量已删除
@@ -24,6 +26,7 @@ Cannot not starts with a number: 不得以數字開頭
 ENV Variable created: 環境變量已創建
 ENV Variable deleted: 環境變量已刪除
 ENV Variable saved: 環境變量已保存
+Leave blank when not changing: 不修改時請留空
 Only alphabets, numbers and underscore are allowed: 只能包含大小寫英文、數字及下劃線
 Please input ID: 請輸入 ID
 Please input Value: 請輸入值
@@ -37,6 +40,7 @@ Cannot not starts with a number: 不得以數字開頭
 ENV Variable created: 環境變數已建立
 ENV Variable deleted: 環境變數已刪除
 ENV Variable saved: 環境變數已儲存
+Leave blank when not changing: 不修改時請留空
 Only alphabets, numbers and underscore are allowed: 只能包含大小寫英文、數字及下劃線
 Please input ID: 請輸入 ID
 Please input Value: 請輸入值
@@ -82,21 +86,23 @@ Value Type: 值型別
                 v-model="form.description"></el-input>
             </el-form-item>
 
-            <el-form-item :label="$t('Value')" prop="valueTEXT">
-              <el-input
-                type="textarea"
-                resize="none"
-                :autosize="{minRows: 2}"
-                maxlength="5000"
-                v-model="form.valueTEXT"></el-input>
-            </el-form-item>
-
             <el-form-item :label="$t('Value Type')">
-              <el-select v-model="form.autoTypeCasting">
+              <el-select v-model="form.autoTypeCasting" @change="switchAutoTypeCasting">
                 <el-option v-for="opt in C.ENV_VARIABLE" :label="opt.name" :key="opt.key" :value="opt.key"></el-option>
               </el-select>
               <InfoBlock v-if="C.ENV_VARIABLE_MAP.get(form.autoTypeCasting)"
                 :title="C.ENV_VARIABLE_MAP.get(form.autoTypeCasting).tips" />
+            </el-form-item>
+
+            <el-form-item :label="$t('Value')" prop="valueTEXT">
+              <el-input
+                :type="form.autoTypeCasting === 'password' ? null : 'textarea'"
+                :show-password="form.autoTypeCasting === 'password'"
+                :placeholder="pageMode === 'setup' && form.autoTypeCasting === 'password' ? $t('Leave blank when not changing') : ''"
+                resize="none"
+                :autosize="{minRows: 3}"
+                maxlength="5000"
+                v-model="form.valueTEXT"></el-input>
             </el-form-item>
 
             <el-form-item class="setup-footer">
@@ -116,8 +122,24 @@ export default {
   components: {
   },
   watch: {
+    show(val) {
+      if (val && this.$refs.form) {
+        this.$refs.form.clearValidate();
+      }
+    },
   },
   methods: {
+    updateValidator(autoTypeCasting) {
+      if (this.$refs.form) this.$refs.form.clearValidate();
+
+      let isSetupPassword = this.pageMode === 'setup' && autoTypeCasting === 'password';
+      this.formRules.valueTEXT[0].required = !isSetupPassword;
+    },
+    switchAutoTypeCasting(autoTypeCasting) {
+      console.log('in @change, now =', this.form.autoTypeCasting)
+      this.updateValidator(autoTypeCasting);
+    },
+
     async loadData(id) {
       if (!id) {
         this.pageMode = 'add';
@@ -139,6 +161,8 @@ export default {
         let nextForm = {};
         Object.keys(this.form).forEach(f => nextForm[f] = this.data[f]);
         this.form = nextForm;
+
+        this.updateValidator(this.data.autoTypeCasting);
       }
 
       this.show = true;
@@ -215,8 +239,8 @@ export default {
         id             : null,
         title          : null,
         description    : null,
-        valueTEXT      : null,
         autoTypeCasting: null,
+        valueTEXT      : null,
       },
       formRules: {
         id: [

@@ -627,6 +627,11 @@ kafka.publish(topic='some_topic', message='some_message')`,
         name: i18n.t('String'),
       },
       {
+        key : 'password',
+        name: i18n.t('Password'),
+        tips: i18n.t('Same as string, but masked in print logs'),
+      },
+      {
         key : 'integer',
         name: i18n.t('Integer'),
         tips: i18n.t('Will be converted by int() automatically'),

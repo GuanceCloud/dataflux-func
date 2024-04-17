@@ -909,7 +909,8 @@ function _doAPIAuth(locals, req, res, apiAuthId, realm, callback) {
               return __askHTTPAuth(authType, res, realm, asyncCallback);
 
             } else {
-              var password = toolkit.decipherByAES(matchedUser.passwordCipher, CONFIG.SECRET);
+              var salt = `~${apiAuthId}~${matchedUser.username}~`;
+              var password = toolkit.decipherByAES(matchedUser.passwordCipher, CONFIG.SECRET, salt);
               if (!__checkHTTPAuth(authType, req, authInfo, password)) {
                 return __askHTTPAuth(authType, res, realm, asyncCallback);
               }

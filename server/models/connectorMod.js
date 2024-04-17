@@ -56,7 +56,7 @@ EntityModel.prototype.get = function(id, options, callback) {
     // 解密/隐藏相关字段
     if (dbRes) {
       if (self.decipher) {
-        _doDecipher(dbRes.configJSON);
+        _doDecipher(id, dbRes.configJSON);
       } else {
         _removeCipherFields(dbRes.configJSON);
       }
@@ -85,7 +85,7 @@ EntityModel.prototype.list = function(options, callback) {
     // 解密/隐藏相关字段
     dbRes.forEach(function(d) {
       if (self.decipher) {
-        _doDecipher(d.configJSON);
+        _doDecipher(d.id, d.configJSON);
       } else {
         _removeCipherFields(d.configJSON);
       }
@@ -96,6 +96,9 @@ EntityModel.prototype.list = function(options, callback) {
 };
 
 EntityModel.prototype.add = function(data, callback) {
+  // ID 由用户指定，无需生成
+  _doCipher(data.id, data.configJSON);
+
   try {
     data = _prepareData(data);
   } catch(err) {
@@ -113,6 +116,8 @@ EntityModel.prototype.add = function(data, callback) {
 };
 
 EntityModel.prototype.modify = function(id, data, callback) {
+  _doCipher(id, data.configJSON);
+
   try {
     data = _prepareData(data);
   } catch(err) {
@@ -129,14 +134,15 @@ EntityModel.prototype.modify = function(id, data, callback) {
   return this._modify(id, data, callback);
 };
 
-function _doCipher(configJSON) {
+function _doCipher(id, configJSON) {
   if (toolkit.isNothing(configJSON)) return configJSON;
 
   CIPHER_CONFIG_FIELDS.forEach(function(f) {
     var fCipher = toolkit.strf('{0}Cipher', f);
 
     if (configJSON[f]) {
-      configJSON[fCipher] = toolkit.cipherByAES(configJSON[f], CONFIG.SECRET);
+      var salt = id;
+      configJSON[fCipher] = toolkit.cipherByAES(configJSON[f], CONFIG.SECRET, salt);
       delete configJSON[f];
     }
   });
@@ -144,7 +150,7 @@ function _doCipher(configJSON) {
   return configJSON;
 };
 
-function _doDecipher(configJSON) {
+function _doDecipher(id, configJSON) {
   if (toolkit.isNothing(configJSON)) return configJSON;
 
   CIPHER_CONFIG_FIELDS.forEach(function(f) {
@@ -152,7 +158,8 @@ function _doDecipher(configJSON) {
 
     if (configJSON[fCipher]) {
       try {
-        configJSON[f] = toolkit.decipherByAES(configJSON[fCipher], CONFIG.SECRET);
+        var salt = id;
+        configJSON[f] = toolkit.decipherByAES(configJSON[fCipher], CONFIG.SECRET, salt);
       } catch(err) {
         configJSON[f] = '';
       }
@@ -178,7 +185,6 @@ function _prepareData(data) {
   data = toolkit.jsonCopy(data);
 
   if (data.configJSON && 'object' === typeof data.configJSON) {
-    _doCipher(data.configJSON);
     data.configJSON = JSON.stringify(data.configJSON);
   }
 

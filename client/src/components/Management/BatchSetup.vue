@@ -215,14 +215,18 @@ export default {
   components: {
   },
   watch: {
+    show(val) {
+      if (val && this.$refs.form) {
+        this.$refs.form.clearValidate();
+      }
+
+      if (!val) {
+        this.$root.$emit('reload.batchList');
+      }
+    },
     'form.id'(val) {
       if (val && (val.length < this.ID_PREFIX.length || val.indexOf(this.ID_PREFIX) < 0)) {
         this.form.id = this.ID_PREFIX;
-      }
-    },
-    show(val) {
-      if (!val) {
-        this.$root.$emit('reload.batchList');
       }
     },
     useCustomId(val) {

@@ -130,6 +130,10 @@ export default {
   },
   watch: {
     show(val) {
+      if (val && this.$refs.form) {
+        this.$refs.form.clearValidate();
+      }
+
       if (!val) {
         this.$root.$emit('reload.fileServiceList');
       }
