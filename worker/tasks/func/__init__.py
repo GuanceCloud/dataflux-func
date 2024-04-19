@@ -1178,7 +1178,7 @@ class FuncCrontabConfigHelper(BaseFuncEntityHelper):
     _table         = 'biz_main_crontab_config'
     _entity_origin = 'crontabConfig'
 
-    def set_temp_crontab(self, temp_crontab, expires=None, entity_id=None):
+    def set_crontab(self, crontab, expires=None, entity_id=None):
         entity_id = self.resolve_entity_id(entity_id)
         if not entity_id:
             return
@@ -1186,11 +1186,11 @@ class FuncCrontabConfigHelper(BaseFuncEntityHelper):
         cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
         cache_value = {
             'expireTime': None if not expires else int(time.time()) + expires,
-            'value'     : temp_crontab,
+            'value'     : crontab,
         }
         self._task.cache_db.hset(cache_key, entity_id, toolkit.json_dumps(cache_value))
 
-    def get_temp_crontab(self, entity_id=None):
+    def get_crontab(self, entity_id=None):
         entity_id = self.resolve_entity_id(entity_id)
         if not entity_id:
             return
@@ -1206,7 +1206,7 @@ class FuncCrontabConfigHelper(BaseFuncEntityHelper):
 
         return temp_config['value']
 
-    def get_all_temp_crontab(self):
+    def get_all_crontab(self):
         cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
         temp_config_map = self._task.cache_db.hgetall(cache_key)
         if not temp_config_map:
@@ -1221,13 +1221,26 @@ class FuncCrontabConfigHelper(BaseFuncEntityHelper):
 
         return temp_config_map
 
-    def clear_temp_crontab(self, entity_id=None):
+    def clear_crontab(self, entity_id=None):
         entity_id = self.resolve_entity_id(entity_id)
         if not entity_id:
             return
 
         cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
         self._task.cache_db.hdel(cache_key, entity_id)
+
+    # 兼容方法（xxx_crontab -> xxx_temp_crontab）
+    def set_temp_crontab(self, *args, **kwargs):
+        return self.set_crontab(*args, **kwargs)
+
+    def get_temp_crontab(self, *args, **kwargs):
+        return self.get_crontab(*args, **kwargs)
+
+    def get_all_temp_crontab(self, *args, **kwargs):
+        return self.get_all_crontab(*args, **kwargs)
+
+    def clear_temp_crontab(self, *args, **kwargs):
+        return self.clear_crontab(*args, **kwargs)
 
 class FuncBatchHelper(BaseFuncEntityHelper):
     _table         = 'biz_main_batch'

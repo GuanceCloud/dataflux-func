@@ -534,6 +534,14 @@ h3 {
 ul {
   list-style-type: square;
 }
+
+.hidden {
+  visibility: hidden;
+}
+.overrided {
+  text-decoration: line-through red 2px;
+}
+
 .main-text {
   color: #303133;
 }

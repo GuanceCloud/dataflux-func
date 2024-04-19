@@ -464,9 +464,6 @@ export default {
 .install-cost {
   white-space: nowrap;
 }
-.overrided {
-  text-decoration: line-through red 2px;
-}
 </style>
 
 <style>

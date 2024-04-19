@@ -177,16 +177,20 @@ def json_find(j, path, safe=False):
             e = Exception('json_find() - hit `None`')
             raise e
 
-    if not isinstance(path, six.string_types):
+    if not isinstance(path, (six.string_types, list, tuple)):
         if safe:
             return None
         else:
-            e = Exception('json_find() - Path must be a string or unicode')
+            e = Exception('json_find() - Path must be a string or list/tuple')
             raise e
 
     curr_path = '<TOP>'
     sub_j = j
-    steps = path.split('.')
+
+    steps = path
+    if isinstance(steps, str):
+        steps = steps.split('.')
+
     for step in steps:
         curr_path = '.'.join([curr_path, step])
 

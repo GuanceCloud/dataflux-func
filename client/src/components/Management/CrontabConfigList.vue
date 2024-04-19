@@ -251,7 +251,7 @@ lastSucceeded: '{t}執行成功'
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Config')" width="240">
+          <el-table-column :label="$t('Config')" width="280">
             <template slot-scope="scope">
               <span class="text-info">Crontab{{ $t(':') }}</span>
               <template v-if="scope.row.dynamicCrontab">
