@@ -30,7 +30,7 @@ Process           : 工作进程
 Delay Queue       : 延迟队列
 Worker Queue      : 工作队列
 Worker Queue Limit: 工作队列限制
-Jam               : 拥堵
+Load              : 负载
 Biz Entities      : 业务实体
 Recent operations : 最近操作记录
 Client            : 客户端
@@ -59,7 +59,7 @@ Delay Queue: 延遲隊列
 Expand All: 展開所有服務
 Hostname: 主機名
 IP Address: IP 地址
-Jam: 擁堵
+Load: 負載
 MODIFY: 修改操作
 Operation: 操作
 Overview: 總覽
@@ -95,7 +95,7 @@ Delay Queue: 延遲佇列
 Expand All: 展開所有服務
 Hostname: 主機名
 IP Address: IP 地址
-Jam: 擁堵
+Load: 負載
 MODIFY: 修改操作
 Operation: 操作
 Overview: 總覽
@@ -234,7 +234,7 @@ taskCount: '{n} 個任務'
                 <td>{{ $t(':') }}</td>
                 <td><span class="cover">{{ $tc('taskCount', q.delayQueueLength) }}</span></td>
               </tr>
-              <tr :class="{ 'text-good': (q.workerQueueJamPercent < 50), 'text-watch': (q.workerQueueJamPercent >= 50 && q.workerQueueJamPercent < 80), 'text-bad': (q.workerQueueJamPercent >= 80) }">
+              <tr :class="{ 'text-good': (q.workerQueueLoad < 50), 'text-watch': (q.workerQueueLoad >= 50 && q.workerQueueLoad < 99), 'text-bad': (q.workerQueueLoad >= 100) }">
                 <td>{{ $t('Worker Queue') }}</td>
                 <td>{{ $t(':') }}</td>
                 <td><span class="cover">{{ $tc('taskCount', q.workerQueueLength) }}</span></td>
@@ -248,10 +248,10 @@ taskCount: '{n} 個任務'
           </div>
 
           <el-progress type="circle" width="100"
-            class="worker-queue-jam-percent"
-            :percentage="q.workerQueueJamPercent"
-            :format="workerQueueJamPercentFormat"
-            :color="WORKER_QUEUE_JAM_PERCENT_COLORS"></el-progress>
+            class="worker-queue-load"
+            :percentage="q.workerQueueLoad"
+            :format="workerQueueLoadFormat"
+            :color="WORKER_QUEUE_LOAD_COLORS"></el-progress>
         </el-card>
 
         <el-divider content-position="left"><h1>{{ $t('Biz Entities') }}</h1></el-divider>
@@ -473,15 +473,15 @@ export default {
       let fontSize = parseInt(80 - numberLength * 10 * (k || 1));
       return Math.max(50, fontSize);
     },
-    workerQueueJamPercentFormat(percentage) {
-      return `${this.$t('Jam')}${this.$t(':')}${parseInt(percentage)}%`;
+    workerQueueLoadFormat(percentage) {
+      return `${this.$t('Load')}${this.$t(':')}${this.T.numberLimit(percentage, 999)}`;
     },
   },
   computed: {
-    WORKER_QUEUE_JAM_PERCENT_COLORS() {
+    WORKER_QUEUE_LOAD_COLORS() {
       return [
         { color: '#00aa00', percentage: 50 },
-        { color: '#ff6600', percentage: 80 },
+        { color: '#ff6600', percentage: 99 },
         { color: '#ff0000', percentage: 100 }
       ];
     },
@@ -582,7 +582,7 @@ export default {
   z-index: 1;
   position: relative;
 }
-.worker-queue-jam-percent {
+.worker-queue-load {
   top: 25px;
   right: 25px;
   position: absolute;

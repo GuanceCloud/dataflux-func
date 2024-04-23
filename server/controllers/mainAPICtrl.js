@@ -1077,12 +1077,12 @@ exports.overview = function(req, res, next) {
 
       async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(i, timesCallback) {
         overview.queueInfo[i] = {
-          workerCount          : 0,
-          processCount         : 0,
-          delayQueueLength     : 0,
-          workerQueueLength    : 0,
-          workerQueueLimit     : 0,
-          workerQueueJamPercent: 0,
+          workerCount      : 0,
+          processCount     : 0,
+          delayQueueLength : 0,
+          workerQueueLength: 0,
+          workerQueueLimit : 0,
+          workerQueueLoad  : 0,
         }
 
         async.series([
@@ -1116,23 +1116,8 @@ exports.overview = function(req, res, next) {
               var length = parseInt(cacheRes || 0) || 0;
               overview.queueInfo[i].workerQueueLength = length;
 
-              // 计算队列拥堵百分比
-              var jamPercent = 0;
-              var quota = overview.queueInfo[i].processCount * 100;
-
-              if (quota <= 0 && length > 0) {
-                jamPercent = 100;
-
-              } else if (length === 0) {
-                jamPercent = 0;
-
-              } else {
-                jamPercent = 100 * length / quota;
-                if (jamPercent < 0)   jamPercent = 0;
-                if (jamPercent > 100) jamPercent = 100;
-              }
-
-              overview.queueInfo[i].workerQueueJamPercent = parseInt(jamPercent);
+              // 计算负载（每个进程需要处理的任务数量）
+              overview.queueInfo[i].workerQueueLoad = parseInt(length / (overview.queueInfo[i].processCount || 1));
 
               return eachCallback();
             });
