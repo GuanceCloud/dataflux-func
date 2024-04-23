@@ -48,6 +48,11 @@ class SystemMetric(BaseInternalTask):
             worker_queue        = toolkit.get_worker_queue(queue)
             worker_queue_length = int(self.cache_db.llen(worker_queue) or 0)
 
+            delay_queue        = toolkit.get_delay_queue(queue)
+            delay_queue_length = int(self.cache_db.run('zcard', delay_queue) or 0)
+
+            worker_queue_length += delay_queue_length
+
             # 内置监控
             cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'workerQueueLength', 'queue', worker_queue])
             self.cache_db.ts_add(cache_key, worker_queue_length, timestamp=self.trigger_time)

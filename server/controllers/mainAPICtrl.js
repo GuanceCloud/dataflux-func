@@ -31,10 +31,8 @@ var operationRecordMod = require('../models/operationRecordMod');
 var fileServiceMod     = require('../models/fileServiceMod');
 var userMod            = require('../models/userMod');
 var apiAuthMod         = require('../models/apiAuthMod');
-var systemSettingMod   = require('../models/systemSettingMod');
 
 var funcAPICtrl = require('./funcAPICtrl');
-const { rmSync } = require('fs');
 
 var THROTTLING_RULE_EXPIRES_MAP = {
   bySecond: 1,
@@ -1107,7 +1105,17 @@ exports.overview = function(req, res, next) {
             res.locals.cacheDB.run('llen', workerQueue, function(err, cacheRes) {
               if (err) return eachCallback(err);
 
-              overview.workerQueueInfo[i].taskCount = parseInt(cacheRes || 0) || 0;
+              overview.workerQueueInfo[i].taskCount += parseInt(cacheRes || 0) || 0;
+
+              return eachCallback();
+            });
+          },
+          function(eachCallback) {
+            var delayQueue = toolkit.getDelayQueue(i);
+            res.locals.cacheDB.run('zcard', delayQueue, function(err, cacheRes) {
+              if (err) return eachCallback(err);
+
+              overview.workerQueueInfo[i].taskCount += parseInt(cacheRes || 0) || 0;
 
               return eachCallback();
             });
