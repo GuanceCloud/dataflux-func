@@ -19,11 +19,51 @@ CONFIG = yaml_resources.get('CONFIG')
 class CrontabStarter(BaseTask):
     name = 'Crontab.Starter'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._worker_queue_availability = None
+
     @property
     def is_paused(self):
         cache_key = toolkit.get_global_cache_key('tempFlag', 'pauseAllCrontabConfigs')
         pause_all_crontab_configs_flag = self.cache_db.get(cache_key)
         return bool(pause_all_crontab_configs_flag)
+
+    def is_worker_queue_available(self, queue):
+        queue = str(queue)
+
+        # 已经缓存的读取缓存
+        if self._worker_queue_availability:
+            return self._worker_queue_availability[queue]
+
+        # 读取缓存
+        cache_key = toolkit.get_global_cache_key('cache', 'workerQueueLimitCrontabConfig')
+        cache_res = self.cache_db.get(cache_key)
+
+        worker_queue_limit_map = None
+        if cache_res:
+            worker_queue_limit_map = toolkit.json_loads(cache_res)
+
+        # 检查队列可用性
+        active_queues = list(range(CONFIG['_WORKER_QUEUE_COUNT']))
+        for q in active_queues:
+            q = str(q)
+
+            worker_queue_limit = worker_queue_limit_map.get(q)
+            if not worker_queue_limit:
+                # 无限制
+                self._worker_queue_availability[q] = True
+
+            else:
+                # 有限制
+                # 获取当前队列长度
+                worker_queue        = toolkit.get_worker_queue(q)
+                worker_queue_length = int(self.cache_db.llen(worker_queue) or 0)
+
+                self._worker_queue_availability[q] = worker_queue_length < worker_queue_limit
+
+        return self._worker_queue_availability[queue]
 
     def prepare_contab_config(self, crontab_config):
         crontab_config['funcCallKwargs'] = crontab_config.get('funcCallKwargsJSON') or {}
@@ -51,10 +91,9 @@ class CrontabStarter(BaseTask):
             SELECT
                  `func`.`id`              AS `funcId`
                 ,`func`.`extraConfigJSON` AS `funcExtraConfigJSON`
-                ,JSON_UNQUOTE(JSON_EXTRACT(
-                    `func`.`extraConfigJSON`,
-                    '$.integrationConfig.crontab'
-                )) AS `crontab`
+                ,JSON_UNQUOTE(
+                    JSON_EXTRACT(`func`.`extraConfigJSON`, '$.integrationConfig.crontab')
+                ) AS `crontab`
 
             FROM `biz_main_func` AS `func`
 
@@ -99,7 +138,6 @@ class CrontabStarter(BaseTask):
             WHERE
                     `cron`.`seq`        > ?
                 AND `cron`.`isDisabled` = FALSE
-                AND `func`.`id`         IS NOT NULL
                 AND IFNULL(UNIX_TIMESTAMP(`cron`.`expireTime`) > UNIX_TIMESTAMP(), TRUE)
 
             ORDER BY
@@ -160,6 +198,10 @@ class CrontabStarter(BaseTask):
 
             # 确定执行队列
             queue = crontab_config['funcExtraConfig'].get('queue') or CONFIG['_FUNC_TASK_QUEUE_CRONTAB']
+
+            # 判断队列是否可用
+            if not self.is_worker_queue_available(queue):
+                continue
 
             # Crontab 多次执行
             crontab_delay_list = crontab_config['funcExtraConfig'].get('delayedCrontab')

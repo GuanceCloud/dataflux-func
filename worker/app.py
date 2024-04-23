@@ -31,7 +31,7 @@ from worker.tasks.example         import ExampleSuccess, ExampleFailure, Example
 from worker.tasks.crontab_starter import CrontabStarter, CrontabManualStarter
 from worker.tasks.func.debugger   import FuncDebugger
 from worker.tasks.func.runner     import FuncRunner
-from worker.tasks.internal        import SystemMetric, FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache, CheckConnector, QueryConnector, AutoRun
+from worker.tasks.internal        import SystemMetric, FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache, CheckConnector, QueryConnector, AutoRun, WorkerQueueLimitCrontabConfig
 
 TASK_CLS_MAP = {
     # 示例任务
@@ -48,14 +48,15 @@ TASK_CLS_MAP = {
     FuncRunner.name  : FuncRunner,
 
     # 内部任务
-    SystemMetric.name      : SystemMetric,
-    FlushDataBuffer.name   : FlushDataBuffer,
-    AutoClean.name         : AutoClean,
-    AutoBackupDB.name      : AutoBackupDB,
-    ReloadDataMD5Cache.name: ReloadDataMD5Cache,
-    CheckConnector.name    : CheckConnector,
-    QueryConnector.name    : QueryConnector,
-    AutoRun.name           : AutoRun,
+    SystemMetric.name                 : SystemMetric,
+    FlushDataBuffer.name              : FlushDataBuffer,
+    AutoClean.name                    : AutoClean,
+    AutoBackupDB.name                 : AutoBackupDB,
+    ReloadDataMD5Cache.name           : ReloadDataMD5Cache,
+    CheckConnector.name               : CheckConnector,
+    QueryConnector.name               : QueryConnector,
+    AutoRun.name                      : AutoRun,
+    WorkerQueueLimitCrontabConfig.name: WorkerQueueLimitCrontabConfig,
 }
 
 def consume(context):

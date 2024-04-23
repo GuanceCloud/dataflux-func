@@ -13,7 +13,7 @@ from pymysql.cursors import DictCursor
 # Project Modules
 from worker import LOGGER, REDIS
 from worker.utils import toolkit, yaml_resources
-from worker.tasks.internal import SystemMetric, AutoBackupDB, ReloadDataMD5Cache, AutoRun, AutoClean
+from worker.tasks.internal import SystemMetric, AutoBackupDB, ReloadDataMD5Cache, AutoRun, AutoClean, WorkerQueueLimitCrontabConfig
 
 CONFIG  = yaml_resources.get('CONFIG')
 TZ_ABBR = yaml_resources.get('TZ_ABBR')
@@ -150,21 +150,10 @@ def prepare():
 
     # 启动时自动执行
     if not CONFIG['_DISABLE_STARTUP_TASKS']:
-        REDIS.put_tasks({
-            'name': SystemMetric.name,
-        })
-
-        REDIS.put_tasks({
-            'name'  : ReloadDataMD5Cache.name,
-            'kwargs': { 'lockTime': 15, 'all': True },
-        })
-
-        REDIS.put_tasks({
-            'name' : AutoRun.name,
-            'delay': 5,
-        })
-
-        REDIS.put_tasks({
-            'name' : AutoClean.name,
-            'delay': 15,
-        })
+        REDIS.put_tasks([
+            { 'name': SystemMetric.name },
+            { 'name': WorkerQueueLimitCrontabConfig.name },
+            { 'name': ReloadDataMD5Cache.name, 'kwargs': { 'lockTime': 15, 'all': True } },
+            { 'name': AutoRun.name, 'delay': 5 },
+            { 'name': AutoClean.name, 'delay': 15 },
+        ])

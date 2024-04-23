@@ -43,8 +43,7 @@ class SystemMetric(BaseInternalTask):
     def get_metric_queue(self):
         guance_data = []
 
-        available_queues = list(range(CONFIG['_WORKER_QUEUE_COUNT']))
-        for queue in available_queues:
+        for queue in list(range(CONFIG['_WORKER_QUEUE_COUNT'])):
             # 延迟队列
             delay_queue        = toolkit.get_delay_queue(queue)
             delay_queue_length = int(self.cache_db.run('zcard', delay_queue) or 0)
@@ -1186,3 +1185,64 @@ class AutoRun(BaseInternalTask):
                 'expires': expires,
             }
             self.cache_db.put_tasks(task_req)
+
+class WorkerQueueLimitCrontabConfig(BaseInternalTask):
+    name = 'Internal.WorkerQueueLimitCrontabConfig'
+
+    def run(self, **kwargs):
+        # 上锁
+        self.lock()
+
+        # 获取 { 队列: 自动触发配置数量 } 表
+        sql = '''
+            SELECT
+                COUNT(*) AS `count`
+                ,JSON_UNQUOTE(
+                    JSON_EXTRACT(`func`.`extraConfigJSON`, '$.queue')
+                ) AS `queue`
+
+            FROM `biz_main_crontab_config` AS `cron`
+
+            JOIN `biz_main_func` AS `func`
+                ON `cron`.`funcId` = `func`.`id`
+
+            WHERE
+                `cron`.`isDisabled` = FALSE
+
+            GROUP by
+                `queue`
+            '''
+        db_res = self.db.query(sql)
+
+        count_map = {}
+        for d in db_res:
+            queue = str(d.get('queue') or CONFIG['_FUNC_TASK_QUEUE_CRONTAB'])
+            count = d.get('count')
+            if queue not in count_map:
+                count_map[queue] = 0
+
+            count_map[queue] += count
+
+        # 遍历队列
+        worker_queue_limit_map ={}
+        for queue in list(range(CONFIG['_WORKER_QUEUE_COUNT'])):
+            queue = str(queue)
+
+            if not count_map:
+                # 缓存尚未建立，默认开放
+                worker_queue_limit_map[queue] = None
+                continue
+
+            crontab_config_count = count_map.get(queue)
+            if not crontab_config_count:
+                # 此队列上没有自动触发配置，默认开放
+                worker_queue_limit_map[queue] = None
+                continue
+
+            # 工作队列长度限制
+            worker_queue_limit = max(crontab_config_count * CONFIG['_WORKER_QUEUE_LIMIT_SCALE_CRONTAB_CONFIG'], CONFIG['_WORKER_QUEUE_LIMIT_MIN'])
+            worker_queue_limit_map[queue] = worker_queue_limit
+
+        # 缓存
+        cache_key = toolkit.get_global_cache_key('cache', 'workerQueueLimitCrontabConfig')
+        self.cache_db.set(cache_key, toolkit.json_dumps(worker_queue_limit_map))

@@ -27,7 +27,7 @@ from worker import LOGGER, REDIS, run_background
 # 系统定时任务
 from worker.tasks.example import ExampleSuccess
 from worker.tasks.crontab_starter import CrontabStarter
-from worker.tasks.internal import SystemMetric, FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache
+from worker.tasks.internal import SystemMetric, FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache, WorkerQueueLimitCrontabConfig
 
 BEAT_MASTER_LOCK_KEY   = None
 BEAT_MASTER_LOCK_VALUE = None
@@ -69,6 +69,11 @@ SYSTEM_CRONTAB = [
         'task'   : ReloadDataMD5Cache,
         'crontab': CONFIG['_CRONTAB_RELOAD_DATA_MD5_CACHE'],
         'kwargs' : { 'lockTime': 15, 'all': True },
+    },
+    {
+        # 针对自动触发配置的工作队列长度限制
+        'task'   : WorkerQueueLimitCrontabConfig,
+        'crontab': CONFIG['_CRONTAB_WORKER_QUEUE_LIMIT_CRONTAB_CONFIG'],
     },
 ]
 

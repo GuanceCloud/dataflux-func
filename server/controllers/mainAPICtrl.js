@@ -1077,11 +1077,12 @@ exports.overview = function(req, res, next) {
 
       async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(i, timesCallback) {
         overview.queueInfo[i] = {
-          workerCount        : 0,
-          processCount       : 0,
-          delayQueueLength   : 0,
-          workerQueueLength  : 0,
-          workerQueuePressure: 0,
+          workerCount          : 0,
+          processCount         : 0,
+          delayQueueLength     : 0,
+          workerQueueLength    : 0,
+          workerQueueLimit     : 0,
+          workerQueueJamPercent: 0,
         }
 
         async.series([
@@ -1148,6 +1149,24 @@ exports.overview = function(req, res, next) {
           },
         ], timesCallback);
       }, asyncCallback);
+    },
+    // 工作队列长度限制
+    function(asyncCallback) {
+      if (sectionMap && !sectionMap.queueInfo) return asyncCallback();
+
+      var cacheKey = toolkit.getGlobalCacheKey('cache', 'workerQueueLimitCrontabConfig');
+      res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (!cacheRes) return asyncCallback();
+
+        cacheRes = JSON.parse(cacheRes);
+        for (var queue in cacheRes) {
+          overview.queueInfo[queue].workerQueueLimit = cacheRes[queue];
+        }
+
+        return asyncCallback();
+      });
     },
     // 业务实体计数
     function(asyncCallback) {

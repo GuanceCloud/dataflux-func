@@ -86,7 +86,7 @@ class MySQLHelper(object):
                     'database'      : CONFIG['MYSQL_DATABASE'],
                     'charset'       : CONFIG['_MYSQL_CHARSET'],
                     'timezone'      : CONFIG['_MYSQL_TIMEZONE'],
-                    'maxconnections': CONFIG['_MYSQL_CONNECTION_LIMIT_FOR_WORKER'],
+                    'maxconnections': CONFIG['_MYSQL_CONNECTION_LIMIT_WORKER'],
                 }
                 CLIENT = PooledDB(pymysql, **get_config(CLIENT_CONFIG))
 
