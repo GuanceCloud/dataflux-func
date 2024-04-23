@@ -38,7 +38,6 @@ def get_config(c):
         'read_timeout'  : CONFIG['_MYSQL_READ_TIMEOUT'],
         'write_timeout' : CONFIG['_MYSQL_WRITE_TIMEOUT'],
         'maxusage'      : CONFIG['_MYSQL_POOL_MAX_USAGE'],
-        'mincached'     : CONFIG['_MYSQL_POOL_MIN_CACHED'],
         'maxconnections': c.get('maxconnections') or 1,
         'blocking'      : True,
         'ping'          : 7,
