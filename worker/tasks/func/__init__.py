@@ -1016,7 +1016,7 @@ class FuncThreadHelper(object):
             self._task._log(self._task.script_scope, _msg)
             return
 
-        pool_size = FUNC_THREAD_POOL_SIZE or CONFIG['_FUNC_TASK_THREAD_POOL_DEFAULT_SIZE']
+        pool_size = FUNC_THREAD_POOL_SIZE or CONFIG['_FUNC_TASK_THREAD_POOL_SIZE_DEFAULT']
         FUNC_THREAD_POOL = concurrent.futures.ThreadPoolExecutor(max_workers=pool_size)
 
         _msg = f"[THREAD POOL] Pool created (size={pool_size})"

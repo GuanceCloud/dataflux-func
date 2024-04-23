@@ -557,7 +557,7 @@ class BaseTask(object):
         # 调用子类 run() 函数
         try:
             # 检查任务过期
-            if self.expires and self.wait_cost > self.expires * 1000:
+            if self.expires and self.wait_cost and self.wait_cost > self.expires * 1000:
                 raise TaskExpired()
 
             self.logger.info(f'[START] {self.name}')
