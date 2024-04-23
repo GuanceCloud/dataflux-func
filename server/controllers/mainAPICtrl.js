@@ -303,6 +303,11 @@ function createFuncRunnerTaskReq(locals, options, callback) {
     } else {
       // 默认值
       switch(options.origin) {
+        case 'authLink':
+          // 授权链接过期与超时相同
+          taskReq.expires = taskReq.timeout || CONFIG._FUNC_TASK_TIMEOUT_DEFAULT;
+          break;
+
         case 'batch':
           // 批处理不会过期
           delete taskReq.expires;
