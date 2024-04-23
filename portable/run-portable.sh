@@ -82,6 +82,7 @@ OPT_AUTO_SETUP_ADMIN_USERNAME=""
 OPT_AUTO_SETUP_ADMIN_PASSWORD=""
 OPT_AUTO_SETUP_AK_ID=""
 OPT_AUTO_SETUP_AK_SECRET=""
+OPT_EXTRA_CONFIG=""
 
 while [ $# -ge 1 ]; do
     case $1 in
@@ -166,6 +167,24 @@ while [ $# -ge 1 ]; do
             ;;
         --auto-setup-ak-secret )
             OPT_AUTO_SETUP_AK_SECRET=$2
+            shift 2
+            ;;
+
+        # 其他额外参数
+        --extra-config=* )
+            if [ "${OPT_EXTRA_CONFIG}" ]; then
+                OPT_EXTRA_CONFIG="${OPT_EXTRA_CONFIG}\n${1#*=}"
+            else
+                OPT_EXTRA_CONFIG="${1#*=}"
+            fi
+            shift
+            ;;
+        --extra-config )
+            if [ "${OPT_EXTRA_CONFIG}" ]; then
+                OPT_EXTRA_CONFIG="${OPT_EXTRA_CONFIG}\n$2"
+            else
+                OPT_EXTRA_CONFIG="$2"
+            fi
             shift 2
             ;;
 
@@ -371,6 +390,12 @@ if [ ! -f ${__CONFIG_FILE} ]; then
 
             echo -e "AUTO_SETUP_AK_SECRET: ${OPT_AUTO_SETUP_AK_SECRET}" >> ${__CONFIG_FILE}
         fi
+    fi
+
+    # 增加额外配置
+    if [ "${OPT_EXTRA_CONFIG}" ]; then
+        echo -e "\n# Extra configs:" >> ${__CONFIG_FILE}
+        echo -e ${OPT_EXTRA_CONFIG} >> ${__CONFIG_FILE}
     fi
 
     log "New config file with random secret/password created:"
