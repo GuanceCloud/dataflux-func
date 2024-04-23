@@ -977,7 +977,7 @@ exports.overview = function(req, res, next) {
 
   var overview = {
     serviceInfo     : [],
-    workerQueueInfo : [],
+    queueInfo       : [],
     bizEntityInfo   : [],
     latestOperations: [],
   };
@@ -1068,13 +1068,15 @@ exports.overview = function(req, res, next) {
     },
     // 各队列工作单元数量、工作进程数量、队列长度
     function(asyncCallback) {
-      if (sectionMap && !sectionMap.workerQueueInfo) return asyncCallback();
+      if (sectionMap && !sectionMap.queueInfo) return asyncCallback();
 
       async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(i, timesCallback) {
-        overview.workerQueueInfo[i] = {
-          workerCount : 0,
-          processCount: 0,
-          taskCount   : 0,
+        overview.queueInfo[i] = {
+          workerCount        : 0,
+          processCount       : 0,
+          delayQueueLength   : 0,
+          workerQueueLength  : 0,
+          workerQueuePressure: 0,
         }
 
         async.series([
@@ -1083,7 +1085,7 @@ exports.overview = function(req, res, next) {
             res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
               if (err) return eachCallback(err);
 
-              overview.workerQueueInfo[i].workerCount = parseInt(cacheRes || 0) || 0;
+              overview.queueInfo[i].workerCount = parseInt(cacheRes || 0) || 0;
 
               return eachCallback();
 
@@ -1094,7 +1096,7 @@ exports.overview = function(req, res, next) {
             res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
               if (err) return eachCallback(err);
 
-              overview.workerQueueInfo[i].processCount = parseInt(cacheRes || 0) || 0;
+              overview.queueInfo[i].processCount = parseInt(cacheRes || 0) || 0;
 
               return eachCallback();
 
@@ -1105,7 +1107,26 @@ exports.overview = function(req, res, next) {
             res.locals.cacheDB.run('llen', workerQueue, function(err, cacheRes) {
               if (err) return eachCallback(err);
 
-              overview.workerQueueInfo[i].taskCount += parseInt(cacheRes || 0) || 0;
+              var length = parseInt(cacheRes || 0) || 0;
+              overview.queueInfo[i].workerQueueLength = length;
+
+              // 计算队列拥堵百分比
+              var jamPercent = 0;
+              var quota = overview.queueInfo[i].processCount * 100;
+
+              if (quota <= 0 && length > 0) {
+                jamPercent = 100;
+
+              } else if (length === 0) {
+                jamPercent = 0;
+
+              } else {
+                jamPercent = 100 * length / quota;
+                if (jamPercent < 0)   jamPercent = 0;
+                if (jamPercent > 100) jamPercent = 100;
+              }
+
+              overview.queueInfo[i].workerQueueJamPercent = parseInt(jamPercent);
 
               return eachCallback();
             });
@@ -1115,7 +1136,7 @@ exports.overview = function(req, res, next) {
             res.locals.cacheDB.run('zcard', delayQueue, function(err, cacheRes) {
               if (err) return eachCallback(err);
 
-              overview.workerQueueInfo[i].taskCount += parseInt(cacheRes || 0) || 0;
+              overview.queueInfo[i].delayQueueLength = parseInt(cacheRes || 0) || 0;
 
               return eachCallback();
             });

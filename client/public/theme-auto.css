@@ -613,6 +613,10 @@ input:disabled {
   border-color: #555 !important;
   background-color: #222 !important;
 }
+.el-card .cover {
+  background-color: #222 !important;
+}
+
 .el-card.is-always-shadow,
 .el-card.is-hover-shadow:focus,
 .el-card.is-hover-shadow:hover {

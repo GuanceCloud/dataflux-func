@@ -1087,6 +1087,9 @@ kbd {
   font-weight: normal;
 }
 
+.el-card .cover {
+  background-color: white;
+}
 .el-drawer__wrapper {
   position: fixed;
   top: 0;

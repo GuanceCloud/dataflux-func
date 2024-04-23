@@ -40,25 +40,39 @@ class SystemMetric(BaseInternalTask):
     '''
     name = 'Internal.SystemMetric'
 
-    def get_metric_worker_queue(self):
+    def get_metric_queue(self):
         guance_data = []
 
         available_queues = list(range(CONFIG['_WORKER_QUEUE_COUNT']))
         for queue in available_queues:
-            worker_queue        = toolkit.get_worker_queue(queue)
-            worker_queue_length = int(self.cache_db.llen(worker_queue) or 0)
-
+            # 延迟队列
             delay_queue        = toolkit.get_delay_queue(queue)
             delay_queue_length = int(self.cache_db.run('zcard', delay_queue) or 0)
 
-            worker_queue_length += delay_queue_length
+            cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'delayQueueLength', 'queue', queue])
+            self.cache_db.ts_add(cache_key, delay_queue_length, timestamp=self.trigger_time)
 
-            # 内置监控
-            cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'workerQueueLength', 'queue', worker_queue])
+            # 工作队列
+            worker_queue        = toolkit.get_worker_queue(queue)
+            worker_queue_length = int(self.cache_db.llen(worker_queue) or 0)
+
+            cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'workerQueueLength', 'queue', queue])
             self.cache_db.ts_add(cache_key, worker_queue_length, timestamp=self.trigger_time)
 
             # 观测云
             if self.guance_data_upload_url:
+                guance_data.append({
+                    'measurement': CONFIG['_SELF_MONITOR_GUANCE_MEASUREMENT_DELAY_QUEUE'],
+                    'tags': {
+                        'queue'    : str(queue),
+                        'redis_key': delay_queue,
+                    },
+                    'fields': {
+                        'length' : delay_queue_length,
+                    },
+                    'timestamp': self.trigger_time,
+                })
+
                 guance_data.append({
                     'measurement': CONFIG['_SELF_MONITOR_GUANCE_MEASUREMENT_WORKER_QUEUE'],
                     'tags': {
@@ -110,7 +124,7 @@ class SystemMetric(BaseInternalTask):
         keys = self.cache_db.keys()
         for k in keys:
             if k.startswith(CONFIG['APP_NAME']):
-                prefix = k.split(':')[0] + ':TAGS'
+                prefix = k.split(':')[0] + ':...'
             else:
                 prefix = 'NON_DFF_KEY'
 
@@ -186,8 +200,8 @@ class SystemMetric(BaseInternalTask):
         # 上锁
         self.lock()
 
-        # 上报队列长度数据
-        self.safe_call(self.get_metric_worker_queue)
+        # 上报队列数据
+        self.safe_call(self.get_metric_queue)
 
         # 上报缓存数据库信息
         self.safe_call(self.get_metric_cache_db)

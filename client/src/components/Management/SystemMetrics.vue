@@ -1,6 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
+Only Top 10   : 只展示前 10
 System Metrics: 系统指标
-Tasks / Func  : 任务 / 函数
+Common        : 常用
 Cache         : 缓存
 Database      : 数据库
 Server        : Server（服务）
@@ -14,6 +15,7 @@ Server Memory Heap External: Server 内存 Heap 外部对象用量
 Worker CPU Percent         : Worker CPU 使用率
 Worker Memory PSS          : Worker 内存 PSS
 Func Call Count            : 函数调用次数
+Delay Queue Length         : 延迟队列长度
 Worker Queue Length        : 工作队列长度
 DB Table Total Used        : 数据库表总用量（数据 + 索引）
 DB Table Data Used         : 数据库表数据用量
@@ -30,12 +32,15 @@ Cache: 緩存
 Cache Key Count by Prefix: 緩存數據庫 Key 數量（按前綴區分）
 Cache Key Used: 緩存數據庫 Key 數量
 Cache Memory Used: 緩存數據庫內存用量
+Common: 常用
 DB Table Data Used: 數據庫表數據用量
 DB Table Index Used: 數據庫表索引用量
 DB Table Total Used: 數據庫表總用量（數據 + 索引）
 Database: 數據庫
+Delay Queue Length: 延遲隊列長度
 Func Call Count: 函數調用次數
 Matched Route Count: 接口訪問次數（按路由區分）
+Only Top 10: 只展示前 10
 Server: Server（服務）
 Server CPU Percent: Server CPU 使用率
 Server Memory Heap External: Server 內存 Heap 外部對象用量
@@ -43,7 +48,6 @@ Server Memory Heap Total: Server 內存 Heap 總量
 Server Memory Heap Used: Server 內存 Heap 用量
 Server Memory RSS: Server 內存 RSS
 System Metrics: 系統指標
-Tasks / Func: 任務 / 函數
 Worker: Worker（工作單元）
 Worker CPU Percent: Worker CPU 使用率
 Worker Memory PSS: Worker 內存 PSS
@@ -54,12 +58,15 @@ Cache: 快取
 Cache Key Count by Prefix: 快取資料庫 Key 數量（按字首區分）
 Cache Key Used: 快取資料庫 Key 數量
 Cache Memory Used: 快取資料庫記憶體用量
+Common: 常用
 DB Table Data Used: 資料庫表資料用量
 DB Table Index Used: 資料庫表索引用量
 DB Table Total Used: 資料庫表總用量（資料 + 索引）
 Database: 資料庫
+Delay Queue Length: 延遲佇列長度
 Func Call Count: 函式呼叫次數
 Matched Route Count: 介面訪問次數（按路由區分）
+Only Top 10: 只展示前 10
 Server: Server（服務）
 Server CPU Percent: Server CPU 使用率
 Server Memory Heap External: Server 記憶體 Heap 外部物件用量
@@ -67,7 +74,6 @@ Server Memory Heap Total: Server 記憶體 Heap 總量
 Server Memory Heap Used: Server 記憶體 Heap 用量
 Server Memory RSS: Server 記憶體 RSS
 System Metrics: 系統指標
-Tasks / Func: 任務 / 函式
 Worker: Worker（工作單元）
 Worker CPU Percent: Worker CPU 使用率
 Worker Memory PSS: Worker 記憶體 PSS
@@ -92,7 +98,8 @@ Worker Queue Length: 工作佇列長度
         </div>
       </el-header>
       <el-main>
-        <el-divider content-position="left"><h1>{{ $t('Tasks / Func') }}</h1></el-divider>
+        <el-divider content-position="left"><h1>{{ $t('Common') }}</h1></el-divider>
+        <div id="delayQueueLength" class="chart"></div>
         <div id="workerQueueLength" class="chart"></div>
         <div id="funcCallCount" class="chart"></div>
         <div id="matchedRouteCount" class="chart"></div>
@@ -309,12 +316,14 @@ export default {
       };
     },
     createCommonTooltipOpt() {
-      return { trigger: 'axis', axisPointer: { animation: false } };
+      return {trigger: 'axis', axisPointer: { animation: false } };
     },
     createTSTooltipOpt(opt) {
       opt = opt || {};
       return {
         trigger: 'axis',
+        appendToBody: true,
+        confine: true,
         axisPointer: { animation: false, type: 'cross' },
         showDelay: 0,
         hideDelay: 0,
@@ -343,7 +352,7 @@ export default {
           tooltipHTML += '<table>';
           for (let i = 0; i < sortedParams.length; i++) {
             if (i >= 10) {
-              tooltipHTML += '<tr><td colspan="100%" align="right">只展示Top10</td></tr>';
+              tooltipHTML += `<tr><td colspan="100%" align="right">${this.$t('Only Top 10')}</td></tr>`;
               break;
             }
 
@@ -530,6 +539,14 @@ export default {
           xAxis  : this.createTimeXAxisOpt(),
           yAxis  : this.createCountYAxisOpt(),
         },
+        delayQueueLength: {
+          textStyle: textStyle,
+          title  : this.createTitleOpt(this.$t('Delay Queue Length')),
+          tooltip: this.createTSTooltipOpt({ unit: ['Tasks', 'Task'], nDigits: 0 }),
+          grid   : this.createCommonGridOpt(),
+          xAxis  : this.createTimeXAxisOpt(),
+          yAxis  : this.createCountYAxisOpt({ max: value => Math.max(parseInt(value.max * 1.1), 100) }),
+        },
         workerQueueLength: {
           textStyle: textStyle,
           title  : this.createTitleOpt(this.$t('Worker Queue Length')),
@@ -644,6 +661,6 @@ export default {
 .chart {
   width : 100%;
   min-width: 1040px;
-  height: 350px;
+  height: 360px;
 }
 </style>

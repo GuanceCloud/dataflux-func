@@ -128,6 +128,26 @@ EntityModel.prototype.getSystemMetrics = function(callback) {
         return asyncCallback();
       });
     },
+    // Get Delay queue length
+    function(asyncCallback) {
+      var metric = 'delayQueueLength';
+
+      data[metric] = {};
+
+      var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'queue', '*']);
+      var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, fillZero: true };
+
+      self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
+        if (err) return asyncCallback(err);
+
+        for (var k in tsDataMap) {
+          var queue = toolkit.parseCacheKey(k).tags.queue;
+          data[metric][queue] = tsDataMap[k];
+        }
+
+        return asyncCallback();
+      });
+    },
     // Get Worker queue length
     function(asyncCallback) {
       var metric = 'workerQueueLength';

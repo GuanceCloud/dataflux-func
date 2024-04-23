@@ -47,6 +47,7 @@ SYSTEM_CRONTAB = [
         # 系统指标
         'task'   : SystemMetric,
         'crontab': CONFIG['_CRONTAB_SYSTEM_METRIC'],
+        'delay'  : 5,
     },
     {
         # 缓存数据刷入数据库
@@ -90,7 +91,7 @@ def get_matched_crontab_task_instances(t):
             continue
 
         if toolkit.is_match_crontab(item['crontab'], t, tz=CONFIG['TIMEZONE']):
-            task_inst = item['task'](kwargs=item.get('kwargs'), trigger_time=t)
+            task_inst = item['task'](kwargs=item.get('kwargs'), trigger_time=t, delay=item.get('delay'), queue=item.get('queue'))
             result.append(task_inst)
 
     return result
