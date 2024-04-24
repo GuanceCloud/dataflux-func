@@ -22,7 +22,7 @@ class CrontabStarter(BaseTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._worker_queue_availability = None
+        self._worker_queue_availability = {}
 
     @property
     def is_paused(self):
