@@ -22,10 +22,6 @@ exports.list = crudHandler.createListHandler();
 exports.add = function(req, res, next) {
   var data = req.body.data;
 
-  if (!data.autoTypeCasting && !data.valueTEXT) {
-    return next(new E('EBizCondition', 'autoTypeCasting and valueTEXT must be specified at the same time'));
-  }
-
   var envVariableModel = envVariableMod.createModel(res.locals);
 
   async.series([
@@ -66,21 +62,21 @@ exports.modify = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data;
 
-  if (!data.autoTypeCasting && !data.valueTEXT) {
-    return next(new E('EBizCondition', 'autoTypeCasting and valueTEXT must be specified at the same time'));
-  }
-
   var envVariableModel = envVariableMod.createModel(res.locals);
-
-  var envVariable = null;
 
   async.series([
     // 获取环境变量
     function(asyncCallback) {
+      // 不修改内容时跳过
+      if (!data.valueTEXT) return asyncCallback();
+
+      // 已传递类型时跳过
+      if (data.autoTypeCasting) return asyncCallback();
+
       envVariableModel.getWithCheck(id, null, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        envVariable = dbRes;
+        data.autoTypeCasting = dbRes.autoTypeCasting;
 
         return asyncCallback();
       });

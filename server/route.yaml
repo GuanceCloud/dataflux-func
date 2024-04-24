@@ -3009,13 +3009,9 @@ envVariableAPI:
           $desc      : 描述
           $allowNull : true
           $type      : string
-        valueTEXT:
-          $desc      : 值
-          $isRequired: false
-          $type      : string
         autoTypeCasting:
           $desc      : 自动类型转换
-          $isRequired: false
+          $isRequired: true
           $type      : enum
           $in:
             - string
@@ -3025,6 +3021,10 @@ envVariableAPI:
             - boolean
             - json
             - commaArray
+        valueTEXT:
+          $desc      : 值
+          $isRequired: false
+          $type      : string
         isPinned:
           $desc      : 是否已置顶
           $allowNull : true
@@ -3054,10 +3054,6 @@ envVariableAPI:
           $desc      : 描述
           $allowNull : true
           $type      : string
-        valueTEXT:
-          $desc      : 值
-          $isRequired: false
-          $type      : string
         autoTypeCasting:
           $desc      : 自动类型转换
           $isRequired: false
@@ -3070,6 +3066,10 @@ envVariableAPI:
             - boolean
             - json
             - commaArray
+        valueTEXT:
+          $desc      : 值
+          $isRequired: false
+          $type      : string
         isPinned:
           $desc      : 是否已置顶
           $allowNull : true
