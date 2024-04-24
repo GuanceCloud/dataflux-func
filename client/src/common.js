@@ -282,7 +282,9 @@ export function getScriptMarketLogo(scriptMarket) {
     try {
       let brandLogo = C.SCRIPT_MARKET_TYPE_MAP.get('git').brandLogo;
       for (let keyword in brandLogo) {
-        if (scriptMarket.configJSON.url.indexOf(keyword) >= 0) {
+        if (scriptMarket.configJSON
+        && scriptMarket.configJSON.url
+        && scriptMarket.configJSON.url.indexOf(keyword) >= 0) {
           return brandLogo[keyword];
         }
       }

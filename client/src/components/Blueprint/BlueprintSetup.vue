@@ -54,7 +54,7 @@ Setup Blueprint: 配置藍圖
     width="750px">
 
     <template slot="title">
-      {{ pageTitle }} <code class="text-main">{{ data.title || data.id }}</code>
+      {{ pageTitle }} <code class="text-main" v-if="pageMode === 'setup'">{{ data.title || data.id }}</code>
     </template>
 
     <el-container direction="vertical">

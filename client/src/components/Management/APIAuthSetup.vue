@@ -102,7 +102,7 @@ Users: 使用者
     width="750px">
 
     <template slot="title">
-      {{ pageTitle }} <code class="text-main">{{ data.title || C.API_AUTH_MAP.get(selectedType).name }}</code>
+      {{ pageTitle }} <code class="text-main" v-if="pageMode === 'setup'">{{ data.title || C.API_AUTH_MAP.get(selectedType).name }}</code>
     </template>
 
     <el-container direction="vertical">

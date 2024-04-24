@@ -132,10 +132,10 @@ ScriptSetCount: 不包含任何指令碼集 | 包含 {n} 個指令碼集 | 包�
           :data="data"
           :row-class-name="T.getHighlightRowCSS">
 
-          <el-table-column :label="$t('Type')" width="150" align="center">
+          <el-table-column :label="$t('Type')" width="200" align="center">
             <template slot-scope="scope">
               <div class="script-market-logo-wrap">
-                <i v-if="scope.row.isOfficial" class="fa fa-fw fa-3x fa-star text-watch"></i>
+                <Logo v-if="scope.row.isOfficial" type="auto"></Logo>
                 <el-image v-else class="script-market-logo" :class="`logo-${scope.row.type}`" :src="common.getScriptMarketLogo(scope.row)"></el-image>
               </div>
             </template>
@@ -290,7 +290,7 @@ export default {
     async loadData(opt) {
       opt = opt || {};
       if (opt.runCheckUpdate) {
-        await this.T.callAPI_get('/api/v1/script-markets/do/check-update');
+        await this.checkUpdate();
       }
 
       let _listQuery = this.dataFilter = this.T.createListQuery();
@@ -407,23 +407,18 @@ export default {
       this.processingText = this.$t('Checking Update...');
       this.isProcessing = true;
 
-      let minLoadingTime = 1000;
-      let startTime = Date.now();
+      let wait = this.T.createWaitLoading();
 
       await this.common.checkScriptMarketUpdate();
       await this.loadData();
 
-      let endTime = Date.now();
-      let processedTime = endTime - startTime;
-      if (processedTime > minLoadingTime) {
-        this.isProcessing = false;
-      } else {
-        setTimeout(() => {
-          this.isProcessing = false;
-        }, minLoadingTime - processedTime);
-      }
+      wait.end(() => { this.isProcessing = false });
     },
     async createOfficialScriptMarket() {
+      this.isProcessing = true;
+
+      let wait = this.T.createWaitLoading();
+
       let apiRes = await this.T.callAPI('post', '/api/v1/script-markets/do/add-official', {
         alert: { okMessage: this.$t('Official Script Market added') },
       });
@@ -432,6 +427,8 @@ export default {
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
 
       await this.loadData();
+
+      wait.end(() => { this.isProcessing = false });
     },
 
     async lockData(dataId, isLocked) {

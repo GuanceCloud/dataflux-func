@@ -76,7 +76,7 @@ This Script is locked by you: 當前指令碼已被您鎖定
     :close-on-press-escape="false"
     width="750px">
     <template slot="title">
-      {{ pageTitle }} <code class="text-main">{{ data.title || data.id }}</code>
+      {{ pageTitle }} <code class="text-main" v-if="pageMode === 'setup'">{{ data.title || data.id }}</code>
     </template>
 
     <el-container direction="vertical">

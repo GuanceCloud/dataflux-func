@@ -88,7 +88,7 @@ Should start with http:// or https://: 必須以 http:// 或 https://開頭
     width="750px">
 
     <template slot="title">
-      {{ pageTitle }} <code class="text-main">{{ data.title || C.API_AUTH_MAP.get(selectedType).name }}</code>
+      {{ pageTitle }} <code class="text-main" v-if="pageMode === 'setup'">{{ data.title || C.SCRIPT_MARKET_TYPE_MAP.get(selectedType).name }}</code>
     </template>
 
     <el-container direction="vertical">
@@ -313,6 +313,8 @@ export default {
 
       this.isSaving = true;
 
+      let wait = this.T.createWaitLoading();
+
       switch(this.pageMode) {
         case 'add':
           await this.addData();
@@ -323,9 +325,7 @@ export default {
           break;
       }
 
-      setTimeout(() => {
-        this.isSaving = false;
-      }, 500);
+      wait.end(() => { this.isSaving = false });
     },
     _getFormData() {
       let _formData = this.T.jsonCopy(this.form);

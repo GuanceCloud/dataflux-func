@@ -1117,7 +1117,7 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return [
       {
         key       : 'git',
-        name      : i18n.t('git (HTTPS recommended)'),
+        name      : i18n.t('git'),
         logo      : logo_git,
         tip       : i18n.t('HTTPS is recommended for Script Market based on git, and accessing the git service via HTTP on the public network should be avoided'),
         isReadonly: false,

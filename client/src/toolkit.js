@@ -1939,3 +1939,26 @@ export function renderMarkdown(text, options) {
 export function textLength(str) {
   return str.replace(/[\u0391-\uFFE5]/g, '__').length;
 };
+
+let waitLoading = function(minLoadingTime) {
+  this.startTime = Date.now();
+  this.minLoadingTime = minLoadingTime || 500;
+};
+
+waitLoading.prototype.end = function(fn) {
+  let endTime = Date.now();
+  let processedTime = endTime - this.startTime;
+  if (processedTime > this.minLoadingTime) {
+    fn();
+
+  } else {
+    console.log(this.minLoadingTime - processedTime)
+    setTimeout(() => {
+      fn();
+    }, this.minLoadingTime - processedTime);
+  }
+};
+
+export function createWaitLoading(minLoadingTime) {
+  return new waitLoading(minLoadingTime);
+};
