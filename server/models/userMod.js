@@ -75,7 +75,9 @@ EntityModel.prototype.add = function(data, callback) {
     }
   }
 
-  data.id = this.genDataId();
+  if (!data.id) {
+    data.id = this.genDataId();
+  }
 
   // Create passwordHash
   data.passwordHash = toolkit.getSaltedPasswordHash(

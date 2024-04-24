@@ -103,7 +103,9 @@ EntityModel.prototype.list = function(options, callback) {
 
 EntityModel.prototype.add = function(data, callback) {
   // 预分配 ID，用于加密加盐
-  data.id = this.genDataId();
+  if (!data.id) {
+    data.id = this.genDataId();
+  }
 
   _doCipher(data.id, data.configJSON);
 
