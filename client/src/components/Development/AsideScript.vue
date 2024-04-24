@@ -17,9 +17,9 @@ Locked by you                                  : 被您锁定
 Quick View                                     : 快速查看
 View                                           : 查看
 Setup                                          : 配置
-Copy example                                   : 复制示例
+Example (In Same Script Set)                   : 示例（在相同脚本集中）
+Example (In Other Script Set)                  : 示例（在其他脚本集中）
 Copy {name} ID                                 : 复制{name} ID
-Example                                        : 示例
 Code edited but not published yet              : 代码已修改但尚未发布
 'Import/Calling will run the published version': 引用 / API 调用实际将运行已发布代码
 Export Script Set                              : 导出脚本集
@@ -92,13 +92,13 @@ Batch List: 批處理列表
 Cannot not starts with a number: 不得以數字開頭
 Code edited but not published yet: 代碼已修改但尚未發佈
 Config: 配置
-Copy example: 複製示例
 Copy {name} ID: 複製{name} ID
 Created: 創建
 Crontab Config List: 自動觸發配置列表
 Crontab Config Task sent: 自動觸發配置任務已發送
 Edited: 已修改
-Example: 示例
+Example (In Other Script Set): 示例（在其他腳本集中）
+Example (In Same Script Set): 示例（在相同腳本集中）
 Expires: 過期
 Export Script Set: 導出腳本集
 Go to Recent Task Record: 前往最近任務記錄
@@ -155,13 +155,13 @@ Batch List: 批處理列表
 Cannot not starts with a number: 不得以數字開頭
 Code edited but not published yet: 程式碼已修改但尚未釋出
 Config: 配置
-Copy example: 複製示例
 Copy {name} ID: 複製{name} ID
 Created: 建立
 Crontab Config List: 自動觸發配置列表
 Crontab Config Task sent: 自動觸發配置任務已傳送
 Edited: 已修改
-Example: 示例
+Example (In Other Script Set): 示例（在其他指令碼集中）
+Example (In Same Script Set): 示例（在相同指令碼集中）
 Expires: 過期
 Export Script Set: 匯出指令碼集
 Go to Recent Task Record: 前往最近任務記錄
@@ -329,12 +329,20 @@ successCount: 成功 {n}
           </div>
 
           <!-- 示例代码 -->
-          <template v-if="data.sampleCode">
-            <div class="aside-tree-node-sample-code">
-              <span class="text-info">{{ $t('Example') }}</span>
-              <CopyButton :content="data.sampleCode" />
+          <template v-if="data.sampleCodeImportFromSameScriptSet">
+            <div class="aside-tree-node-sample">
+              <span class="text-info">{{ $t('Example (In Same Script Set)') }}</span>
+              <CopyButton :content="data.sampleCodeImportFromSameScriptSet" />
 
-              <pre>{{ data.sampleCode }}</pre>
+              <pre>{{ data.sampleCodeImportFromSameScriptSet }}</pre>
+            </div>
+          </template>
+          <template v-if="data.sampleCodeImportFromOtherScriptSet">
+            <div class="aside-tree-node-sample">
+              <span class="text-info">{{ $t('Example (In Other Script Set)') }}</span>
+              <CopyButton :content="data.sampleCodeImportFromOtherScriptSet" />
+
+              <pre>{{ data.sampleCodeImportFromOtherScriptSet }}</pre>
             </div>
           </template>
 
@@ -961,7 +969,8 @@ export default {
 
         // 示例代码
         let shortScriptId = d.id.split('__').slice(1).join('__');
-        let sampleCode = `import ${d.id} as ${shortScriptId}`;
+        let sampleCodeImportFromSameScriptSet  = `import __${shortScriptId} as ${shortScriptId}`;
+        let sampleCodeImportFromOtherScriptSet = `import ${d.id} as ${shortScriptId}`;
 
         // 创建节点数据
         let isCodeEdited   = d.codeMD5 !== d.codeDraftMD5;
@@ -989,7 +998,9 @@ export default {
 
           title      : d.title,
           description: d.description,
-          sampleCode : sampleCode,
+
+          sampleCodeImportFromSameScriptSet : sampleCodeImportFromSameScriptSet,
+          sampleCodeImportFromOtherScriptSet: sampleCodeImportFromOtherScriptSet,
 
           children   : [],
           showPopover: false,
@@ -1035,7 +1046,8 @@ export default {
 
         // 示例代码
         let shortScriptId = d.scriptId.split('__').slice(1).join('__');
-        let sampleCode = `import ${d.scriptId} as ${shortScriptId}\n${shortScriptId}.${d.definition}`;
+        let sampleCodeImportFromSameScriptSet  = `import __${shortScriptId} as ${shortScriptId}\n${shortScriptId}.${d.definition}`;
+        let sampleCodeImportFromOtherScriptSet = `import ${d.scriptId} as ${shortScriptId}\n${shortScriptId}.${d.definition}`;
 
         // 创建节点数据
         funcMap[d.id] = {
@@ -1048,13 +1060,12 @@ export default {
 
           title      : d.title,
           description: d.description,
-          sampleCode : sampleCode,
           queue      : (d.extraConfigJSON || {}).queue,
 
           disabled: !this.$store.state.codeEditor_isCodeLoaded,
 
-          integration    : d.integration,
-          extraConfigJSON: d.extraConfigJSON,
+          sampleCodeImportFromSameScriptSet : sampleCodeImportFromSameScriptSet,
+          sampleCodeImportFromOtherScriptSet: sampleCodeImportFromOtherScriptSet,
 
           showPopover: false,
         };
@@ -1563,7 +1574,7 @@ export default {
 .aside-tree-node-description {
 
 }
-.aside-tree-node-sample-code {
+.aside-tree-node-sample {
   padding-top: 10px;
   text-align: left;
 }

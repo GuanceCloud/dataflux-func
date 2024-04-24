@@ -640,8 +640,8 @@ EntityModel.prototype.getExportData = function(options, callback) {
       sql.append('   evar.id');
       sql.append('  ,evar.title');
       sql.append('  ,evar.description');
-      sql.append('  ,evar.valueTEXT');
       sql.append('  ,evar.autoTypeCasting');
+      sql.append('  ,evar.valueTEXT');
 
       sql.append('FROM biz_main_env_variable AS evar')
 
@@ -654,6 +654,14 @@ EntityModel.prototype.getExportData = function(options, callback) {
       var sqlParams = [envVariableIds];
       self.db.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
+
+        // 密码类强制变更为字符串且内容为空
+        dbRes.forEach(function(d) {
+          if (d.autoTypeCasting !== 'password') return;
+
+          d.autoTypeCasting = 'string';
+          d.valueTEXT       = '';
+        });
 
         exportData.envVariables = dbRes;
 

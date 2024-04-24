@@ -56,13 +56,7 @@ No Script Set has ever been exported: 從未匯出過任何指令碼集
                     <p>
                       <span v-for="item in d.summaryJSON[t.key]" :key="item.id">
                         <span :class="t.showClass">{{ item[t.showField] || item.id }}</span>
-                        &#12288;
-                        <small>
-                          {{ $t('(') }}
-                          <span class="text-info">ID</span>
-                          &nbsp;<code class="text-main">{{ item.id }}</code>
-                          {{ $t(')') }}
-                        </small>
+                        <code class="entity-id code-font">{{ $t('(') }}ID: {{ item.id }}{{ $t(')') }}</code>
                         <br>
                       </span>
                     </p>
@@ -181,6 +175,10 @@ export default {
   margin: 10px 0 0 10px;
   font-weight: normal;
   line-height: 1.5;
+}
+.entity-id {
+  opacity: .7;
+  font-size: 12px;
 }
 </style>
 

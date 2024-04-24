@@ -1,5 +1,5 @@
 <i18n locale="zh-CN" lang="yaml">
-IP Address : IP地址
+IP Address : IP 地址
 Operation  : 操作
 Data ID    : 数据 ID
 MODIFY     : 修改操作
@@ -18,7 +18,7 @@ All recent important operations will be collected by the system and shown here: 
 Cost: 耗時
 DELETE: 刪除操作
 Data ID: 數據 ID
-IP Address: IP地址
+IP Address: IP 地址
 MODIFY: 修改操作
 No Recent Operation Records: 無近期操作記錄
 Operation: 操作
@@ -30,7 +30,7 @@ All recent important operations will be collected by the system and shown here: 
 Cost: 耗時
 DELETE: 刪除操作
 Data ID: 資料 ID
-IP Address: IP地址
+IP Address: IP 地址
 MODIFY: 修改操作
 No Recent Operation Records: 無近期操作記錄
 Operation: 操作

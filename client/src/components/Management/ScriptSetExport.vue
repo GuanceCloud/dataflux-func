@@ -1,6 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Related Contents: 关联内容
 Exporting with related contents: 导出并附带关联内容
+Exported passwords will be changed to an empty string by force: 导出的密码将会强制变更为空字符串
 Exported Connectors will not include sensitive data (such as password), please re-entered them after import: 导出的连接器不包含敏感数据（如密码等），请在导入后重新输入
 Meaningful notes can provide a reliable reference for the future: 有意义的备注可以为将来提供可靠的参考
 Please select at least one Script Set: 请选择导出脚本集
@@ -14,6 +15,7 @@ Data exported: 数据已导出
 Data exported: 數據已導出
 Exported Connectors will not include sensitive data (such as password), please re-entered them after import: 導出的連接器不包含敏感數據（如密碼等），請在導入後重新輸入
 'Exported content has been downloaded as a zip file:': 導出內容已作為 zip 文件下載：
+Exported passwords will be changed to an empty string by force: 導出的密碼將會強制變更為空字符串
 Exporting with related contents: 導出並附帶關聯內容
 Meaningful notes can provide a reliable reference for the future: 有意義的備註可以為將來提供可靠的參考
 Please input note: 請輸入備註
@@ -24,6 +26,7 @@ Related Contents: 關聯內容
 Data exported: 資料已匯出
 Exported Connectors will not include sensitive data (such as password), please re-entered them after import: 匯出的聯結器不包含敏感資料（如密碼等），請在匯入後重新輸入
 'Exported content has been downloaded as a zip file:': 匯出內容已作為 zip 檔案下載：
+Exported passwords will be changed to an empty string by force: 匯出的密碼將會強制變更為空字串
 Exporting with related contents: 匯出並附帶關聯內容
 Meaningful notes can provide a reliable reference for the future: 有意義的備註可以為將來提供可靠的參考
 Please input note: 請輸入備註
@@ -60,16 +63,17 @@ Related Contents: 關聯內容
                   :key="item.id"
                   :label="item.title || item.id"
                   :value="item.id">
+                  <i class="fa fa-fw fa-folder"></i>
                   <span class="select-item-name">{{ item.title || item.id }}</span>
-                  <code class="select-item-id code-font">ID: {{ item.id }}</code>
+                  <code class="select-item-id code-font">{{ $t('(') }}ID: {{ item.id }}{{ $t(')') }}</code>
                 </el-option>
               </el-select>
             </el-form-item>
 
             <el-form-item :label="$t('Related Contents')">
-              <el-checkbox size="medium" border v-model="form.includeAuthLinks"      :label="$t('Auth Link')"></el-checkbox>
-              <el-checkbox size="medium" border v-model="form.includeCrontabConfigs" :label="$t('Crontab Config')"></el-checkbox>
-              <el-checkbox size="medium" border v-model="form.includeBatches"        :label="$t('Batch')"></el-checkbox>
+              <el-checkbox size="medium" border v-model="form.includeAuthLinks"><i class="fa fa-fw fa-link"></i> {{ $t('Auth Link') }}</el-checkbox>
+              <el-checkbox size="medium" border v-model="form.includeCrontabConfigs"><i class="fa fa-fw fa-clock-o"></i> {{ $t('Crontab Config') }}</el-checkbox>
+              <el-checkbox size="medium" border v-model="form.includeBatches"><i class="fa fa-fw fa-tasks"></i> {{ $t('Batch') }}</el-checkbox>
               <InfoBlock :title="$t('Exporting with related contents')" />
             </el-form-item>
 
@@ -85,8 +89,11 @@ Related Contents: 關聯內容
                   :key="item.id"
                   :label="item.title || item.id"
                   :value="item.id">
+                  <el-tag class="select-item-tag"
+                    :type="C.CONNECTOR_MAP.get(item.type).tagType"
+                    size="mini">{{ C.CONNECTOR_MAP.get(item.type).name }}</el-tag>
                   <span class="select-item-name">{{ item.title || item.id }}</span>
-                  <code class="select-item-id code-font">ID: {{ item.id }}</code>
+                  <code class="select-item-id code-font">{{ $t('(') }}ID: {{ item.id }}{{ $t(')') }}</code>
                 </el-option>
               </el-select>
               <InfoBlock v-if="T.notNothing(form.connectorIds)" type="warning" :title="$t('Exported Connectors will not include sensitive data (such as password), please re-entered them after import')" />
@@ -104,10 +111,14 @@ Related Contents: 關聯內容
                   :key="item.id"
                   :label="item.title || item.id"
                   :value="item.id">
+                  <el-tag class="select-item-tag"
+                    :type="C.ENV_VARIABLE_MAP.get(item.autoTypeCasting).tagType"
+                    size="mini">{{ C.ENV_VARIABLE_MAP.get(item.autoTypeCasting).name }}</el-tag>
                   <span class="select-item-name">{{ item.title || item.id }}</span>
-                  <code class="select-item-id code-font">ID: {{ item.id }}</code>
+                  <code class="select-item-id code-font">{{ $t('(') }}ID: {{ item.id }}{{ $t(')') }}</code>
                 </el-option>
               </el-select>
+              <InfoBlock v-if="tryToExportEnvVariablePassword" type="warning" :title="$t('Exported passwords will be changed to an empty string by force')" />
             </el-form-item>
 
             <el-form-item :label="$t('Note')" prop="note">
@@ -166,7 +177,7 @@ export default {
   methods: {
     async loadData() {
       let opt = {
-        query: { fields: ['id', 'title', 'origin', 'originId'] },
+        query: { fields: ['id', 'title', 'origin', 'originId', 'type', 'autoTypeCasting'] },
       };
 
       // 获取关联数据
@@ -277,6 +288,23 @@ export default {
   },
   props: {
   },
+  computed: {
+    envVariableAutoTypeCastingMap() {
+      return this.envVariables.reduce((acc, x) => {
+        acc[x.id] = x.autoTypeCasting;
+        return acc;
+      }, {});
+    },
+    tryToExportEnvVariablePassword() {
+      for (let i = 0; i < this.form.envVariableIds.length; i++) {
+        let id = this.form.envVariableIds[i];
+        if (this.envVariableAutoTypeCastingMap[id] === 'password') {
+          return true;
+        }
+      }
+      return false;
+    },
+  },
   data() {
     return {
       show: false,
@@ -353,13 +381,15 @@ export default {
   margin-left: 0 !important;
 }
 
+.select-item-tag {
+  width: 75px;
+  text-align: center;
+}
 .select-item-name {
-  float: left;
+  padding-left: 10px;
 }
 .select-item-id {
-  float: right;
-  margin-right: 15px;
-  padding-left: 30px;
+  opacity: .7;
   font-size: 12px;
 }
 </style>

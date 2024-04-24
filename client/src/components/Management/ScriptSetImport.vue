@@ -90,14 +90,7 @@ Select a file: 選擇檔案
                   <el-table-column>
                     <template slot-scope="scope">
                       <span>{{ scope.row[t.showField] || scope.row.id }}</span>
-                    </template>
-                  </el-table-column>
-                  <el-table-column>
-                    <template slot-scope="scope">
-                      <small>
-                        <span class="text-info">ID</span>
-                        &nbsp;<code class="text-main">{{ scope.row.id }}</code>
-                      </small>
+                      <code class="entity-id code-font">{{ $t('(') }}ID: {{ scope.row.id }}{{ $t(')') }}</code>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -259,6 +252,10 @@ export default {
   padding: 0;
   line-height: 1.5;
   font-size: 16px;
-  padding-left: 20px;
+  padding-left: 65px;
+}
+.entity-id {
+  opacity: .7;
+  font-size: 12px;
 }
 </style>
