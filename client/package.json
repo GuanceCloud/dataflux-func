@@ -8,6 +8,7 @@
     "build": "vue-cli-service build"
   },
   "dependencies": {
+    "@breejs/later": "4.2.0",
     "@intlify/vue-i18n-loader": "1.1.0",
     "@logicflow/core": "1.2.10",
     "@logicflow/extension": "1.2.10",

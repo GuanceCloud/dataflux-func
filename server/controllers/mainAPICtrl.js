@@ -8,6 +8,7 @@ var fs            = require('fs-extra');
 var async         = require('async');
 var LRU           = require('lru-cache');
 var sortedJSON    = require('sorted-json');
+var later         = require('@breejs/later');
 var moment        = require('moment-timezone');
 var byteSize      = require('byte-size');
 var HTTPAuthUtils = require('http-auth-utils');
@@ -983,6 +984,7 @@ exports.overview = function(req, res, next) {
   var overview = {
     serviceInfo     : [],
     queueInfo       : [],
+    bizMetrics      : [],
     bizEntityInfo   : [],
     latestOperations: [],
   };
@@ -1086,32 +1088,32 @@ exports.overview = function(req, res, next) {
         }
 
         async.series([
-          function(eachCallback) {
+          function(innerCallback) {
             var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'workerCountOnQueue', [ 'workerQueue', i ]);
             res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
-              if (err) return eachCallback(err);
+              if (err) return innerCallback(err);
 
               overview.queueInfo[i].workerCount = parseInt(cacheRes || 0) || 0;
 
-              return eachCallback();
+              return innerCallback();
 
-            }, eachCallback);
+            }, innerCallback);
           },
-          function(eachCallback) {
+          function(innerCallback) {
             var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'processCountOnQueue', [ 'workerQueue', i ]);
             res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
-              if (err) return eachCallback(err);
+              if (err) return innerCallback(err);
 
               overview.queueInfo[i].processCount = parseInt(cacheRes || 0) || 0;
 
-              return eachCallback();
+              return innerCallback();
 
-            }, eachCallback);
+            }, innerCallback);
           },
-          function(eachCallback) {
+          function(innerCallback) {
             var workerQueue = toolkit.getWorkerQueue(i);
             res.locals.cacheDB.run('llen', workerQueue, function(err, cacheRes) {
-              if (err) return eachCallback(err);
+              if (err) return innerCallback(err);
 
               var length = parseInt(cacheRes || 0) || 0;
               overview.queueInfo[i].workerQueueLength = length;
@@ -1119,17 +1121,17 @@ exports.overview = function(req, res, next) {
               // 计算负载（每个进程需要处理的任务数量）
               overview.queueInfo[i].workerQueueLoad = parseInt(length / (overview.queueInfo[i].processCount || 1));
 
-              return eachCallback();
+              return innerCallback();
             });
           },
-          function(eachCallback) {
+          function(innerCallback) {
             var delayQueue = toolkit.getDelayQueue(i);
             res.locals.cacheDB.run('zcard', delayQueue, function(err, cacheRes) {
-              if (err) return eachCallback(err);
+              if (err) return innerCallback(err);
 
               overview.queueInfo[i].delayQueueLength = parseInt(cacheRes || 0) || 0;
 
-              return eachCallback();
+              return innerCallback();
             });
           },
         ], timesCallback);
@@ -1152,6 +1154,123 @@ exports.overview = function(req, res, next) {
 
         return asyncCallback();
       });
+    },
+    // 业务指标
+    function(asyncCallback) {
+      if (sectionMap && !sectionMap.bizMetrics) return asyncCallback();
+
+      var crontabConfigs = [];
+      async.series([
+        // 查询所有自动触发配置
+        function(innerCallback) {
+          var opt = {
+            fields : [
+              'cron.id',
+              'cron.crontab',
+              "func.extraConfigJSON->>'$.fixedCrontab' AS fixedCrontab",
+            ],
+            filters: {
+              'cron.isDisabled': { eq: false },
+              'func.id'        : { isnotnull: true },
+            },
+          }
+          crontabConfigModel.list(opt, function(err, dbRes) {
+            if (err) return innerCallback(err);
+
+            crontabConfigs = dbRes;
+
+            return innerCallback();
+          });
+        },
+        // 追加临时 Crontab 配置
+        function(innerCallback) {
+          if (toolkit.isNothing(crontabConfigs)) return innerCallback();
+
+          var dataIds  = toolkit.arrayElementValues(crontabConfigs, 'id');
+          var cacheKey = toolkit.getGlobalCacheKey('tempConfig', 'dynamicCrontab');
+          res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
+            if (err) return innerCallback(err);
+
+            var now = parseInt(Date.now() / 1000);
+            crontabConfigs.forEach(function(d) {
+              d.dynamicCrontab = null;
+
+              var tempConfig = cacheRes[d.id];
+              if (!tempConfig) return;
+
+              tempConfig = JSON.parse(tempConfig);
+              if (tempConfig.expireTime && tempConfig.expireTime < now) return;
+
+              d.dynamicCrontab = tempConfig.value;
+            });
+
+            return innerCallback();
+          });
+        },
+        // 计算未来 24 小时自动触发配置触发次数
+        function(innerCallback) {
+          var baseTimestamp = moment(moment().format('YYYY-MM-DDT00:00:01Z')).unix() * 1000;
+
+          var totalTickCount = 0;
+          var crontab24HTickCountMap = {}
+          crontabConfigs.forEach(function(c) {
+            var crontabExpr = c.dynamicCrontab || c.fixedCrontab || cron.crontab;
+            if (!crontabExpr) return;
+
+            var tickCount = crontab24HTickCountMap[crontabExpr];
+            if (toolkit.notNothing(tickCount)) {
+              totalTickCount += tickCount;
+              return;
+            }
+
+            var start = new Date(baseTimestamp);
+            var end   = new Date(baseTimestamp + (3600 * 24 * 1000));
+            var cron = later.parse.cron(crontabExpr);
+
+            var tickCount = 0
+            while (true) {
+              var r = later.schedule(cron).next(1000, start, end);
+              start = r.pop();
+              if (!r || r.length === 0) {
+                tickCount += 1
+                break;
+              } else {
+                tickCount += r.length;
+              }
+            }
+
+            crontab24HTickCountMap[crontabExpr] = tickCount;
+            totalTickCount += tickCount;
+          });
+
+          overview.bizMetrics.push({
+            title    : 'Crontab Config',
+            subTitle : 'Triggers Per Second',
+            value    : parseFloat((totalTickCount / (3600 * 24)).toFixed(2)),
+            isBuiltin: true,
+          });
+          overview.bizMetrics.push({
+            title    : 'Crontab Config',
+            subTitle : 'Triggers Per Minute',
+            value    : parseFloat((totalTickCount / (60 * 24)).toFixed(2)),
+            isBuiltin: true,
+          });
+          overview.bizMetrics.push({
+            title    : 'Crontab Config',
+            subTitle : 'Triggers Per Hour',
+            value    : parseFloat((totalTickCount / 24).toFixed(2)),
+            isBuiltin: true,
+          });
+          overview.bizMetrics.push({
+            title    : 'Crontab Config',
+            subTitle : 'Triggers Per Day',
+            value    : parseFloat((totalTickCount).toFixed(2)),
+            isBuiltin: true,
+          });
+
+          return innerCallback();
+        },
+      ], asyncCallback);
     },
     // 业务实体计数
     function(asyncCallback) {

@@ -4,6 +4,7 @@
   "license": "AGPLv3",
   "private": true,
   "dependencies": {
+    "@breejs/later": "4.2.0",
     "@socket.io/redis-adapter": "7.2.0",
     "adm-zip": "0.5.9",
     "async": "2.6.4",

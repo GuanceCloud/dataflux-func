@@ -43,6 +43,8 @@ exports.list = function(req, res, next) {
     },
     // 追加最后任务状态
     function(asyncCallback) {
+      if (toolkit.isNothing(listData)) return asyncCallback();
+
       var dataIds = toolkit.arrayElementValues(listData, 'id');
       var cacheKey = toolkit.getGlobalCacheKey('cache', 'lastTaskStatus', [ 'origin', 'crontabConfig' ]);
       res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
@@ -62,6 +64,8 @@ exports.list = function(req, res, next) {
     },
     // 追加临时 Crontab 配置
     function(asyncCallback) {
+      if (toolkit.isNothing(listData)) return asyncCallback();
+
       var dataIds  = toolkit.arrayElementValues(listData, 'id');
       var cacheKey = toolkit.getGlobalCacheKey('tempConfig', 'dynamicCrontab');
       res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
