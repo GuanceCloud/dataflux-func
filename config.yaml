@@ -174,6 +174,8 @@ _SCRIPT_EXPORT_SCRIPT_SET_DIR: script-sets
 _CLIENT_CONFLICT_EXPIRES: 5
 # 初始化 DataFlux Func ID 锁定时间
 _INIT_DATAFLUX_FUNC_ID_LOCK_AGE: 15
+# 更新脚本市场数据锁定时间
+_UPDATE_OFFICIAL_SCRIPT_MARKET_LOCK_AGE: 15
 # Init Script 锁定时间
 _INIT_SCRIPTS_LOCK_AGE: 30
 # 脚本市场操作锁定时长
@@ -223,7 +225,7 @@ _BLUEPRINT_BASE_CANVAS_JSON: |-
 
 # 官方脚本市场
 _OFFICIAL_SCRIPT_MARKET_ID : smkt-official
-_OFFICIAL_SCRIPT_MARKET_URL: https://func.guance.com/script-market/official
+_OFFICIAL_SCRIPT_MARKET_URL: https://static.guance.com/dataflux-func/script-market/official
 
 # 启动脚本集 ID
 _STARTUP_SCRIPT_SET_ID: startup

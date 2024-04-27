@@ -277,7 +277,7 @@ exports.afterServe = function(app, server) {
         if (err) return asyncCallback(err);
 
         if (!cacheRes) {
-          var e = new Error('DataFlux Func ID init is just launched');
+          var e = new Error('Task "Init DataFlux Func ID" is just launched');
           e.isWarning = true;
           return asyncCallback(e);
         }
@@ -307,6 +307,37 @@ exports.afterServe = function(app, server) {
     },
   ], printError);
 
+  // 更新脚本市场数据
+  async.series([
+    // 获取锁
+    function(asyncCallback) {
+      var lockKey   = toolkit.getCacheKey('lock', 'updateOfficialScriptMarket');
+      var lockValue = toolkit.genRandString();
+      var lockAge   = CONFIG._UPDATE_OFFICIAL_SCRIPT_MARKET_LOCK_AGE;
+
+      app.locals.cacheDB.lock(lockKey, lockValue, lockAge, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        if (!cacheRes) {
+          var e = new Error('Task "Update Official Script Market" is just launched');
+          e.isWarning = true;
+          return asyncCallback(e);
+        }
+
+        return asyncCallback();
+      });
+    },
+    // 强制更新官方脚本市场
+    function(asyncCallback) {
+      var data = {
+        id        : CONFIG._OFFICIAL_SCRIPT_MARKET_ID,
+        type      : 'httpService',
+        configJSON: JSON.stringify({ "url": CONFIG._OFFICIAL_SCRIPT_MARKET_URL }),
+      }
+      app.locals.db.query('UPDATE biz_main_script_market SET ? WHERE id = ? LIMIT 1', [ data, CONFIG._OFFICIAL_SCRIPT_MARKET_ID ], asyncCallback);
+    },
+  ], printError);
+
   // 自动运行脚本
   if (!CONFIG._DISABLE_INIT_SCRIPTS) {
     async.series([
@@ -320,7 +351,7 @@ exports.afterServe = function(app, server) {
           if (err) return asyncCallback(err);
 
           if (!cacheRes) {
-            var e = new Error('Init Scriptst is just launched');
+            var e = new Error('Task "Run Init Script" is just launched');
             e.isWarning = true;
             return asyncCallback(e);
           }
