@@ -1,6 +1,5 @@
 <i18n locale="en" lang="yaml">
 generalCount        : '{n}'
-generalCountUnit    : ' '
 taskCount           : '{n} Task | {n} Tasks'
 recentOperationCount: 'Latest {n} Operation | Latest {n} Operations'
 </i18n>
@@ -9,7 +8,6 @@ recentOperationCount: 'Latest {n} Operation | Latest {n} Operations'
 'Current browser-server time difference:': '当前浏览器与服务器时差：'
 
 generalCount        : '{n} 个'
-generalCountUnit    : ' 个'
 taskCount           : '{n} 个任务'
 recentOperationCount: 最近 {n} 条
 
@@ -47,6 +45,8 @@ Response         : 响应
 
 When the Work Queue length reaches the limit, Crontab Configs will stop generating new tasks: 当工作队列长度达到限制时，自动触发配置将停止产生新任务
 
+Exclude Disabled Items: 不包括已禁用的项
+
 Crontab Config     : 自动触发配置
 Triggers Per Second: 每秒触发次数
 Triggers Per Minute: 每分钟触发次数
@@ -67,6 +67,7 @@ Crontab Config: 自動觸發配置
 DELETE: 刪除操作
 Data ID: 數據 ID
 Delayed: 延遲執行
+Exclude Disabled Items: 不包括已禁用的項
 Expand All: 展開所有服務
 Hostname: 主機名
 IP Address: IP 地址
@@ -94,7 +95,6 @@ When the Work Queue length reaches the limit, Crontab Configs will stop generati
 Worker: 工作單元
 Worker Queue: 工作隊列
 generalCount: '{n} 個'
-generalCountUnit: ' 個'
 recentOperationCount: 最近 {n} 條
 taskCount: '{n} 個任務'
 </i18n>
@@ -110,6 +110,7 @@ Crontab Config: 自動觸發配置
 DELETE: 刪除操作
 Data ID: 資料 ID
 Delayed: 延遲執行
+Exclude Disabled Items: 不包括已禁用的項
 Expand All: 展開所有服務
 Hostname: 主機名
 IP Address: IP 地址
@@ -137,7 +138,6 @@ When the Work Queue length reaches the limit, Crontab Configs will stop generati
 Worker: 工作單元
 Worker Queue: 工作佇列
 generalCount: '{n} 個'
-generalCountUnit: ' 個'
 recentOperationCount: 最近 {n} 條
 taskCount: '{n} 個任務'
 </i18n>
@@ -299,12 +299,11 @@ taskCount: '{n} 個任務'
 
           <template v-if="d.countEnabled">
             <span class="biz-entity-count">
-              <el-tooltip effect="dark" :content="$t('Enabled')" placement="left">
+              <el-tooltip effect="dark" :content="$t('Exclude Disabled Items')" placement="left">
                 <span class="text-good">
                   {{ d.countEnabled }}
                 </span>
               </el-tooltip>
-              <span class="biz-entity-count-unit">{{ $t('generalCountUnit') }}</span>
             </span>
             <span class="biz-entity-count-sub">
               {{ $t('Total') }}{{ $t(':') }}
@@ -315,7 +314,6 @@ taskCount: '{n} 個任務'
           <template v-else>
             <span class="biz-entity-count">
               {{ d.count }}
-              <span class="biz-entity-count-unit">{{ $t('generalCountUnit') }}</span>
             </span>
           </template>
           </span>
@@ -712,16 +710,16 @@ export default {
 
 .biz-entity-card {
   width: 300px;
-  height: 200px;
+  height: 165px;
   display: inline-block;
   margin: 10px 10px;
   position: relative;
 }
 .biz-entity-icon {
   position: absolute;
-  font-size: 200px;
-  left: 130px;
-  top: 40px;
+  font-size: 150px;
+  left: 5px;
+  top: 39px;
   color: #f5f5f5;
   line-height: 200px;
   z-index: 0;
@@ -742,16 +740,13 @@ export default {
   padding-left: 20px;
   z-index: 1;
   position: relative;
-  font-size: 60px;
+  font-size: 42px;
+  text-align: right;
 }
 .biz-entity-count-sub {
-  font-size: 20px;
+  font-size: 18px;
   position: absolute;
   right: 20px;
-}
-.biz-entity-count-unit {
-  font-size: 40px;
-  font-weight: 200;
 }
 </style>
 
