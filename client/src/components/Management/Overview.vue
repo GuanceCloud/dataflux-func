@@ -49,7 +49,7 @@ When the Work Queue length reaches the limit, Crontab Configs will stop generati
 
 Crontab Config     : 自动触发配置
 Triggers Per Second: 每秒触发次数
-Triggers Per Minute: 每分触发次数
+Triggers Per Minute: 每分钟触发次数
 Triggers Per Hour  : 每小时触发次数
 Triggers Per Day   : 每天触发次数
 </i18n>
@@ -84,7 +84,7 @@ Response: 響應
 Services: 服務
 Triggers Per Day: 每天觸發次數
 Triggers Per Hour: 每小時觸發次數
-Triggers Per Minute: 每分觸發次數
+Triggers Per Minute: 每分鐘觸發次數
 Triggers Per Second: 每秒觸發次數
 Up Time: 已運行
 Up Time AVG: 平均已運行
@@ -127,7 +127,7 @@ Response: 響應
 Services: 服務
 Triggers Per Day: 每天觸發次數
 Triggers Per Hour: 每小時觸發次數
-Triggers Per Minute: 每分觸發次數
+Triggers Per Minute: 每分鐘觸發次數
 Triggers Per Second: 每秒觸發次數
 Up Time: 已執行
 Up Time AVG: 平均已執行
