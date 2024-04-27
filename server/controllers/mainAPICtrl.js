@@ -1214,7 +1214,7 @@ exports.overview = function(req, res, next) {
           var totalTickCount = 0;
           var crontab24HTickCountMap = {}
           crontabConfigs.forEach(function(c) {
-            var crontabExpr = c.dynamicCrontab || c.fixedCrontab || cron.crontab;
+            var crontabExpr = c.dynamicCrontab || c.fixedCrontab || c.crontab;
             if (!crontabExpr) return;
 
             var tickCount = crontab24HTickCountMap[crontabExpr];
