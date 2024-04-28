@@ -1230,12 +1230,15 @@ exports.overview = function(req, res, next) {
             var tickCount = 0
             while (true) {
               var r = later.schedule(cron).next(1000, start, end);
+              if (!r || r.length === 0) break;
+
               start = r.pop();
-              if (!r || r.length === 0) {
-                tickCount += 1
-                break;
-              } else {
+
+              if (r.length > 0) {
                 tickCount += r.length;
+              } else {
+                tickCount += 1;
+                break;
               }
             }
 
