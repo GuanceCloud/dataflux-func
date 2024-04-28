@@ -1249,25 +1249,25 @@ exports.overview = function(req, res, next) {
           overview.bizMetrics.push({
             title    : 'Crontab Config',
             subTitle : 'Triggers Per Second',
-            value    : parseFloat((totalTickCount / (3600 * 24)).toFixed(2)),
+            value    : parseFloat((totalTickCount / (3600 * 24)).toFixed(1)),
             isBuiltin: true,
           });
           overview.bizMetrics.push({
             title    : 'Crontab Config',
             subTitle : 'Triggers Per Minute',
-            value    : parseFloat((totalTickCount / (60 * 24)).toFixed(2)),
+            value    : parseFloat((totalTickCount / (60 * 24)).toFixed(1)),
             isBuiltin: true,
           });
           overview.bizMetrics.push({
             title    : 'Crontab Config',
             subTitle : 'Triggers Per Hour',
-            value    : parseFloat((totalTickCount / 24).toFixed(2)),
+            value    : parseFloat((totalTickCount / 24).toFixed(1)),
             isBuiltin: true,
           });
           overview.bizMetrics.push({
             title    : 'Crontab Config',
             subTitle : 'Triggers Per Day',
-            value    : parseFloat((totalTickCount).toFixed(2)),
+            value    : parseFloat((totalTickCount).toFixed(1)),
             isBuiltin: true,
           });
 

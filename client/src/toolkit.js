@@ -452,6 +452,13 @@ export function numberLimit(n, limit) {
   }
 };
 
+export function numberComma(n) {
+  n = n.toString();
+  let parts = n.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+};
+
 export function jsonFind(j, path, safe) {
   if (j === null || 'undefined' === typeof j) {
     if (safe) {

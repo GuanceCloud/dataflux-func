@@ -287,7 +287,7 @@ taskCount: '{n} 個任務'
         <el-card class="biz-metric-card" shadow="hover" v-for="d in bizMetrics" :key="d.name">
           <span class="biz-metric-title">{{ d.isBuiltin ? $t(d.title) : d.title }}</span>
           <span class="biz-metric-sub-title">{{ d.isBuiltin ? $t(d.subTitle) : d.subTitle }}</span>
-          <span class="biz-metric-value">{{ d.value }}</span>
+          <span class="biz-metric-value">{{ 'number' === typeof d.value ? T.numberComma(d.value) : d.value }}</span>
         </el-card>
 
         <el-divider content-position="left"><h1>{{ $t('Biz Entities') }}</h1></el-divider>
@@ -699,12 +699,11 @@ export default {
   opacity: .7;
 }
 .biz-metric-value {
-  font-size: 36px;
+  font-size: 42px;
   display: block;
   z-index: 1;
   position: relative;
   margin-top: 5px;
-  margin-right: 10px;
   text-align: right;
 }
 
