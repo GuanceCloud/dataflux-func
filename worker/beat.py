@@ -73,7 +73,7 @@ SYSTEM_CRONTAB = [
     {
         # 针对 Crontab 计划的工作队列长度限制
         'task'   : WorkerQueueLimitCrontabSchedule,
-        'crontab': CONFIG['_CRONTAB_WORKER_QUEUE_LIMIT_CRONTAB_CONFIG'],
+        'crontab': CONFIG['_CRONTAB_WORKER_QUEUE_LIMIT_CRONTAB_SCHEDULE'],
     },
 ]
 

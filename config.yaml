@@ -326,13 +326,13 @@ _TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_HEAD: 20000
 _TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL: 30000
 
 # 自动执行任务频率
-_CRONTAB_STARTER                          : '* * * * *'
-_CRONTAB_SYSTEM_METRIC                    : '*/5 * * * *'
-_CRONTAB_FLUSH_DATA_BUFFER                : '*/20 * * * * *'
-_CRONTAB_AUTO_CLEAN                       : '* * * * *'
-_CRONTAB_AUTO_BACKUP_DB                   : '0 * * * *'
-_CRONTAB_RELOAD_DATA_MD5_CACHE            : '* * * * *'
-_CRONTAB_WORKER_QUEUE_LIMIT_CRONTAB_CONFIG: '*/5 * * * *'
+_CRONTAB_STARTER                            : '* * * * *'
+_CRONTAB_SYSTEM_METRIC                      : '*/5 * * * *'
+_CRONTAB_FLUSH_DATA_BUFFER                  : '*/20 * * * * *'
+_CRONTAB_AUTO_CLEAN                         : '* * * * *'
+_CRONTAB_AUTO_BACKUP_DB                     : '0 * * * *'
+_CRONTAB_RELOAD_DATA_MD5_CACHE              : '* * * * *'
+_CRONTAB_WORKER_QUEUE_LIMIT_CRONTAB_SCHEDULE: '*/5 * * * *'
 
 # 任务超时配置
 _CONNECTOR_CHECK_TASK_TIMEOUT: 15
