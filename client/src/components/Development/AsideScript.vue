@@ -67,8 +67,8 @@ failureCount  : '失败 {n}'
 
 Are you sure you want to delete the Script Set?<br><strong class="text-bad">{label}</strong>: 是否确认删除此脚本集?<br><strong class="text-bad">{label}</strong>
 Are you sure you want to delete the Script?<br><strong class="text-bad">{label}</strong>: 是否确认删除此脚本<br><strong class="text-bad">{label}</strong>
-Are you sure you want to run the Crontab Schedule manually?: 是否确认手动执行此自动触发配置？
-Crontab Schedule Task sent: 自动触发配置任务已发送
+Are you sure you want to run the Crontab Schedule manually?: 是否确认手动执行此 Crontab 计划？
+Crontab Schedule Task sent: Crontab 计划任务已发送
 
 Sync, Async APIs and Crontab Schedules: 同步、异步 API 和 Crontab 计划
 Go to Recent Task Record              : 前往最近任务记录
@@ -83,7 +83,7 @@ Some Script Sets have been hidden: 一些脚本集已被隐藏
 <i18n locale="zh-HK" lang="yaml">
 Are you sure you want to delete the Script Set?<br><strong class="text-bad">{label}</strong>: 是否確認刪除此腳本集?<br><strong class="text-bad">{label}</strong>
 Are you sure you want to delete the Script?<br><strong class="text-bad">{label}</strong>: 是否確認刪除此腳本<br><strong class="text-bad">{label}</strong>
-Are you sure you want to run the Crontab Schedule manually?: 是否確認手動執行此自動觸發配置？
+Are you sure you want to run the Crontab Schedule manually?: 是否確認手動執行此 Crontab 計劃？
 'Assigned to queue #{queue}': '指派到隊列 #{queue}'
 Async API List: 異步 API 列表
 Auth: 認證
@@ -93,7 +93,7 @@ Config: 配置
 Copy {name} ID: 複製{name} ID
 Created: 創建
 Crontab Schedule List: Crontab 計劃列表
-Crontab Schedule Task sent: 自動觸發配置任務已發送
+Crontab Schedule Task sent: Crontab 計劃任務已發送
 Edited: 已修改
 Example (In Other Script Set): 示例（在其他腳本集中）
 Example (In Same Script Set): 示例（在相同腳本集中）
@@ -146,7 +146,7 @@ successCount: 成功 {n}
 <i18n locale="zh-TW" lang="yaml">
 Are you sure you want to delete the Script Set?<br><strong class="text-bad">{label}</strong>: 是否確認刪除此指令碼集?<br><strong class="text-bad">{label}</strong>
 Are you sure you want to delete the Script?<br><strong class="text-bad">{label}</strong>: 是否確認刪除此指令碼<br><strong class="text-bad">{label}</strong>
-Are you sure you want to run the Crontab Schedule manually?: 是否確認手動執行此自動觸發配置？
+Are you sure you want to run the Crontab Schedule manually?: 是否確認手動執行此 Crontab 計劃？
 'Assigned to queue #{queue}': '指派到佇列 #{queue}'
 Async API List: 非同步 API 列表
 Auth: 認證
@@ -156,7 +156,7 @@ Config: 配置
 Copy {name} ID: 複製{name} ID
 Created: 建立
 Crontab Schedule List: Crontab 計劃列表
-Crontab Schedule Task sent: 自動觸發配置任務已傳送
+Crontab Schedule Task sent: Crontab 計劃任務已傳送
 Edited: 已修改
 Example (In Other Script Set): 示例（在其他指令碼集中）
 Example (In Same Script Set): 示例（在相同指令碼集中）

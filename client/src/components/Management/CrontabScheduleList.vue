@@ -325,7 +325,7 @@ lastSucceeded: '{t}執行成功'
           <el-table-column align="right" width="350">
             <template slot-scope="scope">
               <template v-if="funcTaskRecordCountMap[scope.row.id]">
-                <el-link @click="common.goToTaskRecord({ origin: 'crontabConfig', originId: scope.row.id }, { hlDataId: scope.row.id })" :disabled="!funcTaskRecordCountMap[scope.row.id].count">
+                <el-link @click="common.goToTaskRecord({ origin: 'crontabSchedule', originId: scope.row.id }, { hlDataId: scope.row.id })" :disabled="!funcTaskRecordCountMap[scope.row.id].count">
                   {{ $t('Task Record') }} <code v-if="funcTaskRecordCountMap[scope.row.id].count">({{ T.numberLimit(funcTaskRecordCountMap[scope.row.id].count) }})</code>
                 </el-link>
               </template>

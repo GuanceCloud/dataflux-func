@@ -40,7 +40,7 @@ Sync API created: 同步 API 已创建
 Sync API saved  : 同步 API 已保存
 Sync API deleted: 同步 API 已删除
 
-Are you sure you want to delete the Sync API?: 是否确认删除此同步 API ？
+Are you sure you want to delete the Sync API?: 是否确认删除此同步 API？
 Invalid argument format: 参数格式不正确
 
 parameterHint  : '参数值指定为 "INPUT_BY_CALLER" 时，允许调用时指定本参数'
@@ -52,7 +52,7 @@ recentTaskCount: '{n} 个近期任务'
 <i18n locale="zh-HK" lang="yaml">
 Add Sync API: 添加同步 API
 Add Tag: 添加標籤
-Are you sure you want to delete the Sync API?: 是否確認刪除此同步 API ？
+Are you sure you want to delete the Sync API?: 是否確認刪除此同步 API？
 Arguments: 參數指定
 Customize ID: 定製 ID
 Date cannot earlier than 1970: 日期不能早於 1970 年
@@ -86,7 +86,7 @@ shortcutDays: '{n} 天'
 <i18n locale="zh-TW" lang="yaml">
 Add Sync API: 新增同步 API
 Add Tag: 新增標籤
-Are you sure you want to delete the Sync API?: 是否確認刪除此同步 API ？
+Are you sure you want to delete the Sync API?: 是否確認刪除此同步 API？
 Arguments: 引數指定
 Customize ID: 定製 ID
 Date cannot earlier than 1970: 日期不能早於 1970 年
