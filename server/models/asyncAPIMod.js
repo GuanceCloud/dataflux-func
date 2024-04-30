@@ -15,10 +15,10 @@ var funcMod = require('./funcMod');
 
 /* Init */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
-  displayName: 'batch',
-  entityName : 'batch',
-  tableName  : 'biz_main_batch',
-  alias      : 'bat',
+  displayName: 'async API',
+  entityName : 'asyncAPI',
+  tableName  : 'biz_main_async_api',
+  alias      : 'aapi',
 
   objectFields: {
     funcCallKwargsJSON  : 'json',
@@ -32,7 +32,7 @@ var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
   },
 
   defaultOrders: [
-    {field: 'bat.seq', method: 'DESC'},
+    {field: 'aapi.seq', method: 'DESC'},
   ],
 };
 
@@ -51,7 +51,7 @@ EntityModel.prototype.list = function(options, callback) {
 
   var sql = toolkit.createStringBuilder();
   sql.append('SELECT');
-  sql.append('   bat.*');
+  sql.append('   aapi.*');
 
   sql.append('  ,func.id              AS func_id');
   sql.append('  ,func.name            AS func_name');
@@ -78,10 +78,10 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('  ,apia.title AS apia_title');
   sql.append('  ,apia.type  AS apia_type');
 
-  sql.append('FROM biz_main_batch AS bat');
+  sql.append('FROM biz_main_async_api AS aapi');
 
   sql.append('LEFT JOIN biz_main_func AS func');
-  sql.append('  ON func.id = bat.funcId');
+  sql.append('  ON func.id = aapi.funcId');
 
   sql.append('LEFT JOIN biz_main_script AS scpt');
   sql.append('  ON scpt.id = func.scriptId');
@@ -90,7 +90,7 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('  ON sset.id = func.scriptSetId');
 
   sql.append('LEFT JOIN biz_main_api_auth AS apia');
-  sql.append('  ON apia.id = bat.apiAuthId');
+  sql.append('  ON apia.id = aapi.apiAuthId');
 
   options.baseSQL = sql.toString();
 

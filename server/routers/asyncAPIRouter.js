@@ -6,30 +6,30 @@ var routeLoader = require('../utils/routeLoader');
 
 var asyncAPICtrl = require('../controllers/asyncAPICtrl');
 
-routeLoader.load(ROUTE.batchAPI.list, [
+routeLoader.load(ROUTE.asyncAPI.list, [
   asyncAPICtrl.list,
 ]);
 
-routeLoader.load(ROUTE.batchAPI.add, [
+routeLoader.load(ROUTE.asyncAPI.add, [
   asyncAPICtrl.add,
 ]);
 
-routeLoader.load(ROUTE.batchAPI.modify, [
+routeLoader.load(ROUTE.asyncAPI.modify, [
   asyncAPICtrl.modify,
 ]);
 
-routeLoader.load(ROUTE.batchAPI.delete, [
+routeLoader.load(ROUTE.asyncAPI.delete, [
   asyncAPICtrl.delete,
 ]);
 
-routeLoader.load(ROUTE.batchAPI.addMany, [
+routeLoader.load(ROUTE.asyncAPI.addMany, [
   asyncAPICtrl.addMany,
 ]);
 
-routeLoader.load(ROUTE.batchAPI.modifyMany, [
+routeLoader.load(ROUTE.asyncAPI.modifyMany, [
   asyncAPICtrl.modifyMany,
 ]);
 
-routeLoader.load(ROUTE.batchAPI.deleteMany, [
+routeLoader.load(ROUTE.asyncAPI.deleteMany, [
   asyncAPICtrl.deleteMany,
 ]);

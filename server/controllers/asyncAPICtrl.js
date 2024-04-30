@@ -12,13 +12,13 @@ var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 var urlFor      = require('../utils/routeLoader').urlFor;
 
-var funcMod  = require('../models/funcMod');
-var batchMod = require('../models/batchMod');
+var funcMod     = require('../models/funcMod');
+var asyncAPIMod = require('../models/asyncAPIMod');
 
 /* Init */
 
 /* Handlers */
-var crudHandler = exports.crudHandler = batchMod.createCRUDHandler();
+var crudHandler = exports.crudHandler = asyncAPIMod.createCRUDHandler();
 exports.delete     = crudHandler.createDeleteHandler();
 exports.deleteMany = crudHandler.createDeleteManyHandler();
 
@@ -26,13 +26,13 @@ exports.list = function(req, res, next) {
   var listData     = null;
   var listPageInfo = null;
 
-  var batchModel = batchMod.createModel(res.locals);
+  var asyncAPIModel = asyncAPIMod.createModel(res.locals);
 
   async.series([
     function(asyncCallback) {
       var opt = res.locals.getQueryOptions();
 
-      batchModel.list(opt, function(err, dbRes, pageInfo) {
+      asyncAPIModel.list(opt, function(err, dbRes, pageInfo) {
         if (err) return asyncCallback(err);
 
         listData     = dbRes;
@@ -44,7 +44,7 @@ exports.list = function(req, res, next) {
     // 追加最后任务状态
     function(asyncCallback) {
       var dataIds = toolkit.arrayElementValues(listData, 'id');
-      var cacheKey = toolkit.getGlobalCacheKey('cache', 'lastTaskStatus', [ 'origin', 'batch' ]);
+      var cacheKey = toolkit.getGlobalCacheKey('cache', 'lastTaskStatus', [ 'origin', 'asyncAPI' ]);
       res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
@@ -76,7 +76,7 @@ exports.add = function(req, res, next) {
 
     var ret = toolkit.initRet({
       id : addedId,
-      url: urlFor('mainAPI.callBatchByGet', {
+      url: urlFor('mainAPI.callAsyncAPIByGet', {
         params: { id: addedId },
       }),
     });
@@ -135,7 +135,7 @@ exports.addMany = function(req, res, next) {
 exports.modifyMany = function(req, res, next) {
   var data = req.body.data;
 
-  var batchModel = batchMod.createModel(res.locals);
+  var asyncAPIModel = asyncAPIMod.createModel(res.locals);
 
   var modifiedIds = [];
 
@@ -148,10 +148,10 @@ exports.modifyMany = function(req, res, next) {
         return asyncCallback(new E('EBizCondition.ModifyConditionNotSpecified', 'At least one condition should been specified'));
       }
 
-      opt.fields = [ 'bat.id' ];
+      opt.fields = [ 'aapi.id' ];
       opt.paging = false;
 
-      batchModel.list(opt, function(err, dbRes) {
+      asyncAPIModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         modifiedIds = toolkit.arrayElementValues(dbRes, 'id');
@@ -186,7 +186,7 @@ exports.modifyMany = function(req, res, next) {
 
 function _add(locals, data, callback) {
   var funcModel  = funcMod.createModel(locals);
-  var batchModel = batchMod.createModel(locals);
+  var asyncAPIModel = asyncAPIMod.createModel(locals);
 
   var addedId = null;
 
@@ -197,7 +197,7 @@ function _add(locals, data, callback) {
     },
     // 数据入库
     function(asyncCallback) {
-      batchModel.add(data, function(err, _addedId) {
+      asyncAPIModel.add(data, function(err, _addedId) {
         if (err) return asyncCallback(err);
 
         addedId = _addedId;
@@ -215,25 +215,25 @@ function _modify(locals, id, data, opt, callback) {
   opt = opt || {};
 
   var funcModel  = funcMod.createModel(locals);
-  var batchModel = batchMod.createModel(locals);
+  var asyncAPIModel = asyncAPIMod.createModel(locals);
 
-  var batch = null;
+  var asyncAPI = null;
 
   async.series([
     // 获取数据
     function(asyncCallback) {
       var fields = [
-        'bat.seq',
-        'bat.funcCallKwargsJSON',
+        'aapi.seq',
+        'aapi.funcCallKwargsJSON',
       ];
-      batchModel.getWithCheck(id, fields, function(err, dbRes) {
+      asyncAPIModel.getWithCheck(id, fields, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        batch = dbRes;
+        asyncAPI = dbRes;
 
         if (opt.funcCallKwargs === 'merge' && toolkit.notNothing(data.funcCallKwargsJSON)) {
           // 合并funcCallKwargsJSON参数
-          var prevFuncCallKwargs = toolkit.jsonCopy(batch.funcCallKwargsJSON);
+          var prevFuncCallKwargs = toolkit.jsonCopy(asyncAPI.funcCallKwargsJSON);
           data.funcCallKwargsJSON = Object.assign(prevFuncCallKwargs, data.funcCallKwargsJSON);
         }
 
@@ -247,12 +247,12 @@ function _modify(locals, id, data, opt, callback) {
       funcModel.getWithCheck(data.funcId, ['func.seq'], asyncCallback);
     },
     function(asyncCallback) {
-      batchModel.modify(id, data, asyncCallback);
+      asyncAPIModel.modify(id, data, asyncCallback);
     },
   ], function(err) {
     if (err) return callback(err);
 
-    var url = urlFor('mainAPI.callBatchByGet', { params: { id: id } });
+    var url = urlFor('mainAPI.callAsyncAPIByGet', { params: { id: id } });
     return callback(null, id, url);
   });
 };

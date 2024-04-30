@@ -194,10 +194,16 @@ function startApplication() {
   require('./routers/connectorAPIRouter');
   require('./routers/envVariableAPIRouter');
 
+  require('./routers/apiAuthAPIRouter');
+
+  require('./routers/syncAPIRouter');
+  require('./routers/asyncAPIRouter');
+  require('./routers/crontabScheduleAPIRouter');
+
+  // 【兼容】
   require('./routers/authLinkAPIRouter');
   require('./routers/crontabConfigAPIRouter');
   require('./routers/batchAPIRouter');
-  require('./routers/apiAuthAPIRouter');
 
   require('./routers/taskRecordAPIRouter');
   require('./routers/taskRecordFuncAPIRouter');

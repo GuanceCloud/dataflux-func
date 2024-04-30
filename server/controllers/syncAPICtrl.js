@@ -12,13 +12,13 @@ var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 var urlFor      = require('../utils/routeLoader').urlFor;
 
-var funcMod     = require('../models/funcMod');
-var authLinkMod = require('../models/authLinkMod');
+var funcMod    = require('../models/funcMod');
+var syncAPIMod = require('../models/syncAPIMod');
 
 /* Init */
 
 /* Handlers */
-var crudHandler = exports.crudHandler = authLinkMod.createCRUDHandler();
+var crudHandler = exports.crudHandler = syncAPIMod.createCRUDHandler();
 exports.delete     = crudHandler.createDeleteHandler();
 exports.deleteMany = crudHandler.createDeleteManyHandler();
 
@@ -26,13 +26,13 @@ exports.list = function(req, res, next) {
   var listData     = null;
   var listPageInfo = null;
 
-  var authLinkModel = authLinkMod.createModel(res.locals);
+  var syncAPIModel = syncAPIMod.createModel(res.locals);
 
   async.series([
     function(asyncCallback) {
       var opt = res.locals.getQueryOptions();
 
-      authLinkModel.list(opt, function(err, dbRes, pageInfo) {
+      syncAPIModel.list(opt, function(err, dbRes, pageInfo) {
         if (err) return asyncCallback(err);
 
         listData     = dbRes;
@@ -44,7 +44,7 @@ exports.list = function(req, res, next) {
     // 追加最后任务状态
     function(asyncCallback) {
       var dataIds = toolkit.arrayElementValues(listData, 'id');
-      var cacheKey = toolkit.getGlobalCacheKey('cache', 'lastTaskStatus', [ 'origin', 'authLink' ]);
+      var cacheKey = toolkit.getGlobalCacheKey('cache', 'lastTaskStatus', [ 'origin', 'syncAPI' ]);
       res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
@@ -135,7 +135,7 @@ exports.addMany = function(req, res, next) {
 exports.modifyMany = function(req, res, next) {
   var data = req.body.data;
 
-  var authLinkModel = authLinkMod.createModel(res.locals);
+  var syncAPIModel = syncAPIMod.createModel(res.locals);
 
   var modifiedIds = [];
 
@@ -151,7 +151,7 @@ exports.modifyMany = function(req, res, next) {
       opt.fields = [ 'auln.id' ];
       opt.paging = false;
 
-      authLinkModel.list(opt, function(err, dbRes) {
+      syncAPIModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         modifiedIds = toolkit.arrayElementValues(dbRes, 'id');
@@ -186,7 +186,7 @@ exports.modifyMany = function(req, res, next) {
 
 function _add(locals, data, callback) {
   var funcModel     = funcMod.createModel(locals);
-  var authLinkModel = authLinkMod.createModel(locals);
+  var syncAPIModel = syncAPIMod.createModel(locals);
 
   var addedId = null;
 
@@ -197,7 +197,7 @@ function _add(locals, data, callback) {
     },
     // 数据入库
     function(asyncCallback) {
-      authLinkModel.add(data, function(err, _addedId) {
+      syncAPIModel.add(data, function(err, _addedId) {
         if (err) return asyncCallback(err);
 
         addedId = _addedId;
@@ -215,9 +215,9 @@ function _modify(locals, id, data, opt, callback) {
   opt = opt || {};
 
   var funcModel     = funcMod.createModel(locals);
-  var authLinkModel = authLinkMod.createModel(locals);
+  var syncAPIModel = syncAPIMod.createModel(locals);
 
-  var authLink = null;
+  var syncAPI = null;
 
   async.series([
     // 获取数据
@@ -226,14 +226,14 @@ function _modify(locals, id, data, opt, callback) {
         'auln.seq',
         'auln.funcCallKwargsJSON',
       ]
-      authLinkModel.getWithCheck(id, fields, function(err, dbRes) {
+      syncAPIModel.getWithCheck(id, fields, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        authLink = dbRes;
+        syncAPI = dbRes;
 
         if (opt.funcCallKwargs === 'merge' && toolkit.notNothing(data.funcCallKwargsJSON)) {
           // 合并funcCallKwargsJSON参数
-          var prevFuncCallKwargs = toolkit.jsonCopy(authLink.funcCallKwargsJSON);
+          var prevFuncCallKwargs = toolkit.jsonCopy(syncAPI.funcCallKwargsJSON);
           data.funcCallKwargsJSON = Object.assign(prevFuncCallKwargs, data.funcCallKwargsJSON);
         }
 
@@ -247,12 +247,12 @@ function _modify(locals, id, data, opt, callback) {
       funcModel.getWithCheck(data.funcId, ['func.seq'], asyncCallback);
     },
     function(asyncCallback) {
-      authLinkModel.modify(id, data, asyncCallback);
+      syncAPIModel.modify(id, data, asyncCallback);
     },
   ], function(err) {
     if (err) return callback(err);
 
-    var url = urlFor('mainAPI.callAuthLinkByGet', { params: { id: id } });
+    var url = urlFor('mainAPI.callSyncAPIByGet', { params: { id: id } });
     return callback(null, id, url);
   });
 };
