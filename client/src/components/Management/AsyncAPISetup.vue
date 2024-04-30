@@ -180,7 +180,7 @@ recentTaskCount: '{n} 個近期任務'
                 :precision="0"
                 v-model="form.taskRecordLimit"></el-input-number>
               <span class="task-record-limit-unit">{{ $tc('recentTaskCount', form.taskRecordLimit, { n: '' }) }} </span>
-              <el-link class="task-record-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH')">{{ $t('Restore Default') }}</el-link>
+              <el-link class="task-record-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_ASYNC_API')">{{ $t('Restore Default') }}</el-link>
             </el-form-item>
 
             <el-form-item :label="$t('API Auth')" prop="apiAuthId">
@@ -237,7 +237,7 @@ export default {
       if (!id) {
         this.pageMode = 'add';
         this.T.jsonClear(this.form);
-        this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH');
+        this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_ASYNC_API');
         this.data = {};
 
       } else {
@@ -256,7 +256,7 @@ export default {
         nextForm.apiAuthId = this.data.apia_id;
 
         if (this.T.isNothing(nextForm.taskRecordLimit)) {
-          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH')
+          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_ASYNC_API')
         }
 
         this.form = nextForm;
@@ -421,7 +421,7 @@ export default {
         funcCallKwargsJSON: null,
         tagsJSON          : [],
         apiAuthId         : null,
-        taskRecordLimit   : this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH'),
+        taskRecordLimit   : this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_ASYNC_API'),
         note              : null,
       },
       formRules: {

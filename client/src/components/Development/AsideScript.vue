@@ -541,7 +541,7 @@ successCount: 成功 {n}
                 <span v-if="T.isNothing(scope.row.throttlingJSON)">-</span>
                 <el-tooltip v-else placement="right">
                   <div slot="content">
-                    <template v-for="opt in C.AUTH_LINK_THROTTLING">
+                    <template v-for="opt in C.SYNC_API_THROTTLING">
                       <span v-if="scope.row.throttlingJSON[opt.key]">{{ $tc(opt.name, scope.row.throttlingJSON[opt.key]) }}<br></span>
                     </template>
                   </div>

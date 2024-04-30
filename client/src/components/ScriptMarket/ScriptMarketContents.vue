@@ -592,7 +592,7 @@ Upgrade Script Set: 升級指令碼集
                   <el-button type="text" @click="common.goToList('crontab-schedule-list', { _fuzzySearch: deployment.startupCrontabScheduleId })">
                     <i class="fa fa-fw fa-external-link"></i>
                     {{ $t('Go to the Crontab Schedule') }}
-                  </el-tton>
+                  </el-button>
                 </p>
                 <p v-else-if="deployment.startupScriptId">
                   {{ $t('Crontab Schedule is not deployed yet') }}
@@ -601,7 +601,7 @@ Upgrade Script Set: 升級指令碼集
                     <i v-if="isDeploying" class="fa fa-fw fa-circle-o-notch fa-spin"></i>
                     <i v-else class="fa fa-fw fa-plus"></i>
                     {{ $t('Deploy Crontab Schedule') }}
-                  </el-tton>
+                  </el-button>
                 </p>
               </template>
             </template>

@@ -241,7 +241,7 @@ function createFuncRunnerTaskReq(locals, options, callback) {
       // 默认值
       switch(options.origin) {
         case 'asyncAPI':
-          taskReq.queue = CONFIG._FUNC_TASK_QUEUE_BATCH;
+          taskReq.queue = CONFIG._FUNC_TASK_QUEUE_ASYNC_API;
           break;
 
         default:
@@ -274,7 +274,7 @@ function createFuncRunnerTaskReq(locals, options, callback) {
       switch(options.origin) {
         case 'asyncAPI':
           // 异步 API 有单独的默认执行超时
-          taskReq.timeout = CONFIG._FUNC_TASK_TIMEOUT_BATCH;
+          taskReq.timeout = CONFIG._FUNC_TASK_TIMEOUT_ASYNC_API;
           break;
 
         default:

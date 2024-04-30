@@ -197,7 +197,7 @@ class CrontabStarter(BaseTask):
             expires = crontab_schedule['funcExtraConfig'].get('expires') or CONFIG['_FUNC_TASK_EXPIRES_DEFAULT']
 
             # 确定执行队列
-            queue = crontab_schedule['funcExtraConfig'].get('queue') or CONFIG['_FUNC_TASK_QUEUE_CRONTAB']
+            queue = crontab_schedule['funcExtraConfig'].get('queue') or CONFIG['_FUNC_TASK_QUEUE_CRONTAB_SCHEDULE']
 
             # 判断队列是否可用
             if not self.is_worker_queue_available(queue):

@@ -223,9 +223,9 @@ class FlushDataBuffer(BaseInternalTask):
         'direct'         : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_DIRECT'],
         'integration'    : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_INTEGRATION'],
         'connector'      : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CONNECTOR'],
-        'syncAPI'        : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK'],
-        'asyncAPI'       : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH'],
-        'crontabSchedule': CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG'],
+        'syncAPI'        : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_SYNC_API'],
+        'asyncAPI'       : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_ASYNC_API'],
+        'crontabSchedule': CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_SCHEDULE'],
     }
 
     def _flush_data_buffer(self, cache_key):
@@ -1216,7 +1216,7 @@ class workerQueueLimitCrontabSchedule(BaseInternalTask):
 
         count_map = {}
         for d in db_res:
-            queue = str(d.get('queue') or CONFIG['_FUNC_TASK_QUEUE_CRONTAB'])
+            queue = str(d.get('queue') or CONFIG['_FUNC_TASK_QUEUE_CRONTAB_SCHEDULE'])
             count = d.get('count')
             if queue not in count_map:
                 count_map[queue] = 0
@@ -1240,7 +1240,7 @@ class workerQueueLimitCrontabSchedule(BaseInternalTask):
                 continue
 
             # 工作队列长度限制
-            worker_queue_limit = max(count * CONFIG['_WORKER_QUEUE_LIMIT_SCALE_CRONTAB_CONFIG'], CONFIG['_WORKER_QUEUE_LIMIT_MIN'])
+            worker_queue_limit = max(count * CONFIG['_WORKER_QUEUE_LIMIT_SCALE_CRONTAB_SCHEDULE'], CONFIG['_WORKER_QUEUE_LIMIT_MIN'])
             worker_queue_limit_map[queue] = worker_queue_limit
 
         # 缓存

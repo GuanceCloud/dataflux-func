@@ -6,7 +6,7 @@ en:
   ':': ': '
   '(': ' ('
 
-  # const.js - AUTH_LINK_THROTTLING
+  # const.js - SYNC_API_THROTTLING
   timePerSecond: '{n} time/second | {n} times/second'
   timePerMinute: '{n} time/minute | {n} times/minute'
   timePerHour  : '{n} time/hour | {n} times/hour'
@@ -420,7 +420,7 @@ en:
   'HTTP Query' : 'HTTP Query 参数'
   'HTTP Body'  : 'HTTP Body 字段'
 
-  # const.js - AUTH_LINK_THROTTLING
+  # const.js - SYNC_API_THROTTLING
   'timePerSecond': '{n} 次/秒'
   'timePerMinute': '{n} 次/分钟'
   'timePerHour'  : '{n} 次/小时'

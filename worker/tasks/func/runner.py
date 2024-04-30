@@ -121,7 +121,7 @@ class FuncRunner(FuncBaseTask):
 
             # 去除过期数据 / 压缩
             for _exec_mode in list(cache_value.keys()):
-                cache_value[_exec_mode] = list(filter(lambda ts: ts > self.trigger_time - CONFIG['_RECENT_CRONTAB_TRIGGERED_EXPIRES'], cache_value[_exec_mode]))
+                cache_value[_exec_mode] = list(filter(lambda ts: ts > self.trigger_time - CONFIG['_RECENT_CRONTAB_SCHEDULE_TRIGGERED_EXPIRES'], cache_value[_exec_mode]))
                 cache_value[_exec_mode] = toolkit.repeat_encode(toolkit.delta_of_delta_encode(cache_value[_exec_mode]))
 
             # 重新写入缓存

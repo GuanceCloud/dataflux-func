@@ -727,8 +727,8 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return new MAP_CONST(this.API_AUTH_FIXED_FIELD_LOCATION);
   },
 
-  // 授权链接限流
-  get AUTH_LINK_THROTTLING() {
+  // 同步 API 限流
+  get SYNC_API_THROTTLING() {
     return [
       {
         key : 'bySecond',
@@ -756,8 +756,8 @@ kafka.publish(topic='some_topic', message='some_message')`,
       },
     ];
   },
-  get AUTH_LINK_THROTTLING_MAP() {
-    return new MAP_CONST(this.AUTH_LINK_THROTTLING);
+  get SYNC_API_THROTTLING_MAP() {
+    return new MAP_CONST(this.SYNC_API_THROTTLING);
   },
 
   // 任务状态

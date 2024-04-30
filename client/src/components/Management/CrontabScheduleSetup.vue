@@ -23,7 +23,7 @@ Expires     : 有效期
 Note        : 备注
 
 Simple Mode                         : 简单模式
-Advanced Mode                       : 高级模式
+Custom Mode                         : 自定义模式
 Fill in Crontab expressions directly: 直接填写 Crontab 表达式
 
 '(Fixed Crontab)': （固定Crontab）
@@ -82,7 +82,7 @@ shortcutDays  : '{n} 天'
 (Fixed Crontab): （固定Crontab）
 Add Crontab Schedule: 添加 Crontab 計劃
 Add Tag: 添加標籤
-Advanced Mode: 高級模式
+Custom Mode: 高級模式
 Are you sure you want to delete the Crontab Schedule?: 是否確認刪除此 Crontab 計劃？
 Arguments: 參數指定
 Crontab Schedule created: Crontab 計劃配置已創建
@@ -147,7 +147,7 @@ shortcutDays: '{n} 天'
 (Fixed Crontab): （固定Crontab）
 Add Crontab Schedule: 新增 Crontab 計劃
 Add Tag: 新增標籤
-Advanced Mode: 高階模式
+Custom Mode: 高階模式
 Are you sure you want to delete the Crontab Schedule?: 是否確認刪除此 Crontab 計劃？
 Arguments: 引數指定
 Crontab Schedule created: Crontab 計劃配置已建立
@@ -282,7 +282,7 @@ shortcutDays: '{n} 天'
                 :precision="0"
                 v-model="form.taskRecordLimit"></el-input-number>
               <span class="task-record-limit-unit">{{ $tc('recentTaskCount', form.taskRecordLimit, { n: '' }) }} </span>
-              <el-link class="task-record-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG')">{{ $t('Restore Default') }}</el-link>
+              <el-link class="task-record-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_SCHEDULE')">{{ $t('Restore Default') }}</el-link>
             </el-form-item>
 
             <!-- Crontab配置 -->
@@ -290,7 +290,7 @@ shortcutDays: '{n} 天'
               <el-form-item>
                 <el-radio-group v-model="crontabMode" size="mini">
                   <el-radio-button label="simple">{{ $t('Simple Mode') }}</el-radio-button>
-                  <el-radio-button label="advanced">{{ $t('Advanced Mode') }}</el-radio-button>
+                  <el-radio-button label="advanced">{{ $t('Custom Mode') }}</el-radio-button>
                 </el-radio-group>
               </el-form-item>
 
@@ -470,7 +470,7 @@ export default {
         this.formCrontabCache = this.T.jsonCopy(defaultFormCrontab);
         this.formCrontab      = this.T.jsonCopy(defaultFormCrontab);
         this.T.jsonClear(this.form);
-        this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG');
+        this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_SCHEDULE');
         this.data = {};
         this.crontabMode = 'simple';
 
@@ -490,7 +490,7 @@ export default {
         nextForm.tagsJSON = nextForm.tagsJSON || [];
 
         if (this.T.isNothing(nextForm.taskRecordLimit)) {
-          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG')
+          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_SCHEDULE')
         }
 
         this.form = nextForm;
@@ -871,7 +871,7 @@ export default {
         crontab           : null,
         tagsJSON          : [],
         expireTime        : null,
-        taskRecordLimit   : this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG'),
+        taskRecordLimit   : this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_SCHEDULE'),
         note              : null,
       },
 

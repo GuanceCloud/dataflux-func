@@ -128,8 +128,8 @@ exports.listRecentTriggered = function(req, res, next) {
       else return 0
     });
 
-    if (recentTriggered.length > CONFIG._RECENT_CRONTAB_TRIGGERED_LIMIT) {
-      recentTriggered = recentTriggered.slice(0, CONFIG._RECENT_CRONTAB_TRIGGERED_LIMIT)
+    if (recentTriggered.length > CONFIG._RECENT_CRONTAB_SCHEDULE_TRIGGERED_LIMIT) {
+      recentTriggered = recentTriggered.slice(0, CONFIG._RECENT_CRONTAB_SCHEDULE_TRIGGERED_LIMIT)
     }
 
     var ret = toolkit.initRet(recentTriggered);

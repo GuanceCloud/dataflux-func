@@ -800,7 +800,7 @@ function doDeploy(locals, scriptSetId, options, callback) {
         }
 
         // 尚不存在，立即创建
-        startupCrontabScheduleId = `${CONFIG._STARTUP_CRONTAB_ID_PREFIX}-${scriptSetId}`;
+        startupCrontabScheduleId = `${CONFIG._STARTUP_CRONTAB_SCHEDULE_ID_PREFIX}-${scriptSetId}`;
         var _data = {
           id                : startupCrontabScheduleId,
           funcId            : crontabFuncId,

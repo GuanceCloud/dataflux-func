@@ -1,7 +1,7 @@
 <i18n locale="zh-CN" lang="yaml">
 Access Key deleted: Access Key 已删除
 
-No Access Key has ever been added: 从未添加过任何授权链接
+No Access Key has ever been added: 从未添加过任何 Access Key
 
 Are you sure you want to delete the Access Key?: 是否确认删除此 Access Key？
 

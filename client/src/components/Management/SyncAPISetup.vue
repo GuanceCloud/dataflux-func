@@ -197,7 +197,7 @@ shortcutDays: '{n} 天'
                 :precision="0"
                 v-model="form.taskRecordLimit"></el-input-number>
               <span class="task-record-limit-unit">{{ $tc('recentTaskCount', form.taskRecordLimit, { n: '' }) }} </span>
-              <el-link class="task-record-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK')">{{ $t('Restore Default') }}</el-link>
+              <el-link class="task-record-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_SYNC_API')">{{ $t('Restore Default') }}</el-link>
             </el-form-item>
 
             <el-form-item :label="$t('API Auth')" prop="apiAuthId">
@@ -224,7 +224,7 @@ shortcutDays: '{n} 天'
               </el-date-picker>
             </el-form-item>
 
-            <template v-for="(opt, index) in C.AUTH_LINK_THROTTLING">
+            <template v-for="(opt, index) in C.SYNC_API_THROTTLING">
               <el-form-item :label="index === 0 ? $t('Limiting') : ''" :prop="`throttlingJSON.${opt.key}`">
                 <el-input-number class="throttling-input"
                   :min="1"
@@ -286,7 +286,7 @@ export default {
         this.T.jsonClear(this.form);
         this.form.throttlingJSON  = {};
         this.form.showInDoc       = false;
-        this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK');
+        this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_SYNC_API');
         this.data = {};
 
       } else {
@@ -306,7 +306,7 @@ export default {
         nextForm.throttlingJSON     = nextForm.throttlingJSON || {};
 
         if (this.T.isNothing(nextForm.taskRecordLimit)) {
-          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK')
+          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_SYNC_API')
         }
 
         this.form = nextForm;
@@ -495,7 +495,7 @@ export default {
         expireTime        : null,
         throttlingJSON    : {},
         showInDoc         : false,
-        taskRecordLimit   : this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK'),
+        taskRecordLimit   : this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_SYNC_API'),
         note              : null,
       },
 
