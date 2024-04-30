@@ -777,3 +777,136 @@ upgradeInfo:
         KEY `QUEUE` (`queue`),
         KEY `STATUS` (`status`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务记录（函数）';
+
+  # 于观测云 SaaS 2024-05-15 迭代中实装
+  - seq: 29
+    database: |-
+      -- 启用新命名
+      CREATE TABLE `biz_main_sync_api` (
+        `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '兼任Token',
+        `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
+        `funcCallKwargsJSON` json DEFAULT NULL COMMENT '函数调用参数JSON (kwargs)',
+        `tagsJSON` json DEFAULT NULL COMMENT '授权链接标签JSON',
+        `apiAuthId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'API认证ID',
+        `expireTime` datetime DEFAULT NULL COMMENT '过期时间（NULL表示永不过期）',
+        `throttlingJSON` json DEFAULT NULL COMMENT '限流JSON',
+        `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '来源',
+        `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '来源ID',
+        `showInDoc` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否在文档中显示',
+        `taskRecordLimit` int(11) DEFAULT NULL COMMENT '任务记录数量',
+        `isDisabled` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否禁用',
+        `note` text COMMENT '备注',
+        `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`seq`),
+        UNIQUE KEY `ID` (`id`),
+        KEY `ORIGIN` (`origin`),
+        KEY `ORIGIN_ID` (`originId`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='同步 API';
+
+      CREATE TABLE `biz_main_async_api` (
+        `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '兼任Token',
+        `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
+        `funcCallKwargsJSON` json DEFAULT NULL COMMENT '函数调用参数JSON (kwargs)',
+        `tagsJSON` json DEFAULT NULL COMMENT '批处理标签JSON',
+        `apiAuthId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'API认证ID',
+        `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '来源',
+        `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '来源ID',
+        `showInDoc` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否在文档中显示',
+        `taskRecordLimit` int(11) DEFAULT NULL COMMENT '任务记录数量',
+        `isDisabled` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否禁用',
+        `note` text COMMENT '备注',
+        `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`seq`),
+        UNIQUE KEY `ID` (`id`),
+        KEY `ORIGIN` (`origin`),
+        KEY `ORIGIN_ID` (`originId`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='异步 API';
+
+      CREATE TABLE `biz_main_crontab_schedule` (
+        `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+        `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+        `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
+        `funcCallKwargsJSON` json DEFAULT NULL COMMENT '函数调用参数JSON (kwargs)',
+        `crontab` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '执行频率（Crontab语法）',
+        `timezone` varchar(256) DEFAULT NULL COMMENT '时区',
+        `tagsJSON` json DEFAULT NULL COMMENT '自动触发配置标签JSON',
+        `scope` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'GLOBAL' COMMENT '范围',
+        `configMD5` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '配置MD5',
+        `expireTime` timestamp NULL DEFAULT NULL COMMENT '过期时间',
+        `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '来源',
+        `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '来源ID',
+        `taskRecordLimit` int(11) DEFAULT NULL COMMENT '任务记录数量',
+        `isDisabled` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否已禁用',
+        `note` text COMMENT '备注',
+        `createTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        `updateTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        PRIMARY KEY (`seq`),
+        UNIQUE KEY `ID` (`id`),
+        UNIQUE KEY `SCOPE_CONFIG` (`scope`,`configMD5`),
+        KEY `ORIGIN` (`origin`),
+        KEY `ORIGIN_ID` (`originId`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Crontab 计划';
+
+      -- 复制数据
+      INSERT INTO biz_main_sync_api
+        SELECT
+          NULL,
+          `id`,
+          `funcId`,
+          `funcCallKwargsJSON`,
+          `tagsJSON`,
+          `apiAuthId`,
+          `expireTime`,
+          `throttlingJSON`,
+          `origin`,
+          `originId`,
+          `showInDoc`,
+          `taskRecordLimit`,
+          `isDisabled`,
+          `note`,
+          `createTime`,
+          `updateTime`
+        FROM biz_main_auth_link;
+
+      INSERT INTO biz_main_async_api
+        SELECT
+          NULL,
+          `id`,
+          `funcId`,
+          `funcCallKwargsJSON`,
+          `tagsJSON`,
+          `apiAuthId`,
+          `origin`,
+          `originId`,
+          `showInDoc`,
+          `taskRecordLimit`,
+          `isDisabled`,
+          `note`,
+          `createTime`,
+          `updateTime`
+        FROM biz_main_batch;
+
+      INSERT INTO biz_main_crontab_schedule
+        SELECT
+          NULL,
+          `id`,
+          `funcId`,
+          `funcCallKwargsJSON`,
+          `crontab`,
+          `timezone`,
+          `tagsJSON`,
+          `scope`,
+          `configMD5`,
+          `expireTime`,
+          `origin`,
+          `originId`,
+          `taskRecordLimit`,
+          `isDisabled`,
+          `note`,
+          `createTime`,
+          `updateTime`
+        FROM biz_main_crontab_config;

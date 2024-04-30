@@ -1,3 +1,15 @@
+<i18n locale="en" lang="yaml">
+renameTipSyncAPI        : 'I.e. "Auth Link" in the previous version. We have adjusted the naming for ease of understanding'
+renameTipAsyncAPI       : 'I.e. "Batch" in the previous version. We have adjusted the naming for ease of understanding'
+renameTipCrontabSchedule: 'I.e. "Crontab Config" in the previous version. We have adjusted the naming for ease of understanding'
+</i18n>
+
+<i18n locale="zh-CN" lang="yaml">
+renameTipSyncAPI        : 即之前版本中的的「授权链接」。为了便于理解，我们调整了命名
+renameTipAsyncAPI       : 即之前版本中的的「批处理」。为了便于理解，我们调整了命名
+renameTipCrontabSchedule: 即之前版本中的的「自动触发配置」。为了便于理解，我们调整了命名
+</i18n>
+
 <template>
   <el-container direction="horizontal">
     <!-- 二级导航 -->
@@ -44,26 +56,35 @@
               </span>
             </el-menu-item>
 
-            <el-menu-item index="/management/auth-link-list">
-              <span>
-                <i class="fa fa-fw fa-link"></i>
-                {{ $t('Auth Link') }}
-              </span>
-            </el-menu-item>
+            <el-tooltip effect="dark" :content="$t('renameTipSyncAPI')" placement="right">
+              <el-menu-item index="/management/sync-api-list">
+                <span>
+                  <i class="fa fa-fw fa-link"></i>
+                  {{ $t('Sync API') }}
+                  <i class="fa fa-fw fa-question-circle text-main"></i>
+                </span>
+              </el-menu-item>
+            </el-tooltip>
 
-            <el-menu-item index="/management/crontab-config-list">
-              <span>
-                <i class="fa fa-fw fa-clock-o"></i>
-                {{ $t('Crontab Config') }}
-              </span>
-            </el-menu-item>
+            <el-tooltip effect="dark" :content="$t('renameTipAsyncAPI')" placement="right">
+              <el-menu-item index="/management/async-api-list">
+                <span>
+                  <i class="fa fa-fw fa-tasks"></i>
+                  {{ $t('Async API') }}
+                  <i class="fa fa-fw fa-question-circle text-main"></i>
+                </span>
+              </el-menu-item>
+            </el-tooltip>
 
-            <el-menu-item index="/management/batch-list">
-              <span>
-                <i class="fa fa-fw fa-tasks"></i>
-                {{ $t('Batch') }}
-              </span>
-            </el-menu-item>
+            <el-tooltip effect="dark" :content="$t('renameTipCrontabSchedule')" placement="right">
+              <el-menu-item index="/management/crontab-schedule-list">
+                <span>
+                  <i class="fa fa-fw fa-clock-o"></i>
+                  {{ $t('Crontab Schedule') }}
+                  <i class="fa fa-fw fa-question-circle text-main"></i>
+                </span>
+              </el-menu-item>
+            </el-tooltip>
 
             <el-menu-item index="/management/script-set-export-history-list">
               <span>

@@ -76,6 +76,7 @@ en:
   Built-in          : 内置
   Press ESC to close: 按 ECS 关闭
   Show detail       : 显示详情
+  Deprecated        : 已废弃
 
   # 通用 - 按钮 / 表单
   Very good: 非常好
@@ -357,9 +358,9 @@ en:
   Overview                 : 总览
   About                    : 关于
   API Auth                 : API 认证
-  Auth Link                : 授权链接
-  Crontab Config           : 自动触发配置
-  Batch                    : 批处理
+  Sync API                 : 同步 API
+  Async API                : 异步 API
+  Crontab Schedule         : Crontab 计划
   Script Set Export        : 脚本集导出
   Script Set Import        : 脚本集导入
   Script Set Export History: 脚本集导出历史

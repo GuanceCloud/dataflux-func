@@ -126,6 +126,14 @@ export default {
     Navi,
   },
   watch: {
+    '$store.state.shortcutAction'(val) {
+      switch(val.action) {
+        case 'app.searchEveryThing':
+          // TODO Ctrl + P 搜索任意内容
+          console.log('Ctrl + P Search Every Thing')
+          break;
+      }
+    },
     $route: {
       immediate: true,
       handler(to, from) {
@@ -397,49 +405,54 @@ export default {
         }
 
         const ctrlOrCmd = app.T.isMac() ? e.metaKey : e.ctrlKey;
+        const ctrl      = e.ctrlKey;
         const alt       = e.altKey;
         const shift     = e.shiftKey;
 
-        const keyCode_1 = 49;
-        const keyCode_2 = 50;
-        const keyCode_3 = 51;
-        const keyCode_B = 66;
-        const keyCode_E = 69;
-        const keyCode_F = 70;
-        const keyCode_S = 83;
+        const key_1 = e.keyCode === 49;
+        const key_2 = e.keyCode === 50;
+        const key_3 = e.keyCode === 51;
+        const key_B = e.keyCode === 66;
+        const key_E = e.keyCode === 69;
+        const key_F = e.keyCode === 70;
+        const key_P = e.keyCode === 80;
+        const key_S = e.keyCode === 83;
 
-        switch(app.$route.name) {
-          case 'code-editor':
-            if (ctrlOrCmd && e.keyCode === keyCode_S) {
-              // Ctrl/Command + S：保存
-              return shortcutAction('codeEditor.save');
-
-            } else if (ctrlOrCmd && e.keyCode === keyCode_B) {
-              // Ctrl/Command + B：运行
-              return shortcutAction('codeEditor.run');
-            }
-            break;
-
-          case 'code-viewer':
-            if (ctrlOrCmd && e.keyCode === keyCode_1) {
-              // Ctrl/Command + 1： 查看草稿
-              return shortcutAction('codeViewer.showDraft');
-
-            } else if (ctrlOrCmd && e.keyCode === keyCode_2) {
-              // Ctrl/Command + 2： 查看草稿
-              return shortcutAction('codeViewer.showPublished');
-
-            } else if (ctrlOrCmd && e.keyCode === keyCode_3) {
-              // Ctrl/Command + 3： 查看差异
-              return shortcutAction('codeViewer.showDiff');
-
-            } else if (ctrlOrCmd && e.keyCode === keyCode_E) {
-              // Ctrl/Command + E： 进入编辑
-              return shortcutAction('codeViewer.enterEditor');
-            }
-            break;
-
+        // 全局 Ctrl + P：查找
+        if (ctrl && key_P) {
+          return shortcutAction('app.searchEveryThing');
         }
+
+        // 脚本编辑器 Ctrl/Command + S：保存
+        if (app.$route.name === 'code-editor' && ctrlOrCmd && key_S) {
+          return shortcutAction('codeEditor.save');
+        }
+
+        // 脚本编辑器 Ctrl/Command + B：运行
+         if (app.$route.name === 'code-editor' && ctrlOrCmd && key_B) {
+          return shortcutAction('codeEditor.run');
+        }
+
+        // 脚本查看器 Ctrl/Command + 1： 查看草稿
+        if (app.$route.name === 'code-viewer' && ctrlOrCmd && key_1) {
+          return shortcutAction('codeViewer.showDraft');
+        }
+
+        // 脚本查看器 Ctrl/Command + 2： 查看草稿
+        if (app.$route.name === 'code-viewer' && ctrlOrCmd && key_2) {
+          return shortcutAction('codeViewer.showPublished');
+        }
+
+        // 脚本查看器 Ctrl/Command + 3： 查看差异
+        if (app.$route.name === 'code-viewer' && ctrlOrCmd && key_3) {
+          return shortcutAction('codeViewer.showDiff');
+        }
+
+        // 脚本查看器 Ctrl/Command + E： 进入编辑
+        if (app.$route.name === 'code-viewer' && ctrlOrCmd && key_E) {
+          return shortcutAction('codeViewer.enterEditor');
+        }
+
       };
     });
 
@@ -538,8 +551,8 @@ ul {
 .hidden {
   visibility: hidden;
 }
-.overrided {
-  text-decoration: line-through red 2px;
+.deleted {
+  text-decoration: line-through red 1.5px;
 }
 
 .main-text {
