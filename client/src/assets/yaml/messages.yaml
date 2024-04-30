@@ -62,8 +62,6 @@ en: {}
   Invalid options, api_timeout is too small                                                               : 配置错误，api_timeout 过小
   Invalid options, bad JSON format                                                                        : 配置错误，无法解析为 JSON
   Invalid options, eta should be a valid datetime value                                                   : 配置错误，eta 必须为有效的日期-时间值
-  Invalid options, execMode should be "async" in Crontab or Batch calling                                 : 配置错误，调用自动触发或批处理时，execMode 必须为 "async"
-  Invalid options, execMode should be "sync" in Auth Link calling                                         : 配置错误，调用授权链接时，execMode 必须为 "sync"
   Invalid options, invalid execMode                                                                       : 配置错误，execMode 值无效
   Invalid options, invalid returnType                                                                     : 配置错误，returnType 值无效
   Invalid options, queue should be an integer between 1 and 9                                             : 配置错误，队列必须为 1 到 9 之间的整数
@@ -77,12 +75,12 @@ en: {}
   Integrated Sign-in is disabled                                                                          : 集成登录功能已被禁用
   Maximum calling rate exceeded                                                                           : 达到最大调用频率
   Modifying built-in Connector is not allowed, please edit the config instead                             : 不允许修改内置连接器，请修改系统配置
-  No such Auth Link                                                                                       : 不存在此授权链接
-  No such Batch                                                                                           : 不存在批处理
-  No such Crontab Config                                                                                  : 不存在自动触发配置
+  No such Sync API                                                                                        : 不存在此同步 API
+  No such Async API                                                                                       : 不存在此异步 API
+  No such Crontab Schedule                                                                                : 不存在此 Crontab 计划
   No such data                                                                                            : 不存在数据
   No such Func                                                                                            : 不存在函数
-  No such router. Please make sure that the METHOD is correct and no spelling missing in the URL          : 不存在路由，请检查 HTTP 请求方法以及 URL 拼写是否正确
+  No such router. Please make sure that the METHOD is correct and no spelling missing in the URL          : 不存在此路由，请检查 HTTP 请求方法以及 URL 拼写是否正确
   Operation Record cannot be deleted                                                                      : 操作记录无法删除
   Operation Record cannot be modified                                                                     : 操作记录无法修改
   Please input captcha                                                                                    : 请输入验证码
@@ -97,9 +95,9 @@ en: {}
   Sign-in function timeout                                                                                : 登录函数超时
   Socket.io connection gone                                                                               : Socket.io 连接已断开
   Specified new file or folder name already existed                                                       : 指定的新文件名或目录名已存在
-  This Auth Link is already expired                                                                       : 此授权链接已过期
-  This Auth Link is disabled                                                                              : 此授权链接已被禁用
-  This Batch is disabled                                                                                  : 此批处理已被禁用
+  This Sync API is already expired                                                                        : 此同步 API 已过期
+  This Sync API is disabled                                                                               : 此同步 API 已被禁用
+  This Async API is disabled                                                                                  : 此异步 API 已被禁用
   This captcha token is already used                                                                      : 此验证码令牌已被使用
   This File Service is disabled                                                                           : 此文件服务已被禁用
   This Script is locked by other user                                                                     : 此脚本已被其他用户锁定

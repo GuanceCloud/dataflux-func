@@ -11,14 +11,14 @@ var CONFIG      = require('../utils/yamlResources').get('CONFIG');
 var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 
-var funcMod          = require('../models/funcMod');
-var crontabConfigMod = require('../models/crontabConfigMod');
+var funcMod            = require('../models/funcMod');
+var crontabScheduleMod = require('../models/crontabScheduleMod');
 
 /* Init */
 var GLOBAL_SCOPE = 'GLOBAL';
 
 /* Handlers */
-var crudHandler = exports.crudHandler = crontabConfigMod.createCRUDHandler();
+var crudHandler = exports.crudHandler = crontabScheduleMod.createCRUDHandler();
 exports.delete     = crudHandler.createDeleteHandler();
 exports.deleteMany = crudHandler.createDeleteManyHandler();
 
@@ -26,13 +26,13 @@ exports.list = function(req, res, next) {
   var listData     = null;
   var listPageInfo = null;
 
-  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
+  var crontabScheduleModel = crontabScheduleMod.createModel(res.locals);
 
   async.series([
     function(asyncCallback) {
       var opt = res.locals.getQueryOptions();
 
-      crontabConfigModel.list(opt, function(err, dbRes, pageInfo) {
+      crontabScheduleModel.list(opt, function(err, dbRes, pageInfo) {
         if (err) return asyncCallback(err);
 
         listData     = dbRes;
@@ -46,7 +46,7 @@ exports.list = function(req, res, next) {
       if (toolkit.isNothing(listData)) return asyncCallback();
 
       var dataIds = toolkit.arrayElementValues(listData, 'id');
-      var cacheKey = toolkit.getGlobalCacheKey('cache', 'lastTaskStatus', [ 'origin', 'crontabConfig' ]);
+      var cacheKey = toolkit.getGlobalCacheKey('cache', 'lastTaskStatus', [ 'origin', 'crontabSchedule' ]);
       res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
@@ -67,7 +67,7 @@ exports.list = function(req, res, next) {
       if (toolkit.isNothing(listData)) return asyncCallback();
 
       var dataIds  = toolkit.arrayElementValues(listData, 'id');
-      var cacheKey = toolkit.getGlobalCacheKey('tempConfig', 'dynamicCrontab');
+      var cacheKey = toolkit.getGlobalCacheKey('crontabSchedule', 'dynamicCrontab');
       res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
@@ -75,13 +75,13 @@ exports.list = function(req, res, next) {
         listData.forEach(function(d) {
           d.dynamicCrontab = null;
 
-          var tempConfig = cacheRes[d.id];
-          if (!tempConfig) return;
+          var dynamicCrontab = cacheRes[d.id];
+          if (!dynamicCrontab) return;
 
-          tempConfig = JSON.parse(tempConfig);
-          if (tempConfig.expireTime && tempConfig.expireTime < now) return;
+          dynamicCrontab = JSON.parse(dynamicCrontab);
+          if (dynamicCrontab.expireTime && dynamicCrontab.expireTime < now) return;
 
-          d.dynamicCrontab = tempConfig.value;
+          d.dynamicCrontab = dynamicCrontab.value;
         });
 
         return asyncCallback();
@@ -98,7 +98,7 @@ exports.list = function(req, res, next) {
 exports.listRecentTriggered = function(req, res, next) {
   var id = req.params.id;
 
-  var cacheKey = toolkit.getGlobalCacheKey('cache', 'recentTaskTriggered', [ 'origin', 'crontabConfig' ]);
+  var cacheKey = toolkit.getGlobalCacheKey('cache', 'recentTaskTriggered', [ 'origin', 'crontabSchedule' ]);
   res.locals.cacheDB.hget(cacheKey, id, function(err, cacheRes) {
     if (err) return next(err);
 
@@ -200,7 +200,7 @@ exports.addMany = function(req, res, next) {
 exports.modifyMany = function(req, res, next) {
   var data = req.body.data;
 
-  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
+  var crontabScheduleModel = crontabScheduleMod.createModel(res.locals);
 
   var modifiedIds = [];
 
@@ -216,7 +216,7 @@ exports.modifyMany = function(req, res, next) {
       opt.fields = [ 'cron.id' ];
       opt.paging = false;
 
-      crontabConfigModel.list(opt, function(err, dbRes) {
+      crontabScheduleModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         modifiedIds = toolkit.arrayElementValues(dbRes, 'id');
@@ -253,28 +253,19 @@ function _add(locals, data, callback) {
   // 默认范围
   data.scope = data.scope || GLOBAL_SCOPE;
 
-  var funcModel          = funcMod.createModel(locals);
-  var crontabConfigModel = crontabConfigMod.createModel(locals);
+  var funcModel            = funcMod.createModel(locals);
+  var crontabScheduleModel = crontabScheduleMod.createModel(locals);
 
   var addedId = null;
 
   async.series([
     // 检查函数
     function(asyncCallback) {
-      funcModel.getWithCheck(data.funcId, ['func.seq'], function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        // 存在固定Crontab时，跟随固定Crontab
-        if (dbRes.extraConfigJSON && dbRes.extraConfigJSON.fixedCrontab) {
-          data.crontab = null;
-        }
-
-        return asyncCallback();
-      });
+      funcModel.getWithCheck(data.funcId, ['func.seq'], asyncCallback);
     },
     // 数据入库
     function(asyncCallback) {
-      crontabConfigModel.add(data, function(err, _addedId) {
+      crontabScheduleModel.add(data, function(err, _addedId) {
         if (err) return asyncCallback(err);
 
         addedId = _addedId;
@@ -291,11 +282,10 @@ function _add(locals, data, callback) {
 function _modify(locals, id, data, opt, callback) {
   opt = opt || {};
 
-  var funcModel          = funcMod.createModel(locals);
-  var crontabConfigModel = crontabConfigMod.createModel(locals);
+  var funcModel            = funcMod.createModel(locals);
+  var crontabScheduleModel = crontabScheduleMod.createModel(locals);
 
-  var crontabConfig = null;
-  var nextConfigMD5 = null;
+  var crontabSchedule = null;
 
   async.series([
     // 获取数据
@@ -306,14 +296,14 @@ function _modify(locals, id, data, opt, callback) {
         'cron.funcCallKwargsJSON',
         'cron.scope',
       ]
-      crontabConfigModel.getWithCheck(id, fields, function(err, dbRes) {
+      crontabScheduleModel.getWithCheck(id, fields, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        crontabConfig = dbRes;
+        crontabSchedule = dbRes;
 
         if (opt.funcCallKwargs === 'merge' && toolkit.notNothing(data.funcCallKwargsJSON)) {
           // 合并funcCallKwargsJSON参数
-          var prevFuncCallKwargs = toolkit.jsonCopy(crontabConfig.funcCallKwargsJSON);
+          var prevFuncCallKwargs = toolkit.jsonCopy(crontabSchedule.funcCallKwargsJSON);
           data.funcCallKwargsJSON = Object.assign(prevFuncCallKwargs, data.funcCallKwargsJSON);
         }
 
@@ -324,19 +314,10 @@ function _modify(locals, id, data, opt, callback) {
     function(asyncCallback) {
       if (toolkit.isNothing(data.funcId)) return asyncCallback();
 
-      funcModel.getWithCheck(data.funcId, ['func.seq', 'func.extraConfigJSON'], function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        // 存在固定Crontab时，跟随固定Crontab
-        if (dbRes.extraConfigJSON && dbRes.extraConfigJSON.fixedCrontab) {
-          data.crontab = null;
-        }
-
-        return asyncCallback();
-      });
+      funcModel.getWithCheck(data.funcId, ['func.seq', 'func.extraConfigJSON'], asyncCallback);
     },
     function(asyncCallback) {
-      crontabConfigModel.modify(id, data, asyncCallback);
+      crontabScheduleModel.modify(id, data, asyncCallback);
     },
   ], function(err) {
     if (err) return callback(err);

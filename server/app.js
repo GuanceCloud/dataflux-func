@@ -200,7 +200,7 @@ function startApplication() {
   require('./routers/asyncAPIRouter');
   require('./routers/crontabScheduleAPIRouter');
 
-  // 【兼容】
+  // 兼容处理
   require('./routers/authLinkAPIRouter');
   require('./routers/crontabConfigAPIRouter');
   require('./routers/batchAPIRouter');

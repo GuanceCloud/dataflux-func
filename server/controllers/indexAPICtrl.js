@@ -172,9 +172,6 @@ function toOpenAPISchema(fieldOpt, filesOpt, lang) {
     schemaSpec.maximum = fieldOpt.$maxValue;
   }
 
-  if (fieldOpt.$isDeprecated) {
-    schemaSpec.example
-  }
   if (fieldOpt.$example) {
     schemaSpec.example = fieldOpt.$example;
   }
@@ -246,6 +243,7 @@ function getOpenAPISpec(route, lang) {
       var apiSpec = {
         summary    : api.name,
         description: api.desc,
+        deprecated : !!api.isDeprecated || !!api.deprecated,
         tags       : [ moduleTag ],
         parameters : [],
         responses: {
@@ -265,7 +263,7 @@ function getOpenAPISpec(route, lang) {
             in         : paramType.in,
             description: paramOpt.$desc,
             schema     : toOpenAPISchema(paramOpt, null, lang),
-            deprecated : !!paramOpt.$isDeprecated,
+            deprecated : !!paramOpt.$isDeprecated || !!paramOpt.$deprecated,
             required   : !!(paramType.in === 'path' || paramOpt.$isRequired || paramOpt.$required),
           }
 

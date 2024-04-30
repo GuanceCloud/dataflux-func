@@ -435,7 +435,7 @@ shortcutDays: '{n} 天'
 import * as CronParser from 'cron-parser';
 
 export default {
-  name: 'CrontabConfigSetup',
+  name: 'CrontabScheduleSetup',
   components: {
   },
   watch: {
@@ -445,17 +445,12 @@ export default {
       }
 
       if (!val) {
-        this.$root.$emit('reload.crontabConfigList');
-      }
-    },
-    'form.id'(val) {
-      if (val && (val.length < this.ID_PREFIX.length || val.indexOf(this.ID_PREFIX) < 0)) {
-        this.form.id = this.ID_PREFIX;
+        this.$root.$emit('reload.crontabScheduleList');
       }
     },
     useCustomId(val) {
       if (val) {
-        this.form.id = `${this.ID_PREFIX}my-crontab`;
+        this.form.id = `my-crontab-schedule`;
       } else {
         this.form.id = null;
       }
@@ -483,7 +478,7 @@ export default {
         this.pageMode = 'setup';
         this.data.id = id;
 
-        let apiRes = await this.T.callAPI_getOne('/api/v1/crontab-configs/do/list', this.data.id);
+        let apiRes = await this.T.callAPI_getOne('/api/v1/crontab-schedules/do/list', this.data.id);
         if (!apiRes || !apiRes.ok) return;
 
         this.data = apiRes.data;
@@ -559,7 +554,7 @@ export default {
         opt.body.data.crontab = this.uiCrontabExpr.trim() || null;
       }
 
-      let apiRes = await this.T.callAPI('post', '/api/v1/crontab-configs/do/add', opt);
+      let apiRes = await this.T.callAPI('post', '/api/v1/crontab-schedules/do/add', opt);
       if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
@@ -587,7 +582,7 @@ export default {
         opt.body.data.crontab = this.uiCrontabExpr.trim() || null;
       }
 
-      let apiRes = await this.T.callAPI('post', '/api/v1/crontab-configs/:id/do/modify', opt);
+      let apiRes = await this.T.callAPI('post', '/api/v1/crontab-schedules/:id/do/modify', opt);
       if (!apiRes || !apiRes.ok) return;
 
       this.$store.commit('updateHighlightedTableDataId', apiRes.data.id);
@@ -596,7 +591,7 @@ export default {
     async deleteData() {
       if (!await this.T.confirm(this.$t('Are you sure you want to delete the Crontab Config?'))) return;
 
-      let apiRes = await this.T.callAPI('/api/v1/crontab-configs/:id/do/delete', {
+      let apiRes = await this.T.callAPI('/api/v1/crontab-schedules/:id/do/delete', {
         params: { id: this.data.id },
         alert : { okMessage: this.$t('Crontab Config deleted') },
       });
@@ -691,9 +686,6 @@ export default {
     },
   },
   computed: {
-    ID_PREFIX() {
-      return 'cron-';
-    },
     CRONTAB_PARTS_MAP() {
       return {
         0: 'minutes',
@@ -904,9 +896,6 @@ export default {
             trigger: 'change',
             validator: (rule, value, callback) => {
               if (this.T.notNothing(value)) {
-                if ((value.indexOf(this.ID_PREFIX) !== 0 || value === this.ID_PREFIX)) {
-                  return callback(new Error(this.$t('ID must starts with "{prefix}"', { prefix: this.ID_PREFIX })));
-                }
                 if (!value.match(/^[0-9a-zA-Z\.\-\_]+$/g)) {
                   return callback(new Error(this.$t('Only numbers, alphabets, dot(.), underscore(_) and hyphen(-) are allowed')));
                 }

@@ -2,7 +2,7 @@
 
 '''
 脚本执行处理任务
-主要用于直接调用函数、通过授权链接调用函数、Crontab 触发调用函数
+主要用于直接调用函数、通过同步 API、异步 API、Crontab 计划调用函数
 '''
 
 # Built-in Modules
@@ -136,7 +136,7 @@ class FuncRunner(FuncBaseTask):
                 raise
 
     def cache_last_task_status(self, status, exception=None):
-        if self.origin not in ( 'authLink', 'crontabConfig', 'batch'):
+        if self.origin not in ( 'syncAPI', 'asyncAPI', 'crontabSchedule'):
             return
 
         cache_key = toolkit.get_global_cache_key('cache', 'lastTaskStatus', [ 'origin', self.origin ])
@@ -281,7 +281,7 @@ class FuncRunner(FuncBaseTask):
 
         ### 任务开始
         # 记录 Crontab 触发时间
-        if self.origin == 'crontabConfig':
+        if self.origin == 'crontabSchedule':
             self.cache_recent_crontab_triggered()
 
         func_resp = None

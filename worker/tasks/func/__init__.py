@@ -45,7 +45,7 @@ FIX_INTEGRATION_KEY_MAP = {
     'login' : 'signIn',
 
     # 自动运行函数
-    # 集成为独立定时运行任务（即无需配置的自动触发配置）
+    # 集成为独立定时运行任务（即无需配置的 Crontab 计划）
     # 函数必须为`def func()`形式（即无参数形式）
     #   配置项：
     #       crontab        : Crontab 语法自动运行周期
@@ -1170,20 +1170,24 @@ class BaseFuncEntityHelper(object):
         db_res = self._task.db.query(sql, sql_params)
         return db_res
 
-class FuncAuthLinkHelper(BaseFuncEntityHelper):
-    _table         = 'biz_main_auth_link'
-    _entity_origin = 'authLink'
+class FuncSyncAPIHelper(BaseFuncEntityHelper):
+    _table         = 'biz_main_sync_api'
+    _entity_origin = 'syncAPI'
 
-class FuncCrontabConfigHelper(BaseFuncEntityHelper):
-    _table         = 'biz_main_crontab_config'
-    _entity_origin = 'crontabConfig'
+class FuncAsyncAPIHelper(BaseFuncEntityHelper):
+    _table         = 'biz_main_async_api'
+    _entity_origin = 'asyncAPI'
+
+class FuncCrontabScheduleHelper(BaseFuncEntityHelper):
+    _table         = 'biz_main_crontab_schedule'
+    _entity_origin = 'crontabSchedule'
 
     def set_crontab(self, crontab, expires=None, entity_id=None):
         entity_id = self.resolve_entity_id(entity_id)
         if not entity_id:
             return
 
-        cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
+        cache_key = toolkit.get_global_cache_key('crontabSchedule', 'dynamicCrontab')
         cache_value = {
             'expireTime': None if not expires else int(time.time()) + expires,
             'value'     : crontab,
@@ -1195,41 +1199,41 @@ class FuncCrontabConfigHelper(BaseFuncEntityHelper):
         if not entity_id:
             return
 
-        cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
-        temp_config = self._task.cache_db.hget(cache_key, entity_id)
-        if not temp_config:
+        cache_key = toolkit.get_global_cache_key('crontabSchedule', 'dynamicCrontab')
+        dynamic_crontab = self._task.cache_db.hget(cache_key, entity_id)
+        if not dynamic_crontab:
             return None
 
-        temp_config = toolkit.json_loads(temp_config)
-        if temp_config['expireTime'] and temp_config['expireTime'] < int(time.time()):
+        dynamic_crontab = toolkit.json_loads(dynamic_crontab)
+        if dynamic_crontab['expireTime'] and dynamic_crontab['expireTime'] < int(time.time()):
             return None
 
         return temp_config['value']
 
     def get_all_crontab(self):
-        cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
-        temp_config_map = self._task.cache_db.hgetall(cache_key)
-        if not temp_config_map:
+        cache_key = toolkit.get_global_cache_key('crontabSchedule', 'dynamicCrontab')
+        dynamic_crontab_map = self._task.cache_db.hgetall(cache_key)
+        if not dynamic_crontab_map:
             return {}
 
-        for entity_id in list(temp_config_map.keys()):
-            temp_config = toolkit.json_loads(temp_config_map[entity_id])
-            if temp_config['expireTime'] and temp_config['expireTime'] < int(time.time()):
-                temp_config_map.pop(entity_id, None)
+        for entity_id in list(dynamic_crontab_map.keys()):
+            dynamic_crontab = toolkit.json_loads(dynamic_crontab_map[entity_id])
+            if dynamic_crontab['expireTime'] and dynamic_crontab['expireTime'] < int(time.time()):
+                dynamic_crontab_map.pop(entity_id, None)
             else:
-                temp_config_map[entity_id] = temp_config['value']
+                dynamic_crontab_map[entity_id] = dynamic_crontab['value']
 
-        return temp_config_map
+        return dynamic_crontab_map
 
     def clear_crontab(self, entity_id=None):
         entity_id = self.resolve_entity_id(entity_id)
         if not entity_id:
             return
 
-        cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
+        cache_key = toolkit.get_global_cache_key('crontabSchedule', 'dynamicCrontab')
         self._task.cache_db.hdel(cache_key, entity_id)
 
-    # 兼容方法（xxx_crontab -> xxx_temp_crontab）
+    # 兼容处理（xxx_crontab -> xxx_temp_crontab）
     def set_temp_crontab(self, *args, **kwargs):
         return self.set_crontab(*args, **kwargs)
 
@@ -1241,10 +1245,6 @@ class FuncCrontabConfigHelper(BaseFuncEntityHelper):
 
     def clear_temp_crontab(self, *args, **kwargs):
         return self.clear_crontab(*args, **kwargs)
-
-class FuncBatchHelper(BaseFuncEntityHelper):
-    _table         = 'biz_main_batch'
-    _entity_origin = 'batch'
 
 class FuncExtraForGuanceHelper(object):
     def __init__(self, task):
@@ -1989,15 +1989,15 @@ class FuncBaseTask(BaseTask):
         }
 
         # 添加 DataFlux Func 内置方法/对象
-        __connector_helper      = FuncConnectorHelper(self)
-        __env_variable_helper   = FuncEnvVariableHelper(self)
-        __store_helper          = FuncStoreHelper(self, default_scope=script_name)
-        __cache_helper          = FuncCacheHelper(self, default_scope=script_name)
-        __config_helper         = FuncConfigHelper(self)
-        __thread_helper         = FuncThreadHelper(self)
-        __auth_link_helper      = FuncAuthLinkHelper(self)
-        __crontab_config_helper = FuncCrontabConfigHelper(self)
-        __batch_helper          = FuncBatchHelper(self)
+        __connector_helper        = FuncConnectorHelper(self)
+        __env_variable_helper     = FuncEnvVariableHelper(self)
+        __store_helper            = FuncStoreHelper(self, default_scope = script_name)
+        __cache_helper            = FuncCacheHelper(self, default_scope = script_name)
+        __config_helper           = FuncConfigHelper(self)
+        __thread_helper           = FuncThreadHelper(self)
+        __sync_api_helper         = FuncSyncAPIHelper(self)
+        __async_api_helper        = FuncAsyncAPIHelper(self)
+        __crontab_schedule_helper = FuncCrontabScheduleHelper(self)
 
         def __print(*args, **kwargs):
             return self._print(safe_scope, *args, **kwargs)
@@ -2060,9 +2060,9 @@ class FuncBaseTask(BaseTask):
             'SYS_DB'      : self.db,       # 当前 DataFlux Func 数据库
             'SYS_CACHE_DB': self.cache_db, # 当前 DataFlux Func 缓存
 
-            'AUTH_LINK'     : __auth_link_helper,      # 授权链接处理模块
-            'CRONTAB_CONFIG': __crontab_config_helper, # 自动触发处理模块
-            'BATCH'         : __batch_helper,          # 批处理处理模块
+            'SYNC_API'        : __sync_api_helper,         # 同步 API 处理模块
+            'ASYNC_API'       : __async_api_helper,        # 异步 API 处理模块
+            'CRONTAB_SCHEDULE': __crontab_schedule_helper, # Crontab 计划处理模块
 
             # 直接连接器
             'GUANCE_OPENAPI': GuanceOpenAPI,
@@ -2074,6 +2074,11 @@ class FuncBaseTask(BaseTask):
 
             # 用于观测云的额外信息
             'EXTRA_FOR_GUANCE': self.extra_for_guance,
+
+            # 兼容处理
+            'AUTH_LINK'     : __sync_api_helper,         # 授权链接处理模块
+            'BATCH'         : __async_api_helper,        # 批处理处理模块
+            'CRONTAB_CONFIG': __crontab_schedule_helper, # 自动触发处理模块
         }
         safe_scope['DFF'] = DFFWraper(inject_funcs=inject_funcs)
 

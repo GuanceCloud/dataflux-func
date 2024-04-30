@@ -781,13 +781,17 @@ upgradeInfo:
   # 于观测云 SaaS 2024-05-15 迭代中实装
   - seq: 29
     database: |-
+      -- 扩充 AccessKey Secret 字段用于存放加密后内容
+      ALTER TABLE wat_main_access_key
+        MODIFY COLUMN `secretCipher` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL;
+
       -- 启用新命名
       CREATE TABLE `biz_main_sync_api` (
         `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '兼任Token',
         `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
         `funcCallKwargsJSON` json DEFAULT NULL COMMENT '函数调用参数JSON (kwargs)',
-        `tagsJSON` json DEFAULT NULL COMMENT '授权链接标签JSON',
+        `tagsJSON` json DEFAULT NULL COMMENT '标签JSON',
         `apiAuthId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'API认证ID',
         `expireTime` datetime DEFAULT NULL COMMENT '过期时间（NULL表示永不过期）',
         `throttlingJSON` json DEFAULT NULL COMMENT '限流JSON',
@@ -810,7 +814,7 @@ upgradeInfo:
         `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '兼任Token',
         `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
         `funcCallKwargsJSON` json DEFAULT NULL COMMENT '函数调用参数JSON (kwargs)',
-        `tagsJSON` json DEFAULT NULL COMMENT '批处理标签JSON',
+        `tagsJSON` json DEFAULT NULL COMMENT '标签JSON',
         `apiAuthId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'API认证ID',
         `origin` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '来源',
         `originId` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'UNKNOWN' COMMENT '来源ID',
@@ -833,7 +837,7 @@ upgradeInfo:
         `funcCallKwargsJSON` json DEFAULT NULL COMMENT '函数调用参数JSON (kwargs)',
         `crontab` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '执行频率（Crontab语法）',
         `timezone` varchar(256) DEFAULT NULL COMMENT '时区',
-        `tagsJSON` json DEFAULT NULL COMMENT '自动触发配置标签JSON',
+        `tagsJSON` json DEFAULT NULL COMMENT '标签JSON',
         `scope` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'GLOBAL' COMMENT '范围',
         `configMD5` char(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '配置MD5',
         `expireTime` timestamp NULL DEFAULT NULL COMMENT '过期时间',

@@ -6,35 +6,34 @@ var routeLoader = require('../utils/routeLoader');
 
 var crontabScheduleAPICtrl = require('../controllers/crontabScheduleAPICtrl');
 
-// 兼容处理
-routeLoader.load(ROUTE.crontabConfigAPI.list, [
+routeLoader.load(ROUTE.crontabScheduleAPI.list, [
   crontabScheduleAPICtrl.list,
 ]);
 
-routeLoader.load(ROUTE.crontabConfigAPI.listRecentTriggered, [
+routeLoader.load(ROUTE.crontabScheduleAPI.listRecentTriggered, [
   crontabScheduleAPICtrl.listRecentTriggered,
 ]);
 
-routeLoader.load(ROUTE.crontabConfigAPI.add, [
+routeLoader.load(ROUTE.crontabScheduleAPI.add, [
   crontabScheduleAPICtrl.add,
 ]);
 
-routeLoader.load(ROUTE.crontabConfigAPI.modify, [
+routeLoader.load(ROUTE.crontabScheduleAPI.modify, [
   crontabScheduleAPICtrl.modify,
 ]);
 
-routeLoader.load(ROUTE.crontabConfigAPI.delete, [
+routeLoader.load(ROUTE.crontabScheduleAPI.delete, [
   crontabScheduleAPICtrl.delete,
 ]);
 
-routeLoader.load(ROUTE.crontabConfigAPI.addMany, [
+routeLoader.load(ROUTE.crontabScheduleAPI.addMany, [
   crontabScheduleAPICtrl.addMany,
 ]);
 
-routeLoader.load(ROUTE.crontabConfigAPI.modifyMany, [
+routeLoader.load(ROUTE.crontabScheduleAPI.modifyMany, [
   crontabScheduleAPICtrl.modifyMany,
 ]);
 
-routeLoader.load(ROUTE.crontabConfigAPI.deleteMany, [
+routeLoader.load(ROUTE.crontabScheduleAPI.deleteMany, [
   crontabScheduleAPICtrl.deleteMany,
 ]);

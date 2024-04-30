@@ -6,6 +6,7 @@ var routeLoader = require('../utils/routeLoader');
 
 var syncAPICtrl = require('../controllers/syncAPICtrl');
 
+// 兼容处理
 routeLoader.load(ROUTE.authLinkAPI.list, [
   syncAPICtrl.list,
 ]);

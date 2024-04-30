@@ -275,7 +275,7 @@ export default {
         case null:
         case 'index':
         case 'func-doc':
-        case 'auth-link-func-doc':
+        case 'func-api-doc':
         case 'sign-out':
           return false;
 

@@ -6,6 +6,7 @@ var routeLoader = require('../utils/routeLoader');
 
 var asyncAPICtrl = require('../controllers/asyncAPICtrl');
 
+// 兼容处理
 routeLoader.load(ROUTE.batchAPI.list, [
   asyncAPICtrl.list,
 ]);

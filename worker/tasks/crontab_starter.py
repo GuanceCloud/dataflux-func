@@ -2,7 +2,7 @@
 
 '''
 定时处理任务启动器
-主要根据自动触发配置加载任务，然后启动 func_runner
+主要根据 Crontab 计划加载任务，然后启动 func_runner
 '''
 
 # Built-in Modules
@@ -26,9 +26,9 @@ class CrontabStarter(BaseTask):
 
     @property
     def is_paused(self):
-        cache_key = toolkit.get_global_cache_key('tempFlag', 'pauseAllCrontabConfigs')
-        pause_all_crontab_configs_flag = self.cache_db.get(cache_key)
-        return bool(pause_all_crontab_configs_flag)
+        cache_key = toolkit.get_global_cache_key('tempFlag', 'pauseAllCrontabSchedules')
+        flag = self.cache_db.get(cache_key)
+        return bool(flag)
 
     def is_worker_queue_available(self, queue):
         queue = str(queue)
@@ -38,7 +38,7 @@ class CrontabStarter(BaseTask):
             return self._worker_queue_availability[queue]
 
         # 读取缓存
-        cache_key = toolkit.get_global_cache_key('cache', 'workerQueueLimitCrontabConfig')
+        cache_key = toolkit.get_global_cache_key('cache', 'workerQueueLimitCrontabSchedule')
         cache_res = self.cache_db.get(cache_key)
 
         worker_queue_limit_map = None
@@ -65,28 +65,28 @@ class CrontabStarter(BaseTask):
 
         return self._worker_queue_availability[queue]
 
-    def prepare_contab_config(self, crontab_config):
-        crontab_config['funcCallKwargs'] = crontab_config.get('funcCallKwargsJSON') or {}
-        if isinstance(crontab_config['funcCallKwargs'], str):
-            crontab_config['funcCallKwargs'] = toolkit.json_loads(crontab_config['funcCallKwargs']) or {}
+    def prepare_crontab_schedule(self, c):
+        c['funcCallKwargs'] = c.get('funcCallKwargsJSON') or {}
+        if isinstance(c['funcCallKwargs'], str):
+            c['funcCallKwargs'] = toolkit.json_loads(c['funcCallKwargs']) or {}
 
-        crontab_config['funcExtraConfig'] = crontab_config.get('funcExtraConfigJSON') or {}
-        if isinstance(crontab_config['funcExtraConfig'], str):
-            crontab_config['funcExtraConfig'] = toolkit.json_loads(crontab_config['funcExtraConfig']) or {}
+        c['funcExtraConfig'] = c.get('funcExtraConfigJSON') or {}
+        if isinstance(c['funcExtraConfig'], str):
+            c['funcExtraConfig'] = toolkit.json_loads(c['funcExtraConfig']) or {}
 
-        crontab_config['crontab'] = crontab_config.get('dynamicCrontab') or crontab_config['funcExtraConfig'].get('fixedCrontab') or crontab_config.get('crontab')
+        c['crontab'] = c.get('dynamicCrontab') or c['funcExtraConfig'].get('fixedCrontab') or c.get('crontab')
 
-        return crontab_config
+        return c
 
-    def filter_crontab_config(self, crontab_config):
-        crontab = crontab_config.get('crontab')
+    def filter_crontab_schedule(self, c):
+        crontab = c.get('crontab')
         if not crontab or not toolkit.is_valid_crontab(crontab):
             return False
 
-        timezone = crontab_config.get('timezone') or CONFIG['TIMEZONE']
+        timezone = c.get('timezone') or CONFIG['TIMEZONE']
         return toolkit.is_match_crontab(crontab, self.trigger_time, timezone)
 
-    def get_integration_crontab_configs(self):
+    def get_integration_crontab_schedule(self):
         sql = '''
             SELECT
                  `func`.`id`              AS `funcId`
@@ -106,19 +106,19 @@ class CrontabStarter(BaseTask):
             ORDER BY
             	`func`.`id`
             '''
-        crontab_configs = self.db.query(sql)
+        crontab_schedules = self.db.query(sql)
 
-        for c in crontab_configs:
-            # 集成 Crontab 使用函数 ID 作为自动触发配置 ID
+        for c in crontab_schedules:
+            # 集成 Crontab 计划使用函数 ID 作为 Crontab 计划 ID
             c['id']  = f"autoRun.crontab-{c['funcId']}"
 
-        # 准备 / 过滤自动触发配置
-        crontab_configs = map(self.prepare_contab_config, crontab_configs)
-        crontab_configs = filter(self.filter_crontab_config, crontab_configs)
+        # 准备 / 过滤 Crontab 计划
+        crontab_schedules = map(self.prepare_crontab_schedule, crontab_schedules)
+        crontab_schedules = filter(self.filter_crontab_schedule, crontab_schedules)
 
-        return crontab_configs
+        return crontab_schedules
 
-    def fetch_crontab_configs(self, next_seq):
+    def fetch_crontab_schedules(self, next_seq):
         sql = '''
             SELECT
                  `cron`.`seq`
@@ -130,7 +130,7 @@ class CrontabStarter(BaseTask):
                 ,`func`.`id`              AS `funcId`
                 ,`func`.`extraConfigJSON` AS `funcExtraConfigJSON`
 
-            FROM `biz_main_crontab_config` AS `cron`
+            FROM `biz_main_crontab_schedule` AS `cron`
 
             JOIN `biz_main_func` AS `func`
                 ON `cron`.`funcId` = `func`.`id`
@@ -146,35 +146,35 @@ class CrontabStarter(BaseTask):
             LIMIT ?
             '''
         sql_params = [ next_seq, CONFIG['_CRONTAB_STARTER_FETCH_BULK_COUNT'] ]
-        crontab_configs = self.db.query(sql, sql_params)
+        crontab_schedules = self.db.query(sql, sql_params)
 
         # 获取游标
         latest_seq = None
-        if len(crontab_configs) > 0:
-            latest_seq = crontab_configs[-1]['seq']
+        if len(crontab_schedules) > 0:
+            latest_seq = crontab_schedules[-1]['seq']
 
-            # 优先使用临时 Crontab
-            crontab_config_ids = [ c['id'] for c in crontab_configs]
-            cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
-            cache_res = self.cache_db.hmget(cache_key, crontab_config_ids) or {}
+            # 优先使用动态 Crontab
+            crontab_schedule_ids = [ c['id'] for c in crontab_schedules]
+            cache_key = toolkit.get_global_cache_key('crontabSchedule', 'dynamicCrontab')
+            cache_res = self.cache_db.hmget(cache_key, crontab_schedule_ids) or {}
 
-            for c in crontab_configs:
-                temp_config = cache_res.get(c['id'])
+            for c in crontab_schedules:
+                dynamic_crontab = cache_res.get(c['id'])
 
-                if not temp_config:
+                if not dynamic_crontab:
                     continue
 
-                temp_config = toolkit.json_loads(temp_config)
-                if temp_config['expireTime'] and temp_config['expireTime'] < self.trigger_time:
+                dynamic_crontab = toolkit.json_loads(dynamic_crontab)
+                if dynamic_crontab['expireTime'] and dynamic_crontab['expireTime'] < self.trigger_time:
                     continue
 
-                c['dynamicCrontab'] = temp_config['value']
+                c['dynamicCrontab'] = dynamic_crontab['value']
 
-            # 准备 / 过滤自动触发配置
-            crontab_configs = map(self.prepare_contab_config, crontab_configs)
-            crontab_configs = filter(self.filter_crontab_config, crontab_configs)
+            # 准备 / 过滤 Crontab 计划
+            crontab_schedules = map(self.prepare_crontab_schedule, crontab_schedules)
+            crontab_schedules = filter(self.filter_crontab_schedule, crontab_schedules)
 
-        return crontab_configs, latest_seq
+        return crontab_schedules, latest_seq
 
     def put_tasks(self, tasks, ignore_crontab_delay=False):
         tasks = toolkit.as_array(tasks)
@@ -186,35 +186,35 @@ class CrontabStarter(BaseTask):
 
         task_reqs = []
         for t in tasks:
-            crontab_config = t.get('crontabConfig')
-            origin         = t.get('origin')
-            origin_id      = t.get('originId')
-            delay          = t.get('delay') or 0
-            exec_mode      = t.get('execMode', 'crontab')
+            crontab_schedule = t.get('crontabSchedule')
+            origin           = t.get('origin')
+            origin_id        = t.get('originId')
+            delay            = t.get('delay') or 0
+            exec_mode        = t.get('execMode', 'crontab')
 
             # 超时时间 / 过期时间
-            timeout = crontab_config['funcExtraConfig'].get('timeout') or CONFIG['_FUNC_TASK_TIMEOUT_DEFAULT']
-            expires = crontab_config['funcExtraConfig'].get('expires') or CONFIG['_FUNC_TASK_EXPIRES_DEFAULT']
+            timeout = crontab_schedule['funcExtraConfig'].get('timeout') or CONFIG['_FUNC_TASK_TIMEOUT_DEFAULT']
+            expires = crontab_schedule['funcExtraConfig'].get('expires') or CONFIG['_FUNC_TASK_EXPIRES_DEFAULT']
 
             # 确定执行队列
-            queue = crontab_config['funcExtraConfig'].get('queue') or CONFIG['_FUNC_TASK_QUEUE_CRONTAB']
+            queue = crontab_schedule['funcExtraConfig'].get('queue') or CONFIG['_FUNC_TASK_QUEUE_CRONTAB']
 
             # 判断队列是否可用
             if not self.is_worker_queue_available(queue):
                 continue
 
             # Crontab 多次执行
-            crontab_delay_list = crontab_config['funcExtraConfig'].get('delayedCrontab')
+            crontab_delay_list = crontab_schedule['funcExtraConfig'].get('delayedCrontab')
             crontab_delay_list = toolkit.as_array(crontab_delay_list)
             if not crontab_delay_list or ignore_crontab_delay:
                 crontab_delay_list = [ 0 ]
 
             for crontab_delay in crontab_delay_list:
                 # 定时任务锁
-                crontab_lock_key = toolkit.get_cache_key('lock', 'CrontabConfig', tags=[
-                        'crontabConfigId', crontab_config['id'],
-                        'funcId',          crontab_config['funcId'],
-                        'execMode',        exec_mode])
+                crontab_lock_key = toolkit.get_cache_key('lock', 'CrontabSchedule', tags=[
+                        'crontabScheduleId', crontab_schedule['id'],
+                        'funcId',            crontab_schedule['funcId'],
+                        'execMode',          exec_mode])
 
                 crontab_lock_value = f"{int(time.time())}-{toolkit.gen_uuid()}"
 
@@ -222,11 +222,11 @@ class CrontabStarter(BaseTask):
                 task_reqs.append({
                     'name': 'Func.Runner',
                     'kwargs': {
-                        'funcId'          : crontab_config['funcId'],
-                        'funcCallKwargs'  : crontab_config['funcCallKwargs'],
+                        'funcId'          : crontab_schedule['funcId'],
+                        'funcCallKwargs'  : crontab_schedule['funcCallKwargs'],
                         'origin'          : origin,
                         'originId'        : origin_id,
-                        'crontab'         : crontab_config['crontab'],
+                        'crontab'         : crontab_schedule['crontab'],
                         'crontabDelay'    : crontab_delay,
                         'crontabLockKey'  : crontab_lock_key,   # 后续在 Func.Runner 中锁定 / 解锁
                         'crontabLockValue': crontab_lock_value, # 后续在 Func.Runner 中锁定 / 解锁
@@ -239,7 +239,7 @@ class CrontabStarter(BaseTask):
                     'delay'          : crontab_delay + delay,
                     'timeout'        : timeout,
                     'expires'        : crontab_delay + delay + expires,
-                    'taskRecordLimit': crontab_config.get('taskRecordLimit'),
+                    'taskRecordLimit': crontab_schedule.get('taskRecordLimit'),
                 })
 
         if task_reqs:
@@ -254,34 +254,34 @@ class CrontabStarter(BaseTask):
         # 上锁
         self.lock(max_age=60)
 
-        ### 集成函数自动触发 ###
+        ### 集成函数 Crontab 计划 ###
         tasks = []
-        for c in self.get_integration_crontab_configs():
+        for c in self.get_integration_crontab_schedule():
             tasks.append({
-                'crontabConfig': c,
-                'origin'       : 'integration',
-                'originId'     : c['id']
+                'crontabSchedule': c,
+                'origin'         : 'integration',
+                'originId'       : c['id']
             })
 
         # 发送任务
         if tasks:
             self.put_tasks(tasks)
 
-        ### 自动触发配置 ###
+        ### Crontab 计划 ###
         next_seq = 0
         while next_seq is not None:
-            crontab_configs, next_seq = self.fetch_crontab_configs(next_seq)
+            crontab_schedules, next_seq = self.fetch_crontab_schedules(next_seq)
 
             tasks = []
-            for c in crontab_configs:
+            for c in crontab_schedules:
                 # 使用 seq 分布任务执行时间
                 delay = 0
                 if CONFIG['_FUNC_TASK_DISTRIBUTION_RANGE'] > 0:
                     delay = c['seq'] % CONFIG['_FUNC_TASK_DISTRIBUTION_RANGE']
 
                 tasks.append({
-                    'crontabConfig': c,
-                    'origin'       : 'crontabConfig',
+                    'crontabSchedule': c,
+                    'origin'       : 'crontabSchedule',
                     'originId'     : c['id'],
                     'delay'        : delay,
                 })
@@ -293,7 +293,7 @@ class CrontabStarter(BaseTask):
 class CrontabManualStarter(CrontabStarter):
     name = 'Crontab.ManualStarter'
 
-    def get_crontab_config(self, crontab_config_id):
+    def get_crontab_schedule(self, crontab_schedule_id):
         sql = '''
             SELECT
                  `cron`.`seq`
@@ -305,7 +305,7 @@ class CrontabManualStarter(CrontabStarter):
                 ,`func`.`id`              AS `funcId`
                 ,`func`.`extraConfigJSON` AS `funcExtraConfigJSON`
 
-            FROM `biz_main_crontab_config` AS `cron`
+            FROM `biz_main_crontab_schedule` AS `cron`
 
             JOIN `biz_main_func` AS `func`
                 ON `cron`.`funcId` = `func`.`id`
@@ -315,36 +315,36 @@ class CrontabManualStarter(CrontabStarter):
 
             LIMIT 1
             '''
-        sql_params = [ crontab_config_id ]
-        crontab_configs = self.db.query(sql, sql_params)
-        if not crontab_configs:
+        sql_params = [ crontab_schedule_id ]
+        crontab_schedules = self.db.query(sql, sql_params)
+        if not crontab_schedules:
             return None
 
-        crontab_config = crontab_configs[0]
+        crontab_schedule = crontab_schedules[0]
 
-        # 优先使用临时 Crontab
-        cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
-        temp_config = self.cache_db.hget(cache_key, crontab_config['id']) or {}
-        if temp_config:
-            temp_config = toolkit.json_loads(temp_config)
-            if not temp_config['expireTime'] or temp_config['expireTime'] >= self.trigger_time:
-                crontab_config['dynamicCrontab'] = temp_config['value']
+        # 优先使用动态 Crontab
+        cache_key = toolkit.get_global_cache_key('crontabSchedule', 'dynamicCrontab')
+        dynamic_crontab = self.cache_db.hget(cache_key, crontab_schedule['id']) or {}
+        if dynamic_crontab:
+            dynamic_crontab = toolkit.json_loads(dynamic_crontab)
+            if not dynamic_crontab['expireTime'] or dynamic_crontab['expireTime'] >= self.trigger_time:
+                crontab_schedule['dynamicCrontab'] = dynamic_crontab['value']
 
-        crontab_config = self.prepare_contab_config(crontab_config)
-        return crontab_config
+        crontab_schedule = self.prepare_crontab_schedule(crontab_schedule)
+        return crontab_schedule
 
     def run(self, **kwargs):
         # 执行函数、参数
-        crontab_config_id = kwargs.get('crontabConfigId')
+        crontab_schedule_id = kwargs.get('crontabScheduleId')
 
-        # 获取需要执行的自动触发配置
-        crontab_config = self.get_crontab_config(crontab_config_id)
+        # 获取需要执行的 Crontab 计划
+        crontab_schedule = self.get_crontab_schedule(crontab_schedule_id)
 
         # 发送任务
         task = {
-            'crontabConfig': crontab_config,
-            'origin'       : 'crontabConfig',
-            'originId'     : crontab_config['id'],
-            'execMode'     : 'manual',
+            'crontabSchedule': crontab_schedule,
+            'origin'         : 'crontabSchedule',
+            'originId'       : crontab_schedule['id'],
+            'execMode'       : 'manual',
         }
         self.put_tasks(task, ignore_crontab_delay=True)

@@ -123,7 +123,7 @@ services:
     labels:
       - worker-2
       - queue-2
-      - user-task-crontab-config
+      - user-task-crontab-schedule
     volumes:
       - "<INSTALL_DIR>/data:/data"
     logging:
@@ -145,7 +145,7 @@ services:
     labels:
       - worker-3
       - queue-3
-      - user-task-batch
+      - user-task-async-api
     volumes:
       - "<INSTALL_DIR>/data:/data"
     logging:

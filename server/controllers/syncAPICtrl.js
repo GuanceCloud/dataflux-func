@@ -76,7 +76,7 @@ exports.add = function(req, res, next) {
 
     var ret = toolkit.initRet({
       id : addedId,
-      url: urlFor('mainAPI.callAuthLinkByGet', {
+      url: urlFor('mainAPI.callSyncAPIByGet', {
         params: { id: addedId },
       }),
     });
@@ -148,7 +148,7 @@ exports.modifyMany = function(req, res, next) {
         return asyncCallback(new E('EBizCondition.ModifyConditionNotSpecified', 'At least one condition should been specified'));
       }
 
-      opt.fields = [ 'auln.id' ];
+      opt.fields = [ 'sapi.id' ];
       opt.paging = false;
 
       syncAPIModel.list(opt, function(err, dbRes) {
@@ -223,8 +223,8 @@ function _modify(locals, id, data, opt, callback) {
     // 获取数据
     function(asyncCallback) {
       var fields = [
-        'auln.seq',
-        'auln.funcCallKwargsJSON',
+        'sapi.seq',
+        'sapi.funcCallKwargsJSON',
       ]
       syncAPIModel.getWithCheck(id, fields, function(err, dbRes) {
         if (err) return asyncCallback(err);

@@ -420,13 +420,13 @@ EntityModel.prototype.getExportData = function(options, callback) {
   var self = this;
 
   options = options || {};
-  var scriptSetIds          = options.scriptSetIds;
-  var connectorIds          = options.connectorIds;
-  var envVariableIds        = options.envVariableIds;
-  var includeAuthLinks      = toolkit.toBoolean(options.includeAuthLinks);
-  var includeCrontabConfigs = toolkit.toBoolean(options.includeCrontabConfigs);
-  var includeBatches        = toolkit.toBoolean(options.includeBatches);
-  var withCodeDraft         = toolkit.toBoolean(options.withCodeDraft);
+  var scriptSetIds            = options.scriptSetIds;
+  var connectorIds            = options.connectorIds;
+  var envVariableIds          = options.envVariableIds;
+  var includeSyncAPIs         = toolkit.toBoolean(options.includeSyncAPIs);
+  var includeAsyncAPIs        = toolkit.toBoolean(options.includeAsyncAPIs);
+  var includeCrontabSchedules = toolkit.toBoolean(options.includeCrontabSchedules);
+  var withCodeDraft           = toolkit.toBoolean(options.withCodeDraft);
 
   var exportUser = common.getExportUser(self.locals);
   var exportTime = toolkit.getISO8601();
@@ -451,9 +451,9 @@ EntityModel.prototype.getExportData = function(options, callback) {
   if (toolkit.notNothing(envVariableIds)) exportData.envVariables = [];
 
   // 脚本集相关数据
-  if (includeAuthLinks)      exportData.authLinks      = [];
-  if (includeCrontabConfigs) exportData.crontabConfigs = [];
-  if (includeBatches)        exportData.batches        = [];
+  if (includeSyncAPIs)         exportData.syncAPIs           = [];
+  if (includeAsyncAPIs)        exportData.asyncAPIs          = [];
+  if (includeCrontabSchedules) exportData.crontabSchedules = [];
 
   async.series([
     // 获取脚本集
@@ -668,28 +668,28 @@ EntityModel.prototype.getExportData = function(options, callback) {
         return asyncCallback();
       });
     },
-    // 获取授权链接
+    // 获取同步 API
     function(asyncCallback) {
       if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
-      if (!includeAuthLinks) return asyncCallback();
+      if (!includeSyncAPIs) return asyncCallback();
 
       var sql = toolkit.createStringBuilder();
       sql.append('SELECT');
-      sql.append('   auln.id');
-      sql.append('  ,auln.funcId');
-      sql.append('  ,auln.funcCallKwargsJSON');
-      sql.append('  ,auln.expireTime');
-      sql.append('  ,auln.throttlingJSON');
-      sql.append('  ,auln.origin');
-      sql.append('  ,auln.originId');
-      sql.append('  ,auln.showInDoc');
-      sql.append('  ,auln.isDisabled');
-      sql.append('  ,auln.note');
+      sql.append('   sapi.id');
+      sql.append('  ,sapi.funcId');
+      sql.append('  ,sapi.funcCallKwargsJSON');
+      sql.append('  ,sapi.expireTime');
+      sql.append('  ,sapi.throttlingJSON');
+      sql.append('  ,sapi.origin');
+      sql.append('  ,sapi.originId');
+      sql.append('  ,sapi.showInDoc');
+      sql.append('  ,sapi.isDisabled');
+      sql.append('  ,sapi.note');
 
-      sql.append('FROM biz_main_auth_link AS auln')
+      sql.append('FROM biz_main_sync_api AS sapi')
 
       sql.append('LEFT JOIN biz_main_func AS func');
-      sql.append('  ON func.id = auln.funcId');
+      sql.append('  ON func.id = sapi.funcId');
 
       sql.append('LEFT JOIN biz_main_script_set AS sset');
       sql.append('  ON sset.id = func.scriptSetId');
@@ -698,21 +698,61 @@ EntityModel.prototype.getExportData = function(options, callback) {
       sql.append('  sset.id IN (?)');
 
       sql.append('ORDER BY');
-      sql.append('  auln.id ASC');
+      sql.append('  sapi.id ASC');
 
-      var sqlParams = [scriptSetIds];
+      var sqlParams = [ scriptSetIds ];
       self.db.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        exportData.authLinks = dbRes;
+        exportData.syncAPIs = dbRes;
 
         return asyncCallback();
       });
     },
-    // 获取自动触发配置
+    // 获取异步 API
     function(asyncCallback) {
       if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
-      if (!includeCrontabConfigs) return asyncCallback();
+      if (!includeAsyncAPIs) return asyncCallback();
+
+      var sql = toolkit.createStringBuilder();
+      sql.append('SELECT');
+      sql.append('   aapi.id');
+      sql.append('  ,aapi.funcId');
+      sql.append('  ,aapi.funcCallKwargsJSON');
+      sql.append('  ,aapi.tagsJSON');
+      sql.append('  ,aapi.origin');
+      sql.append('  ,aapi.originId');
+      sql.append('  ,aapi.showInDoc');
+      sql.append('  ,aapi.isDisabled');
+      sql.append('  ,aapi.note');
+
+      sql.append('FROM biz_main_async_api AS aapi')
+
+      sql.append('LEFT JOIN biz_main_func AS func');
+      sql.append('  ON func.id = aapi.funcId');
+
+      sql.append('LEFT JOIN biz_main_script_set AS sset');
+      sql.append('  ON sset.id = func.scriptSetId');
+
+      sql.append('WHERE');
+      sql.append('  sset.id IN (?)');
+
+      sql.append('ORDER BY');
+      sql.append('  aapi.id ASC');
+
+      var sqlParams = [ scriptSetIds ];
+      self.db.query(sql, sqlParams, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        exportData.asyncAPIs = dbRes;
+
+        return asyncCallback();
+      });
+    },
+    // 获取 Crontab 计划
+    function(asyncCallback) {
+      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
+      if (!includeCrontabSchedules) return asyncCallback();
 
       var sql = toolkit.createStringBuilder();
       sql.append('SELECT');
@@ -728,7 +768,7 @@ EntityModel.prototype.getExportData = function(options, callback) {
       sql.append('  ,cron.isDisabled');
       sql.append('  ,cron.note');
 
-      sql.append('FROM biz_main_crontab_config AS cron')
+      sql.append('FROM biz_main_crontab_schedule AS cron')
 
       sql.append('LEFT JOIN biz_main_func AS func');
       sql.append('  ON func.id = cron.funcId');
@@ -746,47 +786,7 @@ EntityModel.prototype.getExportData = function(options, callback) {
       self.db.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        exportData.crontabConfigs = dbRes;
-
-        return asyncCallback();
-      });
-    },
-    // 获取批处理
-    function(asyncCallback) {
-      if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
-      if (!includeBatches) return asyncCallback();
-
-      var sql = toolkit.createStringBuilder();
-      sql.append('SELECT');
-      sql.append('   bat.id');
-      sql.append('  ,bat.funcId');
-      sql.append('  ,bat.funcCallKwargsJSON');
-      sql.append('  ,bat.tagsJSON');
-      sql.append('  ,bat.origin');
-      sql.append('  ,bat.originId');
-      sql.append('  ,bat.showInDoc');
-      sql.append('  ,bat.isDisabled');
-      sql.append('  ,bat.note');
-
-      sql.append('FROM biz_main_batch AS bat')
-
-      sql.append('LEFT JOIN biz_main_func AS func');
-      sql.append('  ON func.id = bat.funcId');
-
-      sql.append('LEFT JOIN biz_main_script_set AS sset');
-      sql.append('  ON sset.id = func.scriptSetId');
-
-      sql.append('WHERE');
-      sql.append('  sset.id IN (?)');
-
-      sql.append('ORDER BY');
-      sql.append('  bat.id ASC');
-
-      var sqlParams = [scriptSetIds];
-      self.db.query(sql, sqlParams, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        exportData.batches = dbRes;
+        exportData.crontabSchedules = dbRes;
 
         return asyncCallback();
       });
@@ -809,6 +809,11 @@ EntityModel.prototype.getExportData = function(options, callback) {
       });
     }
 
+    // 兼容处理
+    exportData.authLinks      = exportData.syncAPIs;
+    exportData.crontabConfigs = exportData.crontabSchedules;
+    exportData.batches        = exportData.asyncAPIs;
+
     return callback(null, exportData);
   });
 };
@@ -825,12 +830,12 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
   var scriptRecoverPointModel     = scriptRecoverPointMod.createModel(self.locals);
   var scriptSetImportHistoryModel = scriptSetImportHistoryMod.createModel(self.locals);
 
-  var scriptSetIds     = toolkit.arrayElementValues(importData.scriptSets     || [], 'id');
-  var authLinkIds      = toolkit.arrayElementValues(importData.authLinks      || [], 'id');
-  var crontabConfigIds = toolkit.arrayElementValues(importData.crontabConfigs || [], 'id');
-  var batchIds         = toolkit.arrayElementValues(importData.batches        || [], 'id');
-  var connectorIds     = toolkit.arrayElementValues(importData.connectors     || [], 'id');
-  var envVariableIds   = toolkit.arrayElementValues(importData.envVariables   || [], 'id');
+  var scriptSetIds       = toolkit.arrayElementValues(importData.scriptSets       || [], 'id');
+  var connectorIds       = toolkit.arrayElementValues(importData.connectors       || [], 'id');
+  var envVariableIds     = toolkit.arrayElementValues(importData.envVariables     || [], 'id');
+  var syncAPIIds         = toolkit.arrayElementValues(importData.syncAPIs         || [], 'id');
+  var asyncAPIIds        = toolkit.arrayElementValues(importData.asyncAPIs        || [], 'id');
+  var crontabScheduleIds = toolkit.arrayElementValues(importData.crontabSchedules || [], 'id');
 
   var transScope = modelHelper.createTransScope(self.db);
   async.series([
@@ -874,9 +879,9 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
         }, asyncCallback);
       }
     },
-    // 删除所有涉及的授权链接、自动触发配置、批处理、连接器、环境变量
+    // 删除所有涉及的连接器、环境变量、同步 API、异步 API、Crontab 计划
     function(asyncCallback) {
-      if (toolkit.isNothing(authLinkIds)) return asyncCallback();
+      if (toolkit.isNothing(syncAPIIds)) return asyncCallback();
 
       var sql = toolkit.createStringBuilder();
       sql.append('DELETE FROM ??');
@@ -884,11 +889,11 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
       sql.append('   id IN (?)');
 
       var deleteTargets = [
-        { table: 'biz_main_auth_link',      ids: authLinkIds },
-        { table: 'biz_main_crontab_config', ids: crontabConfigIds },
-        { table: 'biz_main_batch',          ids: batchIds },
-        { table: 'biz_main_connector',      ids: connectorIds },
-        { table: 'biz_main_env_variable',   ids: envVariableIds },
+        { table: 'biz_main_connector',        ids: connectorIds },
+        { table: 'biz_main_env_variable',     ids: envVariableIds },
+        { table: 'biz_main_sync_api',         ids: syncAPIIds },
+        { table: 'biz_main_async_api',        ids: asyncAPIIds },
+        { table: 'biz_main_crontab_schedule', ids: crontabScheduleIds },
       ];
       async.eachSeries(deleteTargets, function(t, eachCallback) {
         if (toolkit.isNothing(t.ids)) return eachCallback();
@@ -902,14 +907,15 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
     function(asyncCallback) {
       // 插入规则
       var _rules = [
-        { name: 'scriptSets',     table: 'biz_main_script_set' },
-        { name: 'scripts',        table: 'biz_main_script' },
-        { name: 'funcs',          table: 'biz_main_func' },
-        { name: 'authLinks',      table: 'biz_main_auth_link' },
-        { name: 'crontabConfigs', table: 'biz_main_crontab_config' },
-        { name: 'batches',        table: 'biz_main_batch' },
-        { name: 'connectors',     table: 'biz_main_connector' },
-        { name: 'envVariables',   table: 'biz_main_env_variable' },
+        { name: 'scriptSets',       table: 'biz_main_script_set' },
+        { name: 'scripts',          table: 'biz_main_script' },
+        { name: 'funcs',            table: 'biz_main_func' },
+        { name: 'connectors',       table: 'biz_main_connector' },
+        { name: 'envVariables',     table: 'biz_main_env_variable' },
+        { name: 'syncAPIs',         table: 'biz_main_sync_apis' },
+        { name: 'asyncAPIs',        table: 'biz_main_async_apis' },
+        { name: 'crontabSchedules', table: 'biz_main_crontab_schedule' },
+
       ];
       async.eachSeries(_rules, function(_rule, eachCallback) {
         var _dataSet = importData[_rule.name];

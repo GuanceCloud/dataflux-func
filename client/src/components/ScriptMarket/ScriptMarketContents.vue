@@ -589,7 +589,7 @@ Upgrade Script Set: 升級指令碼集
                     {{ $t('Crontab Config is deployed') }}
                   </span>
                   <br>
-                  <el-button type="text" @click="common.goToList('crontab-config-list', { _fuzzySearch: deployment.startupCrontabId })">
+                  <el-button type="text" @click="common.goToList('crontab-schedule-list', { _fuzzySearch: deployment.startupCrontabId })">
                     <i class="fa fa-fw fa-external-link"></i>
                     {{ $t('Go to the Crontab Config') }}
                   </el-button>

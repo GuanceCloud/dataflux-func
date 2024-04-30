@@ -25,13 +25,13 @@ var scriptMod          = require('../models/scriptMod');
 var funcMod            = require('../models/funcMod');
 var connectorMod       = require('../models/connectorMod');
 var envVariableMod     = require('../models/envVariableMod');
-var authLinkMod        = require('../models/authLinkMod');
-var crontabConfigMod   = require('../models/crontabConfigMod');
-var batchMod           = require('../models/batchMod');
+var apiAuthMod         = require('../models/apiAuthMod');
+var syncAPIMod         = require('../models/syncAPIMod');
+var asyncAPIMod        = require('../models/asyncAPIMod');
+var crontabScheduleMod = require('../models/crontabScheduleMod');
 var operationRecordMod = require('../models/operationRecordMod');
 var fileServiceMod     = require('../models/fileServiceMod');
 var userMod            = require('../models/userMod');
-var apiAuthMod         = require('../models/apiAuthMod');
 
 var funcAPICtrl = require('./funcAPICtrl');
 
@@ -44,20 +44,21 @@ var THROTTLING_RULE_EXPIRES_MAP = {
   byYear  : 60 * 60 * 24 * 365,
 };
 
+// LRU
 var FUNC_CACHE_OPT = {
   max   : CONFIG._LRU_FUNC_CACHE_LIMIT,
   maxAge: CONFIG._LRU_FUNC_CACHE_MAX_AGE * 1000,
 };
 var FUNC_LRU      = new LRU(FUNC_CACHE_OPT);
-var AUTH_LINK_LRU = new LRU(FUNC_CACHE_OPT);
-var BATCH_LRU     = new LRU(FUNC_CACHE_OPT);
 var API_AUTH_LRU  = new LRU(FUNC_CACHE_OPT);
+var SYNC_API_LRU  = new LRU(FUNC_CACHE_OPT);
+var ASYNC_API_LRU = new LRU(FUNC_CACHE_OPT);
 
- // LRU + Redis
-var FUNC_RESULT_CACHE_LRU = new LRU({
+var FUNC_RESULT_CACHE_OPT = {
   max   : CONFIG._LRU_FUNC_RESULT_CACHE_LIMIT,
   maxAge: CONFIG._LRU_FUNC_RESULT_CACHE_MAX_AGE * 1000,
-});
+}
+var FUNC_RESULT_CACHE_LRU = new LRU(FUNC_RESULT_CACHE_OPT);
 
 // 自动创建资源文件夹
 fs.ensureDirSync(CONFIG.RESOURCE_ROOT_PATH);
@@ -83,7 +84,7 @@ function _getHTTPRequestInfo(req) {
     xhr        : req.xhr,
   };
   return httpRequest;
-}
+};
 
 function getFuncById(locals, funcId, callback) {
   if (!funcId) {
@@ -239,7 +240,7 @@ function createFuncRunnerTaskReq(locals, options, callback) {
     } else {
       // 默认值
       switch(options.origin) {
-        case 'batch':
+        case 'asyncAPI':
           taskReq.queue = CONFIG._FUNC_TASK_QUEUE_BATCH;
           break;
 
@@ -271,8 +272,8 @@ function createFuncRunnerTaskReq(locals, options, callback) {
     } else {
       // 默认值
       switch(options.origin) {
-        case 'batch':
-          // 批处理有单独的默认执行超时
+        case 'asyncAPI':
+          // 异步 API 有单独的默认执行超时
           taskReq.timeout = CONFIG._FUNC_TASK_TIMEOUT_BATCH;
           break;
 
@@ -304,13 +305,13 @@ function createFuncRunnerTaskReq(locals, options, callback) {
     } else {
       // 默认值
       switch(options.origin) {
-        case 'authLink':
-          // 授权链接过期与超时相同
+        case 'syncAPI':
+          // 同步 API 过期与超时相同
           taskReq.expires = taskReq.timeout || CONFIG._FUNC_TASK_TIMEOUT_DEFAULT;
           break;
 
-        case 'batch':
-          // 批处理不会过期
+        case 'asyncAPI':
+          // 异步 API 不过期
           delete taskReq.expires;
           break;
 
@@ -463,7 +464,7 @@ function _getFuncCallResultCache(locals, cacheKey, callback) {
     return callback(null, lruRes);
   }
 
-  // 2. 从Redis中获取
+  // 2. 从Redis 中获取
   locals.cacheDB.get(cacheKey, function(err, cacheRes) {
     if (err) return callback(err);
 
@@ -727,6 +728,7 @@ function __matchedFixedFields(req, fields) {
   }
   return result;
 };
+
 function __getHTTPAuth(type, req, res, callback) {
   type = type.toLowerCase();
 
@@ -772,6 +774,7 @@ function __getHTTPAuth(type, req, res, callback) {
       break;
   }
 };
+
 function __checkHTTPAuth(type, req, authInfo, password) {
   var expectedHash = HTTPAuthUtils[type.toUpperCase()].computeHash({
     username : authInfo.username,
@@ -787,6 +790,7 @@ function __checkHTTPAuth(type, req, authInfo, password) {
   });
   return expectedHash === authInfo.hash;
 };
+
 function __askHTTPAuth(type, res, realm, callback) {
   var nonce = toolkit.genUUID();
 
@@ -811,6 +815,7 @@ function __askHTTPAuth(type, res, realm, callback) {
     return callback(new E('EAPIAuth', toolkit.strf('HTTP {0} Auth failed', type)));
   });
 };
+
 function __callAuthFunc(req, res, apiAuth, callback) {
   var taskReq = null;
   async.series([
@@ -957,28 +962,28 @@ exports.overview = function(req, res, next) {
     })
   }
 
-  var scriptSetModel     = scriptSetMod.createModel(res.locals);
-  var scriptModel        = scriptMod.createModel(res.locals);
-  var funcModel          = funcMod.createModel(res.locals);
-  var connectorModel     = connectorMod.createModel(res.locals);
-  var envVariableModel   = envVariableMod.createModel(res.locals);
-  var authLinkModel      = authLinkMod.createModel(res.locals);
-  var crontabConfigModel = crontabConfigMod.createModel(res.locals);
-  var batchModel         = batchMod.createModel(res.locals);
-  var fileServiceModel   = fileServiceMod.createModel(res.locals);
-  var userModel          = userMod.createModel(res.locals);
+  var scriptSetModel       = scriptSetMod.createModel(res.locals);
+  var scriptModel          = scriptMod.createModel(res.locals);
+  var funcModel            = funcMod.createModel(res.locals);
+  var connectorModel       = connectorMod.createModel(res.locals);
+  var envVariableModel     = envVariableMod.createModel(res.locals);
+  var syncAPIModel         = syncAPIMod.createModel(res.locals);
+  var crontabScheduleModel = crontabScheduleMod.createModel(res.locals);
+  var asyncAPIModel        = asyncAPIMod.createModel(res.locals);
+  var fileServiceModel     = fileServiceMod.createModel(res.locals);
+  var userModel            = userMod.createModel(res.locals);
 
   var bizEntityMeta = [
-    { name : 'scriptSet',     model: scriptSetModel},
-    { name : 'script',        model: scriptModel},
-    { name : 'func',          model: funcModel},
-    { name : 'connector',     model: connectorModel},
-    { name : 'envVariable',   model: envVariableModel},
-    { name : 'authLink',      model: authLinkModel},
-    { name : 'crontabConfig', model: crontabConfigModel},
-    { name : 'batch',         model: batchModel},
-    { name : 'fileService',   model: fileServiceModel},
-    { name : 'user',          model: userModel},
+    { name : 'scriptSet',       model: scriptSetModel       },
+    { name : 'script',          model: scriptModel          },
+    { name : 'func',            model: funcModel            },
+    { name : 'connector',       model: connectorModel       },
+    { name : 'envVariable',     model: envVariableModel     },
+    { name : 'syncAPI',         model: syncAPIModel         },
+    { name : 'asyncAPI',        model: asyncAPIModel        },
+    { name : 'crontabSchedule', model: crontabScheduleModel },
+    { name : 'fileService',     model: fileServiceModel     },
+    { name : 'user',            model: userModel            },
   ];
 
   var overview = {
@@ -1141,7 +1146,7 @@ exports.overview = function(req, res, next) {
     function(asyncCallback) {
       if (sectionMap && !sectionMap.queueInfo) return asyncCallback();
 
-      var cacheKey = toolkit.getGlobalCacheKey('cache', 'workerQueueLimitCrontabConfig');
+      var cacheKey = toolkit.getGlobalCacheKey('cache', 'workerQueueLimitCrontabSchedule');
       res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
@@ -1159,9 +1164,9 @@ exports.overview = function(req, res, next) {
     function(asyncCallback) {
       if (sectionMap && !sectionMap.bizMetrics) return asyncCallback();
 
-      var crontabConfigs = [];
+      var crontabSchedules = [];
       async.series([
-        // 查询所有自动触发配置
+        // 查询所有 Crontab 计划
         function(innerCallback) {
           var opt = {
             fields : [
@@ -1174,25 +1179,25 @@ exports.overview = function(req, res, next) {
               'func.id'        : { isnotnull: true },
             },
           }
-          crontabConfigModel.list(opt, function(err, dbRes) {
+          crontabScheduleModel.list(opt, function(err, dbRes) {
             if (err) return innerCallback(err);
 
-            crontabConfigs = dbRes;
+            crontabSchedules = dbRes;
 
             return innerCallback();
           });
         },
         // 追加临时 Crontab 配置
         function(innerCallback) {
-          if (toolkit.isNothing(crontabConfigs)) return innerCallback();
+          if (toolkit.isNothing(crontabSchedules)) return innerCallback();
 
-          var dataIds  = toolkit.arrayElementValues(crontabConfigs, 'id');
-          var cacheKey = toolkit.getGlobalCacheKey('tempConfig', 'dynamicCrontab');
+          var dataIds  = toolkit.arrayElementValues(crontabSchedules, 'id');
+          var cacheKey = toolkit.getGlobalCacheKey('crontabSchedule', 'dynamicCrontab');
           res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
             if (err) return innerCallback(err);
 
             var now = parseInt(Date.now() / 1000);
-            crontabConfigs.forEach(function(d) {
+            crontabSchedules.forEach(function(d) {
               d.dynamicCrontab = null;
 
               var tempConfig = cacheRes[d.id];
@@ -1207,13 +1212,13 @@ exports.overview = function(req, res, next) {
             return innerCallback();
           });
         },
-        // 计算未来 24 小时自动触发配置触发次数
+        // 计算未来 24 小时 Crontab 计划触发次数
         function(innerCallback) {
           var baseTimestamp = moment(moment().format('YYYY-MM-DDT00:00:01Z')).unix() * 1000;
 
           var totalTickCount = 0;
           var crontab24HTickCountMap = {}
-          crontabConfigs.forEach(function(c) {
+          crontabSchedules.forEach(function(c) {
             var crontabExpr = c.dynamicCrontab || c.fixedCrontab || c.crontab;
             if (!crontabExpr) return;
 
@@ -1247,25 +1252,25 @@ exports.overview = function(req, res, next) {
           });
 
           overview.bizMetrics.push({
-            title    : 'Crontab Config',
+            title    : 'Crontab Schedule',
             subTitle : 'Triggers Per Second',
             value    : parseFloat((totalTickCount / (3600 * 24)).toFixed(1)),
             isBuiltin: true,
           });
           overview.bizMetrics.push({
-            title    : 'Crontab Config',
+            title    : 'Crontab Schedule',
             subTitle : 'Triggers Per Minute',
             value    : parseFloat((totalTickCount / (60 * 24)).toFixed(1)),
             isBuiltin: true,
           });
           overview.bizMetrics.push({
-            title    : 'Crontab Config',
+            title    : 'Crontab Schedule',
             subTitle : 'Triggers Per Hour',
             value    : parseFloat((totalTickCount / 24).toFixed(1)),
             isBuiltin: true,
           });
           overview.bizMetrics.push({
-            title    : 'Crontab Config',
+            title    : 'Crontab Schedule',
             subTitle : 'Triggers Per Day',
             value    : parseFloat((totalTickCount).toFixed(1)),
             isBuiltin: true,
@@ -1321,9 +1326,9 @@ exports.overview = function(req, res, next) {
             useHidden = true;
             break;
 
-          case 'authLink':
-          case 'crontabConfig':
-          case 'batch':
+          case 'syncAPI':
+          case 'asyncAPI':
+          case 'crontabSchedule':
             opt = {
               baseSQL: `
                 SELECT
@@ -1451,73 +1456,97 @@ exports.callFunc = function(req, res, next) {
   });
 };
 
-exports.callAuthLink = function(req, res, next) {
+exports.callFuncDraft = function(req, res, next) {
+  // 函数，参数
+  var funcId         = req.params.funcId;
+  var funcCallKwargs = req.body.kwargs || {};
+
+  var opt = {
+    funcId        : funcId,
+    funcCallKwargs: funcCallKwargs,
+
+    origin  : 'direct',
+    originId: funcId,
+  }
+
+  // 添加 HTTP 请求信息
+  opt.httpRequest = _getHTTPRequestInfo(req);
+
+  return callFuncDebugger(res.locals, opt, function(err, taskResp) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet(taskResp);
+    res.locals.sendJSON(ret);
+  });
+};
+
+exports.callSyncAPI = function(req, res, next) {
   var id = req.params.id;
 
-  var taskReq  = null;
-  var authLink = null;
+  var taskReq = null;
+  var syncAPI = null;
   async.series([
-    // 检查授权链接是否存在
+    // 检查同步 API 是否存在
     function(asyncCallback) {
-      authLink = AUTH_LINK_LRU.get(id);
+      syncAPI = SYNC_API_LRU.get(id);
 
-      if (authLink === null) {
+      if (syncAPI === null) {
         // 已查询过不存在
-        return asyncCallback(new E('EClientNotFound', 'No such Auth Link', { id: id }));
+        return asyncCallback(new E('EClientNotFound', 'No such Sync API', { id: id }));
 
-      } else if (authLink) {
+      } else if (syncAPI) {
         // 已查询确定存在
         return asyncCallback();
       }
 
-      var authLinkModel = authLinkMod.createModel(res.locals);
+      var syncAPIModel = syncAPIMod.createModel(res.locals);
 
-      authLinkModel._get(id, null, function(err, dbRes) {
+      syncAPIModel._get(id, null, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         if (!dbRes) {
           // 查询不存在，缓存为`null`
-          AUTH_LINK_LRU.set(id, null);
-          return asyncCallback(new E('EClientNotFound', 'No such Auth Link', { id: id }));
+          SYNC_API_LRU.set(id, null);
+          return asyncCallback(new E('EClientNotFound', 'No such Sync API', { id: id }));
         }
 
-        authLink = dbRes;
-        AUTH_LINK_LRU.set(id, authLink);
+        syncAPI = dbRes;
+        SYNC_API_LRU.set(id, syncAPI);
 
         return asyncCallback();
       });
     },
     // 检查认证
     function(asyncCallback) {
-      if (!authLink.apiAuthId) return asyncCallback();
+      if (!syncAPI.apiAuthId) return asyncCallback();
 
-      var realm = 'AuthLink:' + authLink.id;
-      _doAPIAuth(res.locals, req, res, authLink.apiAuthId, realm, asyncCallback);
+      var realm = 'SyncAPI:' + syncAPI.id;
+      _doAPIAuth(res.locals, req, res, syncAPI.apiAuthId, realm, asyncCallback);
     },
     // 检查限制
     function(asyncCallback) {
       // 是否已禁用
-      if (authLink.isDisabled) {
-        return asyncCallback(new E('EBizCondition.AuthLinkDisabled', 'This Auth Link is disabled'))
+      if (syncAPI.isDisabled) {
+        return asyncCallback(new E('EBizCondition.SyncAPIDisabled', 'This Sync API is disabled'))
       }
 
       // 是否已过期
-      if (authLink.expireTime && new Date(authLink.expireTime) < new Date()) {
-        return asyncCallback(new E('EBizCondition.AuthLinkExpired', 'This Auth Link is already expired'))
+      if (syncAPI.expireTime && new Date(syncAPI.expireTime) < new Date()) {
+        return asyncCallback(new E('EBizCondition.SyncAPIExpired', 'This Sync API is already expired'))
       }
 
       // 是否限流
-      if (toolkit.isNothing(authLink.throttlingJSON)) return asyncCallback();
+      if (toolkit.isNothing(syncAPI.throttlingJSON)) return asyncCallback();
 
       // 限流处理
-      async.eachOfSeries(authLink.throttlingJSON, function(limit, rule, eachCallback) {
+      async.eachOfSeries(syncAPI.throttlingJSON, function(limit, rule, eachCallback) {
         var ruleSep = parseInt(Date.now() / 1000 / THROTTLING_RULE_EXPIRES_MAP[rule]);
         var tags = [
-          'authLinkId', id,
-          'rule'      , rule,
-          'ruleSep'   , ruleSep,
+          'syncAPIId', id,
+          'rule'     , rule,
+          'ruleSep'  , ruleSep,
         ];
-        var cacheKey = toolkit.getCacheKey('throttling', 'authLink', tags);
+        var cacheKey = toolkit.getCacheKey('throttling', 'syncAPI', tags);
 
         res.locals.cacheDB.incr(cacheKey, function(err, cacheRes) {
           if (err) return eachCallback(err);
@@ -1526,7 +1555,7 @@ exports.callAuthLink = function(req, res, next) {
           if (currentCount > limit) {
             // 触发限流
             var waitSeconds = parseInt((ruleSep + 1) * THROTTLING_RULE_EXPIRES_MAP[rule] - Date.now() / 1000) + 1;
-            return eachCallback(new E('EClientRateLimit.AuthLinkThrottling', 'Maximum calling rate exceeded', {
+            return eachCallback(new E('EClientRateLimit.APIThrottling', 'Maximum calling rate exceeded', {
               rule        : rule,
               limit       : limit,
               currentCount: currentCount,
@@ -1546,11 +1575,11 @@ exports.callAuthLink = function(req, res, next) {
     // 创建函数调用选项
     function(asyncCallback) {
       var opt = {
-        funcId         : authLink.funcId,
-        funcCallKwargs : authLink.funcCallKwargsJSON,
-        origin         : 'authLink',
-        originId       : authLink.id,
-        taskRecordLimit: authLink.taskRecordLimit,
+        funcId         : syncAPI.funcId,
+        funcCallKwargs : syncAPI.funcCallKwargsJSON,
+        origin         : 'syncAPI',
+        originId       : syncAPI.id,
+        taskRecordLimit: syncAPI.taskRecordLimit,
       }
       createFuncRunnerTaskReqFromHTTPRequest(res.locals, req, opt, function(err, _taskReq) {
         if (err) return asyncCallback(err);
@@ -1570,88 +1599,54 @@ exports.callAuthLink = function(req, res, next) {
   });
 };
 
-exports.runCrontabConfigManually = function(req, res, next) {
+exports.callAsyncAPI = function(req, res, next) {
   var id = req.params.id;
 
+  var taskReq  = null;
+  var asyncAPI = null;
   async.series([
-    // 检查自动触发配置是否存在
+    // 检查异步 API 是否存在
     function(asyncCallback) {
-      var crontabConfigModel = crontabConfigMod.createModel(res.locals);
+      asyncAPI = ASYNC_API_LRU.get(id);
 
-      crontabConfigModel._get(id, null, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        if (!dbRes) {
-          // 查询不存在，缓存为`null`
-          return asyncCallback(new E('EClientNotFound', 'No such Crontab Config', { id: id }));
-        }
-
-        return asyncCallback();
-      });
-    },
-  ], function(err) {
-    if (err) return next(err);
-
-    // 发送任务
-    var taskReq = {
-      name  : 'Crontab.ManualStarter',
-      kwargs: { crontabConfigId: id },
-    }
-    res.locals.cacheDB.putTask(taskReq, function(err) {
-      if (err) return next(err);
-      return res.locals.sendJSON();
-    });
-  });
-};
-
-exports.callBatch = function(req, res, next) {
-  var id = req.params.id;
-
-  var taskReq = null;
-  var batch   = null;
-  async.series([
-    // 检查批处理是否存在
-    function(asyncCallback) {
-      batch = BATCH_LRU.get(id);
-
-      if (batch === null) {
+      if (asyncAPI === null) {
         // 已查询过不存在
-        return asyncCallback(new E('EClientNotFound', 'No such Batch', { id: id }));
+        return asyncCallback(new E('EClientNotFound', 'No such Async API', { id: id }));
 
-      } else if (batch) {
+      } else if (asyncAPI) {
         // 已查询确定存在
         return asyncCallback();
       }
 
-      var batchModel = batchMod.createModel(res.locals);
+      var asyncAPIModel = asyncAPIMod.createModel(res.locals);
 
-      batchModel._get(id, null, function(err, dbRes) {
+      asyncAPIModel._get(id, null, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         if (!dbRes) {
           // 查询不存在，缓存为`null`
-          BATCH_LRU.set(id, null);
-          return asyncCallback(new E('EClientNotFound', 'No such Batch', { id: id }));
+          ASYNC_API_LRU.set(id, null);
+          return asyncCallback(new E('EClientNotFound', 'No such Async API', { id: id }));
         }
 
-        batch = dbRes;
-        BATCH_LRU.set(id, batch);
+        asyncAPI = dbRes;
+        ASYNC_API_LRU.set(id, asyncAPI);
 
         return asyncCallback();
       });
     },
     // 检查认证
     function(asyncCallback) {
-      if (!batch.apiAuthId) return asyncCallback();
+      if (!asyncAPI.apiAuthId) return asyncCallback();
 
-      var realm = 'Batch:' + batch.id;
-      _doAPIAuth(res.locals, req, res, batch.apiAuthId, realm, asyncCallback);
+      var realm = 'AsyncAPI:' + asyncAPI.id;
+      _doAPIAuth(res.locals, req, res, asyncAPI.apiAuthId, realm, asyncCallback);
     },
     // 检查限制
     function(asyncCallback) {
       // 是否已禁用
-      if (batch.isDisabled) {
-        return asyncCallback(new E('EBizCondition.BatchDisabled', 'This Batch is disabled'))
+      if (asyncAPI.isDisabled) {
+        return asyncCallback(new E('EBizCondition.AsyncAPIDisabled', 'This Async API is disabled'))
       }
 
       return asyncCallback();
@@ -1659,11 +1654,11 @@ exports.callBatch = function(req, res, next) {
     // 创建函数调用选项
     function(asyncCallback) {
       var opt = {
-        funcId         : batch.funcId,
-        funcCallKwargs : batch.funcCallKwargsJSON,
-        origin         : 'batch',
-        originId       : batch.id,
-        taskRecordLimit: batch.taskRecordLimit,
+        funcId         : asyncAPI.funcId,
+        funcCallKwargs : asyncAPI.funcCallKwargsJSON,
+        origin         : 'asyncAPI',
+        originId       : asyncAPI.id,
+        taskRecordLimit: asyncAPI.taskRecordLimit,
       }
       createFuncRunnerTaskReqFromHTTPRequest(res.locals, req, opt, function(err, _taskReq) {
         if (err) return asyncCallback(err);
@@ -1686,27 +1681,37 @@ exports.callBatch = function(req, res, next) {
   });
 };
 
-exports.callFuncDraft = function(req, res, next) {
-  // 函数，参数
-  var funcId         = req.params.funcId;
-  var funcCallKwargs = req.body.kwargs || {};
+exports.runCrontabScheduleManually = function(req, res, next) {
+  var id = req.params.id;
 
-  var opt = {
-    funcId        : funcId,
-    funcCallKwargs: funcCallKwargs,
+  async.series([
+    // 检查 Crontab 计划是否存在
+    function(asyncCallback) {
+      var crontabScheduleModel = crontabScheduleMod.createModel(res.locals);
 
-    origin  : 'direct',
-    originId: funcId,
-  }
+      crontabScheduleModel._get(id, null, function(err, dbRes) {
+        if (err) return asyncCallback(err);
 
-  // 添加 HTTP 请求信息
-  opt.httpRequest = _getHTTPRequestInfo(req);
+        if (!dbRes) {
+          // 查询不存在，缓存为`null`
+          return asyncCallback(new E('EClientNotFound', 'No such Crontab Schedule', { id: id }));
+        }
 
-  return callFuncDebugger(res.locals, opt, function(err, taskResp) {
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
     if (err) return next(err);
 
-    var ret = toolkit.initRet(taskResp);
-    res.locals.sendJSON(ret);
+    // 发送任务
+    var taskReq = {
+      name  : 'Crontab.ManualStarter',
+      kwargs: { crontabScheduleId: id },
+    }
+    res.locals.cacheDB.putTask(taskReq, function(err) {
+      if (err) return next(err);
+      return res.locals.sendJSON();
+    });
   });
 };
 
@@ -1754,48 +1759,109 @@ exports.getFuncTagList = function(req, res, next) {
   });
 };
 
-exports.getAuthLinkFuncList = function(req, res, next) {
-  var authLinkModel = authLinkMod.createModel(res.locals);
+exports.getFuncAPIList = function(req, res, next) {
+  var apiType = req.query.apiType || 'ALL';
 
-  var opt = res.locals.getQueryOptions();
-  opt.filters = opt.filters || {};
-  opt.filters['auln.showInDoc'] = {eq: true};
+  var syncAPIModel  = syncAPIMod.createModel(res.locals);
+  var asyncAPIModel = asyncAPIMod.createModel(res.locals);
 
-  authLinkModel.list(opt, function(err, dbRes) {
+  var apiList = [];
+
+  async.series([
+    // 同步 API
+    function(asyncCallback) {
+      if (apiType !== 'ALL' && apiType !== 'syncAPI') return asyncCallback();
+
+      var opt = res.locals.getQueryOptions();
+      opt.filters = opt.filters || {};
+      opt.filters['sapi.showInDoc'] = {eq: true};
+
+      syncAPIModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        dbRes.forEach(function(d) {
+          apiList.push({
+            url: urlFor('mainAPI.callSyncAPIByGet', {
+              params: { id: d.id },
+            }),
+
+            apiType           : 'syncAPI',
+            id                : d.id,
+            funcCallKwargsJSON: d.funcCallKwargsJSON,
+            expireTime        : d.expireTime,
+            throttlingJSON    : d.throttlingJSON,
+            isDisabled        : d.isDisabled,
+
+            configFuncId      : d.funcId,
+            funcId            : d.func_id,
+            funcName          : d.func_name,
+            funcTitle         : d.func_title,
+            funcDescription   : d.func_description,
+            funcDefinition    : d.func_definition,
+            funcArgsJSON      : d.func_argsJSON,
+            funcKwargsJSON    : d.func_kwargsJSON,
+            funcCategory      : d.func_category,
+            funcIntegration   : d.func_integration,
+            funcTagsJSON      : d.func_tagsJSON,
+
+            apiAuthId   : d.apia_id,
+            apiAuthTitle: d.apia_title,
+            apiAuthType : d.apia_type,
+          });
+        });
+
+        return asyncCallback();
+      });
+    },
+    // 异步 API
+    function(asyncCallback) {
+      if (apiType !== 'ALL' && apiType !== 'asyncAPI') return asyncCallback();
+
+      var opt = res.locals.getQueryOptions();
+      opt.filters = opt.filters || {};
+      opt.filters['aapi.showInDoc'] = {eq: true};
+
+      asyncAPIModel.list(opt, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        dbRes.forEach(function(d) {
+          apiList.push({
+            url: urlFor('mainAPI.callAsyncAPIByGet', {
+              params: { id: d.id },
+            }),
+
+            apiType           : 'asyncAPI',
+            id                : d.id,
+            funcCallKwargsJSON: d.funcCallKwargsJSON,
+            expireTime        : null, // 异步 API 不存在此功能
+            throttlingJSON    : null, // 异步 API 不存在此功能
+            isDisabled        : d.isDisabled,
+
+            configFuncId      : d.funcId,
+            funcId            : d.func_id,
+            funcName          : d.func_name,
+            funcTitle         : d.func_title,
+            funcDescription   : d.func_description,
+            funcDefinition    : d.func_definition,
+            funcArgsJSON      : d.func_argsJSON,
+            funcKwargsJSON    : d.func_kwargsJSON,
+            funcCategory      : d.func_category,
+            funcIntegration   : d.func_integration,
+            funcTagsJSON      : d.func_tagsJSON,
+
+            apiAuthId   : d.apia_id,
+            apiAuthTitle: d.apia_title,
+            apiAuthType : d.apia_type,
+          });
+        });
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
     if (err) return next(err);
 
-    var funcList = [];
-    dbRes.forEach(function(d) {
-      funcList.push({
-        url: urlFor('mainAPI.callAuthLinkByGet', {
-          params: { id: d.id },
-        }),
-
-        id                : d.id,
-        funcCallKwargsJSON: d.funcCallKwargsJSON,
-        expireTime        : d.expireTime,
-        throttlingJSON    : d.throttlingJSON,
-        isDisabled        : d.isDisabled,
-
-        configFuncId      : d.funcId,
-        funcId            : d.func_id,
-        funcName          : d.func_name,
-        funcTitle         : d.func_title,
-        funcDescription   : d.func_description,
-        funcDefinition    : d.func_definition,
-        funcArgsJSON      : d.func_argsJSON,
-        funcKwargsJSON    : d.func_kwargsJSON,
-        funcCategory      : d.func_category,
-        funcIntegration   : d.func_integration,
-        funcTagsJSON      : d.func_tagsJSON,
-
-        apiAuthId   : d.apia_id,
-        apiAuthTitle: d.apia_title,
-        apiAuthType : d.apia_type,
-      });
-    });
-
-    var ret = toolkit.initRet(funcList);
+    var ret = toolkit.initRet(apiList);
     return res.locals.sendJSON(ret);
   });
 };
@@ -1912,7 +1978,7 @@ exports.integratedSignIn = function(req, res, next) {
             break;
         }
 
-        // 避免与内置系统用户 ID 冲突
+        // 避免与内置系统用户 ID 冲突（igu: Integration Generated User)
         userId = toolkit.strf('igu_{0}-{1}', toolkit.getMD5(funcId), userId);
 
         // 发行登录令牌

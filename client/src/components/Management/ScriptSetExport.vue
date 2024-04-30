@@ -71,9 +71,9 @@ Related Contents: 關聯內容
             </el-form-item>
 
             <el-form-item :label="$t('Related Contents')">
-              <el-checkbox size="medium" border v-model="form.includeAuthLinks"><i class="fa fa-fw fa-link"></i> {{ $t('Auth Link') }}</el-checkbox>
-              <el-checkbox size="medium" border v-model="form.includeCrontabConfigs"><i class="fa fa-fw fa-clock-o"></i> {{ $t('Crontab Config') }}</el-checkbox>
-              <el-checkbox size="medium" border v-model="form.includeBatches"><i class="fa fa-fw fa-tasks"></i> {{ $t('Batch') }}</el-checkbox>
+              <el-checkbox size="medium" border v-model="form.includeSyncAPIs"><i class="fa fa-fw fa-link"></i> {{ $t('Sync API') }}</el-checkbox>
+              <el-checkbox size="medium" border v-model="form.includeAsyncAPIs"><i class="fa fa-fw fa-tasks"></i> {{ $t('Async API') }}</el-checkbox>
+              <el-checkbox size="medium" border v-model="form.includeCrontabSchedules"><i class="fa fa-fw fa-clock-o"></i> {{ $t('Crontab Schedule') }}</el-checkbox>
               <InfoBlock :title="$t('Exporting with related contents')" />
             </el-form-item>
 
@@ -321,13 +321,13 @@ export default {
       selectEnvVariableOptions: [],
 
       form: {
-        note                 : '',
-        scriptSetIds         : [],
-        includeAuthLinks     : false,
-        includeCrontabConfigs: false,
-        includeBatches       : false,
-        connectorIds         : [],
-        envVariableIds       : [],
+        note                   : '',
+        scriptSetIds           : [],
+        connectorIds           : [],
+        envVariableIds         : [],
+        includeSyncAPIs        : false,
+        includeAsyncAPIs       : false,
+        includeCrontabSchedules: false,
       },
       formRules: {
         scriptSetIds: [
