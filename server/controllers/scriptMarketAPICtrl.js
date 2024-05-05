@@ -2024,7 +2024,7 @@ exports.install = function(req, res, next) {
         return asyncCallback();
       })
     },
-    // 查询附带 fixed_crontab 的函数列表
+    // 查询附带 fixedCronExpr 的函数列表
     function(asyncCallback) {
       if (toolkit.isNothing(startupScriptIds)) return asyncCallback();
 
@@ -2035,8 +2035,8 @@ exports.install = function(req, res, next) {
           'func.extraConfigJSON',
         ],
         filters: {
-          'func.extraConfigJSON->>$.fixedCrontab': { isnotnull: true },
-          'scpt.id'                              : { in : startupScriptIds },
+          'func.extraConfigJSON->>$.fixedCronExpr': { isnotnull: true },
+          'scpt.id'                               : { in : startupScriptIds },
         }
       }
       funcModel.list(opt, function(err, dbRes) {

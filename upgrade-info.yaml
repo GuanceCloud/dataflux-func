@@ -785,6 +785,10 @@ upgradeInfo:
       ALTER TABLE wat_main_access_key
         MODIFY COLUMN `secretCipher` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL;
 
+      -- 重命名 crontab 为 cronExpr
+      ALTER TABLE biz_main_task_record_func
+        CHANGE `crontab` `cronExpr` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT 'Cron 表达式';
+
       -- 启用新命名
       CREATE TABLE `biz_main_sync_api` (
         `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -835,7 +839,7 @@ upgradeInfo:
         `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
         `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
         `funcCallKwargsJSON` json DEFAULT NULL COMMENT '函数调用参数JSON (kwargs)',
-        `crontab` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '执行频率（Crontab语法）',
+        `cronExpr` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL COMMENT '执行频率（Cron表达式）',
         `timezone` varchar(256) DEFAULT NULL COMMENT '时区',
         `tagsJSON` json DEFAULT NULL COMMENT '标签JSON',
         `scope` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL DEFAULT 'GLOBAL' COMMENT '范围',

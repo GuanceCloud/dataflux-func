@@ -21,6 +21,7 @@ Pause for 1 day     : 暂停 1 天
 Fixed      : 固定
 Dynamic    : 动态
 Not Set    : 未配置
+Cron Expr  : Cron 表达式
 Config     : 配置
 Created    : 创建
 Expires    : 过期
@@ -46,7 +47,7 @@ lastFailed   : '{t}执行失败'
 No Recent Triggered Time Info: 无最近触发时间信息
 Recent Triggered Time        : 最近触发时间
 Trigger Time                 : 触发时间
-Since Prev Crontab           : 距上次 Crontab 触发
+Since Prev Cron Triggered    : 距上次 Cron 触发
 Triggered Manually           : 手动触发
 ~~~ Repeated {n} Times ~~~   : ~~~ 重复 {n} 次 ~~~
 Show Full Records            : 显示完整记录
@@ -61,6 +62,7 @@ Are you sure you want to disable the Cron Job?: 是否確認禁用此定時任�
 Are you sure you want to run the Cron Job manually?: 是否確認手動執行此定時任務？
 Config: 配置
 Created: 創建
+Cron Expr: Cron 表達式
 Cron Job Started Manually: 定時任務已手工啓動
 Cron Job deleted: 定時任務已刪除
 Cron Job disabled: 定時任務已禁用
@@ -74,7 +76,7 @@ Fixed: 固定
 No Cron Job has ever been added: 從未添加過任何定時任務
 No Recent Triggered Time Info: 無最近觸發時間信息
 Not Set: 未配置
-Pause: 全部暫停
+Pause: 暫停
 Pause for 1 day: 暫停 1 天
 Pause for 1 hour: 暫停 1 小時
 Pause for 12 hours: 暫停 12 小時
@@ -82,11 +84,11 @@ Pause for 15 minutes: 暫停 15 分鐘
 Pause for 3 hours: 暫停 3 小時
 Pause for 30 minutes: 暫停 30 分鐘
 Recent Triggered Time: 最近觸發時間
-Resume: 全部繼續
+Resume: 繼續
 Run: 執行
 Show Full Records: 顯示完整記錄
 Show all contents: 展示全部內容
-Since Prev Crontab: 距上次 Crontab 觸發
+Since Prev Cron Triggered: 距上次 Cron 觸發
 Task Record: 任務記錄
 Trigger Time: 觸發時間
 Triggered Manually: 手動觸發
@@ -102,6 +104,7 @@ Are you sure you want to disable the Cron Job?: 是否確認禁用此定時任�
 Are you sure you want to run the Cron Job manually?: 是否確認手動執行此定時任務？
 Config: 配置
 Created: 建立
+Cron Expr: Cron 表示式
 Cron Job Started Manually: 定時任務已手工啟動
 Cron Job deleted: 定時任務已刪除
 Cron Job disabled: 定時任務已禁用
@@ -115,7 +118,7 @@ Fixed: 固定
 No Cron Job has ever been added: 從未新增過任何定時任務
 No Recent Triggered Time Info: 無最近觸發時間資訊
 Not Set: 未配置
-Pause: 全部暫停
+Pause: 暫停
 Pause for 1 day: 暫停 1 天
 Pause for 1 hour: 暫停 1 小時
 Pause for 12 hours: 暫停 12 小時
@@ -123,11 +126,11 @@ Pause for 15 minutes: 暫停 15 分鐘
 Pause for 3 hours: 暫停 3 小時
 Pause for 30 minutes: 暫停 30 分鐘
 Recent Triggered Time: 最近觸發時間
-Resume: 全部繼續
+Resume: 繼續
 Run: 執行
 Show Full Records: 顯示完整記錄
 Show all contents: 展示全部內容
-Since Prev Crontab: 距上次 Crontab 觸發
+Since Prev Cron Triggered: 距上次 Cron 觸發
 Task Record: 任務記錄
 Trigger Time: 觸發時間
 Triggered Manually: 手動觸發
@@ -253,16 +256,16 @@ lastSucceeded: '{t}執行成功'
 
           <el-table-column :label="$t('Config')" width="280">
             <template slot-scope="scope">
-              <span class="text-info">Crontab{{ $t(':') }}</span>
+              <span class="text-info">{{ $t('Cron Expr') }}{{ $t(':') }}</span>
               <template v-if="scope.row.dynamicCronExpr">
                 <code class="text-bad">{{ scope.row.dynamicCronExpr }}</code>
                 <el-tag type="danger" size="mini">{{ $t('Dynamic') }}</el-tag>
               </template>
-              <template v-else-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCrontab">
-                <code class="text-main">{{ scope.row.func_extraConfigJSON.fixedCrontab }}</code>
+              <template v-else-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCronExpr">
+                <code class="text-main">{{ scope.row.func_extraConfigJSON.fixedCronExpr }}</code>
                 <el-tag size="mini">{{ $t('Fixed') }}</el-tag>
               </template>
-              <code v-else-if="scope.row.crontab" class="text-main">{{ scope.row.crontab }}</code>
+              <code v-else-if="scope.row.cronExpr" class="text-main">{{ scope.row.cronExpr }}</code>
               <span v-else class="text-bad">{{ $t('Not Set') }}</span>
 
               <br>
@@ -518,11 +521,12 @@ export default {
 
       } else {
         let nextRecentTriggeredData = apiRes.data;
+
         // 整理数据
-        let crontabData = nextRecentTriggeredData.filter(x => x[1] === 'crontab');
-        for (let i = 0; i < crontabData.length; i++) {
-          if (i >= crontabData.length - 1) break;
-          crontabData[i].push(crontabData[i][0] - crontabData[i + 1][0]);
+        let triggeredData = nextRecentTriggeredData.filter(x => x[1] === 'cronJob');
+        for (let i = 0; i < triggeredData.length; i++) {
+          if (i >= triggeredData.length - 1) break;
+          triggeredData[i].push(triggeredData[i][0] - triggeredData[i + 1][0]);
         }
 
         // 生成文本
@@ -539,7 +543,7 @@ export default {
         let headerLine = '';
         headerLine += makeField('SEQ', SEQ_FIELD_WIDTH);
         headerLine += makeField(this.$t('Trigger Time'), TIME_FIELD_WIDTH);
-        headerLine += makeField(this.$t('Since Prev Crontab'));
+        headerLine += makeField(this.$t('Since Prev Cron Triggered'));
 
         let nextRecentTriggeredLines = [
           headerLine,
@@ -599,7 +603,7 @@ export default {
 
             } else {
               let prevD = nextRecentTriggeredData[index - 1];
-              if (d[1] === 'crontab' && prevD[1] === 'crontab' && d[2] === prevD[2]) {
+              if (d[1] === 'cronJob' && prevD[1] === 'cronJob' && d[2] === prevD[2]) {
                 _repeatCount++;
               } else {
                 if (_repeatCount > 0) {

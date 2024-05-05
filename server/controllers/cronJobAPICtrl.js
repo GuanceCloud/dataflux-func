@@ -62,7 +62,7 @@ exports.list = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // 追加临时 Crontab 配置
+    // 追加动态 Cron 表达式配置
     function(asyncCallback) {
       if (toolkit.isNothing(listData)) return asyncCallback();
 
@@ -115,6 +115,12 @@ exports.listRecentTriggered = function(req, res, next) {
       res.locals.cacheDB.hdel(cacheKey, id);
     }
 
+    // 兼容处理
+    if ('undefined' !== typeof data.crontab) {
+      data.cronJob = data.crontab;
+      delete data.crontab
+    }
+
     let recentTriggered = [];
     for (let execMode in data) {
       toolkit.deltaOfDeltaDecode(toolkit.repeatDecode(data[execMode])).forEach(function(ts) {
@@ -140,6 +146,9 @@ exports.listRecentTriggered = function(req, res, next) {
 exports.add = function(req, res, next) {
   var data = req.body.data;
 
+  // 兼容处理
+  data.cronExpr = data.cronExpr || data.crontab;
+
   _add(res.locals, data, function(err, addedId) {
     if (err) return next(err);
 
@@ -154,6 +163,9 @@ exports.modify = function(req, res, next) {
   var id   = req.params.id;
   var data = req.body.data;
 
+  // 兼容处理
+  data.cronExpr = data.cronExpr || data.crontab;
+
   _modify(res.locals, id, data, null, function(err, modifiedId) {
     if (err) return next(err);
 
@@ -166,6 +178,9 @@ exports.modify = function(req, res, next) {
 
 exports.addMany = function(req, res, next) {
   var data = req.body.data;
+
+  // 兼容处理
+  data.cronExpr = data.cronExpr || data.crontab;
 
   var addedIds = [];
 
@@ -199,6 +214,9 @@ exports.addMany = function(req, res, next) {
 
 exports.modifyMany = function(req, res, next) {
   var data = req.body.data;
+
+  // 兼容处理
+  data.cronExpr = data.cronExpr || data.crontab;
 
   var cronJobModel = cronJobMod.createModel(res.locals);
 
@@ -253,7 +271,7 @@ function _add(locals, data, callback) {
   // 默认范围
   data.scope = data.scope || GLOBAL_SCOPE;
 
-  var funcModel            = funcMod.createModel(locals);
+  var funcModel    = funcMod.createModel(locals);
   var cronJobModel = cronJobMod.createModel(locals);
 
   var addedId = null;

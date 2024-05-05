@@ -32,48 +32,48 @@ from worker.tasks.internal import SystemMetric, FlushDataBuffer, AutoClean, Auto
 BEAT_MASTER_LOCK_KEY   = None
 BEAT_MASTER_LOCK_VALUE = None
 
-SYSTEM_CRONTAB = [
+SYSTEM_TASKS_META = [
     # {
     #     # 示例
-    #     'task'   : ExampleSuccess,
-    #     'crontab': '*/3 * * * * *',
+    #     'class'   : ExampleSuccess,
+    #     'cronExpr': '*/3 * * * * *',
     # },
     {
         # Cron 任务启动器
-        'task'   : CronJobStarter,
-        'crontab': CONFIG['_CRON_EXPR_CRONJOB_STARTER'],
+        'class'   : CronJobStarter,
+        'cronExpr': CONFIG['_CRON_EXPR_CRONJOB_STARTER'],
     },
     {
         # 系统指标
-        'task'   : SystemMetric,
-        'crontab': CONFIG['_CRON_EXPR_SYSTEM_METRIC'],
-        'delay'  : 5,
+        'class'   : SystemMetric,
+        'cronExpr': CONFIG['_CRON_EXPR_SYSTEM_METRIC'],
+        'delay'   : 5,
     },
     {
         # 缓存数据刷入数据库
-        'task'   : FlushDataBuffer,
-        'crontab': CONFIG['_CRON_EXPR_FLUSH_DATA_BUFFER'],
+        'class'   : FlushDataBuffer,
+        'cronExpr': CONFIG['_CRON_EXPR_FLUSH_DATA_BUFFER'],
     },
     {
         # 自动清理
-        'task'   : AutoClean,
-        'crontab': CONFIG['_CRON_EXPR_AUTO_CLEAN'],
+        'class'   : AutoClean,
+        'cronExpr': CONFIG['_CRON_EXPR_AUTO_CLEAN'],
     },
     {
         # 数据库自动备份
-        'task'   : AutoBackupDB,
-        'crontab': CONFIG['_CRON_EXPR_AUTO_BACKUP_DB'],
+        'class'   : AutoBackupDB,
+        'cronExpr': CONFIG['_CRON_EXPR_AUTO_BACKUP_DB'],
     },
     {
         # 重新加载数据 MD5 缓存
-        'task'   : ReloadDataMD5Cache,
-        'crontab': CONFIG['_CRON_EXPR_RELOAD_DATA_MD5_CACHE'],
-        'kwargs' : { 'lockTime': 15, 'all': True },
+        'class'   : ReloadDataMD5Cache,
+        'cronExpr': CONFIG['_CRON_EXPR_RELOAD_DATA_MD5_CACHE'],
+        'kwargs'  : { 'lockTime': 15, 'all': True },
     },
     {
         # 针对定时任务的工作队列长度限制
-        'task'   : UpdateWorkerQueueLimit,
-        'crontab': CONFIG['_CRON_EXPR_UPDATE_WORKER_QUEUE_LIMIT'],
+        'class'   : UpdateWorkerQueueLimit,
+        'cronExpr': CONFIG['_CRON_EXPR_UPDATE_WORKER_QUEUE_LIMIT'],
     },
 ]
 
@@ -89,17 +89,17 @@ def is_master_beat():
         # 成功续租锁
         return True
 
-def get_matched_crontab_task_instances(t):
-    result = []
-    for item in SYSTEM_CRONTAB:
-        if not toolkit.is_valid_crontab(item['crontab']):
+def create_system_tasks(t):
+    tasks = []
+    for meta in SYSTEM_TASKS_META:
+        if not toolkit.is_valid_cron_expr(meta['cronExpr']):
             continue
 
-        if toolkit.is_match_crontab(item['crontab'], t, tz=CONFIG['TIMEZONE']):
-            task_inst = item['task'](kwargs=item.get('kwargs'), trigger_time=t, delay=item.get('delay'), queue=item.get('queue'))
-            result.append(task_inst)
+        if toolkit.is_match_cron_expr(meta['cronExpr'], t, tz=CONFIG['TIMEZONE']):
+            task = meta['class'](kwargs=meta.get('kwargs'), trigger_time=t, delay=meta.get('delay'), queue=meta.get('queue'))
+            tasks.append(task)
 
-    return result
+    return tasks
 
 class TickTimeout(Exception):
     pass
@@ -109,7 +109,7 @@ def tick(context):
     '''
     定时触发器（每秒触发）
 
-    1. 获取已注册的，当前时间满足 Crontab 表达式的任务
+    1. 获取已注册的，当前时间满足 Cron 表达式的任务
     2. 到达执行时间的延迟任务进入工作队列
     '''
     now = time.time()
@@ -131,11 +131,11 @@ def tick(context):
         if not is_master_beat():
             continue
 
-        # 分发配置了 Crontab 的任务
-        task_instances = get_matched_crontab_task_instances(tick_time)
-        for task_inst in task_instances:
+        # 执行系统任务
+        tasks = create_system_tasks(tick_time)
+        for t in tasks:
             # 创建任务请求
-            task_req = task_inst.create_task_request()
+            task_req = t.create_task_request()
             task_req_dumps = toolkit.json_dumps(task_req, ignore_nothing=True, indent=None)
 
             # 任务入队

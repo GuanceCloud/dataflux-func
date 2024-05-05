@@ -708,7 +708,7 @@ class AutoClean(BaseInternalTask):
         # 清理已过期的函数存储
         self.safe_call(self.clear_expired_func_store)
 
-        # 清除已经过期的动态 Crontab 配置
+        # 清除已经过期的动态 Cron 表达式配置
         self.safe_call(self.clear_expired_dynamic_cron_expr)
 
         # 清理已过时的最近触发记录

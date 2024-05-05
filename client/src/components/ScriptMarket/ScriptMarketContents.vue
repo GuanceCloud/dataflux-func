@@ -141,7 +141,7 @@ The published Script Set will be shown here, you can find and install the ones y
 This Script Market is locked by other user ({user}): 當前腳本市場已被其他用户（{user}）鎖定
 This Script Market is locked by you: 當前腳本市場已被您鎖定
 This Script Set includes an example which can be used for deploying Startup Script: 本腳本集包含示例，可部署為啓動腳本
-'This Script Set includes an example which can be used for deploying Startup Script with following configs:': 本腳本集包含示例，可部署為啓動腳本，幷包含以下配置項目：
+'This Script Set includes an example which can be used for deploying Startup Script with following configs: ': 本腳本集包含示例，可部署為啓動腳本，幷包含以下配置項目：
 'This Script Set is edited locally, you can:': 此腳本集已在本地被修改，您可以：
 'This Script Set is not from current Script Market, you can:': 此腳本集並非來自【當前】腳本市場，您可以：
 This Script Set requires 3rd party Python packages: 本腳本集依賴第三方 Python 包
@@ -206,7 +206,7 @@ The published Script Set will be shown here, you can find and install the ones y
 This Script Market is locked by other user ({user}): 當前指令碼市場已被其他使用者（{user}）鎖定
 This Script Market is locked by you: 當前指令碼市場已被您鎖定
 This Script Set includes an example which can be used for deploying Startup Script: 本指令碼集包含示例，可部署為啟動指令碼
-'This Script Set includes an example which can be used for deploying Startup Script with following configs:': 本指令碼集包含示例，可部署為啟動指令碼，幷包含以下配置專案：
+'This Script Set includes an example which can be used for deploying Startup Script with following configs: ': 本指令碼集包含示例，可部署為啟動指令碼，幷包含以下配置專案：
 'This Script Set is edited locally, you can:': 此指令碼集已在本地被修改，您可以：
 'This Script Set is not from current Script Market, you can:': 此指令碼集並非來自【當前】指令碼市場，您可以：
 This Script Set requires 3rd party Python packages: 本指令碼集依賴第三方 Python 包

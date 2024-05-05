@@ -482,10 +482,9 @@ export default {
   computed: {
     DEFAULT_CALL_OPTIONS() {
       return {
-        execMode  : 'sync',
+        execMode  : 'syncAPI',
         saveResult: false,
         timeout   : this.$store.getters.SYSTEM_INFO('_FUNC_TASK_TIMEOUT_DEFAULT'),
-        apiTimeout: this.$store.getters.SYSTEM_INFO('_FUNC_TASK_DEFAULT_API_TIMEOUT'),
       }
     },
     showOptions() {

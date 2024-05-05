@@ -127,9 +127,9 @@
       list.push("_DFF_START_TIME_MS");
       list.push("_DFF_ETA");
       list.push("_DFF_DELAY");
-      list.push("_DFF_CRONTAB");
-      list.push("_DFF_CRONTAB_DELAY");
-      list.push("_DFF_CRONTAB_EXEC_MODE");
+      list.push("_DFF_CRON_EXPR");
+      list.push("_DFF_CRON_JOB_DELAY");
+      list.push("_DFF_CRON_JOB_EXEC_MODE");
       list.push("_DFF_QUEUE");
       list.push("_DFF_HTTP_REQUEST");
     }

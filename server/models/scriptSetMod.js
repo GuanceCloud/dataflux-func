@@ -759,7 +759,7 @@ EntityModel.prototype.getExportData = function(options, callback) {
       sql.append('   cron.id');
       sql.append('  ,cron.funcId');
       sql.append('  ,cron.funcCallKwargsJSON');
-      sql.append('  ,cron.crontab');
+      sql.append('  ,cron.cronExpr');
       sql.append('  ,cron.tagsJSON');
       sql.append('  ,cron.scope');
       sql.append('  ,cron.expireTime');

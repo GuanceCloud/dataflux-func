@@ -828,8 +828,8 @@ def mask_auth_url(s):
     except Exception as e:
         return s
 
-def to_croniter_style(crontab):
-    parts = crontab.split(' ')
+def to_croniter_style(cron_expr):
+    parts = cron_expr.split(' ')
 
     if len(parts) < 5:
         parts.extend([ '*' ] * (5 - len(parts)))
@@ -842,21 +842,21 @@ def to_croniter_style(crontab):
     return ' '.join(parts)
 
 @functools.lru_cache(maxsize=128)
-def is_valid_crontab(crontab):
-    if not crontab:
+def is_valid_cron_expr(cron_expr):
+    if not cron_expr:
         return False
 
-    crontab = to_croniter_style(crontab)
-    return croniter.is_valid(crontab)
+    cron_expr = to_croniter_style(cron_expr)
+    return croniter.is_valid(cron_expr)
 
 @functools.lru_cache(maxsize=128)
-def is_match_crontab(crontab, t, tz):
+def is_match_cron_expr(cron_expr, t, tz):
     if t is None:
         raise Exception(f'This function use @functools.lru_cache, so parameter `t` should not be `None`')
 
-    crontab = to_croniter_style(crontab)
+    cron_expr = to_croniter_style(cron_expr)
     at = arrow.get(t).to(tz)
-    return croniter.match(crontab, at.datetime)
+    return croniter.match(cron_expr, at.datetime)
 
 class DiffTimer(object):
     def __init__(self):

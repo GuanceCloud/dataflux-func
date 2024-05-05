@@ -74,17 +74,17 @@ class CronJobStarter(BaseTask):
         if isinstance(c['funcExtraConfig'], str):
             c['funcExtraConfig'] = toolkit.json_loads(c['funcExtraConfig']) or {}
 
-        c['crontab'] = c.get('dynamicCronExpr') or c['funcExtraConfig'].get('fixedCrontab') or c.get('crontab')
+        c['cronExpr'] = c.get('dynamicCronExpr') or c['funcExtraConfig'].get('fixedCronExpr') or c.get('cronExpr')
 
         return c
 
     def filter_cron_job(self, c):
-        crontab = c.get('crontab')
-        if not crontab or not toolkit.is_valid_crontab(crontab):
+        cron_expr = c.get('cronExpr')
+        if not cron_expr or not toolkit.is_valid_cron_expr(cron_expr):
             return False
 
         timezone = c.get('timezone') or CONFIG['TIMEZONE']
-        return toolkit.is_match_crontab(crontab, self.trigger_time, timezone)
+        return toolkit.is_match_cron_expr(cron_expr, self.trigger_time, timezone)
 
     def get_integration_cron_job(self):
         sql = '''
@@ -92,8 +92,8 @@ class CronJobStarter(BaseTask):
                  `func`.`id`              AS `funcId`
                 ,`func`.`extraConfigJSON` AS `funcExtraConfigJSON`
                 ,JSON_UNQUOTE(
-                    JSON_EXTRACT(`func`.`extraConfigJSON`, '$.integrationConfig.crontab')
-                ) AS `crontab`
+                    JSON_EXTRACT(`func`.`extraConfigJSON`, '$.integrationConfig.cronExpr')
+                ) AS `cronExpr`
 
             FROM `biz_main_func` AS `func`
 
@@ -101,7 +101,7 @@ class CronJobStarter(BaseTask):
                 `func`.`integration` = 'autoRun'
 
             HAVING
-                `crontab` IS NOT NULL
+                `cronExpr` IS NOT NULL
 
             ORDER BY
             	`func`.`id`
@@ -110,7 +110,7 @@ class CronJobStarter(BaseTask):
 
         for c in cron_jobs:
             # 集成定时任务使用函数 ID 作为定时任务 ID
-            c['id']  = f"autoRun.crontab-{c['funcId']}"
+            c['id']  = f"autoRun.cronJob-{c['funcId']}"
 
         # 准备 / 过滤定时任务
         cron_jobs = map(self.prepare_cron_job, cron_jobs)
@@ -124,7 +124,7 @@ class CronJobStarter(BaseTask):
                  `cron`.`seq`
                 ,`cron`.`id`
                 ,`cron`.`funcCallKwargsJSON`
-                ,`cron`.`crontab`
+                ,`cron`.`cronExpr`
                 ,`cron`.`taskRecordLimit`
 
                 ,`func`.`id`              AS `funcId`
@@ -153,7 +153,7 @@ class CronJobStarter(BaseTask):
         if len(cron_jobs) > 0:
             latest_seq = cron_jobs[-1]['seq']
 
-            # 优先使用动态 Crontab
+            # 优先使用动态 Cron 表达式
             cron_job_ids = [ c['id'] for c in cron_jobs]
             cache_key = toolkit.get_global_cache_key('cronJob', 'dynamicCronExpr')
             cache_res = self.cache_db.hmget(cache_key, cron_job_ids) or {}
@@ -176,7 +176,7 @@ class CronJobStarter(BaseTask):
 
         return cron_jobs, latest_seq
 
-    def put_tasks(self, tasks, ignore_crontab_delay=False):
+    def put_tasks(self, tasks, ignore_cron_job_delay=False):
         tasks = toolkit.as_array(tasks)
         if not tasks:
             return
@@ -190,7 +190,7 @@ class CronJobStarter(BaseTask):
             origin           = t.get('origin')
             origin_id        = t.get('originId')
             delay            = t.get('delay') or 0
-            exec_mode        = t.get('execMode', 'crontab')
+            exec_mode        = t.get('execMode', 'cronJob')
 
             # 超时时间 / 过期时间
             timeout = cron_job['funcExtraConfig'].get('timeout') or CONFIG['_FUNC_TASK_TIMEOUT_DEFAULT']
@@ -203,20 +203,20 @@ class CronJobStarter(BaseTask):
             if not self.is_worker_queue_available(queue):
                 continue
 
-            # Crontab 多次执行
-            crontab_delay_list = cron_job['funcExtraConfig'].get('delayedCrontab')
-            crontab_delay_list = toolkit.as_array(crontab_delay_list)
-            if not crontab_delay_list or ignore_crontab_delay:
-                crontab_delay_list = [ 0 ]
+            # Cron 多次执行
+            cron_job_delay_list = cron_job['funcExtraConfig'].get('delayedCronJob')
+            cron_job_delay_list = toolkit.as_array(cron_job_delay_list)
+            if not cron_job_delay_list or ignore_cron_job_delay:
+                cron_job_delay_list = [ 0 ]
 
-            for crontab_delay in crontab_delay_list:
+            for cron_job_delay in cron_job_delay_list:
                 # 定时任务锁
-                crontab_lock_key = toolkit.get_cache_key('lock', 'CronJob', tags=[
+                cron_job_lock_key = toolkit.get_cache_key('lock', 'CronJob', tags=[
                         'cronJobId', cron_job['id'],
-                        'funcId',            cron_job['funcId'],
-                        'execMode',          exec_mode])
+                        'funcId',    cron_job['funcId'],
+                        'execMode',  exec_mode])
 
-                crontab_lock_value = f"{int(time.time())}-{toolkit.gen_uuid()}"
+                cron_job_lock_value = f"{int(time.time())}-{toolkit.gen_uuid()}"
 
                 # 任务请求
                 task_reqs.append({
@@ -226,19 +226,19 @@ class CronJobStarter(BaseTask):
                         'funcCallKwargs'  : cron_job['funcCallKwargs'],
                         'origin'          : origin,
                         'originId'        : origin_id,
-                        'crontab'         : cron_job['crontab'],
-                        'crontabDelay'    : crontab_delay,
-                        'crontabLockKey'  : crontab_lock_key,   # 后续在 Func.Runner 中锁定 / 解锁
-                        'crontabLockValue': crontab_lock_value, # 后续在 Func.Runner 中锁定 / 解锁
-                        'crontabExecMode' : exec_mode,
+                        'cronExpr'        : cron_job['cronExpr'],
+                        'cronJobDelay'    : cron_job_delay,
+                        'cronJobLockKey'  : cron_job_lock_key,   # 后续在 Func.Runner 中锁定 / 解锁
+                        'cronJobLockValue': cron_job_lock_value, # 后续在 Func.Runner 中锁定 / 解锁
+                        'cronJobExecMode' : exec_mode,
                     },
 
                     'triggerTime': self.trigger_time,
 
                     'queue'          : queue,
-                    'delay'          : crontab_delay + delay,
+                    'delay'          : cron_job_delay + delay,
                     'timeout'        : timeout,
-                    'expires'        : crontab_delay + delay + expires,
+                    'expires'        : cron_job_delay + delay + expires,
                     'taskRecordLimit': cron_job.get('taskRecordLimit'),
                 })
 
@@ -248,7 +248,7 @@ class CronJobStarter(BaseTask):
     def run(self, **kwargs):
         # 暂停运行
         if self.is_paused:
-            self.logger.debug(f"[FLAG] Crontab Configs is paused.")
+            self.logger.debug(f"[FLAG] Cron Jobs paused.")
             return
 
         # 上锁
@@ -299,7 +299,7 @@ class CronJobManualStarter(CronJobStarter):
                  `cron`.`seq`
                 ,`cron`.`id`
                 ,`cron`.`funcCallKwargsJSON`
-                ,`cron`.`crontab`
+                ,`cron`.`cronExpr`
                 ,`cron`.`taskRecordLimit`
 
                 ,`func`.`id`              AS `funcId`
@@ -322,7 +322,7 @@ class CronJobManualStarter(CronJobStarter):
 
         cron_job = cron_jobs[0]
 
-        # 优先使用动态 Crontab
+        # 优先使用动态 Cron 表达式
         cache_key = toolkit.get_global_cache_key('cronJob', 'dynamicCronExpr')
         dynamic_cron_expr = self.cache_db.hget(cache_key, cron_job['id']) or {}
         if dynamic_cron_expr:
@@ -347,4 +347,4 @@ class CronJobManualStarter(CronJobStarter):
             'originId': cron_job['id'],
             'execMode': 'manual',
         }
-        self.put_tasks(task, ignore_crontab_delay=True)
+        self.put_tasks(task, ignore_cron_job_delay=True)

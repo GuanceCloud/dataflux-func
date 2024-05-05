@@ -50,6 +50,7 @@ The Script Market has been removed: 脚本市场已被删除
 
 Config    : 配置
 Auth      : 认证
+Cron Expr : Cron 表达式
 Expires   : 过期
 Throttling: 限流
 Created   : 创建
@@ -92,6 +93,7 @@ Code edited but not published yet: 代碼已修改但尚未發佈
 Config: 配置
 Copy {name} ID: 複製{name} ID
 Created: 創建
+Cron Expr: Cron 表達式
 Cron Job List: 定時任務列表
 Cron Job Started Manually: 定時任務已手工啓動
 Edited: 已修改
@@ -155,6 +157,7 @@ Code edited but not published yet: 程式碼已修改但尚未釋出
 Config: 配置
 Copy {name} ID: 複製{name} ID
 Created: 建立
+Cron Expr: Cron 表示式
 Cron Job List: 定時任務列表
 Cron Job Started Manually: 定時任務已手工啟動
 Edited: 已修改
@@ -683,12 +686,12 @@ successCount: 成功 {n}
 
             <el-table-column :label="$t('Config')" width="220">
               <template slot-scope="scope">
-                <span class="text-info">Crontab{{ $t(':') }}</span>
-                <template v-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCrontab">
-                  <code class="text-main">{{ scope.row.func_extraConfigJSON.fixedCrontab }}</code>
+                <span class="text-info">{{ $t('Cron Expr') }}{{ $t(':') }}</span>
+                <template v-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCronExpr">
+                  <code class="text-main">{{ scope.row.func_extraConfigJSON.fixedCronExpr }}</code>
                   <el-tag size="mini">{{ $t('Fixed') }}</el-tag>
                 </template>
-                <code v-else-if="scope.row.crontab" class="text-main">{{ scope.row.crontab }}</code>
+                <code v-else-if="scope.row.cronExpr" class="text-main">{{ scope.row.cronExpr }}</code>
                 <span v-else class="text-bad">{{ $t('Not Set') }}</span>
 
                 <br>
@@ -732,13 +735,13 @@ successCount: 成功 {n}
 
             <el-table-column align="right" width="180">
               <template slot="header" slot-scope="scope">
-                <el-link type="primary" @click="$router.push({name: 'cronta-schedule-list'})">
+                <el-link type="primary" @click="$router.push({name: 'cron-job-list'})">
                   {{ $t('Cron Job List') }}
                   <i class="fa fa-fw fa-share-square"></i>
                 </el-link>
               </template>
               <template slot-scope="scope">
-                <el-link @click="runCrontabTask(scope.row)" :disabled="!scope.row.func_id">
+                <el-link @click="startCronJobManually(scope.row)" :disabled="!scope.row.func_id">
                   {{ $t('Run') }}
                 </el-link>
               </template>
@@ -1462,7 +1465,7 @@ export default {
 
       this.$refs.apiExampleDialog.update(apiURL, apiBody, funcKwargs);
     },
-    async runCrontabTask(d) {
+    async startCronJobManually(d) {
       if (!await this.T.confirm(this.$t('Are you sure you want to start the Cron Job manually?'))) return;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/cron/:id', {

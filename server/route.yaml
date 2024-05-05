@@ -351,7 +351,7 @@ mainAPI:
   runCronJobManually:
     showInDoc    : true
     name         : Run Cron Job manually
-    name_zhCN    : 手动执行一次定时任务
+    name_zhCN    : 手动执行一次 定时任务
     method       : post
     url          : /api/v1/cron/:id
     response     : json
@@ -1810,7 +1810,7 @@ scriptSetAPI:
         $allowNull: true
         $type     : boolean
       includeCronJobs:
-        $desc     : 是否包含关联的定时任务
+        $desc     : 是否包含关联的 定时任务
         $allowNull: true
         $type     : boolean
       includeAuthLinks:
@@ -1890,7 +1890,7 @@ scriptSetAPI:
         $type: string
     body:
       withCronJob:
-        $desc   : 是否部署定时任务
+        $desc   : 是否部署 定时任务
         $type   : boolean
         $example: true
       withCrontabConfig:
@@ -2674,7 +2674,7 @@ scriptMarketAPI:
           $type   : boolean
           $example: true
         withCronJob:
-          $desc   : 是否部署定时任务
+          $desc   : 是否部署 定时任务
           $type   : boolean
           $example: true
         withCrontabConfig:
@@ -4683,15 +4683,7 @@ cronJobAPI:
     showInDoc    : true
     name         : Add Cron Job
     name_zhCN    : 添加自动触发配置
-    descType: markdown
-    desc: |
-      自动触发配置根据`scope`字段划分不同范围（默认为`"GLOBAL"`表示全局），
-
-      相同范围内的自动触发配置不允许存在2个以上执行函数和调用参数完全相同的配置。
-
-      *对于观测云Studio 的触发器功能在对接自动触发配置时，可以将工作空间UUID作为scope。如："scope": "workspaceUUID=<工作空间UUID>"*
-
-      *`scope`最长不得超过255个字符*
+    descType     : markdown
     method       : post
     url          : /api/v1/cron-jobs/do/add
     response     : json
@@ -4714,8 +4706,8 @@ cronJobAPI:
           $isRequired: true
           $type      : json
           $example   : {"msg": "Tom"}
-        crontab:
-          $desc     : 执行频率（Crontab语法，支持到分钟级）
+        cronExpr:
+          $desc     : Cron 表达式（仅支持到分钟级）
           $allowNull: true
           $type     : string
           $example  : 0 * * * *
@@ -4727,11 +4719,11 @@ cronJobAPI:
             $isRequired: true
             $type      : string
         scope:
-          $desc     : 范围（默认"GLOBAL"表示全局范围）
-          $allowNull: false
-          $type     : string
-          $maxLength: 255
-          $example  : my-uuid
+          $desc        : 范围 - *已不再使用*
+          $isDeprecated: true
+          $allowNull   : true
+          $type        : string
+          $maxLength   : 255
         expireTime:
           $desc      : 过期时间（ISO8601格式）
           $allowNull : true
@@ -4779,8 +4771,8 @@ cronJobAPI:
           $isRequired: false
           $type      : json
           $example   : {"msg": "Tom"}
-        crontab:
-          $desc     : 执行频率（Crontab语法，支持到分钟级）
+        cronExpr:
+          $desc     : Cron 表达式（仅支持到分钟级）
           $allowNull: true
           $type     : string
           $example  : 0 * * * *
@@ -4792,11 +4784,11 @@ cronJobAPI:
             $isRequired: true
             $type      : string
         scope:
-          $desc     : 范围（默认"GLOBAL"表示全局范围）
-          $allowNull: false
-          $type     : string
-          $maxLength: 255
-          $example  : my-uuid
+          $desc        : 范围 - *已不再使用*
+          $isDeprecated: true
+          $allowNull   : true
+          $type        : string
+          $maxLength   : 255
         expireTime:
           $desc      : 过期时间（ISO8601格式）
           $allowNull : true
@@ -4855,8 +4847,8 @@ cronJobAPI:
             $isRequired: true
             $type      : json
             $example   : {"msg": "Tom"}
-          crontab:
-            $desc     : 执行频率（Crontab语法，支持到分钟级）
+          cronExpr:
+            $desc     : Cron 表达式（仅支持到分钟级）
             $allowNull: true
             $type     : string
             $example  : 0 * * * *
@@ -4868,11 +4860,11 @@ cronJobAPI:
               $isRequired: true
               $type      : string
           scope:
-            $desc     : 范围（默认"GLOBAL"表示全局范围）
-            $allowNull: false
-            $type     : string
-            $maxLength: 255
-            $example  : my-uuid
+            $desc        : 范围 - *已不再使用*
+            $isDeprecated: true
+            $allowNull   : true
+            $type        : string
+            $maxLength   : 255
           expireTime:
             $desc      : 过期时间（ISO8601格式）
             $allowNull : true
@@ -4934,10 +4926,11 @@ cronJobAPI:
         $searchType: jsonArrayHasAll
         $searchKey : cron.tagsJSON
       scope:
-        $desc      : 根据范围过滤
-        $type      : commaArray
-        $searchType: in
-        $searchKey : cron.scope
+        $desc        : 范围 - *已不再使用*
+        $isDeprecated: true
+        $type        : commaArray
+        $searchType  : in
+        $searchKey   : cron.scope
       origin:
         $desc      : 根据来源过滤
         $type      : commaArray
@@ -4975,8 +4968,8 @@ cronJobAPI:
           $isRequired: false
           $type      : json
           $example   : {"msg": "Tom"}
-        crontab:
-          $desc     : 执行频率（Crontab语法，支持到分钟级）
+        cronExpr:
+          $desc     : Cron 表达式（仅支持到分钟级）
           $allowNull: true
           $type     : string
           $example  : 0 * * * *
@@ -5032,10 +5025,11 @@ cronJobAPI:
         $searchType: jsonArrayHasAll
         $searchKey : cron.tagsJSON
       scope:
-        $desc      : 根据范围过滤
-        $type      : commaArray
-        $searchType: in
-        $searchKey : cron.scope
+        $desc        : 范围 - *已不再使用*
+        $isDeprecated: true
+        $type        : commaArray
+        $searchType  : in
+        $searchKey   : cron.scope
       origin:
         $desc      : 根据来源过滤
         $type      : commaArray

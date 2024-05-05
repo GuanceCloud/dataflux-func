@@ -139,13 +139,13 @@ function _prepareData(data) {
     data.tagsJSON = JSON.stringify(data.tagsJSON);
   }
 
-  if (data.crontab) {
+  if (data.cronExpr) {
     try {
-      // 检查CronTab语法
-      cronParser.parseExpression(data.crontab);
+      // 检查 Cron 表达式
+      cronParser.parseExpression(data.cronExpr);
     } catch(err) {
-      throw new E('EClientBadRequest.InvalidCronTabExpression', 'Invalid CronTab expression', {
-        crontab: data.crontab,
+      throw new E('EClientBadRequest.InvalidCronExpression', 'Invalid Cron expression', {
+        cronExpr: data.cronExpr,
       });
     }
   }

@@ -48,7 +48,7 @@ FIX_INTEGRATION_KEY_MAP = {
     # 集成为独立定时运行任务（即无需配置的定时任务）
     # 函数必须为`def func()`形式（即无参数形式）
     #   配置项：
-    #       crontab        : Crontab 语法自动运行周期
+    #       cronExpr: 自动运行周期（Cron 表达式）
     #       onSystemLaunch : True/False，是否系统启动后运行
     #       onScriptPublish: True/False，是否脚本发布后运行
     'autoRun': 'autoRun',
@@ -1553,13 +1553,19 @@ class FuncBaseTask(BaseTask):
 
     def _export_as_api(self, safe_scope, title,
                     # 控制类参数
-                    fixed_crontab=None, delayed_crontab=None, timeout=None, api_timeout=None, expires=None, cache_result=None, queue=None,
+                    fixed_cron_expr=None, delayed_cron_job=None, timeout=None, api_timeout=None, expires=None, cache_result=None, queue=None,
                     # 标记类参数
                     category=None, tags=None,
                     # 集成处理参数
                     integration=None, integration_config=None,
                     # 文档控制类参数
-                    is_hidden=False):
+                    is_hidden=False,
+                    # 兼容处理
+                    fixed_crontab=None, delayed_crontab=None):
+        # 兼容处理
+        fixed_cron_expr  = fixed_cron_expr  or fixed_crontab
+        delayed_cron_job = delayed_cron_job or delayed_crontab
+
         ### 参数检查/预处理 ###
         extra_config = {}
 
@@ -1572,30 +1578,49 @@ class FuncBaseTask(BaseTask):
         # 控制类参数 #
         ##############
 
-        # 固定Crontab
+        # 固定 Cron 表达式
+        # 兼容处理
         if fixed_crontab is not None:
-            if not toolkit.is_valid_crontab(fixed_crontab):
-                e = InvalidAPIOption('`fixed_crontab` is not a valid crontab expression')
+            if not toolkit.is_valid_cron_expr(fixed_crontab):
+                e = InvalidAPIOption('`fixed_crontab` is not a valid cron expression')
                 raise e
 
             if len(fixed_crontab.split(' ')) > 5:
                 e = InvalidAPIOption('`fixed_crontab` does not support second part')
                 raise e
 
-            extra_config['fixedCrontab'] = fixed_crontab
+        if fixed_cron_expr is not None:
+            if not toolkit.is_valid_cron_expr(fixed_cron_expr):
+                e = InvalidAPIOption('`fixed_cron_expr` is not a valid cron expression')
+                raise e
 
-        # 延迟Crontab（单位秒，可多个）
+            if len(fixed_cron_expr.split(' ')) > 5:
+                e = InvalidAPIOption('`fixed_cron_expr` does not support second part')
+                raise e
+
+            extra_config['fixedCronExpr'] = fixed_cron_expr
+
+        # 延迟 Cron 任务（单位秒，可多个）
+        # 兼容处理
         if delayed_crontab is not None:
             delayed_crontab = toolkit.as_array(delayed_crontab)
-            delayed_crontab = list(set(delayed_crontab))
-            delayed_crontab.sort()
 
             for d in delayed_crontab:
                 if not isinstance(d, int):
-                    e = InvalidAPIOption('Elements of `delayed_crontab` should be int')
+                    e = InvalidAPIOption('All elements of `delayed_crontab` should be int')
                     raise e
 
-            extra_config['delayedCrontab'] = delayed_crontab
+        if delayed_cron_job is not None:
+            delayed_cron_job = toolkit.as_array(delayed_cron_job)
+            delayed_cron_job = list(set(delayed_cron_job))
+            delayed_cron_job.sort()
+
+            for d in delayed_cron_job:
+                if not isinstance(d, int):
+                    e = InvalidAPIOption('All elements of `delayed_cron_job` should be int')
+                    raise e
+
+            extra_config['delayedCronJob'] = delayed_cron_job
 
         # 执行时限
         timeout = timeout or api_timeout # 兼容 api_timeout
@@ -1829,7 +1854,7 @@ class FuncBaseTask(BaseTask):
                 'funcCallKwargs': kwargs,
                 'origin'        : safe_scope.get('_DFF_ORIGIN'),
                 'originId'      : safe_scope.get('_DFF_ORIGIN_ID'),
-                'crontab'       : safe_scope.get('_DFF_CRONTAB'),
+                'cronExpr'      : safe_scope.get('_DFF_CRON_EXPR'),
                 'callChain'     : call_chain,
             },
             'triggerTime'    : safe_scope.get('_DFF_TRIGGER_TIME'),
@@ -1971,27 +1996,32 @@ class FuncBaseTask(BaseTask):
             '__file__' : script_name or '<script>',
 
             # DataFlux Func 内置变量
-            '_DFF_DEBUG'            : debug,
-            '_DFF_TASK_ID'          : self.task_id,
-            '_DFF_ROOT_TASK_ID'     : self.root_task_id,
-            '_DFF_SCRIPT_SET_ID'    : self.script_set_id,
-            '_DFF_SCRIPT_ID'        : self.script_id,
-            '_DFF_FUNC_ID'          : self.func_id,
-            '_DFF_FUNC_NAME'        : self.func_name,
-            '_DFF_FUNC_CHAIN'       : self.call_chain,
-            '_DFF_ORIGIN'           : self.origin,
-            '_DFF_ORIGIN_ID'        : self.origin_id,
-            '_DFF_TRIGGER_TIME'     : int(self.trigger_time),
-            '_DFF_TRIGGER_TIME_MS'  : int(self.trigger_time_ms),
-            '_DFF_START_TIME'       : int(self.start_time),
-            '_DFF_START_TIME_MS'    : int(self.start_time_ms),
-            '_DFF_ETA'              : self.eta,
-            '_DFF_DELAY'            : self.delay,
-            '_DFF_CRONTAB'          : self.kwargs.get('crontab'),
-            '_DFF_CRONTAB_DELAY'    : self.kwargs.get('crontabDelay') or 0,
-            '_DFF_CRONTAB_EXEC_MODE': self.kwargs.get('crontabExecMode'),
-            '_DFF_QUEUE'            : self.queue,
-            '_DFF_HTTP_REQUEST'     : self.http_request,
+            '_DFF_DEBUG'             : debug,
+            '_DFF_TASK_ID'           : self.task_id,
+            '_DFF_ROOT_TASK_ID'      : self.root_task_id,
+            '_DFF_SCRIPT_SET_ID'     : self.script_set_id,
+            '_DFF_SCRIPT_ID'         : self.script_id,
+            '_DFF_FUNC_ID'           : self.func_id,
+            '_DFF_FUNC_NAME'         : self.func_name,
+            '_DFF_FUNC_CHAIN'        : self.call_chain,
+            '_DFF_ORIGIN'            : self.origin,
+            '_DFF_ORIGIN_ID'         : self.origin_id,
+            '_DFF_TRIGGER_TIME'      : int(self.trigger_time),
+            '_DFF_TRIGGER_TIME_MS'   : int(self.trigger_time_ms),
+            '_DFF_START_TIME'        : int(self.start_time),
+            '_DFF_START_TIME_MS'     : int(self.start_time_ms),
+            '_DFF_ETA'               : self.eta,
+            '_DFF_DELAY'             : self.delay,
+            '_DFF_CRON_EXPR'         : self.kwargs.get('cronExpr'),
+            '_DFF_CRON_JOB_DELAY'    : self.kwargs.get('cronJobDelay') or 0,
+            '_DFF_CRON_JOB_EXEC_MODE': self.kwargs.get('cronJobExecMode'),
+            '_DFF_QUEUE'             : self.queue,
+            '_DFF_HTTP_REQUEST'      : self.http_request,
+
+            # 兼容处理
+            '_DFF_CRONTAB'          : self.kwargs.get('cronExpr'),
+            '_DFF_CRONTAB_DELAY'    : self.kwargs.get('cronJobDelay') or 0,
+            '_DFF_CRONTAB_EXEC_MODE': self.kwargs.get('cronJobExecMode'),
         }
 
         # 添加 DataFlux Func 内置方法/对象

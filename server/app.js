@@ -200,11 +200,6 @@ function startApplication() {
   require('./routers/asyncAPIRouter');
   require('./routers/cronJobAPIRouter');
 
-  // 兼容处理
-  require('./routers/authLinkAPIRouter');
-  require('./routers/crontabConfigAPIRouter');
-  require('./routers/batchAPIRouter');
-
   require('./routers/taskRecordAPIRouter');
   require('./routers/taskRecordFuncAPIRouter');
 
@@ -216,6 +211,11 @@ function startApplication() {
 
   require('./routers/blueprintAPIRouter');
   require('./routers/scriptMarketAPIRouter');
+
+  // 兼容处理
+  require('./routers/authLinkAPIRouter');
+  require('./routers/crontabConfigAPIRouter');
+  require('./routers/batchAPIRouter');
 
   routeLoader.mount(app);
 

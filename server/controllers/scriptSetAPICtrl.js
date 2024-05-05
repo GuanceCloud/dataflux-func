@@ -633,12 +633,12 @@ exports.deploy = function(req, res, next) {
   // 兼容处理
   opt.withCronJob = opt.withCronJob || req.body.withCrontabConfig || false;
 
-  doDeploy(res.locals, scriptSetId, opt, function(err, startupScriptId, startupCrontabId, startupScriptCronJobFunc) {
+  doDeploy(res.locals, scriptSetId, opt, function(err, startupScriptId, startupCronJobId, startupScriptCronJobFunc) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
       startupScriptId         : startupScriptId,
-      startupCrontabId        : startupCrontabId,
+      startupCronJobId        : startupCronJobId,
       startupScriptCronJobFunc: startupScriptCronJobFunc,
     });
     return res.locals.sendJSON(ret);
@@ -772,7 +772,7 @@ function doDeploy(locals, scriptSetId, options, callback) {
 
       for (var i = 0; i < nextAPIFuncs.length; i++) {
         var apiFunc = nextAPIFuncs[i];
-        if (apiFunc.extraConfig && apiFunc.extraConfig.fixedCrontab) {
+        if (apiFunc.extraConfig && apiFunc.extraConfig.fixedCronExpr) {
           startupScriptCronJobFunc = apiFunc;
           break;
         }
@@ -781,13 +781,13 @@ function doDeploy(locals, scriptSetId, options, callback) {
       // 没有可用于配置定时任务的函数，忽略
       if (!startupScriptCronJobFunc) return asyncCallback();
 
-      var crontabFuncId = `${startupScriptId}.${startupScriptCronJobFunc.name}`;
+      var cronJobFuncId = `${startupScriptId}.${startupScriptCronJobFunc.name}`;
 
       // 检查定时任务存在性
       var opt = {
         fields : [ 'cron.id' ],
         filters: {
-          funcId: { eq: crontabFuncId }
+          funcId: { eq: cronJobFuncId }
         }
       }
       cronJobModel.list(opt, function(err, dbRes) {
@@ -803,7 +803,7 @@ function doDeploy(locals, scriptSetId, options, callback) {
         startupCronJobId = `${CONFIG._STARTUP_CRONTAB_SCHEDULE_ID_PREFIX}-${scriptSetId}`;
         var _data = {
           id                : startupCronJobId,
-          funcId            : crontabFuncId,
+          funcId            : cronJobFuncId,
           funcCallKwargsJSON: {},
         }
         return cronJobModel.add(_data, asyncCallback);

@@ -1171,8 +1171,8 @@ exports.overview = function(req, res, next) {
           var opt = {
             fields : [
               'cron.id',
-              'cron.crontab',
-              "func.extraConfigJSON->>'$.fixedCrontab' AS fixedCrontab",
+              'cron.cronExpr',
+              "func.extraConfigJSON->>'$.fixedCronExpr' AS fixedCronExpr",
             ],
             filters: {
               'cron.isDisabled': { eq: false },
@@ -1187,7 +1187,7 @@ exports.overview = function(req, res, next) {
             return innerCallback();
           });
         },
-        // 追加临时 Crontab 配置
+        // 追加动态 Cron 表达式配置
         function(innerCallback) {
           if (toolkit.isNothing(cronJobs)) return innerCallback();
 
@@ -1216,21 +1216,21 @@ exports.overview = function(req, res, next) {
         function(innerCallback) {
           var baseTimestamp = moment(moment().format('YYYY-MM-DDT00:00:01Z')).unix() * 1000;
 
-          var totalTickCount = 0;
-          var crontab24HTickCountMap = {}
+          var totalTriggerCount   = 0;
+          var cronTriggerCountMap = {}
           cronJobs.forEach(function(c) {
-            var crontabExpr = c.dynamicCronExpr || c.fixedCrontab || c.crontab;
-            if (!crontabExpr) return;
+            var cronExpr = c.dynamicCronExpr || c.fixedCronExpr || c.cronExpr;
+            if (!cronExpr) return;
 
-            var tickCount = crontab24HTickCountMap[crontabExpr];
+            var tickCount = cronTriggerCountMap[cronExpr];
             if (toolkit.notNothing(tickCount)) {
-              totalTickCount += tickCount;
+              totalTriggerCount += tickCount;
               return;
             }
 
             var start = new Date(baseTimestamp);
             var end   = new Date(baseTimestamp + (3600 * 24 * 1000));
-            var cron = later.parse.cron(crontabExpr);
+            var cron = later.parse.cron(cronExpr);
 
             var tickCount = 0
             while (true) {
@@ -1247,32 +1247,32 @@ exports.overview = function(req, res, next) {
               }
             }
 
-            crontab24HTickCountMap[crontabExpr] = tickCount;
-            totalTickCount += tickCount;
+            cronTriggerCountMap[cronExpr] = tickCount;
+            totalTriggerCount += tickCount;
           });
 
           overview.bizMetrics.push({
             title    : 'Cron Job',
             subTitle : 'Triggers Per Second',
-            value    : parseFloat((totalTickCount / (3600 * 24)).toFixed(1)),
+            value    : parseFloat((totalTriggerCount / (3600 * 24)).toFixed(1)),
             isBuiltin: true,
           });
           overview.bizMetrics.push({
             title    : 'Cron Job',
             subTitle : 'Triggers Per Minute',
-            value    : parseFloat((totalTickCount / (60 * 24)).toFixed(1)),
+            value    : parseFloat((totalTriggerCount / (60 * 24)).toFixed(1)),
             isBuiltin: true,
           });
           overview.bizMetrics.push({
             title    : 'Cron Job',
             subTitle : 'Triggers Per Hour',
-            value    : parseFloat((totalTickCount / 24).toFixed(1)),
+            value    : parseFloat((totalTriggerCount / 24).toFixed(1)),
             isBuiltin: true,
           });
           overview.bizMetrics.push({
             title    : 'Cron Job',
             subTitle : 'Triggers Per Day',
-            value    : parseFloat((totalTickCount).toFixed(1)),
+            value    : parseFloat((totalTriggerCount).toFixed(1)),
             isBuiltin: true,
           });
 
