@@ -1186,8 +1186,8 @@ class AutoRun(BaseInternalTask):
             }
             self.cache_db.put_tasks(task_req)
 
-class WorkerQueueLimitCrontabSchedule(BaseInternalTask):
-    name = 'Internal.WorkerQueueLimitCrontabSchedule'
+class UpdateWorkerQueueLimit(BaseInternalTask):
+    name = 'Internal.UpdateWorkerQueueLimit'
 
     def run(self, **kwargs):
         # 上锁

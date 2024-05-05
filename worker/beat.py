@@ -26,8 +26,8 @@ from worker import LOGGER, REDIS, run_background
 
 # 系统定时任务
 from worker.tasks.example import ExampleSuccess
-from worker.tasks.crontab_starter import CrontabStarter
-from worker.tasks.internal import SystemMetric, FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache, WorkerQueueLimitCrontabSchedule
+from worker.tasks.cronjob_starter import CronJobStarter
+from worker.tasks.internal import SystemMetric, FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache, UpdateWorkerQueueLimit
 
 BEAT_MASTER_LOCK_KEY   = None
 BEAT_MASTER_LOCK_VALUE = None
@@ -39,41 +39,41 @@ SYSTEM_CRONTAB = [
     #     'crontab': '*/3 * * * * *',
     # },
     {
-        # 自Crontab 计划启动器
-        'task'   : CrontabStarter,
-        'crontab': CONFIG['_CRONTAB_STARTER'],
+        # Cron 任务启动器
+        'task'   : CronJobStarter,
+        'crontab': CONFIG['_CRON_EXPR_CRONJOB_STARTER'],
     },
     {
         # 系统指标
         'task'   : SystemMetric,
-        'crontab': CONFIG['_CRONTAB_SYSTEM_METRIC'],
+        'crontab': CONFIG['_CRON_EXPR_SYSTEM_METRIC'],
         'delay'  : 5,
     },
     {
         # 缓存数据刷入数据库
         'task'   : FlushDataBuffer,
-        'crontab': CONFIG['_CRONTAB_FLUSH_DATA_BUFFER'],
+        'crontab': CONFIG['_CRON_EXPR_FLUSH_DATA_BUFFER'],
     },
     {
         # 自动清理
         'task'   : AutoClean,
-        'crontab': CONFIG['_CRONTAB_AUTO_CLEAN'],
+        'crontab': CONFIG['_CRON_EXPR_AUTO_CLEAN'],
     },
     {
         # 数据库自动备份
         'task'   : AutoBackupDB,
-        'crontab': CONFIG['_CRONTAB_AUTO_BACKUP_DB'],
+        'crontab': CONFIG['_CRON_EXPR_AUTO_BACKUP_DB'],
     },
     {
         # 重新加载数据 MD5 缓存
         'task'   : ReloadDataMD5Cache,
-        'crontab': CONFIG['_CRONTAB_RELOAD_DATA_MD5_CACHE'],
+        'crontab': CONFIG['_CRON_EXPR_RELOAD_DATA_MD5_CACHE'],
         'kwargs' : { 'lockTime': 15, 'all': True },
     },
     {
         # 针对 Crontab 计划的工作队列长度限制
-        'task'   : WorkerQueueLimitCrontabSchedule,
-        'crontab': CONFIG['_CRONTAB_WORKER_QUEUE_LIMIT_CRONTAB_SCHEDULE'],
+        'task'   : UpdateWorkerQueueLimit,
+        'crontab': CONFIG['_CRON_EXPR_UPDATE_WORKER_QUEUE_LIMIT'],
     },
 ]
 

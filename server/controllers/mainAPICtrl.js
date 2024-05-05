@@ -1705,7 +1705,7 @@ exports.runCrontabScheduleManually = function(req, res, next) {
 
     // 发送任务
     var taskReq = {
-      name  : 'Crontab.ManualStarter',
+      name  : 'CronJob.ManualStarter',
       kwargs: { crontabScheduleId: id },
     }
     res.locals.cacheDB.putTask(taskReq, function(err) {

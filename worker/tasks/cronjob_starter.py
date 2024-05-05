@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 '''
-定时处理任务启动器
-主要根据 Crontab 计划加载任务，然后启动 func_runner
+Cron 任务启动器
+主要根据 Cron 计划加载任务，然后启动 func_runner
 '''
 
 # Built-in Modules
@@ -16,8 +16,8 @@ from worker.tasks import BaseTask
 
 CONFIG = yaml_resources.get('CONFIG')
 
-class CrontabStarter(BaseTask):
-    name = 'Crontab.Starter'
+class CronJobStarter(BaseTask):
+    name = 'CronJob.Starter'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -145,7 +145,7 @@ class CrontabStarter(BaseTask):
 
             LIMIT ?
             '''
-        sql_params = [ next_seq, CONFIG['_CRONTAB_STARTER_FETCH_BULK_COUNT'] ]
+        sql_params = [ next_seq, CONFIG['_CRONJOB_STARTER_FETCH_BULK_COUNT'] ]
         crontab_schedules = self.db.query(sql, sql_params)
 
         # 获取游标
@@ -290,8 +290,8 @@ class CrontabStarter(BaseTask):
             if tasks:
                 self.put_tasks(tasks)
 
-class CrontabManualStarter(CrontabStarter):
-    name = 'Crontab.ManualStarter'
+class CronJobManualStarter(CronJobStarter):
+    name = 'CronJob.ManualStarter'
 
     def get_crontab_schedule(self, crontab_schedule_id):
         sql = '''
