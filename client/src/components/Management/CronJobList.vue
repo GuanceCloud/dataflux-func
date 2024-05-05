@@ -282,7 +282,7 @@ lastSucceeded: '{t}執行成功'
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Status')" width="260">
+          <el-table-column :label="$t('Status')" width="200">
             <template slot-scope="scope">
               <span v-if="scope.row.isDisabled" class="text-bad">
                 <i class="fa fa-fw fa-ban"></i>
@@ -631,7 +631,7 @@ export default {
       });
       if (!apiRes || !apiRes.ok) return;
 
-      this.pauseTimeout = apiRes.data.pauseAllCronJobs.ttl || 0;
+      this.pauseTimeout = apiRes.data.pauseCronJobs.ttl || 0;
     },
   },
   computed: {

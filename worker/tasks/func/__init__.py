@@ -41,8 +41,10 @@ FIX_INTEGRATION_KEY_MAP = {
     #       返回`True`表示登录成功
     #       返回`False`或`Exception('<错误信息>')`表示登录失败
     #   无配置项
-    'signIn': 'signIn',
-    'login' : 'signIn',
+    'signin' : 'signIn',
+    'sign_in': 'signIn',
+    'login'  : 'signIn',
+    'log_in' : 'signIn',
 
     # 自动运行函数
     # 集成为独立定时运行任务（即无需配置的定时任务）
@@ -51,7 +53,27 @@ FIX_INTEGRATION_KEY_MAP = {
     #       cronExpr: 自动运行周期（Cron 表达式）
     #       onSystemLaunch : True/False，是否系统启动后运行
     #       onScriptPublish: True/False，是否脚本发布后运行
-    'autoRun': 'autoRun',
+    'autorun' : 'autoRun',
+    'auto_run': 'autoRun',
+}
+
+FIX_INTEGRATION_CONFIG_KEY_MAP = {
+    # Cron 表达式自动执行
+    'cronexpr' : 'cronExpr',
+    'cron_expr': 'cronExpr',
+    'crontab'  : 'cronExpr',
+
+    # 启动启动时运行
+    'onsystemlaunch'  : 'onSystemLaunch',
+    'on_system_launch': 'onSystemLaunch',
+    'onlaunch'        : 'onSystemLaunch',
+    'on_launch'       : 'onSystemLaunch',
+
+    # 脚本发布后运行
+    'onscriptpublish'  : 'onScriptPublish',
+    'on_script_publish': 'onScriptPublish',
+    'onpublish'        : 'onScriptPublish',
+    'on_publish'       : 'onScriptPublish',
 }
 
 # 连接器对应 Helper 类
@@ -1708,11 +1730,28 @@ class FuncBaseTask(BaseTask):
                 e = InvalidAPIOption('`integration` should be a string or unicode')
                 raise e
 
-            integration = FIX_INTEGRATION_KEY_MAP.get(integration.lower()) or integration
+            integration_lower = integration.lower()
+            if integration_lower not in FIX_INTEGRATION_KEY_MAP:
+                e = InvalidAPIOption(f'Unsupported `integration` value: {integration}')
+                raise e
+
+            integration = FIX_INTEGRATION_KEY_MAP[integration_lower]
 
         # 功能集成配置
         if integration is not None:
-            extra_config['integrationConfig'] = integration_config
+            fixed_integration_config = {}
+
+            integration_config = integration_config or {}
+            for k, v in integration_config.items():
+                k_lower = k.lower()
+                if k_lower not in FIX_INTEGRATION_CONFIG_KEY_MAP:
+                    e = InvalidAPIOption(f'Unsupported `integration_config` name: {k}')
+                    raise e
+
+                fixed_k = FIX_INTEGRATION_CONFIG_KEY_MAP[k_lower]
+                fixed_integration_config[fixed_k] = v
+
+            extra_config['integrationConfig'] = fixed_integration_config
 
         ##################
         # 文档控制类参数 #
