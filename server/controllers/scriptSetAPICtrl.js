@@ -432,8 +432,17 @@ exports.import = function(req, res, next) {
       if (allFileData[CONFIG._SCRIPT_EXPORT_META_FILE]) {
         importData = yaml.load(allFileData[CONFIG._SCRIPT_EXPORT_META_FILE]) || {};
 
+        // 兼容处理
+        importData.syncAPIs  = importData.authLinks;
+        importData.asyncAPIs = importData.batches;
+        importData.cronJobs  = importData.crontabConfigs;
+
+        delete importData.authLinks;
+        delete importData.batches;
+        delete importData.crontabConfigs;
+
       } else {
-        /* 兼容处理 */
+        // 兼容处理
         importData = {};
 
         // 提取脚本数据
@@ -455,13 +464,13 @@ exports.import = function(req, res, next) {
         for (var dataKey in resourceNameMap) {
           var importKey = resourceNameMap[dataKey];
 
-          var data = allFileData[`${importKey}.yaml`];
+          var data = allFileData[`${dataKey}.yaml`];
           if (!data) return;
 
           importData[importKey] = yaml.load(data);
         }
 
-        // 从 NOTE 文件提取备注
+        // NOTE 文件内容提取至 extra.note
         importData.extra      = importData.extra || {};
         importData.extra.note = allFileData[CONFIG._SCRIPT_EXPORT_NOTE_FILE] || null;
       }

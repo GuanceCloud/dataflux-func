@@ -907,14 +907,14 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
     function(asyncCallback) {
       // 插入规则
       var _rules = [
-        { name: 'scriptSets',   table: 'biz_main_script_set' },
-        { name: 'scripts',      table: 'biz_main_script' },
-        { name: 'funcs',        table: 'biz_main_func' },
-        { name: 'connectors',   table: 'biz_main_connector' },
+        { name: 'scriptSets',   table: 'biz_main_script_set'   },
+        { name: 'scripts',      table: 'biz_main_script'       },
+        { name: 'funcs',        table: 'biz_main_func'         },
+        { name: 'connectors',   table: 'biz_main_connector'    },
         { name: 'envVariables', table: 'biz_main_env_variable' },
-        { name: 'syncAPIs',     table: 'biz_main_sync_apis' },
-        { name: 'asyncAPIs',    table: 'biz_main_async_apis' },
-        { name: 'cronJobs',     table: 'biz_main_cron_job' },
+        { name: 'syncAPIs',     table: 'biz_main_sync_api'     },
+        { name: 'asyncAPIs',    table: 'biz_main_async_api'    },
+        { name: 'cronJobs',     table: 'biz_main_cron_job'     },
 
       ];
       async.eachSeries(_rules, function(_rule, eachCallback) {
