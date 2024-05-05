@@ -348,10 +348,10 @@ mainAPI:
       $limitSize   : 10GB
       $allowedTypes: '*/*'
 
-  runCrontabScheduleManually:
+  runCronJobManually:
     showInDoc    : true
-    name         : Run Crontab Schedule manually
-    name_zhCN    : 手动执行一次 Crontab 计划
+    name         : Run Cron Job manually
+    name_zhCN    : 手动执行一次定时任务
     method       : post
     url          : /api/v1/cron/:id
     response     : json
@@ -359,7 +359,7 @@ mainAPI:
     privilege    : general_r
     params:
       id:
-        $desc: Crontab 计划 ID
+        $desc: 定时任务 ID
         $type: string
 
   getFuncList:
@@ -645,8 +645,8 @@ mainAPI:
 
   runCrontabConfigManually:
     showInDoc    : true
-    name         : Run Crontab Config manually - *Use "Crontab Schedule" Instead*
-    name_zhCN    : 手动执行自动触发配置 - *请改用「Crontab 计划」*
+    name         : Run Crontab Config manually - *Use "Cron Job" Instead*
+    name_zhCN    : 手动执行自动触发配置 - *请改用「定时任务」*
     method       : post
     url          : /api/v1/cron/:id
     response     : json
@@ -1809,8 +1809,8 @@ scriptSetAPI:
         $desc     : 是否包含关联的异步 API
         $allowNull: true
         $type     : boolean
-      includeCrontabSchedules:
-        $desc     : 是否包含关联的 Crontab 计划
+      includeCronJobs:
+        $desc     : 是否包含关联的定时任务
         $allowNull: true
         $type     : boolean
       includeAuthLinks:
@@ -1824,7 +1824,7 @@ scriptSetAPI:
         $allowNull   : true
         $type        : boolean
       includeBatches:
-        $desc        : 是否包含关联的批处理 - *请改用`includeCrontabSchedules`*
+        $desc        : 是否包含关联的批处理 - *请改用`includeCronJobs`*
         $isDeprecated: true
         $allowNull   : true
         $type        : boolean
@@ -1889,12 +1889,12 @@ scriptSetAPI:
         $desc: 脚本集 ID
         $type: string
     body:
-      withCrontabSchedule:
-        $desc   : 是否部署 Crontab 计划
+      withCronJob:
+        $desc   : 是否部署定时任务
         $type   : boolean
         $example: true
       withCrontabConfig:
-        $desc        : 是否部署自动触发配置 - *请改用`withCrontabSchedule`*
+        $desc        : 是否部署自动触发配置 - *请改用`withCronJob`*
         $isDeprecated: true
         $type        : boolean
         $example     : true
@@ -2673,12 +2673,12 @@ scriptMarketAPI:
           $desc   : 是否部署启动脚本
           $type   : boolean
           $example: true
-        withCrontabSchedule:
-          $desc   : 是否部署 Crontab 计划
+        withCronJob:
+          $desc   : 是否部署定时任务
           $type   : boolean
           $example: true
         withCrontabConfig:
-          $desc        : 是否部署自动触发配置 - *请改用`withCrontabSchedule`*
+          $desc        : 是否部署自动触发配置 - *请改用`withCronJob`*
           $isDeprecated: true
           $type        : boolean
           $example     : true
@@ -4588,17 +4588,17 @@ asyncAPI:
         $searchType: jsonArrayHasAll
         $searchKey : func.tagsJSON
 
-# Crontab 计划
-crontabScheduleAPI:
-  $tag     : Crontab Schedule
+# 定时任务
+cronJobAPI:
+  $tag     : Cron Job
   $tag_zhCN: 自动触发配置
 
   list:
     showInDoc    : true
-    name         : List Crontab Schedules
+    name         : List Cron Jobs
     name_zhCN    : 列出自动触发配置
     method       : get
-    url          : /api/v1/crontab-schedules/do/list
+    url          : /api/v1/cron-jobs/do/list
     response     : json
     requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : general_r
@@ -4667,10 +4667,10 @@ crontabScheduleAPI:
 
   listRecentTriggered:
     showInDoc    : true
-    name         : List Recent Triggered Time of the Crontab Schedule
+    name         : List Recent Triggered Time of the Cron Job
     name_zhCN    : 列出自动触发配置最近触发时间
     method       : get
-    url          : /api/v1/crontab-schedules/:id/recent-triggered/do/list
+    url          : /api/v1/cron-jobs/:id/recent-triggered/do/list
     response     : json
     requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : general_r
@@ -4681,7 +4681,7 @@ crontabScheduleAPI:
 
   add:
     showInDoc    : true
-    name         : Add Crontab Schedule
+    name         : Add Cron Job
     name_zhCN    : 添加自动触发配置
     descType: markdown
     desc: |
@@ -4693,7 +4693,7 @@ crontabScheduleAPI:
 
       *`scope`最长不得超过255个字符*
     method       : post
-    url          : /api/v1/crontab-schedules/do/add
+    url          : /api/v1/cron-jobs/do/add
     response     : json
     requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : general_w
@@ -4756,10 +4756,10 @@ crontabScheduleAPI:
 
   modify:
     showInDoc    : true
-    name         : Modify Crontab Schedule
+    name         : Modify Cron Job
     name_zhCN    : 修改自动触发配置
     method       : post
-    url          : /api/v1/crontab-schedules/:id/do/modify
+    url          : /api/v1/cron-jobs/:id/do/modify
     response     : json
     requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : general_w
@@ -4821,10 +4821,10 @@ crontabScheduleAPI:
 
   delete:
     showInDoc    : true
-    name         : Delete Crontab Schedule
+    name         : Delete Cron Job
     name_zhCN    : 删除自动触发配置
     method       : get
-    url          : /api/v1/crontab-schedules/:id/do/delete
+    url          : /api/v1/cron-jobs/:id/do/delete
     response     : json
     requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : general_w
@@ -4835,10 +4835,10 @@ crontabScheduleAPI:
 
   addMany:
     showInDoc    : true
-    name         : Add many Crontab Schedules
+    name         : Add many Cron Jobs
     name_zhCN    : 批量添加自动触发配置
     method       : post
-    url          : /api/v1/crontab-schedules/do/add-many
+    url          : /api/v1/cron-jobs/do/add-many
     response     : json
     requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : general_w
@@ -4897,7 +4897,7 @@ crontabScheduleAPI:
 
   modifyMany:
     showInDoc    : true
-    name         : Modify many Crontab Schedules
+    name         : Modify many Cron Jobs
     name_zhCN    : 批量修改自动触发配置
     descType: markdown
     desc: |
@@ -4913,7 +4913,7 @@ crontabScheduleAPI:
       | {"a": 1, "b": 2} | { "b": 9 }               | { "a": 1, "b": 9 } |
 
     method       : post
-    url          : /api/v1/crontab-schedules/do/modify-many
+    url          : /api/v1/cron-jobs/do/modify-many
     response     : json
     requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : general_w
@@ -5005,13 +5005,13 @@ crontabScheduleAPI:
 
   deleteMany:
     showInDoc    : true
-    name         : Delete many Crontab Schedules
+    name         : Delete many Cron Jobs
     name_zhCN    : 批量删除自动触发配置
     descType: markdown
     desc: |
       *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来清空所有数据*
     method       : get
-    url          : /api/v1/crontab-schedules/do/delete-many
+    url          : /api/v1/cron-jobs/do/delete-many
     response     : json
     requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : general_w
@@ -5647,8 +5647,8 @@ authLinkAPI:
 # 兼容处理
 # 自动触发配置
 crontabConfigAPI:
-  $tag     : Contab Config - *Use "Crontab Schedule" Instead*
-  $tag_zhCN: 自动触发配置 - *请改用「Crontab 计划」*
+  $tag     : Contab Config - *Use "Cron Job" Instead*
+  $tag_zhCN: 自动触发配置 - *请改用「定时任务」*
 
   list:
     showInDoc    : true

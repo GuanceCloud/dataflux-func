@@ -40,7 +40,7 @@ def load_file(key, file_path):
 def load_config(config_file_path):
     config_obj = load_file(CONFIG_KEY, config_file_path)
     config_from_env_prefix   = config_obj['CONFIG_FROM_ENV_PREFIX']
-    config_for_custom_prefix = config_obj['CONFIG_FOR_CUSTOM_PREFIX']
+    config_for_custom_prefix = config_obj['CUSTOM_CONFIG_PREFIX']
 
     # Collect config field type map
     config_type_map = {}

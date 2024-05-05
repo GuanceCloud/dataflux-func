@@ -198,7 +198,7 @@ function startApplication() {
 
   require('./routers/syncAPIRouter');
   require('./routers/asyncAPIRouter');
-  require('./routers/crontabScheduleAPIRouter');
+  require('./routers/cronJobAPIRouter');
 
   // 兼容处理
   require('./routers/authLinkAPIRouter');

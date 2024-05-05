@@ -11,14 +11,14 @@ var CONFIG      = require('../utils/yamlResources').get('CONFIG');
 var toolkit     = require('../utils/toolkit');
 var modelHelper = require('../utils/modelHelper');
 
-var funcMod            = require('../models/funcMod');
-var crontabScheduleMod = require('../models/crontabScheduleMod');
+var funcMod    = require('../models/funcMod');
+var cronJobMod = require('../models/cronJobMod');
 
 /* Init */
 var GLOBAL_SCOPE = 'GLOBAL';
 
 /* Handlers */
-var crudHandler = exports.crudHandler = crontabScheduleMod.createCRUDHandler();
+var crudHandler = exports.crudHandler = cronJobMod.createCRUDHandler();
 exports.delete     = crudHandler.createDeleteHandler();
 exports.deleteMany = crudHandler.createDeleteManyHandler();
 
@@ -26,13 +26,13 @@ exports.list = function(req, res, next) {
   var listData     = null;
   var listPageInfo = null;
 
-  var crontabScheduleModel = crontabScheduleMod.createModel(res.locals);
+  var cronJobModel = cronJobMod.createModel(res.locals);
 
   async.series([
     function(asyncCallback) {
       var opt = res.locals.getQueryOptions();
 
-      crontabScheduleModel.list(opt, function(err, dbRes, pageInfo) {
+      cronJobModel.list(opt, function(err, dbRes, pageInfo) {
         if (err) return asyncCallback(err);
 
         listData     = dbRes;
@@ -46,7 +46,7 @@ exports.list = function(req, res, next) {
       if (toolkit.isNothing(listData)) return asyncCallback();
 
       var dataIds = toolkit.arrayElementValues(listData, 'id');
-      var cacheKey = toolkit.getGlobalCacheKey('cache', 'lastTaskStatus', [ 'origin', 'crontabSchedule' ]);
+      var cacheKey = toolkit.getGlobalCacheKey('cache', 'lastTaskStatus', [ 'origin', 'cronJob' ]);
       res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
@@ -67,21 +67,21 @@ exports.list = function(req, res, next) {
       if (toolkit.isNothing(listData)) return asyncCallback();
 
       var dataIds  = toolkit.arrayElementValues(listData, 'id');
-      var cacheKey = toolkit.getGlobalCacheKey('crontabSchedule', 'dynamicCrontab');
+      var cacheKey = toolkit.getGlobalCacheKey('cronJob', 'dynamicCronExpr');
       res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         var now = parseInt(Date.now() / 1000);
         listData.forEach(function(d) {
-          d.dynamicCrontab = null;
+          d.dynamicCronExpr = null;
 
-          var dynamicCrontab = cacheRes[d.id];
-          if (!dynamicCrontab) return;
+          var dynamicCronExpr = cacheRes[d.id];
+          if (!dynamicCronExpr) return;
 
-          dynamicCrontab = JSON.parse(dynamicCrontab);
-          if (dynamicCrontab.expireTime && dynamicCrontab.expireTime < now) return;
+          dynamicCronExpr = JSON.parse(dynamicCronExpr);
+          if (dynamicCronExpr.expireTime && dynamicCronExpr.expireTime < now) return;
 
-          d.dynamicCrontab = dynamicCrontab.value;
+          d.dynamicCronExpr = dynamicCronExpr.value;
         });
 
         return asyncCallback();
@@ -98,7 +98,7 @@ exports.list = function(req, res, next) {
 exports.listRecentTriggered = function(req, res, next) {
   var id = req.params.id;
 
-  var cacheKey = toolkit.getGlobalCacheKey('cache', 'recentTaskTriggered', [ 'origin', 'crontabSchedule' ]);
+  var cacheKey = toolkit.getGlobalCacheKey('cache', 'recentTaskTriggered', [ 'origin', 'cronJob' ]);
   res.locals.cacheDB.hget(cacheKey, id, function(err, cacheRes) {
     if (err) return next(err);
 
@@ -200,7 +200,7 @@ exports.addMany = function(req, res, next) {
 exports.modifyMany = function(req, res, next) {
   var data = req.body.data;
 
-  var crontabScheduleModel = crontabScheduleMod.createModel(res.locals);
+  var cronJobModel = cronJobMod.createModel(res.locals);
 
   var modifiedIds = [];
 
@@ -216,7 +216,7 @@ exports.modifyMany = function(req, res, next) {
       opt.fields = [ 'cron.id' ];
       opt.paging = false;
 
-      crontabScheduleModel.list(opt, function(err, dbRes) {
+      cronJobModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         modifiedIds = toolkit.arrayElementValues(dbRes, 'id');
@@ -254,7 +254,7 @@ function _add(locals, data, callback) {
   data.scope = data.scope || GLOBAL_SCOPE;
 
   var funcModel            = funcMod.createModel(locals);
-  var crontabScheduleModel = crontabScheduleMod.createModel(locals);
+  var cronJobModel = cronJobMod.createModel(locals);
 
   var addedId = null;
 
@@ -265,7 +265,7 @@ function _add(locals, data, callback) {
     },
     // 数据入库
     function(asyncCallback) {
-      crontabScheduleModel.add(data, function(err, _addedId) {
+      cronJobModel.add(data, function(err, _addedId) {
         if (err) return asyncCallback(err);
 
         addedId = _addedId;
@@ -282,10 +282,10 @@ function _add(locals, data, callback) {
 function _modify(locals, id, data, opt, callback) {
   opt = opt || {};
 
-  var funcModel            = funcMod.createModel(locals);
-  var crontabScheduleModel = crontabScheduleMod.createModel(locals);
+  var funcModel    = funcMod.createModel(locals);
+  var cronJobModel = cronJobMod.createModel(locals);
 
-  var crontabSchedule = null;
+  var cronJob = null;
 
   async.series([
     // 获取数据
@@ -296,14 +296,14 @@ function _modify(locals, id, data, opt, callback) {
         'cron.funcCallKwargsJSON',
         'cron.scope',
       ]
-      crontabScheduleModel.getWithCheck(id, fields, function(err, dbRes) {
+      cronJobModel.getWithCheck(id, fields, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        crontabSchedule = dbRes;
+        cronJob = dbRes;
 
         if (opt.funcCallKwargs === 'merge' && toolkit.notNothing(data.funcCallKwargsJSON)) {
           // 合并funcCallKwargsJSON参数
-          var prevFuncCallKwargs = toolkit.jsonCopy(crontabSchedule.funcCallKwargsJSON);
+          var prevFuncCallKwargs = toolkit.jsonCopy(cronJob.funcCallKwargsJSON);
           data.funcCallKwargsJSON = Object.assign(prevFuncCallKwargs, data.funcCallKwargsJSON);
         }
 
@@ -317,7 +317,7 @@ function _modify(locals, id, data, opt, callback) {
       funcModel.getWithCheck(data.funcId, ['func.seq', 'func.extraConfigJSON'], asyncCallback);
     },
     function(asyncCallback) {
-      crontabScheduleModel.modify(id, data, asyncCallback);
+      cronJobModel.modify(id, data, asyncCallback);
     },
   ], function(err) {
     if (err) return callback(err);

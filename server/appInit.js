@@ -381,7 +381,7 @@ exports.afterServe = function(app, server) {
             cmd = 'python';
           }
 
-          var baseURL = CONFIG.GUANCE_FUNC_BASE_URL_FOR_INIT_SCRIPTS;
+          var baseURL = CONFIG.GUANCE_FUNC_BASE_URL;
           if (!baseURL) {
             var webBind = CONFIG.WEB_BIND === '0.0.0.0' ? 'localhost' : CONFIG.WEB_BIND;
             baseURL = `http://${webBind}:${CONFIG.WEB_PORT}`;

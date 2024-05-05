@@ -71,7 +71,7 @@ SYSTEM_CRONTAB = [
         'kwargs' : { 'lockTime': 15, 'all': True },
     },
     {
-        # 针对 Crontab 计划的工作队列长度限制
+        # 针对定时任务的工作队列长度限制
         'task'   : UpdateWorkerQueueLimit,
         'crontab': CONFIG['_CRON_EXPR_UPDATE_WORKER_QUEUE_LIMIT'],
     },

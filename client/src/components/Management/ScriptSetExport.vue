@@ -73,7 +73,7 @@ Related Contents: 關聯內容
             <el-form-item :label="$t('Related Contents')">
               <el-checkbox size="medium" border v-model="form.includeSyncAPIs"><i class="fa fa-fw fa-link"></i> {{ $t('Sync API') }}</el-checkbox>
               <el-checkbox size="medium" border v-model="form.includeAsyncAPIs"><i class="fa fa-fw fa-tasks"></i> {{ $t('Async API') }}</el-checkbox>
-              <el-checkbox size="medium" border v-model="form.includeCrontabSchedules"><i class="fa fa-fw fa-clock-o"></i> {{ $t('Crontab Schedule') }}</el-checkbox>
+              <el-checkbox size="medium" border v-model="form.includeCronJobs"><i class="fa fa-fw fa-clock-o"></i> {{ $t('Cron Job') }}</el-checkbox>
               <InfoBlock :title="$t('Exporting with related contents')" />
             </el-form-item>
 
@@ -321,13 +321,13 @@ export default {
       selectEnvVariableOptions: [],
 
       form: {
-        note                   : '',
-        scriptSetIds           : [],
-        connectorIds           : [],
-        envVariableIds         : [],
-        includeSyncAPIs        : false,
-        includeAsyncAPIs       : false,
-        includeCrontabSchedules: false,
+        note            : '',
+        scriptSetIds    : [],
+        connectorIds    : [],
+        envVariableIds  : [],
+        includeSyncAPIs : false,
+        includeAsyncAPIs: false,
+        includeCronJobs : false,
       },
       formRules: {
         scriptSetIds: [

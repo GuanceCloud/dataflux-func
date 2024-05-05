@@ -77,7 +77,7 @@ en: {}
   Modifying built-in Connector is not allowed, please edit the config instead                             : 不允许修改内置连接器，请修改系统配置
   No such Sync API                                                                                        : 不存在此同步 API
   No such Async API                                                                                       : 不存在此异步 API
-  No such Crontab Schedule                                                                                : 不存在此 Crontab 计划
+  No such Cron Job                                                                                        : 不存在此定时任务
   No such data                                                                                            : 不存在数据
   No such Func                                                                                            : 不存在函数
   No such router. Please make sure that the METHOD is correct and no spelling missing in the URL          : 不存在此路由，请检查 HTTP 请求方法以及 URL 拼写是否正确

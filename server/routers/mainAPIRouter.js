@@ -50,9 +50,9 @@ routeLoader.load(ROUTE.mainAPI.callAsyncAPIByPostWithFormat, [
   mainAPICtrl.callAsyncAPI,
 ]);
 
-// 手动触发一次 Crontab 计划
-routeLoader.load(ROUTE.mainAPI.runCrontabScheduleManually, [
-  mainAPICtrl.runCrontabScheduleManually,
+// 手动触发一次定时任务
+routeLoader.load(ROUTE.mainAPI.runCronJobManually, [
+  mainAPICtrl.runCronJobManually,
 ]);
 
 // 调用函数草稿
@@ -102,7 +102,7 @@ routeLoader.load(ROUTE.mainAPI.callAuthLinkByPostWithFormat, [
 
 // 手动执行一次自动触发配置
 routeLoader.load(ROUTE.mainAPI.runCrontabConfigManually, [
-  mainAPICtrl.runCrontabScheduleManually,
+  mainAPICtrl.runCronJobManually,
 ]);
 
 // 通过批处理调用

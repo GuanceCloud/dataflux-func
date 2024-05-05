@@ -72,8 +72,8 @@ zh-HK:
   Create: 創建
   Create Time: 創建時間
   Created by user manually: 用户手動創建
-  Crontab Schedule: Crontab 計劃
-  Crontab Schedule ID: Crontab 計劃 ID
+  Cron Job: 定時任務
+  Cron Job ID: 定時任務 ID
   DELETE Request: 發送 DELETE 請求
   DIFF: 差異
   Dark Mode: 黑暗模式
@@ -520,8 +520,8 @@ zh-TW:
   Create: 建立
   Create Time: 建立時間
   Created by user manually: 使用者手動建立
-  Crontab Schedule: Crontab 計劃
-  Crontab Schedule ID: Crontab 計劃 ID
+  Cron Job: 定時任務
+  Cron Job ID: 定時任務 ID
   DELETE Request: 傳送 DELETE 請求
   DIFF: 差異
   Dark Mode: 黑暗模式

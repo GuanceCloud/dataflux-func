@@ -4,8 +4,8 @@ import pytest
 
 from . import BaseTestSuit, AssertDesc
 
-class TestSuitCrontabSchedule(BaseTestSuit):
-    API_PATH_ROOT = '/api/v1/crontab-schedules'
+class TestSuitCronJob(BaseTestSuit):
+    API_PATH_ROOT = '/api/v1/cron-jobs'
 
     def setup_class(self):
         self.prepare_func()

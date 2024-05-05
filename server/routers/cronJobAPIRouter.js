@@ -6,35 +6,34 @@ var routeLoader = require('../utils/routeLoader');
 
 var cronJobAPICtrl = require('../controllers/cronJobAPICtrl');
 
-// 兼容处理
-routeLoader.load(ROUTE.crontabConfigAPI.list, [
+routeLoader.load(ROUTE.cronJobAPI.list, [
   cronJobAPICtrl.list,
 ]);
 
-routeLoader.load(ROUTE.crontabConfigAPI.listRecentTriggered, [
+routeLoader.load(ROUTE.cronJobAPI.listRecentTriggered, [
   cronJobAPICtrl.listRecentTriggered,
 ]);
 
-routeLoader.load(ROUTE.crontabConfigAPI.add, [
+routeLoader.load(ROUTE.cronJobAPI.add, [
   cronJobAPICtrl.add,
 ]);
 
-routeLoader.load(ROUTE.crontabConfigAPI.modify, [
+routeLoader.load(ROUTE.cronJobAPI.modify, [
   cronJobAPICtrl.modify,
 ]);
 
-routeLoader.load(ROUTE.crontabConfigAPI.delete, [
+routeLoader.load(ROUTE.cronJobAPI.delete, [
   cronJobAPICtrl.delete,
 ]);
 
-routeLoader.load(ROUTE.crontabConfigAPI.addMany, [
+routeLoader.load(ROUTE.cronJobAPI.addMany, [
   cronJobAPICtrl.addMany,
 ]);
 
-routeLoader.load(ROUTE.crontabConfigAPI.modifyMany, [
+routeLoader.load(ROUTE.cronJobAPI.modifyMany, [
   cronJobAPICtrl.modifyMany,
 ]);
 
-routeLoader.load(ROUTE.crontabConfigAPI.deleteMany, [
+routeLoader.load(ROUTE.cronJobAPI.deleteMany, [
   cronJobAPICtrl.deleteMany,
 ]);

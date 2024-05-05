@@ -37,7 +37,7 @@ var IMPORT_DATA_KEYS_WITH_ORIGIN = [
   'scriptSets',
   'syncAPIs',
   'asyncAPIs',
-  'crontabSchedules',
+  'cronJobs',
 ];
 
 common.IMPORT_EXPORT_DATA_SCHEMA_VERSION = 2;

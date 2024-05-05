@@ -55,9 +55,9 @@ Throttling: 限流
 Created   : 创建
 Run       : 执行
 
-Sync API List        : 同步 API 列表
-Async API List       : 异步 API 列表
-Crontab Schedule List: Crontab 计划列表
+Sync API List : 同步 API 列表
+Async API List: 异步 API 列表
+Cron Job List : 定时任务列表
 
 lastSucceeded : '{t}调用成功'
 lastFailed    : '{t}调用失败'
@@ -67,12 +67,12 @@ failureCount  : '失败 {n}'
 
 Are you sure you want to delete the Script Set?<br><strong class="text-bad">{label}</strong>: 是否确认删除此脚本集?<br><strong class="text-bad">{label}</strong>
 Are you sure you want to delete the Script?<br><strong class="text-bad">{label}</strong>: 是否确认删除此脚本<br><strong class="text-bad">{label}</strong>
-Are you sure you want to run the Crontab Schedule manually?: 是否确认手动执行此 Crontab 计划？
-Crontab Schedule Task sent: Crontab 计划任务已发送
+Are you sure you want to start the Cron Job manually?: 是否确认手动启动此定时任务？
+Cron Job Started Manually: 定时任务已手工启动
 
-Sync, Async APIs and Crontab Schedules: 同步、异步 API 和 Crontab 计划
-Go to Recent Task Record              : 前往最近任务记录
-Go to Script Market                   : 前往脚本市场
+Sync, Async APIs and Cron Jobs: 同步、异步 API 和定时任务
+Go to Recent Task Record      : 前往最近任务记录
+Go to Script Market           : 前往脚本市场
 
 Some Script Sets have been hidden: 一些脚本集已被隐藏
 "In most cases, the Script Sets that users doesn't need to care about are hidden by default.": "大多数情况下，用户不需要关心的脚本集默认会被隐藏。"
@@ -83,7 +83,7 @@ Some Script Sets have been hidden: 一些脚本集已被隐藏
 <i18n locale="zh-HK" lang="yaml">
 Are you sure you want to delete the Script Set?<br><strong class="text-bad">{label}</strong>: 是否確認刪除此腳本集?<br><strong class="text-bad">{label}</strong>
 Are you sure you want to delete the Script?<br><strong class="text-bad">{label}</strong>: 是否確認刪除此腳本<br><strong class="text-bad">{label}</strong>
-Are you sure you want to run the Crontab Schedule manually?: 是否確認手動執行此 Crontab 計劃？
+Are you sure you want to start the Cron Job manually?: 是否確認手動啓動此定時任務？
 'Assigned to queue #{queue}': '指派到隊列 #{queue}'
 Async API List: 異步 API 列表
 Auth: 認證
@@ -92,8 +92,8 @@ Code edited but not published yet: 代碼已修改但尚未發佈
 Config: 配置
 Copy {name} ID: 複製{name} ID
 Created: 創建
-Crontab Schedule List: Crontab 計劃列表
-Crontab Schedule Task sent: Crontab 計劃任務已發送
+Cron Job List: 定時任務列表
+Cron Job Started Manually: 定時任務已手工啓動
 Edited: 已修改
 Example (In Other Script Set): 示例（在其他腳本集中）
 Example (In Same Script Set): 示例（在相同腳本集中）
@@ -132,7 +132,7 @@ Script {id}: 腳本 {id}
 Setup: 配置
 Some Script Sets have been hidden: 一些腳本集已被隱藏
 Sync API List: 同步 API 列表
-Sync, Async APIs and Crontab Schedules: 同步、異步 API 和 Crontab 計劃
+Sync, Async APIs and Cron Jobs: 同步、異步 API 和定時任務
 The Script Market has been removed: 腳本市場已被刪除
 Throttling: 限流
 View: 查看
@@ -146,7 +146,7 @@ successCount: 成功 {n}
 <i18n locale="zh-TW" lang="yaml">
 Are you sure you want to delete the Script Set?<br><strong class="text-bad">{label}</strong>: 是否確認刪除此指令碼集?<br><strong class="text-bad">{label}</strong>
 Are you sure you want to delete the Script?<br><strong class="text-bad">{label}</strong>: 是否確認刪除此指令碼<br><strong class="text-bad">{label}</strong>
-Are you sure you want to run the Crontab Schedule manually?: 是否確認手動執行此 Crontab 計劃？
+Are you sure you want to start the Cron Job manually?: 是否確認手動啟動此定時任務？
 'Assigned to queue #{queue}': '指派到佇列 #{queue}'
 Async API List: 非同步 API 列表
 Auth: 認證
@@ -155,8 +155,8 @@ Code edited but not published yet: 程式碼已修改但尚未釋出
 Config: 配置
 Copy {name} ID: 複製{name} ID
 Created: 建立
-Crontab Schedule List: Crontab 計劃列表
-Crontab Schedule Task sent: Crontab 計劃任務已傳送
+Cron Job List: 定時任務列表
+Cron Job Started Manually: 定時任務已手工啟動
 Edited: 已修改
 Example (In Other Script Set): 示例（在其他指令碼集中）
 Example (In Same Script Set): 示例（在相同指令碼集中）
@@ -195,7 +195,7 @@ Script {id}: 指令碼 {id}
 Setup: 配置
 Some Script Sets have been hidden: 一些指令碼集已被隱藏
 Sync API List: 同步 API 列表
-Sync, Async APIs and Crontab Schedules: 同步、非同步 API 和 Crontab 計劃
+Sync, Async APIs and Cron Jobs: 同步、非同步 API 和定時任務
 The Script Market has been removed: 指令碼市場已被刪除
 Throttling: 限流
 View: 檢視
@@ -448,11 +448,11 @@ successCount: 成功 {n}
 
             <!-- 关联信息 -->
             <div class="goto-links">
-              <!-- 同步、异步 API 和 Crontab 计划 -->
+              <!-- 同步、异步 API 和定时任务 -->
               <el-link v-if="data.type === 'func'"
                 @click="openRelEntity(node, data, 'syncAPI')">
                 <i class="fa fa-fw fa-window-restore"></i>
-                {{ $t('Sync, Async APIs and Crontab Schedules') }}
+                {{ $t('Sync, Async APIs and Cron Jobs') }}
               </el-link>
 
               <!-- 前往任务记录 -->
@@ -660,14 +660,14 @@ successCount: 成功 {n}
           </transition>
         </el-tab-pane>
 
-        <el-tab-pane name="crontabSchedule">
-          <span slot="label"><i class="fa fa-fw fa-clock-o"></i> {{ $t('Crontab Schedule') }}</span>
+        <el-tab-pane name="cronJob">
+          <span slot="label"><i class="fa fa-fw fa-clock-o"></i> {{ $t('Cron Job') }}</span>
 
           <transition name="fade">
           <el-table
             class="common-table" v-if="showRelEntityData"
-            :data="relEntities.crontabSchedules">
-            <el-table-column :label="$t('Crontab Schedule')">
+            :data="relEntities.cronJobs">
+            <el-table-column :label="$t('Cron Job')">
               <template slot-scope="scope">
                 <span class="text-info">ID</span>
                 &nbsp;<code class="text-main">{{ scope.row.id }}</code>
@@ -733,7 +733,7 @@ successCount: 成功 {n}
             <el-table-column align="right" width="180">
               <template slot="header" slot-scope="scope">
                 <el-link type="primary" @click="$router.push({name: 'cronta-schedule-list'})">
-                  {{ $t('Crontab Schedule List') }}
+                  {{ $t('Cron Job List') }}
                   <i class="fa fa-fw fa-share-square"></i>
                 </el-link>
               </template>
@@ -1425,10 +1425,10 @@ export default {
         this.relEntities.asyncAPIs = apiRes.data;
       }
 
-      // 加载 Crontab 计划列表
-      apiRes = await this.T.callAPI_get('/api/v1/crontab-schedules/do/list', listOpt);
+      // 加载定时任务列表
+      apiRes = await this.T.callAPI_get('/api/v1/cron-jobs/do/list', listOpt);
       if (apiRes.ok) {
-        this.relEntities.crontabSchedules = apiRes.data;
+        this.relEntities.cronJobs = apiRes.data;
       }
     },
     async openRelEntity(node, data, target) {
@@ -1463,11 +1463,11 @@ export default {
       this.$refs.apiExampleDialog.update(apiURL, apiBody, funcKwargs);
     },
     async runCrontabTask(d) {
-      if (!await this.T.confirm(this.$t('Are you sure you want to run the Crontab Schedule manually?'))) return;
+      if (!await this.T.confirm(this.$t('Are you sure you want to start the Cron Job manually?'))) return;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/cron/:id', {
         params: { id: d.id },
-        alert : { okMessage: this.$t('Crontab Schedule Task sent') },
+        alert : { okMessage: this.$t('Cron Job Started Manually') },
       });
     },
   },
@@ -1508,9 +1508,9 @@ export default {
       relEntityTarget  : '',
       relEntityFunc    : {},
       relEntities: {
-        syncAPIs        : [],
-        asyncAPIs       : [],
-        crontabSchedules: [],
+        syncAPIs : [],
+        asyncAPIs: [],
+        cronJobs : [],
       },
     };
   },

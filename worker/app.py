@@ -39,7 +39,7 @@ TASK_CLS_MAP = {
     ExampleFailure.name: ExampleFailure,
     ExampleTimeout.name: ExampleTimeout,
 
-    # Crontab 计划任务
+    # 定时任务任务
     CronJobStarter.name      : CronJobStarter,
     CronJobManualStarter.name: CronJobManualStarter,
 

@@ -420,13 +420,13 @@ EntityModel.prototype.getExportData = function(options, callback) {
   var self = this;
 
   options = options || {};
-  var scriptSetIds            = options.scriptSetIds;
-  var connectorIds            = options.connectorIds;
-  var envVariableIds          = options.envVariableIds;
-  var includeSyncAPIs         = toolkit.toBoolean(options.includeSyncAPIs);
-  var includeAsyncAPIs        = toolkit.toBoolean(options.includeAsyncAPIs);
-  var includeCrontabSchedules = toolkit.toBoolean(options.includeCrontabSchedules);
-  var withCodeDraft           = toolkit.toBoolean(options.withCodeDraft);
+  var scriptSetIds     = options.scriptSetIds;
+  var connectorIds     = options.connectorIds;
+  var envVariableIds   = options.envVariableIds;
+  var includeSyncAPIs  = toolkit.toBoolean(options.includeSyncAPIs);
+  var includeAsyncAPIs = toolkit.toBoolean(options.includeAsyncAPIs);
+  var includeCronJobs  = toolkit.toBoolean(options.includeCronJobs);
+  var withCodeDraft    = toolkit.toBoolean(options.withCodeDraft);
 
   var exportUser = common.getExportUser(self.locals);
   var exportTime = toolkit.getISO8601();
@@ -451,9 +451,9 @@ EntityModel.prototype.getExportData = function(options, callback) {
   if (toolkit.notNothing(envVariableIds)) exportData.envVariables = [];
 
   // 脚本集相关数据
-  if (includeSyncAPIs)         exportData.syncAPIs           = [];
-  if (includeAsyncAPIs)        exportData.asyncAPIs          = [];
-  if (includeCrontabSchedules) exportData.crontabSchedules = [];
+  if (includeSyncAPIs)  exportData.syncAPIs  = [];
+  if (includeAsyncAPIs) exportData.asyncAPIs = [];
+  if (includeCronJobs)  exportData.cronJobs  = [];
 
   async.series([
     // 获取脚本集
@@ -749,10 +749,10 @@ EntityModel.prototype.getExportData = function(options, callback) {
         return asyncCallback();
       });
     },
-    // 获取 Crontab 计划
+    // 获取定时任务
     function(asyncCallback) {
       if (toolkit.isNothing(scriptSetIds)) return asyncCallback();
-      if (!includeCrontabSchedules) return asyncCallback();
+      if (!includeCronJobs) return asyncCallback();
 
       var sql = toolkit.createStringBuilder();
       sql.append('SELECT');
@@ -768,7 +768,7 @@ EntityModel.prototype.getExportData = function(options, callback) {
       sql.append('  ,cron.isDisabled');
       sql.append('  ,cron.note');
 
-      sql.append('FROM biz_main_crontab_schedule AS cron')
+      sql.append('FROM biz_main_cron_job AS cron')
 
       sql.append('LEFT JOIN biz_main_func AS func');
       sql.append('  ON func.id = cron.funcId');
@@ -786,7 +786,7 @@ EntityModel.prototype.getExportData = function(options, callback) {
       self.db.query(sql, sqlParams, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        exportData.crontabSchedules = dbRes;
+        exportData.cronJobs = dbRes;
 
         return asyncCallback();
       });
@@ -811,7 +811,7 @@ EntityModel.prototype.getExportData = function(options, callback) {
 
     // 兼容处理
     exportData.authLinks      = exportData.syncAPIs;
-    exportData.crontabConfigs = exportData.crontabSchedules;
+    exportData.crontabConfigs = exportData.cronJobs;
     exportData.batches        = exportData.asyncAPIs;
 
     return callback(null, exportData);
@@ -830,12 +830,12 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
   var scriptRecoverPointModel     = scriptRecoverPointMod.createModel(self.locals);
   var scriptSetImportHistoryModel = scriptSetImportHistoryMod.createModel(self.locals);
 
-  var scriptSetIds       = toolkit.arrayElementValues(importData.scriptSets       || [], 'id');
-  var connectorIds       = toolkit.arrayElementValues(importData.connectors       || [], 'id');
-  var envVariableIds     = toolkit.arrayElementValues(importData.envVariables     || [], 'id');
-  var syncAPIIds         = toolkit.arrayElementValues(importData.syncAPIs         || [], 'id');
-  var asyncAPIIds        = toolkit.arrayElementValues(importData.asyncAPIs        || [], 'id');
-  var crontabScheduleIds = toolkit.arrayElementValues(importData.crontabSchedules || [], 'id');
+  var scriptSetIds   = toolkit.arrayElementValues(importData.scriptSets   || [], 'id');
+  var connectorIds   = toolkit.arrayElementValues(importData.connectors   || [], 'id');
+  var envVariableIds = toolkit.arrayElementValues(importData.envVariables || [], 'id');
+  var syncAPIIds     = toolkit.arrayElementValues(importData.syncAPIs     || [], 'id');
+  var asyncAPIIds    = toolkit.arrayElementValues(importData.asyncAPIs    || [], 'id');
+  var cronJobIds     = toolkit.arrayElementValues(importData.cronJobs     || [], 'id');
 
   var transScope = modelHelper.createTransScope(self.db);
   async.series([
@@ -879,7 +879,7 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
         }, asyncCallback);
       }
     },
-    // 删除所有涉及的连接器、环境变量、同步 API、异步 API、Crontab 计划
+    // 删除所有涉及的连接器、环境变量、同步 API、异步 API、定时任务
     function(asyncCallback) {
       if (toolkit.isNothing(syncAPIIds)) return asyncCallback();
 
@@ -889,11 +889,11 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
       sql.append('   id IN (?)');
 
       var deleteTargets = [
-        { table: 'biz_main_connector',        ids: connectorIds },
-        { table: 'biz_main_env_variable',     ids: envVariableIds },
-        { table: 'biz_main_sync_api',         ids: syncAPIIds },
-        { table: 'biz_main_async_api',        ids: asyncAPIIds },
-        { table: 'biz_main_crontab_schedule', ids: crontabScheduleIds },
+        { table: 'biz_main_connector',    ids: connectorIds },
+        { table: 'biz_main_env_variable', ids: envVariableIds },
+        { table: 'biz_main_sync_api',     ids: syncAPIIds },
+        { table: 'biz_main_async_api',    ids: asyncAPIIds },
+        { table: 'biz_main_cron_job',     ids: cronJobIds },
       ];
       async.eachSeries(deleteTargets, function(t, eachCallback) {
         if (toolkit.isNothing(t.ids)) return eachCallback();
@@ -907,14 +907,14 @@ EntityModel.prototype.import = function(importData, recoverPoint, callback) {
     function(asyncCallback) {
       // 插入规则
       var _rules = [
-        { name: 'scriptSets',       table: 'biz_main_script_set' },
-        { name: 'scripts',          table: 'biz_main_script' },
-        { name: 'funcs',            table: 'biz_main_func' },
-        { name: 'connectors',       table: 'biz_main_connector' },
-        { name: 'envVariables',     table: 'biz_main_env_variable' },
-        { name: 'syncAPIs',         table: 'biz_main_sync_apis' },
-        { name: 'asyncAPIs',        table: 'biz_main_async_apis' },
-        { name: 'crontabSchedules', table: 'biz_main_crontab_schedule' },
+        { name: 'scriptSets',   table: 'biz_main_script_set' },
+        { name: 'scripts',      table: 'biz_main_script' },
+        { name: 'funcs',        table: 'biz_main_func' },
+        { name: 'connectors',   table: 'biz_main_connector' },
+        { name: 'envVariables', table: 'biz_main_env_variable' },
+        { name: 'syncAPIs',     table: 'biz_main_sync_apis' },
+        { name: 'asyncAPIs',    table: 'biz_main_async_apis' },
+        { name: 'cronJobs',     table: 'biz_main_cron_job' },
 
       ];
       async.eachSeries(_rules, function(_rule, eachCallback) {

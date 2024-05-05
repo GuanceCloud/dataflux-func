@@ -289,7 +289,7 @@ codeExample: "# 匯出函式為 HTTP API 介面\n@DFF.API('API 名稱')\ndef hel
                   <td>{{ $t('Allow Python functions be called as asynchronous HTTP APIs') }}</td>
                 </tr>
                 <tr>
-                  <td><i class="fa fa-fw fa-clock-o"></i> {{ $t('Crontab Schedule') }}</td>
+                  <td><i class="fa fa-fw fa-clock-o"></i> {{ $t('Cron Job') }}</td>
                   <td><i class="fa fa-fw fa-long-arrow-right"></i></td>
                   <td>{{ $t('Calling Python functions at regular intervals') }}</td>
                 </tr>

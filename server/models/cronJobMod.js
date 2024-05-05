@@ -14,9 +14,9 @@ var modelHelper = require('../utils/modelHelper');
 
 /* Init */
 var TABLE_OPTIONS = exports.TABLE_OPTIONS = {
-  displayName: 'crontab schedule',
-  entityName : 'crontabSchedule',
-  tableName  : 'biz_main_crontab_schedule',
+  displayName: 'cron job',
+  entityName : 'cronJob',
+  tableName  : 'biz_main_cron_job',
   alias      : 'cron',
 
   objectFields: {
@@ -68,7 +68,7 @@ EntityModel.prototype.list = function(options, callback) {
   sql.append('  ,sset.title       AS sset_title');
   sql.append('  ,sset.description AS sset_description');
 
-  sql.append('FROM biz_main_crontab_schedule AS cron');
+  sql.append('FROM biz_main_cron_job AS cron');
 
   sql.append('LEFT JOIN biz_main_func AS func');
   sql.append('  ON func.id = cron.funcId');

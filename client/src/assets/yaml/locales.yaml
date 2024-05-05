@@ -360,7 +360,7 @@ en:
   API Auth                 : API 认证
   Sync API                 : 同步 API
   Async API                : 异步 API
-  Crontab Schedule         : Crontab 计划
+  Cron Job                 : 定时任务
   Script Set Export        : 脚本集导出
   Script Set Import        : 脚本集导入
   Script Set Export History: 脚本集导出历史
@@ -385,17 +385,17 @@ en:
   System Logs              : 系统日志
   Abnormal Requests        : 异常请求
 
-  Script Set ID      : 脚本集 ID
-  Script ID          : 脚本 ID
-  Func ID            : 函数 ID
-  Connector ID       : 连接器 ID
-  ENV ID             : 环境变量 ID
-  Sync API ID        : 同步 API  ID
-  Async API ID       : 异步 API ID
-  Crontab Schedule ID: Crontab 计划 ID
-  File Service ID    : 文件服务 ID
-  User ID            : 用户 ID
-  Blueprint ID       : 蓝图 ID
+  Script Set ID  : 脚本集 ID
+  Script ID      : 脚本 ID
+  Func ID        : 函数 ID
+  Connector ID   : 连接器 ID
+  ENV ID         : 环境变量 ID
+  Sync API ID    : 同步 API  ID
+  Async API ID   : 异步 API ID
+  Cron Job ID    : 定时任务 ID
+  File Service ID: 文件服务 ID
+  User ID        : 用户 ID
+  Blueprint ID   : 蓝图 ID
 
   # const.js - ENV_VARIABLE
   'String'                                                     : '字符串'

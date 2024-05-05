@@ -830,7 +830,7 @@ upgradeInfo:
         KEY `ORIGIN_ID` (`originId`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='异步 API';
 
-      CREATE TABLE `biz_main_crontab_schedule` (
+      CREATE TABLE `biz_main_cron_job` (
         `seq` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
         `id` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
         `funcId` varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT '函数ID',
@@ -853,7 +853,7 @@ upgradeInfo:
         UNIQUE KEY `SCOPE_CONFIG` (`scope`,`configMD5`),
         KEY `ORIGIN` (`origin`),
         KEY `ORIGIN_ID` (`originId`)
-      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Crontab 计划';
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='定时任务';
 
       -- 复制数据
       INSERT INTO biz_main_sync_api
@@ -894,7 +894,7 @@ upgradeInfo:
           `updateTime`
         FROM biz_main_batch;
 
-      INSERT INTO biz_main_crontab_schedule
+      INSERT INTO biz_main_cron_job
         SELECT
           NULL,
           `id`,

@@ -110,9 +110,9 @@ const routes = [
       },
 
       {
-        path: 'crontab-schedule-list',
-        name: 'crontab-schedule-list',
-        component: () => import('../components/Management/CrontabScheduleList.vue'),
+        path: 'cron-job-list',
+        name: 'cron-job-list',
+        component: () => import('../components/Management/CronJobList.vue'),
       },
 
       {

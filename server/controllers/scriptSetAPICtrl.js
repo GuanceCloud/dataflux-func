@@ -24,7 +24,7 @@ var connectorMod              = require('../models/connectorMod');
 var envVariableMod            = require('../models/envVariableMod');
 var syncAPIMod                = require('../models/syncAPIMod');
 var asyncAPIMod               = require('../models/asyncAPIMod');
-var crontabScheduleMod        = require('../models/crontabScheduleMod');
+var cronJobMod                = require('../models/cronJobMod');
 var scriptSetExportHistoryMod = require('../models/scriptSetExportHistoryMod');
 
 var mainAPICtrl = require('./mainAPICtrl');
@@ -282,9 +282,9 @@ exports.export = function(req, res, next) {
   var opt = req.body || {};
 
   // 兼容处理
-  opt.includeSyncAPIs         = opt.includeSyncAPIs         || opt.includeAuthLinks;
-  opt.includeAsyncAPIs        = opt.includeAsyncAPIs        || opt.includeBatches;
-  opt.includeCrontabSchedules = opt.includeCrontabSchedules || opt.includeCrontabConfigs;
+  opt.includeSyncAPIs  = opt.includeSyncAPIs  || opt.includeAuthLinks;
+  opt.includeAsyncAPIs = opt.includeAsyncAPIs || opt.includeBatches;
+  opt.includeCronJobs  = opt.includeCronJobs  || opt.includeCrontabConfigs;
 
   var scriptSetModel              = scriptSetMod.createModel(res.locals);
   var scriptSetExportHistoryModel = scriptSetExportHistoryMod.createModel(res.locals);
@@ -374,12 +374,12 @@ exports.import = function(req, res, next) {
   var checkOnly  = toolkit.toBoolean(req.body.checkOnly);
   var setBuiltin = toolkit.toBoolean(req.body.setBuiltin);
 
-  var scriptSetModel       = scriptSetMod.createModel(res.locals);
-  var connectorModel       = connectorMod.createModel(res.locals);
-  var envVariableModel     = envVariableMod.createModel(res.locals);
-  var syncAPIModel         = syncAPIMod.createModel(res.locals);
-  var asyncAPIModel        = asyncAPIMod.createModel(res.locals);
-  var crontabScheduleModel = crontabScheduleMod.createModel(res.locals);
+  var scriptSetModel   = scriptSetMod.createModel(res.locals);
+  var connectorModel   = connectorMod.createModel(res.locals);
+  var envVariableModel = envVariableMod.createModel(res.locals);
+  var syncAPIModel     = syncAPIMod.createModel(res.locals);
+  var asyncAPIModel    = asyncAPIMod.createModel(res.locals);
+  var cronJobModel     = cronJobMod.createModel(res.locals);
 
   var requirements = {};
   var confirmId    = toolkit.genDataId('import');
@@ -441,15 +441,15 @@ exports.import = function(req, res, next) {
 
         // 提取其他信息
         var resourceNameMap = {
-          'connectors'      : 'connectors',
-          'envVariables'    : 'envVariables',
-          'syncAPIs'        : 'syncAPIs',
-          'asyncAPIs'       : 'asyncAPIs',
-          'crontabSchedules': 'crontabSchedules',
+          'connectors'  : 'connectors',
+          'envVariables': 'envVariables',
+          'syncAPIs'    : 'syncAPIs',
+          'asyncAPIs'   : 'asyncAPIs',
+          'cronJobs'    : 'cronJobs',
 
           // 兼容处理
           'authLinks'     : 'syncAPIs',
-          'crontabConfigs': 'crontabSchedules',
+          'crontabConfigs': 'cronJobs',
           'batches'       : 'asyncAPIs',
         };
         for (var dataKey in resourceNameMap) {
@@ -521,7 +521,7 @@ exports.import = function(req, res, next) {
         { key: 'envVariables',     model: envVariableModel,     fields: [ 'id', 'title' ] },
         { key: 'syncAPIs',         model: syncAPIModel,         fields: [ 'id', 'funcId' ] },
         { key: 'asyncAPIs',        model: asyncAPIModel,        fields: [ 'id', 'funcId' ] },
-        { key: 'crontabSchedules', model: crontabScheduleModel, fields: [ 'id', 'funcId' ] },
+        { key: 'cronJobs',         model: cronJobModel,         fields: [ 'id', 'funcId' ] },
       ]
       async.eachSeries(currentDataOpts, function(dataOpt, eachCallback) {
         var opt = {
@@ -625,21 +625,21 @@ exports.deploy = function(req, res, next) {
   var scriptSetId = req.params.id;
 
   var opt = {
-    startupScriptTitle  : req.body.startupScriptTitle  || null,
-    withCrontabSchedule : req.body.withCrontabSchedule || false,
-    configReplacer      : req.body.configReplacer      || {},
+    startupScriptTitle: req.body.startupScriptTitle || null,
+    withCronJob       : req.body.withCronJob        || false,
+    configReplacer    : req.body.configReplacer     || {},
   }
 
   // 兼容处理
-  opt.withCrontabSchedule = opt.withCrontabSchedule || req.body.withCrontabConfig || false;
+  opt.withCronJob = opt.withCronJob || req.body.withCrontabConfig || false;
 
-  doDeploy(res.locals, scriptSetId, opt, function(err, startupScriptId, startupCrontabId, startupScriptCrontabScheduleFunc) {
+  doDeploy(res.locals, scriptSetId, opt, function(err, startupScriptId, startupCrontabId, startupScriptCronJobFunc) {
     if (err) return next(err);
 
     var ret = toolkit.initRet({
-      startupScriptId                 : startupScriptId,
-      startupCrontabId                : startupCrontabId,
-      startupScriptCrontabScheduleFunc: startupScriptCrontabScheduleFunc,
+      startupScriptId         : startupScriptId,
+      startupCrontabId        : startupCrontabId,
+      startupScriptCronJobFunc: startupScriptCronJobFunc,
     });
     return res.locals.sendJSON(ret);
   });
@@ -655,19 +655,19 @@ function reloadDataMD5Cache(locals, callback) {
 
 function doDeploy(locals, scriptSetId, options, callback) {
   options = options || {};
-  options.startupScriptTitle  = options.startupScriptTitle  || null;
-  options.withCrontabSchedule = options.withCrontabSchedule || false;
-  options.configReplacer      = options.configReplacer      || {};
+  options.startupScriptTitle = options.startupScriptTitle || null;
+  options.withCronJob        = options.withCronJob        || false;
+  options.configReplacer     = options.configReplacer     || {};
 
   var startupScriptId = `${CONFIG._STARTUP_SCRIPT_SET_ID}__${scriptSetId}`;
 
-  var startupScriptCrontabScheduleFunc = null;
-  var startupCrontabScheduleId         = null;
+  var startupScriptCronJobFunc = null;
+  var startupCronJobId         = null;
 
-  var scriptSetModel       = scriptSetMod.createModel(locals);
-  var scriptModel          = scriptMod.createModel(locals);
-  var funcModel            = funcMod.createModel(locals);
-  var crontabScheduleModel = crontabScheduleMod.createModel(locals);
+  var scriptSetModel = scriptSetMod.createModel(locals);
+  var scriptModel    = scriptMod.createModel(locals);
+  var funcModel      = funcMod.createModel(locals);
+  var cronJobModel   = cronJobMod.createModel(locals);
 
   var exampleScript = null;
   var nextAPIFuncs  = null;
@@ -765,53 +765,53 @@ function doDeploy(locals, scriptSetId, options, callback) {
 
       funcModel.update(startupScriptId, nextAPIFuncs, asyncCallback);
     },
-    // 检查 Crontab 计划存在性 / 创建 Crontab 计划
+    // 检查定时任务存在性 / 创建定时任务
     function(asyncCallback) {
-      if (!options.withCrontabSchedule) return asyncCallback();
+      if (!options.withCronJob) return asyncCallback();
       if (toolkit.isNothing(nextAPIFuncs)) return asyncCallback();
 
       for (var i = 0; i < nextAPIFuncs.length; i++) {
         var apiFunc = nextAPIFuncs[i];
         if (apiFunc.extraConfig && apiFunc.extraConfig.fixedCrontab) {
-          startupScriptCrontabScheduleFunc = apiFunc;
+          startupScriptCronJobFunc = apiFunc;
           break;
         }
       }
 
-      // 没有可用于配置 Crontab 计划的函数，忽略
-      if (!startupScriptCrontabScheduleFunc) return asyncCallback();
+      // 没有可用于配置定时任务的函数，忽略
+      if (!startupScriptCronJobFunc) return asyncCallback();
 
-      var crontabFuncId = `${startupScriptId}.${startupScriptCrontabScheduleFunc.name}`;
+      var crontabFuncId = `${startupScriptId}.${startupScriptCronJobFunc.name}`;
 
-      // 检查 Crontab 计划存在性
+      // 检查定时任务存在性
       var opt = {
         fields : [ 'cron.id' ],
         filters: {
           funcId: { eq: crontabFuncId }
         }
       }
-      crontabScheduleModel.list(opt, function(err, dbRes) {
+      cronJobModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         // 已经存在，忽略
         if (dbRes.length > 0) {
-          startupCrontabScheduleId = dbRes[0].id;
+          startupCronJobId = dbRes[0].id;
           return asyncCallback();
         }
 
         // 尚不存在，立即创建
-        startupCrontabScheduleId = `${CONFIG._STARTUP_CRONTAB_SCHEDULE_ID_PREFIX}-${scriptSetId}`;
+        startupCronJobId = `${CONFIG._STARTUP_CRONTAB_SCHEDULE_ID_PREFIX}-${scriptSetId}`;
         var _data = {
-          id                : startupCrontabScheduleId,
+          id                : startupCronJobId,
           funcId            : crontabFuncId,
           funcCallKwargsJSON: {},
         }
-        return crontabScheduleModel.add(_data, asyncCallback);
+        return cronJobModel.add(_data, asyncCallback);
       });
     },
   ], function(err) {
     if (err) return callback(err);
-    callback(null, startupScriptId, startupCrontabScheduleId, startupScriptCrontabScheduleFunc);
+    callback(null, startupScriptId, startupCronJobId, startupScriptCronJobFunc);
 
     // 刷新数据 MD5 缓存
     reloadDataMD5Cache(locals);

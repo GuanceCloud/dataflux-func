@@ -28,7 +28,7 @@ var envVariableMod     = require('../models/envVariableMod');
 var apiAuthMod         = require('../models/apiAuthMod');
 var syncAPIMod         = require('../models/syncAPIMod');
 var asyncAPIMod        = require('../models/asyncAPIMod');
-var crontabScheduleMod = require('../models/crontabScheduleMod');
+var cronJobMod         = require('../models/cronJobMod');
 var operationRecordMod = require('../models/operationRecordMod');
 var fileServiceMod     = require('../models/fileServiceMod');
 var userMod            = require('../models/userMod');
@@ -962,16 +962,16 @@ exports.overview = function(req, res, next) {
     })
   }
 
-  var scriptSetModel       = scriptSetMod.createModel(res.locals);
-  var scriptModel          = scriptMod.createModel(res.locals);
-  var funcModel            = funcMod.createModel(res.locals);
-  var connectorModel       = connectorMod.createModel(res.locals);
-  var envVariableModel     = envVariableMod.createModel(res.locals);
-  var syncAPIModel         = syncAPIMod.createModel(res.locals);
-  var crontabScheduleModel = crontabScheduleMod.createModel(res.locals);
-  var asyncAPIModel        = asyncAPIMod.createModel(res.locals);
-  var fileServiceModel     = fileServiceMod.createModel(res.locals);
-  var userModel            = userMod.createModel(res.locals);
+  var scriptSetModel   = scriptSetMod.createModel(res.locals);
+  var scriptModel      = scriptMod.createModel(res.locals);
+  var funcModel        = funcMod.createModel(res.locals);
+  var connectorModel   = connectorMod.createModel(res.locals);
+  var envVariableModel = envVariableMod.createModel(res.locals);
+  var syncAPIModel     = syncAPIMod.createModel(res.locals);
+  var cronJobModel     = cronJobMod.createModel(res.locals);
+  var asyncAPIModel    = asyncAPIMod.createModel(res.locals);
+  var fileServiceModel = fileServiceMod.createModel(res.locals);
+  var userModel        = userMod.createModel(res.locals);
 
   var bizEntityMeta = [
     { name : 'scriptSet',       model: scriptSetModel       },
@@ -981,7 +981,7 @@ exports.overview = function(req, res, next) {
     { name : 'envVariable',     model: envVariableModel     },
     { name : 'syncAPI',         model: syncAPIModel         },
     { name : 'asyncAPI',        model: asyncAPIModel        },
-    { name : 'crontabSchedule', model: crontabScheduleModel },
+    { name : 'cronJob',         model: cronJobModel         },
     { name : 'fileService',     model: fileServiceModel     },
     { name : 'user',            model: userModel            },
   ];
@@ -1146,7 +1146,7 @@ exports.overview = function(req, res, next) {
     function(asyncCallback) {
       if (sectionMap && !sectionMap.queueInfo) return asyncCallback();
 
-      var cacheKey = toolkit.getGlobalCacheKey('cache', 'workerQueueLimitCrontabSchedule');
+      var cacheKey = toolkit.getGlobalCacheKey('cache', 'workerQueueLimitCronJob');
       res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
@@ -1164,9 +1164,9 @@ exports.overview = function(req, res, next) {
     function(asyncCallback) {
       if (sectionMap && !sectionMap.bizMetrics) return asyncCallback();
 
-      var crontabSchedules = [];
+      var cronJobs = [];
       async.series([
-        // 查询所有 Crontab 计划
+        // 查询所有定时任务
         function(innerCallback) {
           var opt = {
             fields : [
@@ -1179,26 +1179,26 @@ exports.overview = function(req, res, next) {
               'func.id'        : { isnotnull: true },
             },
           }
-          crontabScheduleModel.list(opt, function(err, dbRes) {
+          cronJobModel.list(opt, function(err, dbRes) {
             if (err) return innerCallback(err);
 
-            crontabSchedules = dbRes;
+            cronJobs = dbRes;
 
             return innerCallback();
           });
         },
         // 追加临时 Crontab 配置
         function(innerCallback) {
-          if (toolkit.isNothing(crontabSchedules)) return innerCallback();
+          if (toolkit.isNothing(cronJobs)) return innerCallback();
 
-          var dataIds  = toolkit.arrayElementValues(crontabSchedules, 'id');
-          var cacheKey = toolkit.getGlobalCacheKey('crontabSchedule', 'dynamicCrontab');
+          var dataIds  = toolkit.arrayElementValues(cronJobs, 'id');
+          var cacheKey = toolkit.getGlobalCacheKey('cronJob', 'dynamicCronExpr');
           res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
             if (err) return innerCallback(err);
 
             var now = parseInt(Date.now() / 1000);
-            crontabSchedules.forEach(function(d) {
-              d.dynamicCrontab = null;
+            cronJobs.forEach(function(d) {
+              d.dynamicCronExpr = null;
 
               var tempConfig = cacheRes[d.id];
               if (!tempConfig) return;
@@ -1206,20 +1206,20 @@ exports.overview = function(req, res, next) {
               tempConfig = JSON.parse(tempConfig);
               if (tempConfig.expireTime && tempConfig.expireTime < now) return;
 
-              d.dynamicCrontab = tempConfig.value;
+              d.dynamicCronExpr = tempConfig.value;
             });
 
             return innerCallback();
           });
         },
-        // 计算未来 24 小时 Crontab 计划触发次数
+        // 计算未来 24 小时定时任务触发次数
         function(innerCallback) {
           var baseTimestamp = moment(moment().format('YYYY-MM-DDT00:00:01Z')).unix() * 1000;
 
           var totalTickCount = 0;
           var crontab24HTickCountMap = {}
-          crontabSchedules.forEach(function(c) {
-            var crontabExpr = c.dynamicCrontab || c.fixedCrontab || c.crontab;
+          cronJobs.forEach(function(c) {
+            var crontabExpr = c.dynamicCronExpr || c.fixedCrontab || c.crontab;
             if (!crontabExpr) return;
 
             var tickCount = crontab24HTickCountMap[crontabExpr];
@@ -1252,25 +1252,25 @@ exports.overview = function(req, res, next) {
           });
 
           overview.bizMetrics.push({
-            title    : 'Crontab Schedule',
+            title    : 'Cron Job',
             subTitle : 'Triggers Per Second',
             value    : parseFloat((totalTickCount / (3600 * 24)).toFixed(1)),
             isBuiltin: true,
           });
           overview.bizMetrics.push({
-            title    : 'Crontab Schedule',
+            title    : 'Cron Job',
             subTitle : 'Triggers Per Minute',
             value    : parseFloat((totalTickCount / (60 * 24)).toFixed(1)),
             isBuiltin: true,
           });
           overview.bizMetrics.push({
-            title    : 'Crontab Schedule',
+            title    : 'Cron Job',
             subTitle : 'Triggers Per Hour',
             value    : parseFloat((totalTickCount / 24).toFixed(1)),
             isBuiltin: true,
           });
           overview.bizMetrics.push({
-            title    : 'Crontab Schedule',
+            title    : 'Cron Job',
             subTitle : 'Triggers Per Day',
             value    : parseFloat((totalTickCount).toFixed(1)),
             isBuiltin: true,
@@ -1328,7 +1328,7 @@ exports.overview = function(req, res, next) {
 
           case 'syncAPI':
           case 'asyncAPI':
-          case 'crontabSchedule':
+          case 'cronJob':
             opt = {
               baseSQL: `
                 SELECT
@@ -1681,20 +1681,20 @@ exports.callAsyncAPI = function(req, res, next) {
   });
 };
 
-exports.runCrontabScheduleManually = function(req, res, next) {
+exports.runCronJobManually = function(req, res, next) {
   var id = req.params.id;
 
   async.series([
-    // 检查 Crontab 计划是否存在
+    // 检查定时任务是否存在
     function(asyncCallback) {
-      var crontabScheduleModel = crontabScheduleMod.createModel(res.locals);
+      var cronJobModel = cronJobMod.createModel(res.locals);
 
-      crontabScheduleModel._get(id, null, function(err, dbRes) {
+      cronJobModel._get(id, null, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         if (!dbRes) {
           // 查询不存在，缓存为`null`
-          return asyncCallback(new E('EClientNotFound', 'No such Crontab Schedule', { id: id }));
+          return asyncCallback(new E('EClientNotFound', 'No such Cron Job', { id: id }));
         }
 
         return asyncCallback();
@@ -1706,7 +1706,7 @@ exports.runCrontabScheduleManually = function(req, res, next) {
     // 发送任务
     var taskReq = {
       name  : 'CronJob.ManualStarter',
-      kwargs: { crontabScheduleId: id },
+      kwargs: { cronJobId: id },
     }
     res.locals.cacheDB.putTask(taskReq, function(err) {
       if (err) return next(err);
@@ -1887,7 +1887,7 @@ exports.integratedSignIn = function(req, res, next) {
         funcCallKwargs : { username: username, password: password },
         origin         : 'integration',
         originId       : 'signIn',
-        taskRecordLimit: CONFIG._TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_INTEGRATION,
+        taskRecordLimit: CONFIG._TASK_RECORD_FUNC_LIMIT_INTEGRATION,
       }
       createFuncRunnerTaskReq(res.locals, opt, function(err, _taskReq) {
         if (err) return asyncCallback(err);

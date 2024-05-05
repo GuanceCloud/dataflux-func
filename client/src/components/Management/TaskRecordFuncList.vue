@@ -1,10 +1,10 @@
 <i18n locale="en" lang="yaml">
-direct         : Directly Call
-integration    : Integration Call
-syncAPI        : Sync API
-asyncAPI       : Async API
-crontabSchedule: Crontab Schedule
-connector      : Connector
+direct     : Directly Call
+integration: Integration Call
+syncAPI    : Sync API
+asyncAPI   : Async API
+cronJob    : Cron Job
+connector  : Connector
 
 'Func ID: '        : 'Func ID   : '
 'Func Title: '     : 'Func Title: '
@@ -24,20 +24,20 @@ connector      : Connector
 'Task Status: ' : 'Task Status : '
 </i18n>
 <i18n locale="zh-CN" lang="yaml">
-Exec Mode   : 执行模式
-Trigger Time: 触发时间
-Task        : 任务
-Func ID     : 函数 ID
-Main Task   : 主任务
-Sub Task    : 子任务
-Delay       : 延迟
-Queuing     : 排队
-Wait Cost   : 等待耗时
-Run Cost    : 执行耗时
-Log Lines   : 日志行数
-Print Log   : Print 日志
-Traceback   : 调用堆栈
-No Print Log: 无 Print 日志
+Exec Mode          : 执行模式
+Trigger Time       : 触发时间
+Task               : 任务
+Func ID            : 函数 ID
+Main Task          : 主任务
+Sub Task           : 子任务
+Delay              : 延迟
+Queuing            : 排队
+Wait Cost          : 等待耗时
+Run Cost           : 执行耗时
+Log Lines          : 日志行数
+Print Log          : Print 日志
+Traceback          : 调用堆栈
+No Print Log       : 无 Print 日志
 Non-critical Errors: 非关键错误
 
 Recent Task Record        : 近期任务记录
@@ -65,12 +65,12 @@ All recent Task Record will be collected and shown here: 所有近期任务会�
 Origin   : 来源
 Origin ID: 来源 ID
 
-direct         : 直接调用
-integration    : 集成调用
-syncAPI        : 同步 API
-asyncAPI       : 异步 API
-crontabSchedule: Crontab 计划
-connector      : 连接器
+direct     : 直接调用
+integration: 集成调用
+syncAPI    : 同步 API
+asyncAPI   : 异步 API
+cronJob    : 定时任务
+connector  : 连接器
 
 'Func ID: '        : '函数 ID ：'
 'Func Title: '     : '函数标题：'
@@ -141,7 +141,7 @@ Trigger Time: 觸發時間
 Wait Cost: 等待耗時
 asyncAPI: 異步 API
 connector: 連接器
-crontabSchedule: Crontab 計劃
+cronJob: 定時任務
 direct: 直接調用
 failure: 失敗
 integration: 集成調用
@@ -198,7 +198,7 @@ Trigger Time: 觸發時間
 Wait Cost: 等待耗時
 asyncAPI: 非同步 API
 connector: 聯結器
-crontabSchedule: Crontab 計劃
+cronJob: 定時任務
 direct: 直接呼叫
 failure: 失敗
 integration: 整合呼叫
