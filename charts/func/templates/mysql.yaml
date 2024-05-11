@@ -33,7 +33,7 @@ spec:
         - containerPort: 3306
           name: 3306tcp
           protocol: TCP
-        resources: {{ toYaml .Values.mysql.resources | nindent 8 }}
+        resources: {{ toYaml .Values.mysql.resources | nindent 10 }}
         volumeMounts:
         - mountPath: /var/lib/mysql
           name: data
