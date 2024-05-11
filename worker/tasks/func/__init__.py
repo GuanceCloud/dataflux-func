@@ -1370,6 +1370,11 @@ class FuncBaseTask(BaseTask):
 
         self.script_set_id, self.script_name = self.script_id.split('__', maxsplit=1)
 
+        # 脚本集、脚本、函数标题
+        self.script_set_title = self.kwargs.get('scriptSetTitle')
+        self.script_title     = self.kwargs.get('scriptTitle')
+        self.func_title       = self.kwargs.get('funcTitle')
+
         # 任务来源
         self.origin    = self.kwargs.get('origin')
         self.origin_id = self.kwargs.get('originId')
@@ -1858,11 +1863,23 @@ class FuncBaseTask(BaseTask):
         # 检查并获取函数信息
         sql = '''
             SELECT
-                *
-            FROM biz_main_func AS func
+                 *
+
+                ,`sset`.`title` AS `scriptSetTitle`
+                ,`scpt`.`title` AS `scriptTitle`
+                ,`func`.`title` AS `funcTitle`
+
+            FROM `biz_main_func` AS `func`
+
+			JOIN `biz_main_script` AS `scpt`
+  				ON `scpt`.`id` = `func`.`scriptId`
+
+			JOIN `biz_main_script_set` AS `sset`
+  				ON `sset`.`id` = `func`.`scriptSetId`
 
             WHERE
-                `id` = ?
+                `func`.`id` = ?
+
             LIMIT 1
             '''
         sql_params = [func_id]
@@ -1895,6 +1912,10 @@ class FuncBaseTask(BaseTask):
                 'originId'      : safe_scope.get('_DFF_ORIGIN_ID'),
                 'cronExpr'      : safe_scope.get('_DFF_CRON_EXPR'),
                 'callChain'     : call_chain,
+
+                'scriptSetTitle': func.get('scriptSetTitle'),
+                'scriptTitle'   : func.get('scriptTitle'),
+                'funcTitle'     : func.get('funcTitle'),
             },
             'triggerTime'    : safe_scope.get('_DFF_TRIGGER_TIME'),
             'queue'          : safe_scope.get('_DFF_QUEUE'),
@@ -2035,27 +2056,27 @@ class FuncBaseTask(BaseTask):
             '__file__' : script_name or '<script>',
 
             # DataFlux Func 内置变量
-            '_DFF_DEBUG'             : debug,
-            '_DFF_TASK_ID'           : self.task_id,
-            '_DFF_ROOT_TASK_ID'      : self.root_task_id,
-            '_DFF_SCRIPT_SET_ID'     : self.script_set_id,
-            '_DFF_SCRIPT_ID'         : self.script_id,
-            '_DFF_FUNC_ID'           : self.func_id,
-            '_DFF_FUNC_NAME'         : self.func_name,
-            '_DFF_FUNC_CHAIN'        : self.call_chain,
-            '_DFF_ORIGIN'            : self.origin,
-            '_DFF_ORIGIN_ID'         : self.origin_id,
-            '_DFF_TRIGGER_TIME'      : int(self.trigger_time),
-            '_DFF_TRIGGER_TIME_MS'   : int(self.trigger_time_ms),
-            '_DFF_START_TIME'        : int(self.start_time),
-            '_DFF_START_TIME_MS'     : int(self.start_time_ms),
-            '_DFF_ETA'               : self.eta,
-            '_DFF_DELAY'             : self.delay,
-            '_DFF_CRON_EXPR'         : self.kwargs.get('cronExpr'),
+            '_DFF_DEBUG'            : debug,
+            '_DFF_TASK_ID'          : self.task_id,
+            '_DFF_ROOT_TASK_ID'     : self.root_task_id,
+            '_DFF_SCRIPT_SET_ID'    : self.script_set_id,
+            '_DFF_SCRIPT_ID'        : self.script_id,
+            '_DFF_FUNC_ID'          : self.func_id,
+            '_DFF_FUNC_NAME'        : self.func_name,
+            '_DFF_FUNC_CHAIN'       : self.call_chain,
+            '_DFF_ORIGIN'           : self.origin,
+            '_DFF_ORIGIN_ID'        : self.origin_id,
+            '_DFF_TRIGGER_TIME'     : int(self.trigger_time),
+            '_DFF_TRIGGER_TIME_MS'  : int(self.trigger_time_ms),
+            '_DFF_START_TIME'       : int(self.start_time),
+            '_DFF_START_TIME_MS'    : int(self.start_time_ms),
+            '_DFF_ETA'              : self.eta,
+            '_DFF_DELAY'            : self.delay,
+            '_DFF_CRON_EXPR'        : self.kwargs.get('cronExpr'),
             '_DFF_CRON_JOB_DELAY'    : self.kwargs.get('cronJobDelay') or 0,
             '_DFF_CRON_JOB_EXEC_MODE': self.kwargs.get('cronJobExecMode'),
-            '_DFF_QUEUE'             : self.queue,
-            '_DFF_HTTP_REQUEST'      : self.http_request,
+            '_DFF_QUEUE'            : self.queue,
+            '_DFF_HTTP_REQUEST'     : self.http_request,
 
             # 兼容处理
             '_DFF_CRONTAB'          : self.kwargs.get('cronExpr'),
@@ -2135,9 +2156,9 @@ class FuncBaseTask(BaseTask):
             'SYS_DB'      : self.db,       # 当前 DataFlux Func 数据库
             'SYS_CACHE_DB': self.cache_db, # 当前 DataFlux Func 缓存
 
-            'SYNC_API'        : __sync_api_helper,  # 同步 API 处理模块
-            'ASYNC_API'       : __async_api_helper, # 异步 API 处理模块
-            'CRONTAB_SCHEDULE': __cron_job_helper,  # 定时任务处理模块
+            'SYNC_API' : __sync_api_helper,  # 同步 API 处理模块
+            'ASYNC_API': __async_api_helper, # 异步 API 处理模块
+            'CRON_JOB' : __cron_job_helper,  # 定时任务处理模块
 
             # 直接连接器
             'GUANCE_OPENAPI': GuanceOpenAPI,

@@ -232,11 +232,7 @@ you must first create an Sync API for the Python function and access the Python 
       <Pager :pageInfo="pageInfo" />
       <SyncAPISetup ref="setup" />
 
-      <APIExampleDialog ref="apiExampleDialog"
-        :showPostExample="true"
-        :showPostExampleSimplified="true"
-        :showGetExample="true"
-        :showGetExampleSimplified="true"></APIExampleDialog>
+      <APIExampleDialog ref="apiExampleDialog"></APIExampleDialog>
     </el-container>
   </transition>
 </template>

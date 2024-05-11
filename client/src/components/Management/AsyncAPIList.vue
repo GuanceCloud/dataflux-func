@@ -202,12 +202,7 @@ lastSucceeded: '{t}執行成功'
       <Pager :pageInfo="pageInfo" />
       <AsyncAPISetup ref="setup" />
 
-      <APIExampleDialog ref="apiExampleDialog"
-        :showExecModeOption="false"
-        :showPostExample="true"
-        :showPostExampleSimplified="true"
-        :showGetExample="true"
-        :showGetExampleSimplified="true"></APIExampleDialog>
+      <APIExampleDialog ref="apiExampleDialog"></APIExampleDialog>
     </el-container>
   </transition>
 </template>

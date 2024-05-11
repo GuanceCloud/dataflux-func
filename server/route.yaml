@@ -188,9 +188,13 @@ mainAPI:
         $type   : jsonstring
         $example: '{"msg": "Tom"}'
       options:
-        $desc   : options
-        $type   : jsonstring
-        $example: '{ "returnType": "ALL" }'
+        $desc: options
+        returnType:
+          $desc: Return type (default "raw")
+          $type: enum
+          $in:
+            - raw
+            - jsonDumps
 
   callSyncAPIByGetWithFormat:
     showInDoc    : true
@@ -231,7 +235,7 @@ mainAPI:
         $type: json
         $example: {'msg': 'Tom'}
       options:
-        $desc: 选项
+        $desc: options
         returnType:
           $desc: Return type (default "raw")
           $type: enum

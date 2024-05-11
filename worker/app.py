@@ -27,11 +27,11 @@ from worker import LOGGER, REDIS, LISTINGING_QUEUES, run_background
 from worker.tasks import TaskTimeout
 
 # 任务表
-from worker.tasks.example         import ExampleSuccess, ExampleFailure, ExampleTimeout
-from worker.tasks.cronjob_starter import CronJobStarter, CronJobManualStarter
-from worker.tasks.func.debugger   import FuncDebugger
-from worker.tasks.func.runner     import FuncRunner
-from worker.tasks.internal        import SystemMetric, FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache, CheckConnector, QueryConnector, AutoRun, UpdateWorkerQueueLimit
+from worker.tasks.example          import ExampleSuccess, ExampleFailure, ExampleTimeout
+from worker.tasks.cron_job_starter import CronJobStarter, CronJobManualStarter
+from worker.tasks.func.debugger    import FuncDebugger
+from worker.tasks.func.runner      import FuncRunner
+from worker.tasks.internal         import SystemMetric, FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache, CheckConnector, QueryConnector, AutoRun, UpdateWorkerQueueLimit
 
 TASK_CLS_MAP = {
     # 示例任务

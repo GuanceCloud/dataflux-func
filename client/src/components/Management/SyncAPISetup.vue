@@ -201,7 +201,8 @@ shortcutDays: '{n} 天'
             </el-form-item>
 
             <el-form-item :label="$t('API Auth')" prop="apiAuthId">
-              <el-select v-model="form.apiAuthId">
+              <el-select v-model="form.apiAuthId" clearable>
+                <el-option :label="$t('None')" :value="null"></el-option>
                 <el-option v-for="opt in apiAuthList" :label="opt.label" :key="opt.id" :value="opt.id"></el-option>
               </el-select>
             </el-form-item>

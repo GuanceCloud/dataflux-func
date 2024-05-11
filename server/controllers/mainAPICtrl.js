@@ -192,6 +192,10 @@ function createFuncRunnerTaskReq(locals, options, callback) {
 
         // HTTP 请求信息
         httpRequest: options.httpRequest || {},
+
+        scriptSetTitle: func.sset_title,
+        scriptTitle   : func.scpt_title,
+        funcTitle     : func.title,
       },
 
       // ETA / 延迟执行

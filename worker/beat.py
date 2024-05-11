@@ -25,9 +25,9 @@ CONFIG = yaml_resources.get('CONFIG')
 from worker import LOGGER, REDIS, run_background
 
 # 系统定时任务
-from worker.tasks.example import ExampleSuccess
-from worker.tasks.cronjob_starter import CronJobStarter
-from worker.tasks.internal import SystemMetric, FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache, UpdateWorkerQueueLimit
+from worker.tasks.example          import ExampleSuccess
+from worker.tasks.cron_job_starter import CronJobStarter
+from worker.tasks.internal         import SystemMetric, FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache, UpdateWorkerQueueLimit
 
 BEAT_MASTER_LOCK_KEY   = None
 BEAT_MASTER_LOCK_VALUE = None
@@ -41,7 +41,7 @@ SYSTEM_TASKS_META = [
     {
         # Cron 任务启动器
         'class'   : CronJobStarter,
-        'cronExpr': CONFIG['_CRON_EXPR_CRONJOB_STARTER'],
+        'cronExpr': CONFIG['_CRON_EXPR_CRON_JOB_STARTER'],
     },
     {
         # 系统指标

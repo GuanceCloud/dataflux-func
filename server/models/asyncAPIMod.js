@@ -116,8 +116,8 @@ EntityModel.prototype.add = function(data, callback) {
   }
 
   // 添加 origin, originId
-  if (!data.origin) data.origin = (this.locals.user && this.locals.user.isSignedIn) ? 'user'              : 'UNKNOWN';
-  if (!data.origin) data.origin = (this.locals.user && this.locals.user.isSignedIn) ? this.locals.user.id : 'UNKNOWN';
+  if (!data.origin)   data.origin   = (this.locals.user && this.locals.user.isSignedIn) ? 'user'              : 'UNKNOWN';
+  if (!data.originId) data.originId = (this.locals.user && this.locals.user.isSignedIn) ? this.locals.user.id : 'UNKNOWN';
 
   return this._add(data, callback);
 };

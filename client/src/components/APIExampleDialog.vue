@@ -7,7 +7,7 @@ Save Result    : 保留结果
 Func Timeout   : 函数超时
 API Timeout    : API 超时
 
-Input Parameters  : 填写参数
+Calling Parameters: 调用参数
 Calling Example   : 调用示例
 Simple GET        : GET 简化形式
 Normal GET        : GET 标准形式
@@ -19,7 +19,8 @@ Normal POST       : POST 标准形式
 'This Python function allows additional parameters (**kwargs syntax)'                                     : '本 Python 函数支持传递额外的参数（**kwargs 语法）'
 'This Python function allows uploading files, field name of the uploading file is "files"'                : '本 Python 函数支持文件上传，文件字段名为"files"'
 
-'Invalid Parameters. Examples require a valid Body content': '参数填写存在错误，正确填写后将展示示例'
+This API does not require any parameter                  : 此 API 不需要任何参数
+Invalid Parameters. Examples require a valid Body content: 参数填写存在错误，正确填写后将展示示例
 
 'Only string arguments are allowed in this from'                                                                                                                       : '此方式参数值只支持字符串'
 'Parameter "kwargs" should be URL encoded in HTTP request'                                                                                                             : '发送请求时，"kwargs" 参数需要进行 URL encode 编码'
@@ -36,9 +37,9 @@ API Example: API 調用示例
 API Timeout: API 超時
 Async: 異步執行
 Calling Example: 調用示例
+Calling Parameters: 調用參數
 File uploading is not supported in this this form: 此方式不支持文件上傳
 Func Timeout: 函數超時
-Input Parameters: 填寫參數
 Invalid Parameters. Examples require a valid Body content: 參數填寫存在錯誤，正確填寫後將展示示例
 Normal GET: GET 標準形式
 Normal POST: POST 標準形式
@@ -51,6 +52,7 @@ Simple GET: GET 簡化形式
 Simple POST (Form): POST 簡化形式（表單）
 Simple POST (JSON): POST 簡化形式（JSON）
 The JSON inside "kwargs" is the call parameter, modify its value and check out the calling example below: '"kwargs" 內的 JSON 即為調用參數，修改其中的值並在下方查看具體調用示例'
+This API does not require any parameter: 此 API 不需要任何參數
 This Python function allows additional parameters (**kwargs syntax): 本 Python 函數支持傳遞額外的參數（**kwargs 語法）
 This Python function allows uploading files, field name of the uploading file is "files": 本 Python 函數支持文件上傳，文件字段名為"files"
 When posting JSON data, "Content-Type" should be "application/json": POST JSON 數據時，"Content-Type" 必須指定為 "application/json"
@@ -63,9 +65,9 @@ API Example: API 呼叫示例
 API Timeout: API 超時
 Async: 非同步執行
 Calling Example: 呼叫示例
+Calling Parameters: 呼叫引數
 File uploading is not supported in this this form: 此方式不支援檔案上傳
 Func Timeout: 函式超時
-Input Parameters: 填寫引數
 Invalid Parameters. Examples require a valid Body content: 引數填寫存在錯誤，正確填寫後將展示示例
 Normal GET: GET 標準形式
 Normal POST: POST 標準形式
@@ -78,6 +80,7 @@ Simple GET: GET 簡化形式
 Simple POST (Form): POST 簡化形式（表單）
 Simple POST (JSON): POST 簡化形式（JSON）
 The JSON inside "kwargs" is the call parameter, modify its value and check out the calling example below: '"kwargs" 內的 JSON 即為呼叫引數，修改其中的值並在下方檢視具體呼叫示例'
+This API does not require any parameter: 此 API 不需要任何引數
 This Python function allows additional parameters (**kwargs syntax): 本 Python 函式支援傳遞額外的引數（**kwargs 語法）
 This Python function allows uploading files, field name of the uploading file is "files": 本 Python 函式支援檔案上傳，檔案欄位名為"files"
 When posting JSON data, "Content-Type" should be "application/json": POST JSON 資料時，"Content-Type" 必須指定為 "application/json"
@@ -95,50 +98,7 @@ When uploading files, "Content-Type" should be "multipart/form-data": 上傳檔�
     :close-on-press-escape="false"
     width="950px">
     <span>
-      <template v-if="showOptions">
-        <el-divider content-position="left"><h1>{{ $t('Request Options') }}</h1></el-divider>
-        <el-form class="call-options" label-width="120px">
-          <el-form-item :label="$t('Async')" v-if="showExecModeOption">
-            <el-switch
-              v-model="callOptions.execMode"
-              inactive-value="sync"
-              active-value="async">
-            </el-switch>
-          </el-form-item>
-
-          <el-form-item :label="$t('Save Result')" v-if="showSaveResultOption">
-            <el-switch
-              v-model="callOptions.saveResult"
-              :inactive-value="false"
-              :active-value="true">
-            </el-switch>
-          </el-form-item>
-
-          <el-form-item :label="$t('Func Timeout')" v-if="showTimeoutOption">
-            <el-input-number
-              v-model="callOptions.timeout"
-              size="mini"
-              step-strictly
-              :step="1"
-              :precision="0"
-              :min="$store.getters.SYSTEM_INFO('_FUNC_TASK_TIMEOUT_MIN')" :max="$store.getters.SYSTEM_INFO('_FUNC_TASK_TIMEOUT_MAX')">
-            </el-input-number>&emsp;{{ $tc('nSeconds', callOptions.timeout) }}
-          </el-form-item>
-
-          <el-form-item :label="$t('API Timeout')" v-if="showAPITimeoutOption">
-            <el-input-number
-              v-model="callOptions.apiTimeout"
-              size="mini"
-              step-strictly
-              :step="1"
-              :precision="0"
-              :min="$store.getters.SYSTEM_INFO('_FUNC_TASK_MIN_API_TIMEOUT')" :max="$store.getters.SYSTEM_INFO('_FUNC_TASK_MAX_API_TIMEOUT')">
-            </el-input-number>&emsp;{{ $tc('nSeconds', callOptions.apiTimeout) }}
-          </el-form-item>
-        </el-form>
-      </template>
-
-      <el-divider content-position="left"><h1>{{ $t('Input Parameters') }}</h1></el-divider>
+      <el-divider content-position="left"><h1>{{ $t('Calling Parameters') }}</h1></el-divider>
       <el-row :gutter="20" v-if="apiBodyInput || supportCustomKwargs">
         <el-col :span="22">
           <el-input
@@ -158,16 +118,58 @@ When uploading files, "Content-Type" should be "multipart/form-data": 上傳檔�
           <CopyButton :content="apiBodyInput" />
         </el-col>
       </el-row>
+      <span class="text-info" v-else>
+        {{ $t('This API does not require any parameter') }}
+      </span>
+
+      <template v-if="showOptions">
+        <el-divider content-position="left"><h1>{{ $t('Request Options') }}</h1></el-divider>
+        <el-form class="call-options" label-width="120px">
+          <el-form-item :label="$t('Return Type')" v-if="showReturnTypeOption">
+            <el-radio-group
+              v-model="callOptions.returnType"
+              :disabled="callOptionsUseDefault.returnType"
+              size="mini">
+              <el-radio-button label="raw">{{ $t('Raw') }}</el-radio-button>
+              <el-radio-button label="jsonDumps">{{ $t('JSON-dump String') }}</el-radio-button>
+            </el-radio-group>
+            <el-checkbox class="use-default" v-model="callOptionsUseDefault.returnType">{{ $t('Use Default') }}</el-checkbox>
+          </el-form-item>
+
+          <el-form-item :label="$t('Unbox Result')" v-if="showUnboxOption">
+            <el-switch
+              v-model="callOptions.unbox"
+              :disabled="callOptionsUseDefault.unbox"
+              :inactive-value="false"
+              :active-value="true">
+            </el-switch>
+            <el-checkbox class="use-default" v-model="callOptionsUseDefault.unbox">{{ $t('Use Default') }}</el-checkbox>
+          </el-form-item>
+
+          <el-form-item :label="$t('Delay')" v-if="showDelayOption">
+            <el-input-number
+              v-model="callOptions.delay"
+              :disabled="callOptionsUseDefault.delay"
+              size="mini"
+              step-strictly
+              :step="1"
+              :precision="0"
+              :min="0">
+            </el-input-number>&emsp;{{ $tc('nSeconds', callOptions.delay, { n: '' }) }}
+            <el-checkbox class="use-default" v-model="callOptionsUseDefault.delay">{{ $t('Use Default') }}</el-checkbox>
+          </el-form-item>
+        </el-form>
+      </template>
 
       <el-divider content-position="left"><h1>{{ $t('Calling Example') }}</h1></el-divider>
       <template v-if="!apiBody">
         <span class="text-bad">{{ $t('Invalid Parameters. Examples require a valid Body content') }}</span>
       </template>
       <template v-else>
-        <!-- GET 方式 -->
-        <template v-if="showGet">
+        <!-- 示例 -->
+        <template v-if="showGetExample || showPostExample">
           <el-tabs tab-position="top">
-            <el-tab-pane :label="$t('Simple GET')">
+            <el-tab-pane :label="$t('Simple GET')" v-if="showGetExample && showGetExampleSimple">
               <el-row :gutter="20">
                 <el-col :span="22">
                   <el-link v-if="onlyStringParameter"
@@ -189,7 +191,7 @@ When uploading files, "Content-Type" should be "multipart/form-data": 上傳檔�
               </el-row>
             </el-tab-pane>
 
-            <el-tab-pane :label="$t('Normal GET')">
+            <el-tab-pane :label="$t('Normal GET')" v-if="showGetExample && showGetExampleNormal">
               <el-row :gutter="20">
                 <el-col :span="22">
                   <el-link
@@ -209,7 +211,7 @@ When uploading files, "Content-Type" should be "multipart/form-data": 上傳檔�
               </el-row>
             </el-tab-pane>
 
-            <el-tab-pane :label="$t('Simple POST (JSON)')">
+            <el-tab-pane :label="$t('Simple POST (JSON)')" v-if="showPostExample && showPostExampleSimple && showPostExampleSimpleJSON">
               <el-row :gutter="20">
                 <el-col :span="22">
                   <el-input
@@ -227,7 +229,7 @@ When uploading files, "Content-Type" should be "multipart/form-data": 上傳檔�
               </el-row>
             </el-tab-pane>
 
-            <el-tab-pane :label="$t('Simple POST (Form)')">
+            <el-tab-pane :label="$t('Simple POST (Form)')" v-if="showPostExample && showPostExampleSimple && showPostExampleSimpleForm">
               <el-row :gutter="20">
                 <el-col :span="22">
                   <el-input
@@ -246,7 +248,7 @@ When uploading files, "Content-Type" should be "multipart/form-data": 上傳檔�
               </el-row>
             </el-tab-pane>
 
-            <el-tab-pane :label="$t('Normal POST')">
+            <el-tab-pane :label="$t('Normal POST')" v-if="showPostExample && showPostExampleNormal">
               <el-row :gutter="20">
                 <el-col :span="22">
                   <el-input
@@ -264,7 +266,6 @@ When uploading files, "Content-Type" should be "multipart/form-data": 上傳檔�
               </el-row>
             </el-tab-pane>
           </el-tabs>
-
         </template>
       </template>
     </span>
@@ -277,30 +278,6 @@ export default {
   components: {
   },
   watch: {
-    callOptions: {
-      deep: true,
-      handler(val) {
-        let apiBodyExample = null;
-        try { apiBodyExample = JSON.parse(this.apiBodyExample) } catch(_) {}
-
-        if (!apiBodyExample) return;
-
-        apiBodyExample.options = apiBodyExample.options || {};
-        for (let k in val) {
-          if (val[k] === this.DEFAULT_CALL_OPTIONS[k]) {
-            delete apiBodyExample.options[k];
-          } else {
-            apiBodyExample.options[k] = val[k];
-          }
-        }
-
-        if (this.T.isNothing(apiBodyExample.options)) {
-          delete apiBodyExample.options;
-        }
-
-        this.apiBodyExample = JSON.stringify(apiBodyExample, null, 2);
-      },
-    },
   },
   methods: {
     prettyURLForHTML(url) {
@@ -328,7 +305,7 @@ export default {
         return url;
       }
     },
-    washAPIBody(apiBody) {
+    makeAPIBody(apiBody) {
       apiBody = this.T.jsonCopy(apiBody);
 
       if (this.T.isNothing(apiBody)) return apiBody;
@@ -361,13 +338,8 @@ export default {
       this.apiKwargs  = this.T.jsonCopy(apiBody.kwargs);
       this.funcKwargs = this.T.jsonCopy(funcKwargs) || {};
 
-      // 默认调用配置
-      for (let k in this.callOptions) {
-        this.callOptions[k] = this.DEFAULT_CALL_OPTIONS[k];
-      }
-
       // 准备请求体
-      apiBody = this.washAPIBody(apiBody);
+      apiBody = this.makeAPIBody(apiBody);
 
       let apiBodyInput = ''
       if (this.T.notNothing(apiBody)) {
@@ -389,7 +361,7 @@ export default {
       opt.asHTML    = opt.asHTML    || false;
       opt.decodeURL = opt.decodeURL || false;
 
-      let body = this.washAPIBody(this.apiBody) || {};
+      let body = this.makeAPIBody(this.apiBody) || {};
 
       let url   = null;
       let query = {};
@@ -421,7 +393,7 @@ export default {
       opt.oneLine     = opt.oneLine     || false;
       opt.contentType = opt.contentType || 'json';
 
-      let body = this.washAPIBody(this.apiBody) || {};
+      let body = this.makeAPIBody(this.apiBody) || {};
 
       let url = null;
       let shellNewLine = `\\\n`;
@@ -480,30 +452,16 @@ export default {
     },
   },
   computed: {
-    DEFAULT_CALL_OPTIONS() {
-      return {
-        execMode  : 'syncAPI',
-        saveResult: false,
-        timeout   : this.$store.getters.SYSTEM_INFO('_FUNC_TASK_TIMEOUT_DEFAULT'),
-      }
-    },
     showOptions() {
-      return this.showExecModeOption
-          || this.showSaveResultOption
-          || this.showTimeoutOption
-          || this.showAPITimeoutOption;
-    },
-    showGet() {
-      return this.showGetExample
-          || this.showGetExampleSimplified;
-    },
-    showPost() {
-      return this.showPostExample
-          || this.showPostExampleSimplified;
+      return this.showReturnTypeOption
+            || this.showUnboxOption
+            || this.showDelayOption;
     },
 
     apiURL_simplified() {
-      return `${this.apiURL}/simplified`;
+      // return `${this.apiURL}/simplified`;
+      // 默认推荐更短的地址
+      return `${this.apiURL}/s`;
     },
     apiBody() {
       if (!this.apiBodyInput) return {};
@@ -514,6 +472,19 @@ export default {
       } catch(err) {
         // 无法解析JSON
         return null;
+      }
+
+      if (this.showOptions) {
+        let nextOptions = {};
+        for (let k in this.callOptions) {
+          if (this.T.notNothing(this.callOptions[k])) {
+            nextOptions[k] = this.callOptions[k];
+          }
+        }
+
+        if (this.T.notNothing(nextOptions)) {
+          obj.options = nextOptions;
+        }
       }
 
       return obj;
@@ -546,19 +517,15 @@ export default {
   props: {
     title: String,
 
-    showExecModeOption: {
+    showReturnTypeOption: {
       type: Boolean,
       default: false,
     },
-    showSaveResultOption: {
+    showUnboxOption: {
       type: Boolean,
       default: false,
     },
-    showTimeoutOption: {
-      type: Boolean,
-      default: false,
-    },
-    showAPITimeoutOption: {
+    showDelayOption: {
       type: Boolean,
       default: false,
     },
@@ -567,17 +534,34 @@ export default {
       type: Boolean,
       default: true,
     },
-    showGetExampleSimplified: {
-      type: Boolean,
-      default: false,
-    },
     showPostExample: {
       type: Boolean,
       default: true,
     },
-    showPostExampleSimplified: {
+
+    showGetExampleSimple: {
       type: Boolean,
-      default: false,
+      default: true,
+    },
+    showGetExampleNormal: {
+      type: Boolean,
+      default: true,
+    },
+    showPostExampleSimple: {
+      type: Boolean,
+      default: true,
+    },
+    showPostExampleSimpleJSON: {
+      type: Boolean,
+      default: true,
+    },
+    showPostExampleSimpleForm: {
+      type: Boolean,
+      default: true,
+    },
+    showPostExampleNormal: {
+      type: Boolean,
+      default: true,
     },
   },
   data() {
@@ -589,12 +573,17 @@ export default {
       apiKwargs   : null,
       funcKwargs  : null,
 
+      callOptionsUseDefault: {
+        returnType: true,
+        unbox     : true,
+        delay     : true,
+      },
+
       callOptions: {
-        execMode  : null,
-        saveResult: null,
-        timeout   : null,
-        apiTimeout: null,
-      }
+        returnType: null,
+        unbox     : null,
+        delay     : null,
+      },
     }
   },
 }
@@ -611,6 +600,10 @@ export default {
 .call-options .el-form-item {
   margin-top: 0;
   margin-bottom: 0;
+}
+.call-options .use-default {
+  float: right;
+  margin-right: 80px;
 }
 </style>
 <style>

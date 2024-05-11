@@ -286,7 +286,7 @@ shortcutDays: '{n} 天'
                 :precision="0"
                 v-model="form.taskRecordLimit"></el-input-number>
               <span class="task-record-limit-unit">{{ $tc('recentTaskCount', form.taskRecordLimit, { n: '' }) }} </span>
-              <el-link class="task-record-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_CRONTAB_SCHEDULE')">{{ $t('Restore Default') }}</el-link>
+              <el-link class="task-record-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_CRON_JOB')">{{ $t('Restore Default') }}</el-link>
             </el-form-item>
 
             <!-- Cron 表达式配置 -->
@@ -474,7 +474,7 @@ export default {
         this.formCronExprCache = this.T.jsonCopy(defaultFormCronExpr);
         this.formCronExpr      = this.T.jsonCopy(defaultFormCronExpr);
         this.T.jsonClear(this.form);
-        this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_CRONTAB_SCHEDULE');
+        this.form.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_CRON_JOB');
         this.data = {};
         this.cronExprBuildMode = 'simple';
 
@@ -494,7 +494,7 @@ export default {
         nextForm.tagsJSON = nextForm.tagsJSON || [];
 
         if (this.T.isNothing(nextForm.taskRecordLimit)) {
-          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_CRONTAB_SCHEDULE')
+          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_CRON_JOB')
         }
 
         this.form = nextForm;
@@ -875,7 +875,7 @@ export default {
         cronExpr          : null,
         tagsJSON          : [],
         expireTime        : null,
-        taskRecordLimit   : this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_CRONTAB_SCHEDULE'),
+        taskRecordLimit   : this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_CRON_JOB'),
         note              : null,
       },
 

@@ -142,11 +142,7 @@ Throttling: 限流
         </el-table>
       </el-main>
 
-      <APIExampleDialog ref="apiExampleDialog"
-        :showPostExample="true"
-        :showPostExampleSimplified="true"
-        :showGetExample="true"
-        :showGetExampleSimplified="true"></APIExampleDialog>
+      <APIExampleDialog ref="apiExampleDialog"></APIExampleDialog>
     </el-container>
   </transition>
 </template>

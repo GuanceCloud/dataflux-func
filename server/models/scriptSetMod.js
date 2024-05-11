@@ -145,8 +145,8 @@ EntityModel.prototype.add = function(data, callback) {
   }
 
   // 添加 origin, originId
-  if (!data.origin) data.origin = (this.locals.user && this.locals.user.isSignedIn) ? 'user'              : 'UNKNOWN';
-  if (!data.origin) data.origin = (this.locals.user && this.locals.user.isSignedIn) ? this.locals.user.id : 'UNKNOWN';
+  if (!data.origin)   data.origin   = (this.locals.user && this.locals.user.isSignedIn) ? 'user'              : 'UNKNOWN';
+  if (!data.originId) data.originId = (this.locals.user && this.locals.user.isSignedIn) ? this.locals.user.id : 'UNKNOWN';
 
   return this._add(data, callback);
 };
@@ -231,12 +231,9 @@ EntityModel.prototype.clone = function(id, newId, callback) {
 
         var cloneData = [];
 
-        var origin   = 'UNKNOWN';
-        var originId = null;
-        if (self.locals.user && self.locals.user.isSignedIn) {
-          origin   = 'user';
-          originId = self.locals.user.id;
-        }
+        var origin   = (self.locals.user && self.locals.user.isSignedIn) ? 'user'              : 'UNKNOWN';
+        var originId = (self.locals.user && self.locals.user.isSignedIn) ? self.locals.user.id : 'UNKNOWN';
+
         dbRes.forEach(function(d) {
           cloneData.push([
             newId, // id

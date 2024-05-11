@@ -809,7 +809,7 @@ function doDeploy(locals, scriptSetId, options, callback) {
         }
 
         // 尚不存在，立即创建
-        startupCronJobId = `${CONFIG._STARTUP_CRONTAB_SCHEDULE_ID_PREFIX}-${scriptSetId}`;
+        startupCronJobId = `${CONFIG._STARTUP_CRON_JOB_ID_PREFIX}-${scriptSetId}`;
         var _data = {
           id                : startupCronJobId,
           funcId            : cronJobFuncId,

@@ -125,7 +125,7 @@ class FuncRunner(FuncBaseTask):
 
             # 去除过期数据并压缩
             for _exec_mode in list(cache_value.keys()):
-                cache_value[_exec_mode] = list(filter(lambda ts: ts > self.trigger_time - CONFIG['_RECENT_CRONTAB_SCHEDULE_TRIGGERED_EXPIRES'], cache_value[_exec_mode]))
+                cache_value[_exec_mode] = list(filter(lambda ts: ts > self.trigger_time - CONFIG['_RECENT_CRON_JOB_TRIGGERED_EXPIRES'], cache_value[_exec_mode]))
                 cache_value[_exec_mode] = toolkit.repeat_encode(toolkit.delta_of_delta_encode(cache_value[_exec_mode]))
 
             # 重新写入缓存
@@ -172,8 +172,13 @@ class FuncRunner(FuncBaseTask):
                 'script_set_id': self.script_set_id,
                 'script_id'    : self.script_id,
                 'func_id'      : self.func_id,
+                'func_name'    : self.func_name,
                 'origin'       : self.origin,
                 'origin_id'    : self.origin_id,
+
+                'script_set_title': self.script_set_title or 'UNTITLED',
+                'script_title'    : self.script_title     or 'UNTITLED',
+                'func_title'      : self.func_title       or 'UNTITLED',
             },
             'fields': {
                 'message': self.full_print_log_lines,
@@ -253,6 +258,10 @@ class FuncRunner(FuncBaseTask):
             'waitCost'   : self.wait_cost,
             'runCost'    : self.run_cost,
             'totalCost'  : self.total_cost,
+
+            'scriptSetTitle': self.script_set_title,
+            'scriptTitle'   : self.script_title,
+            'funcTitle'     : self.func_title,
         }
         cache_key = toolkit.get_cache_key('dataBuffer', 'funcCallCount')
         self.cache_db.push(cache_key, toolkit.json_dumps(data))

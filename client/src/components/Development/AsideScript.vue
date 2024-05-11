@@ -482,11 +482,7 @@ successCount: 成功 {n}
 
     <QuickViewWindow ref="quickViewWindow"></QuickViewWindow>
 
-    <APIExampleDialog ref="apiExampleDialog"
-      :showPostExample="true"
-      :showPostExampleSimplified="true"
-      :showGetExample="true"
-      :showGetExampleSimplified="true"></APIExampleDialog>
+    <APIExampleDialog ref="apiExampleDialog"></APIExampleDialog>
 
     <ScriptSetSetup ref="ScriptSetSetup" />
     <ScriptSetup ref="ScriptSetup" />
