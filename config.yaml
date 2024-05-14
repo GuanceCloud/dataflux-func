@@ -4,7 +4,7 @@
 # 配置分类如下：
 #   无特殊前缀           ：用户可以根据需求自行修改的项目                            （如：APP_NAME）
 #   以 _ 为前缀          ：不推荐用户修改，仅在特殊用途、观测云附属 Func 中修改的项目（如：_IS_INSTALLED）
-#   以 GUANCE_FUNC 为前缀：仅用于观测云附属 Func 的项目                              （如：GUANCE_FUNC_WEB_BIND_ENV）
+#   以 GUANCE_FUNC 为前缀：仅用于观测云附属 Func 的项目                              （如：GUANCE_FUNC_BASE_URL_FOR_INIT_SCRIPTS）
 
 APP_NAME: DataFluxFunc
 
@@ -446,9 +446,6 @@ _SELF_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD_FUNC: DFF_task_record_func
 _SELF_MONITOR_GUANCE_LOGGING_SPLIT_BYTES: 100000
 
 ##### 观测云专用配置 #####
-
-# 观测云附属 Func 专用环境变量
-GUANCE_FUNC_WEB_BIND_ENV: GUANCE_BIND_IP
 
 # 观测云附属 Func 初始化脚本访问地址
 GUANCE_FUNC_BASE_URL_FOR_INIT_SCRIPTS: ''

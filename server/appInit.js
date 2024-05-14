@@ -383,8 +383,9 @@ exports.afterServe = function(app, server) {
 
           var baseURL = CONFIG.GUANCE_FUNC_BASE_URL_FOR_INIT_SCRIPTS;
           if (!baseURL) {
+            var protocol = toolkit.toBoolean(process.env['GUANCE_SELF_TLS_ENABLE']) ? 'https' : 'http';
             var webBind = CONFIG.WEB_BIND === '0.0.0.0' ? 'localhost' : CONFIG.WEB_BIND;
-            baseURL = `http://${webBind}:${CONFIG.WEB_PORT}`;
+            baseURL = `${protocol}://${webBind}:${CONFIG.WEB_PORT}`;
           }
 
           var scriptPath  = path.join(initScriptDir, script);

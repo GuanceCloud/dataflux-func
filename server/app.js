@@ -6,6 +6,7 @@ require('./monkeyPatch');
 /* Built-in Modules */
 var path         = require('path');
 var http         = require('http');
+var https        = require('https');
 var childProcess = require('child_process');
 
 /* 3rd-party Modules */
@@ -14,6 +15,7 @@ var expressUseragent = require('express-useragent');
 var bodyParser       = require('body-parser');
 var cookieParser     = require('cookie-parser');
 var cors             = require('cors');
+var fs               = require('fs-extra');
 
 /* Init */
 
@@ -38,8 +40,8 @@ yamlResources.loadConfig(path.join(__dirname, '../config.yaml'), function(err, _
   CONFIG = _config;
 
   // 优先使用观测云集群指定的 Web 绑定地址
-  if (CONFIG.GUANCE_FUNC_WEB_BIND_ENV && process.env[CONFIG.GUANCE_FUNC_WEB_BIND_ENV]) {
-    CONFIG.WEB_BIND = process.env[CONFIG.GUANCE_FUNC_WEB_BIND_ENV];
+  if (process.env['GUANCE_BIND_IP']) {
+    CONFIG.WEB_BIND = process.env['GUANCE_BIND_IP'];
   }
 
   require('./appInit').prepare(function() {
@@ -321,7 +323,20 @@ function startApplication() {
     }
   });
 
-  var server = http.createServer(app);
+  var server = null;
+  var serveHTTPS = toolkit.toBoolean(process.env['GUANCE_SELF_TLS_ENABLE']);
+  if (serveHTTPS) {
+    // 启用 HTTPS
+    var httpsOpt = {
+      key : fs.readFileSync('/etc/guance/inner-tls.key'),
+      cert: fs.readFileSync('/etc/guance/inner-tls.cert'),
+    }
+    server = https.createServer(httpsOpt, app);
+
+  } else {
+    // 不启用 HTTPS
+    server = http.createServer(app);
+  }
 
   require('./messageHandlers/socketIOHandler')(app, server);
 
@@ -331,7 +346,7 @@ function startApplication() {
   };
   server.listen(listenOpt, function() {
     // Print some message of the server
-    console.log(toolkit.strf('Web Server is listening on {0}:{1} (Press CTRL+C to quit)', CONFIG.WEB_BIND, CONFIG.WEB_PORT));
+    console.log(toolkit.strf('Web Server is listening on {0}://{1}:{2} (Press CTRL+C to quit)', serveHTTPS ? 'https' : 'http', CONFIG.WEB_BIND, CONFIG.WEB_PORT));
     console.log(toolkit.strf('PID: {0}', process.pid));
     console.log('Have fun!');
 

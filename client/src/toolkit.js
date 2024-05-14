@@ -664,7 +664,6 @@ export function formatURL(pathPattern, options) {
 
   let baseURL = options.baseURL || '';
   if (baseURL === true) {
-    // baseURL = process.env.VUE_APP_SERVER_BASE_URL;
     baseURL = getBaseURL();
   }
   if (baseURL && baseURL.slice(-1) === '/') {
