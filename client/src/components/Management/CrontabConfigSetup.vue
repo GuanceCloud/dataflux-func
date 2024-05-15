@@ -494,10 +494,6 @@ export default {
         nextForm.funcCallKwargsJSON = JSON.stringify(nextForm.funcCallKwargsJSON, null, 2);
         nextForm.tagsJSON = nextForm.tagsJSON || [];
 
-        if (this.T.isNothing(nextForm.taskRecordLimit)) {
-          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG')
-        }
-
         this.form = nextForm;
 
         if (this.data.crontab) {

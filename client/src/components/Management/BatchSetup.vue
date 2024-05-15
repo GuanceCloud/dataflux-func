@@ -260,10 +260,6 @@ export default {
         nextForm.tagsJSON  = nextForm.tagsJSON || [];
         nextForm.apiAuthId = this.data.apia_id;
 
-        if (this.T.isNothing(nextForm.taskRecordLimit)) {
-          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH')
-        }
-
         this.form = nextForm;
       }
 

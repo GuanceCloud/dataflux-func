@@ -310,10 +310,6 @@ export default {
         nextForm.apiAuthId          = this.data.apia_id;
         nextForm.throttlingJSON     = nextForm.throttlingJSON || {};
 
-        if (this.T.isNothing(nextForm.taskRecordLimit)) {
-          nextForm.taskRecordLimit = this.$store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK')
-        }
-
         this.form = nextForm;
       }
 
