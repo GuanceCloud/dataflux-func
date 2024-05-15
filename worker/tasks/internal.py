@@ -40,7 +40,7 @@ class SystemMetric(BaseInternalTask):
     '''
     name = 'Internal.SystemMetric'
 
-    def get_metric_queue(self):
+    def upload_metric_queue(self):
         guance_data = []
 
         for queue in list(range(CONFIG['_WORKER_QUEUE_COUNT'])):
@@ -87,7 +87,7 @@ class SystemMetric(BaseInternalTask):
         if self.guance_data_upload_url and guance_data:
             self.upload_guance_data('metric', guance_data)
 
-    def get_metric_cache_db(self):
+    def upload_metric_cache_db(self):
         cache_res = self.cache_db.info()
         db_info   = cache_res.get(f"db{CONFIG['REDIS_DATABASE'] or 0}") or {}
 
@@ -117,7 +117,7 @@ class SystemMetric(BaseInternalTask):
 
             self.upload_guance_data('metric', guance_data)
 
-    def get_metric_cache_db_key(self):
+    def upload_metric_cache_db_key(self):
         key_prefix_count_map = {}
 
         keys = self.cache_db.keys()
@@ -155,7 +155,7 @@ class SystemMetric(BaseInternalTask):
         if self.guance_data_upload_url and guance_data:
             self.upload_guance_data('metric', guance_data)
 
-    def get_metric_db(self):
+    def upload_metric_db(self):
         guance_data = []
 
         db_res = self.db.query('SHOW TABLE STATUS')
@@ -200,16 +200,16 @@ class SystemMetric(BaseInternalTask):
         self.lock()
 
         # 上报队列数据
-        self.safe_call(self.get_metric_queue)
+        self.safe_call(self.upload_metric_queue)
 
         # 上报缓存数据库信息
-        self.safe_call(self.get_metric_cache_db)
+        self.safe_call(self.upload_metric_cache_db)
 
         # 上报缓存数据库 Key 信息
-        self.safe_call(self.get_metric_cache_db_key)
+        self.safe_call(self.upload_metric_cache_db_key)
 
         # 上报数据库信息
-        self.safe_call(self.get_metric_db)
+        self.safe_call(self.upload_metric_db)
 
 class FlushDataBuffer(BaseInternalTask):
     '''
@@ -220,12 +220,9 @@ class FlushDataBuffer(BaseInternalTask):
     default_timeout = CONFIG['_TASK_FLUSH_DATA_TIMEOUT']
 
     TASK_RECORD_LIMIT_BY_ORIGIN_MAP = {
-        'direct'       : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_DIRECT'],
-        'integration'  : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_INTEGRATION'],
-        'connector'    : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CONNECTOR'],
-        'authLink'     : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK'],
-        'crontabConfig': CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG'],
-        'batch'        : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH'],
+        'direct'     : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_DIRECT'],
+        'integration': CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_INTEGRATION'],
+        'connector'  : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CONNECTOR'],
     }
 
     def _flush_data_buffer(self, cache_key):
@@ -304,14 +301,13 @@ class FlushDataBuffer(BaseInternalTask):
             origin_id = d.get('originId')
 
             # 统计回卷范围
-            if origin == 'UNKNOWN':
-                # 未知来源的，未配置任务记录数时，不记录
-                # （未知来源一般为观测云集群内调用）
-                limit = d.pop('_taskRecordLimit', None) or 0
+            limit = d.pop('_taskRecordLimit', None)
 
-            else:
-                # 否则，自动使用默认任务记录数
-                limit = d.pop('_taskRecordLimit', None) or self.TASK_RECORD_LIMIT_BY_ORIGIN_MAP.get(origin) or 0
+            if limit is None:
+                limit = self.TASK_RECORD_LIMIT_BY_ORIGIN_MAP.get(origin)
+
+            if limit is None:
+                limit = 0
 
             origin_limit_map[origin_id] = limit
 

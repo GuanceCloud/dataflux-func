@@ -21,6 +21,9 @@ CONFIG = yaml_resources.get('CONFIG')
 class FuncRunner(FuncBaseTask):
     name = 'Func.Runner'
 
+    # 函数任务默认不指定任务记录保留数量
+    default_task_record_limit = None
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
