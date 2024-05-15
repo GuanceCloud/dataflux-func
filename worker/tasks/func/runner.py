@@ -225,7 +225,7 @@ class FuncRunner(FuncBaseTask):
             'origin'               : self.origin,
             'originId'             : self.origin_id,
             'cronExpr'             : self.kwargs.get('cronExpr'),
-            'callChainJSON'        : toolkit.json_dumps(self.call_chain, keep_none   = True),
+            'callChainJSON'        : toolkit.json_dumps(self.call_chain, keep_none=True),
             'triggerTimeMs'        : self.trigger_time_ms,
             'startTimeMs'          : self.start_time_ms,
             'endTimeMs'            : self.end_time_ms,
@@ -240,7 +240,7 @@ class FuncRunner(FuncBaseTask):
             'tracebackTEXT'        : self.traceback,
             'nonCriticalErrorsTEXT': self.non_critical_errors,
             'printLogsTEXT'        : self.reduced_print_logs,
-            'returnValueJSON'      : toolkit.json_dumps(self.return_value, keep_none = True),
+            'returnValueJSON'      : toolkit.json_dumps(self.return_value, keep_none=True),
             'responseControlJSON'  : toolkit.json_dumps(self.response_control, keep_none=True),
         }
         cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordFunc')
