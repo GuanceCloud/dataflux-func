@@ -197,7 +197,7 @@ shortcutDays: '{n} 天'
                 :precision="0"
                 v-model="form.taskRecordLimit"></el-input-number>
               <span class="task-record-limit-unit">{{ $tc('recentTaskCount', form.taskRecordLimit, { n: '' }) }} </span>
-              <el-link class="task-record-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK')">{{ $t('Restore Default') }}</el-link>
+              <el-link class="right-button" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK')">{{ $t('Restore Default') }}</el-link>
             </el-form-item>
 
             <el-form-item :label="$t('API Auth')" prop="apiAuthId">
@@ -232,7 +232,7 @@ shortcutDays: '{n} 天'
                   :precision="0"
                   v-model="form.throttlingJSON[opt.key]"></el-input-number>
                 <span class="throttling-unit">{{ $tc(opt.name, form.throttlingJSON[opt.key], { n: '' }) }} </span>
-                <el-link class="throttling-clear" @click.stop="form.throttlingJSON[opt.key] = undefined">{{ $t('Clear') }}</el-link>
+                <el-link class="right-button" @click.stop="form.throttlingJSON[opt.key] = undefined">{{ $t('Clear') }}</el-link>
               </el-form-item>
             </template>
 
@@ -586,9 +586,6 @@ export default {
   width: 35px;
   display: inline-block;
 }
-.task-record-limit-clear {
-  float: right
-}
 .throttling-input {
   width: 260px;
 }
@@ -599,8 +596,5 @@ export default {
 .throttling-unit > span {
   width: 35px;
   display: inline-block;
-}
-.throttling-clear {
-  float: right
 }
 </style>

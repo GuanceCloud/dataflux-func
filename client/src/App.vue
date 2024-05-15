@@ -1040,8 +1040,11 @@ kbd {
 .el-form-item__content .el-select {
   display: block;
 }
-.el-form-item__content .el-link {
+.el-form-item__content .el-link.right-button {
   line-height: 1.5 !important;
+  position: absolute;
+  right: 0;
+  top: 9px;
 }
 .el-form .el-transfer-panel__item {
   /* https://github.com/ElemeFE/element/issues/18228 */

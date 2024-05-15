@@ -282,7 +282,7 @@ shortcutDays: '{n} 天'
                 :precision="0"
                 v-model="form.taskRecordLimit"></el-input-number>
               <span class="task-record-limit-unit">{{ $tc('recentTaskCount', form.taskRecordLimit, { n: '' }) }} </span>
-              <el-link class="task-record-limit-clear" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG')">{{ $t('Restore Default') }}</el-link>
+              <el-link class="right-button" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG')">{{ $t('Restore Default') }}</el-link>
             </el-form-item>
 
             <!-- Crontab配置 -->
@@ -1003,9 +1003,7 @@ export default {
   width: 35px;
   display: inline-block;
 }
-.task-record-limit-clear {
-  float: right
-}
+
 .crontab-expr-parts {
   font-size: 35px;
   margin-right: 20px;

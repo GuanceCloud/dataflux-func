@@ -534,7 +534,7 @@ messageRate: '{n} 條/分鐘'
                     <el-input :placeholder="$t('Topic')" v-model="topicHandler.topic"></el-input>
 
                     <!-- 删除按钮 -->
-                    <el-link class="topic-handler-button" type="primary" @click.prevent="removeTopicHandler(index)">{{ $t('Delete') }}</el-link>
+                    <el-link class="topic-handler-button right-button" type="primary" @click.prevent="removeTopicHandler(index)">{{ $t('Delete') }}</el-link>
                   </el-form-item>
 
                   <el-form-item
@@ -553,8 +553,8 @@ messageRate: '{n} 條/分鐘'
                       :props="{ expandTrigger: 'hover', emitPath: false, multiple: false }"></el-cascader>
 
                     <!-- 启用 / 禁用按钮 -->
-                    <el-link class="topic-handler-button" @click.prevent="enableTopicHandler(index)" v-if="topicHandler.isDisabled">{{ $t('Enable') }}</el-link>
-                    <el-link class="topic-handler-button" @click.prevent="disableTopicHandler(index)" v-else>{{ $t('Disable') }}</el-link>
+                    <el-link class="topic-handler-button right-button" @click.prevent="enableTopicHandler(index)" v-if="topicHandler.isDisabled">{{ $t('Enable') }}</el-link>
+                    <el-link class="topic-handler-button right-button" @click.prevent="disableTopicHandler(index)" v-else>{{ $t('Disable') }}</el-link>
 
                     <!-- 订阅已禁用 -->
                     <el-link type="danger" v-if="topicHandler.isDisabled">
