@@ -28,6 +28,9 @@ en:
   nD: '{n}d'
   nY: '{n}y'
 
+  expireAt : Will expire at {t}
+  expireAt2: Will expire at {t}
+
   # 功能提示
   FeatureNotice_monkeyPatch            : '<h1>No Monkey Patches in Scripts</h1><p>For performance reasons, the script does <strong style="color: red">NOT</strong> run in a sandbox or isolated environment.</p><p>Using monkey patches may cause problems to the entire system.</p>'
   FeatureNotice_funcIsJustPythonWarpper: '<h1>DataFlux Func is Just a Python Wrapper</h1><p>A connector is simply a convenient feature for developers who want to connect to a database or external system but not an essential feature.</p></p>You can install any third-party Python package you want through the PIP tool and work with it.</p><p>Just like you do with orignal Python.</p>'
@@ -61,6 +64,9 @@ en:
   nH: '{n} 小时'
   nD: '{n} 天'
   nY: '{n} 年'
+
+  expireAt : 将于 {t} 过期
+  expireAt2: 将于 {t} 失效
 
   Version           : 版本
   New Version       : 新版本

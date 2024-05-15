@@ -73,7 +73,8 @@ exports.list = function(req, res, next) {
 
         var now = parseInt(Date.now() / 1000);
         listData.forEach(function(d) {
-          d.dynamicCronExpr = null;
+          d.dynamicCronExpr           = null;
+          d.dynamicCronExprExpireTime = null;
 
           var dynamicCronExpr = cacheRes[d.id];
           if (!dynamicCronExpr) return;
@@ -81,7 +82,35 @@ exports.list = function(req, res, next) {
           dynamicCronExpr = JSON.parse(dynamicCronExpr);
           if (dynamicCronExpr.expireTime && dynamicCronExpr.expireTime < now) return;
 
-          d.dynamicCronExpr = dynamicCronExpr.value;
+          d.dynamicCronExpr           = dynamicCronExpr.value;
+          d.dynamicCronExprExpireTime = dynamicCronExpr.expireTime;
+        });
+
+        return asyncCallback();
+      });
+    },
+    // 追加 Cron 暂停标记
+    function(asyncCallback) {
+      if (toolkit.isNothing(listData)) return asyncCallback();
+
+      var dataIds  = toolkit.arrayElementValues(listData, 'id');
+      var cacheKey = toolkit.getGlobalCacheKey('cronJob', 'pause');
+      res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        var now = parseInt(Date.now() / 1000);
+        listData.forEach(function(d) {
+          d.isPaused        = false;
+          d.pauseExpireTime = null;
+
+          var pauseExpireTime = cacheRes[d.id];
+          if (!pauseExpireTime) return;
+
+          pauseExpireTime = parseInt(pauseExpireTime);
+          if (pauseExpireTime && pauseExpireTime < now) return;
+
+          d.isPaused        = true;
+          d.pauseExpireTime = pauseExpireTime;
         });
 
         return asyncCallback();

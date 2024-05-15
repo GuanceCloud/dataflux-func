@@ -11,6 +11,7 @@ Cron Jobs has been paused                    : 定时任务已暂停
 
 Resume              : 继续
 Pause               : 暂停
+Paused              : 已暂停
 Pause for 15 minutes: 暂停 15 分钟
 Pause for 30 minutes: 暂停 30 分钟
 Pause for 1 hour    : 暂停 1 小时
@@ -257,9 +258,16 @@ lastSucceeded: '{t}執行成功'
           <el-table-column :label="$t('Config')" width="280">
             <template slot-scope="scope">
               <span class="text-info">{{ $t('Cron Expr') }}{{ $t(':') }}</span>
-              <template v-if="scope.row.dynamicCronExpr">
+              <template v-if="scope.row.isPaused">
+                <el-tooltip effect="dark" :content="$t('expireAt2', { t: T.getDateTimeString(scope.row.pauseExpireTime * 1000) })" placement="right" :disabled="!!!scope.row.pauseExpireTime">
+                  <el-tag type="danger" size="mini">{{ $t('Paused') }}</el-tag>
+                </el-tooltip>
+              </template>
+              <template v-else-if="scope.row.dynamicCronExpr">
                 <code class="text-bad">{{ scope.row.dynamicCronExpr }}</code>
-                <el-tag type="danger" size="mini">{{ $t('Dynamic') }}</el-tag>
+                <el-tooltip effect="dark" :content="$t('expireAt2', { t: T.getDateTimeString(scope.row.dynamicCronExprExpireTime * 1000) })" placement="right" :disabled="!!!scope.row.dynamicCronExprExpireTime">
+                  <el-tag type="danger" size="mini">{{ $t('Dynamic') }}</el-tag>
+                </el-tooltip>
               </template>
               <template v-else-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCronExpr">
                 <code class="text-main">{{ scope.row.func_extraConfigJSON.fixedCronExpr }}</code>

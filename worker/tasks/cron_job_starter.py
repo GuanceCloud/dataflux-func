@@ -65,26 +65,67 @@ class CronJobStarter(BaseTask):
 
         return self._worker_queue_availability[queue]
 
-    def prepare_cron_job(self, c):
-        c['funcCallKwargs'] = c.get('funcCallKwargsJSON') or {}
-        if isinstance(c['funcCallKwargs'], str):
-            c['funcCallKwargs'] = toolkit.json_loads(c['funcCallKwargs']) or {}
+    def prepare_cron_jobs(self, cron_jobs):
+        cron_job_ids = [ c['id'] for c in cron_jobs]
 
-        c['funcExtraConfig'] = c.get('funcExtraConfigJSON') or {}
-        if isinstance(c['funcExtraConfig'], str):
-            c['funcExtraConfig'] = toolkit.json_loads(c['funcExtraConfig']) or {}
+        # 获取暂停标记
+        cache_key = toolkit.get_global_cache_key('cronJob', 'pause')
+        pause_map = self.cache_db.hmget(cache_key, cron_job_ids) or {}
 
-        c['cronExpr'] = c.get('dynamicCronExpr') or c['funcExtraConfig'].get('fixedCronExpr') or c.get('cronExpr')
+        # 获取动态 Cron 表达式
+        cache_key = toolkit.get_global_cache_key('cronJob', 'dynamicCronExpr')
+        dynamic_cron_expr_map = self.cache_db.hmget(cache_key, cron_job_ids) or {}
 
-        return c
+        for c in cron_jobs:
+            # 暂停标记
+            pause_expire_time = pause_map.get(c['id'])
+            if pause_expire_time and int(pause_expire_time) >= self.trigger_time:
+                c['isPaused'] = True
+            else:
+                c['isPaused'] = False
+
+            # 动态 Cron 表达式
+            dynamic_cron_expr = dynamic_cron_expr_map.get(c['id'])
+            if dynamic_cron_expr:
+                dynamic_cron_expr = toolkit.json_loads(dynamic_cron_expr)
+                if dynamic_cron_expr['expireTime'] and dynamic_cron_expr['expireTime'] >= self.trigger_time:
+                    c['dynamicCronExpr'] = dynamic_cron_expr['value']
+
+            # 反序列化 JSON 字段
+            c['funcCallKwargs'] = c.get('funcCallKwargsJSON') or {}
+            if isinstance(c['funcCallKwargs'], str):
+                c['funcCallKwargs'] = toolkit.json_loads(c['funcCallKwargs']) or {}
+
+            c['funcExtraConfig'] = c.get('funcExtraConfigJSON') or {}
+            if isinstance(c['funcExtraConfig'], str):
+                c['funcExtraConfig'] = toolkit.json_loads(c['funcExtraConfig']) or {}
+
+            # 判断最终 Cron 表达式
+            c['cronExpr'] = c.get('dynamicCronExpr') or c['funcExtraConfig'].get('fixedCronExpr') or c.get('cronExpr')
+
+        return cron_jobs
 
     def filter_cron_job(self, c):
-        cron_expr = c.get('cronExpr')
-        if not cron_expr or not toolkit.is_valid_cron_expr(cron_expr):
+        print('>>>>>>>', c)
+
+        # 跳过：暂停中的
+        if c.get('isPaused'):
+            print(1)
             return False
 
+        # 跳过：未指定 Cron 表达式 / Cron 表达式错误
+        cron_expr = c.get('cronExpr')
+        if not cron_expr or not toolkit.is_valid_cron_expr(cron_expr):
+            print(2)
+            return False
+
+        # 跳过：不满足 Cron 表达式
         timezone = c.get('timezone') or CONFIG['TIMEZONE']
-        return toolkit.is_match_cron_expr(cron_expr, self.trigger_time, timezone)
+        if not toolkit.is_match_cron_expr(cron_expr, self.trigger_time, timezone):
+            print(3)
+            return False
+
+        return True
 
     def get_integration_cron_job(self):
         sql = '''
@@ -123,7 +164,7 @@ class CronJobStarter(BaseTask):
             c['id']  = f"autoRun.cronJob-{c['funcId']}"
 
         # 准备 / 过滤定时任务
-        cron_jobs = map(self.prepare_cron_job, cron_jobs)
+        cron_jobs = self.prepare_cron_jobs(cron_jobs)
         cron_jobs = filter(self.filter_cron_job, cron_jobs)
 
         return cron_jobs
@@ -173,25 +214,8 @@ class CronJobStarter(BaseTask):
         if len(cron_jobs) > 0:
             latest_seq = cron_jobs[-1]['seq']
 
-            # 优先使用动态 Cron 表达式
-            cron_job_ids = [ c['id'] for c in cron_jobs]
-            cache_key = toolkit.get_global_cache_key('cronJob', 'dynamicCronExpr')
-            cache_res = self.cache_db.hmget(cache_key, cron_job_ids) or {}
-
-            for c in cron_jobs:
-                dynamic_cron_expr = cache_res.get(c['id'])
-
-                if not dynamic_cron_expr:
-                    continue
-
-                dynamic_cron_expr = toolkit.json_loads(dynamic_cron_expr)
-                if dynamic_cron_expr['expireTime'] and dynamic_cron_expr['expireTime'] < self.trigger_time:
-                    continue
-
-                c['dynamicCronExpr'] = dynamic_cron_expr['value']
-
             # 准备 / 过滤定时任务
-            cron_jobs = map(self.prepare_cron_job, cron_jobs)
+            cron_jobs = self.prepare_cron_jobs(cron_jobs)
             cron_jobs = filter(self.filter_cron_job, cron_jobs)
 
         return cron_jobs, latest_seq
@@ -354,18 +378,8 @@ class CronJobManualStarter(CronJobStarter):
         if not cron_jobs:
             return None
 
-        cron_job = cron_jobs[0]
-
-        # 优先使用动态 Cron 表达式
-        cache_key = toolkit.get_global_cache_key('cronJob', 'dynamicCronExpr')
-        dynamic_cron_expr = self.cache_db.hget(cache_key, cron_job['id']) or {}
-        if dynamic_cron_expr:
-            dynamic_cron_expr = toolkit.json_loads(dynamic_cron_expr)
-            if not dynamic_cron_expr['expireTime'] or dynamic_cron_expr['expireTime'] >= self.trigger_time:
-                cron_job['dynamicCronExpr'] = dynamic_cron_expr['value']
-
-        cron_job = self.prepare_cron_job(cron_job)
-        return cron_job
+        cron_jobs = self.prepare_cron_jobs(cron_jobs)
+        return cron_job[0]
 
     def run(self, **kwargs):
         # 执行函数、参数

@@ -252,6 +252,7 @@ class FuncRunner(FuncBaseTask):
             'scriptId'   : self.script_id,
             'funcId'     : self.func_id,
             'origin'     : self.origin,
+            'originId'   : self.origin_id,
             'queue'      : str(self.queue),
             'status'     : self.status,
             'timestamp'  : int(self.trigger_time),

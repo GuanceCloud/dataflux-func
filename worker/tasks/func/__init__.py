@@ -1255,6 +1255,16 @@ class FuncCronJobHelper(BaseFuncEntityHelper):
         cache_key = toolkit.get_global_cache_key('cronJob', 'dynamicCronExpr')
         self._task.cache_db.hdel(cache_key, entity_id)
 
+    def pause(self, expires, entity_id=None):
+        # 暂定必须有过期时间，不得永久暂停
+        entity_id = self.resolve_entity_id(entity_id)
+        if not entity_id:
+            return
+
+        cache_key = toolkit.get_global_cache_key('cronJob', 'pause')
+        cache_value = int(time.time()) + expires
+        self._task.cache_db.hset(cache_key, entity_id, cache_value)
+
     # 兼容处理
     def set_crontab(self, *args, **kwargs):
         return self.set_cron_expr(*args, **kwargs)

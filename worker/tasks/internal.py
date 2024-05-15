@@ -398,6 +398,7 @@ class FlushDataBuffer(BaseInternalTask):
                         'script_id'     : d['scriptId'],
                         'func_id'       : func_id,
                         'origin'        : d['origin'],
+                        'origin_id'     : d['originId'],
                         'queue'         : d['queue'],
                         'task_status'   : d['status'],
 

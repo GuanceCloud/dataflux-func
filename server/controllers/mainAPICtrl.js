@@ -1204,13 +1204,38 @@ exports.overview = function(req, res, next) {
             cronJobs.forEach(function(d) {
               d.dynamicCronExpr = null;
 
-              var tempConfig = cacheRes[d.id];
-              if (!tempConfig) return;
+              var dynamicCronExpr = cacheRes[d.id];
+              if (!dynamicCronExpr) return;
 
-              tempConfig = JSON.parse(tempConfig);
-              if (tempConfig.expireTime && tempConfig.expireTime < now) return;
+              dynamicCronExpr = JSON.parse(dynamicCronExpr);
+              if (dynamicCronExpr.expireTime && dynamicCronExpr.expireTime < now) return;
 
-              d.dynamicCronExpr = tempConfig.value;
+              d.dynamicCronExpr = dynamicCronExpr.value;
+            });
+
+            return innerCallback();
+          });
+        },
+        // 追加 Cron 暂停标记
+        function(innerCallback) {
+          if (toolkit.isNothing(cronJobs)) return innerCallback();
+
+          var dataIds  = toolkit.arrayElementValues(cronJobs, 'id');
+          var cacheKey = toolkit.getGlobalCacheKey('cronJob', 'pause');
+          res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
+            if (err) return innerCallback(err);
+
+            var now = parseInt(Date.now() / 1000);
+            cronJobs.forEach(function(d) {
+              d.isPaused = false;
+
+              var pauseExpireTime = cacheRes[d.id];
+              if (!pauseExpireTime) return;
+
+              pauseExpireTime = parseInt(pauseExpireTime);
+              if (pauseExpireTime && pauseExpireTime < now) return;
+
+              d.isPaused = true;
             });
 
             return innerCallback();
@@ -1225,6 +1250,8 @@ exports.overview = function(req, res, next) {
           cronJobs.forEach(function(c) {
             var cronExpr = c.dynamicCronExpr || c.fixedCronExpr || c.cronExpr;
             if (!cronExpr) return;
+
+            if (c.isPaused) return;
 
             var tickCount = cronTriggerCountMap[cronExpr];
             if (toolkit.notNothing(tickCount)) {
