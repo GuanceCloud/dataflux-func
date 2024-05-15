@@ -304,7 +304,15 @@ class FlushDataBuffer(BaseInternalTask):
             origin_id = d.get('originId')
 
             # 统计回卷范围
-            limit = d.pop('_taskRecordLimit', None) or self.TASK_RECORD_LIMIT_BY_ORIGIN_MAP.get(origin) or 0
+            if origin == 'UNKNOWN':
+                # 未知来源的，未配置任务记录数时，不记录
+                # （未知来源一般为观测云集群内调用）
+                limit = d.pop('_taskRecordLimit', None) or 0
+
+            else:
+                # 否则，自动使用默认任务记录数
+                limit = d.pop('_taskRecordLimit', None) or self.TASK_RECORD_LIMIT_BY_ORIGIN_MAP.get(origin) or 0
+
             origin_limit_map[origin_id] = limit
 
             # 写入数据库
