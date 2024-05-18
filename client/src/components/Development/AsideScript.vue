@@ -319,8 +319,7 @@ successCount: 成功 {n}
           </div>
 
           <!-- 基本信息 -->
-          <div v-if="data.id"
-            class="aside-tree-node-description">
+          <div v-if="data.id" class="aside-tree-node-description">
             <InfoBlock type="warning" v-if="data.origin === 'builtin'" :title="$t('Built-in Script Set')" />
             <InfoBlock type="warning" v-if="data.origin === 'scriptMarket'" :title="$t('Installed form Script Market')" />
 

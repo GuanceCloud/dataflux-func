@@ -84,6 +84,7 @@ Pause for 12 hours: 暫停 12 小時
 Pause for 15 minutes: 暫停 15 分鐘
 Pause for 3 hours: 暫停 3 小時
 Pause for 30 minutes: 暫停 30 分鐘
+Paused: 已暫停
 Recent Triggered Time: 最近觸發時間
 Resume: 繼續
 Run: 執行
@@ -126,6 +127,7 @@ Pause for 12 hours: 暫停 12 小時
 Pause for 15 minutes: 暫停 15 分鐘
 Pause for 3 hours: 暫停 3 小時
 Pause for 30 minutes: 暫停 30 分鐘
+Paused: 已暫停
 Recent Triggered Time: 最近觸發時間
 Resume: 繼續
 Run: 執行

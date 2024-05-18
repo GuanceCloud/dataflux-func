@@ -380,6 +380,8 @@ zh-HK:
   enter: 進入
   exit: 退出
   expand: 展開
+  expireAt: 將於 {t} 過期
+  expireAt2: 將於 {t} 失效
   export: 導出
   filter: 過濾
   git (HTTPS recommended): git（建議使用 HTTPS）
@@ -829,6 +831,8 @@ zh-TW:
   enter: 進入
   exit: 退出
   expand: 展開
+  expireAt: 將於 {t} 過期
+  expireAt2: 將於 {t} 失效
   export: 匯出
   filter: 過濾
   git (HTTPS recommended): git（建議使用 HTTPS）
