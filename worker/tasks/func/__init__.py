@@ -1881,11 +1881,11 @@ class FuncBaseTask(BaseTask):
 
             FROM `biz_main_func` AS `func`
 
-			JOIN `biz_main_script` AS `scpt`
-  				ON `scpt`.`id` = `func`.`scriptId`
+            JOIN `biz_main_script` AS `scpt`
+                ON `scpt`.`id` = `func`.`scriptId`
 
-			JOIN `biz_main_script_set` AS `sset`
-  				ON `sset`.`id` = `func`.`scriptSetId`
+            JOIN `biz_main_script_set` AS `sset`
+                ON `sset`.`id` = `func`.`scriptSetId`
 
             WHERE
                 `func`.`id` = ?

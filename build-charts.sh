@@ -11,7 +11,7 @@ IMAGETAG=$2
 REPO=$3
 
 helm_info(){
-	helm repo ls
+    helm repo ls
 }
 
 build_charts(){
@@ -20,8 +20,8 @@ build_charts(){
 }
 
 push_charts(){
-	helm cm-push func-${VERSION}.tgz ${REPO}
-	rm -f func-${VERSION}.tgz
+    helm cm-push func-${VERSION}.tgz ${REPO}
+    rm -f func-${VERSION}.tgz
 }
 
 helm_info

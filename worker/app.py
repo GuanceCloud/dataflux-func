@@ -48,14 +48,14 @@ TASK_CLS_MAP = {
     FuncRunner.name  : FuncRunner,
 
     # 内部任务
-    SystemMetric.name                   : SystemMetric,
-    FlushDataBuffer.name                : FlushDataBuffer,
-    AutoClean.name                      : AutoClean,
-    AutoBackupDB.name                   : AutoBackupDB,
-    ReloadDataMD5Cache.name             : ReloadDataMD5Cache,
-    CheckConnector.name                 : CheckConnector,
-    QueryConnector.name                 : QueryConnector,
-    AutoRun.name                        : AutoRun,
+    SystemMetric.name          : SystemMetric,
+    FlushDataBuffer.name       : FlushDataBuffer,
+    AutoClean.name             : AutoClean,
+    AutoBackupDB.name          : AutoBackupDB,
+    ReloadDataMD5Cache.name    : ReloadDataMD5Cache,
+    CheckConnector.name        : CheckConnector,
+    QueryConnector.name        : QueryConnector,
+    AutoRun.name               : AutoRun,
     UpdateWorkerQueueLimit.name: UpdateWorkerQueueLimit,
 }
 

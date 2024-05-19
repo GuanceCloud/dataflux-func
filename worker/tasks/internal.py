@@ -220,9 +220,9 @@ class FlushDataBuffer(BaseInternalTask):
     default_timeout = CONFIG['_TASK_FLUSH_DATA_TIMEOUT']
 
     TASK_RECORD_LIMIT_BY_ORIGIN_MAP = {
-        'direct'     : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_DIRECT'],
-        'integration': CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_INTEGRATION'],
-        'connector'  : CONFIG['_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CONNECTOR'],
+        'direct'     : CONFIG['_TASK_RECORD_FUNC_LIMIT_DIRECT'],
+        'integration': CONFIG['_TASK_RECORD_FUNC_LIMIT_INTEGRATION'],
+        'connector'  : CONFIG['_TASK_RECORD_FUNC_LIMIT_CONNECTOR'],
     }
 
     def _flush_data_buffer(self, cache_key):

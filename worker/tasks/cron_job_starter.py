@@ -106,23 +106,18 @@ class CronJobStarter(BaseTask):
         return cron_jobs
 
     def filter_cron_job(self, c):
-        print('>>>>>>>', c)
-
         # 跳过：暂停中的
         if c.get('isPaused'):
-            print(1)
             return False
 
         # 跳过：未指定 Cron 表达式 / Cron 表达式错误
         cron_expr = c.get('cronExpr')
         if not cron_expr or not toolkit.is_valid_cron_expr(cron_expr):
-            print(2)
             return False
 
         # 跳过：不满足 Cron 表达式
         timezone = c.get('timezone') or CONFIG['TIMEZONE']
         if not toolkit.is_match_cron_expr(cron_expr, self.trigger_time, timezone):
-            print(3)
             return False
 
         return True
@@ -142,11 +137,11 @@ class CronJobStarter(BaseTask):
 
             FROM `biz_main_func` AS `func`
 
-			JOIN `biz_main_script` AS `scpt`
-  				ON `scpt`.`id` = `func`.`scriptId`
+            JOIN `biz_main_script` AS `scpt`
+                ON `scpt`.`id` = `func`.`scriptId`
 
-			JOIN `biz_main_script_set` AS `sset`
-  				ON `sset`.`id` = `func`.`scriptSetId`
+            JOIN `biz_main_script_set` AS `sset`
+                ON `sset`.`id` = `func`.`scriptSetId`
 
             WHERE
                 `func`.`integration` = 'autoRun'
@@ -155,7 +150,7 @@ class CronJobStarter(BaseTask):
                 `cronExpr` IS NOT NULL
 
             ORDER BY
-            	`func`.`id`
+                `func`.`id`
             '''
         cron_jobs = self.db.query(sql)
 
@@ -190,11 +185,11 @@ class CronJobStarter(BaseTask):
             JOIN `biz_main_func` AS `func`
                 ON `cron`.`funcId` = `func`.`id`
 
-			JOIN `biz_main_script` AS `scpt`
-  				ON `scpt`.`id` = `func`.`scriptId`
+            JOIN `biz_main_script` AS `scpt`
+                ON `scpt`.`id` = `func`.`scriptId`
 
-			JOIN `biz_main_script_set` AS `sset`
-  				ON `sset`.`id` = `func`.`scriptSetId`
+            JOIN `biz_main_script_set` AS `sset`
+                ON `sset`.`id` = `func`.`scriptSetId`
 
             WHERE
                     `cron`.`seq`        > ?
@@ -362,11 +357,11 @@ class CronJobManualStarter(CronJobStarter):
             JOIN `biz_main_func` AS `func`
                 ON `cron`.`funcId` = `func`.`id`
 
-			JOIN `biz_main_script` AS `scpt`
-  				ON `scpt`.`id` = `func`.`scriptId`
+            JOIN `biz_main_script` AS `scpt`
+                ON `scpt`.`id` = `func`.`scriptId`
 
-			JOIN `biz_main_script_set` AS `sset`
-  				ON `sset`.`id` = `func`.`scriptSetId`
+            JOIN `biz_main_script_set` AS `sset`
+                ON `sset`.`id` = `func`.`scriptSetId`
 
             WHERE
                 `cron`.`id` = ?

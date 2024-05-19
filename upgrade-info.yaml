@@ -783,7 +783,7 @@ upgradeInfo:
         KEY `STATUS` (`status`)
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='任务记录（函数）';
 
-  # 于观测云 SaaS 2024-05-15 迭代中实装
+  # 于观测云 SaaS 2024-05-29 迭代中实装
   - seq: 29
     database: |-
       -- 扩充 AccessKey Secret 字段用于存放加密后内容
