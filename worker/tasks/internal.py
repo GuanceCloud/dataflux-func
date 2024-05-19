@@ -402,8 +402,13 @@ class FlushDataBuffer(BaseInternalTask):
                         'script_id'     : d['scriptId'],
                         'func_id'       : func_id,
                         'origin'        : d['origin'],
+                        'origin_id'     : d['originId'],
                         'queue'         : d['queue'],
                         'task_status'   : d['status'],
+
+                        'script_set_title': d.get('scriptSetTitle') or 'UNTITLED',
+                        'script_title'    : d.get('scriptTitle')    or 'UNTITLED',
+                        'func_title'      : d.get('funcTitle')      or 'UNTITLED',
                     },
                     'fields': {
                         'wait_cost' : d['waitCost'],
@@ -593,13 +598,13 @@ class AutoClean(BaseInternalTask):
         # TODO
         # 搜集实际存活的 Origin ID 列表
         sql = '''
-            SELECT id FROM biz_main_auth_link
-            UNION
-            SELECT id FROM biz_main_crontab_config
-            UNION
-            SELECT id FROM biz_main_batch
-            UNION
             SELECT id FROM biz_main_connector
+            UNION
+            SELECT id FROM biz_main_sync_api
+            UNION
+            SELECT id FROM biz_main_async_api
+            UNION
+            SELECT id FROM biz_main_cron_job
             UNION
             SELECT 'direct' AS id
             UNION
@@ -646,26 +651,26 @@ class AutoClean(BaseInternalTask):
             '''
         self.db.query(sql)
 
-    def clear_expired_dynamic_crontab(self):
-        cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
+    def clear_expired_dynamic_cron_expr(self):
+        cache_key = toolkit.get_global_cache_key('cronJob', 'dynamicCronExpr')
         cache_res = self.cache_db.hgetall(cache_key)
         if not cache_res:
             return
 
-        crontab_config_ids_to_delete = []
-        for crontab_config_id, temp_config in cache_res.items():
+        cron_job_ids_to_delete = []
+        for cron_job_id, temp_config in cache_res.items():
             temp_config = toolkit.json_loads(temp_config)
             if temp_config['expireTime'] and temp_config['expireTime'] < self.trigger_time:
-                crontab_config_ids_to_delete.append(crontab_config_id)
+                cron_job_ids_to_delete.append(cron_job_id)
 
-        if crontab_config_ids_to_delete:
-            self.cache_db.hdel(cache_key, crontab_config_ids_to_delete)
+        if cron_job_ids_to_delete:
+            self.cache_db.hdel(cache_key, cron_job_ids_to_delete)
 
     def clear_outdated_recent_triggered_data(self):
         origin_table_map = {
-            'authLink'     : 'biz_main_auth_link',
-            'crontabConfig': 'biz_main_crontab_config',
-            'batch'        : 'biz_main_batch',
+            'syncAPI' : 'biz_main_sync_api',
+            'asyncAPI': 'biz_main_async_api',
+            'cronJob' : 'biz_main_cron_job',
         }
         for origin, table in origin_table_map.items():
             cache_key = toolkit.get_global_cache_key('cache', 'recentTaskTriggered', [ 'origin', origin ])
@@ -712,8 +717,8 @@ class AutoClean(BaseInternalTask):
         # 清理已过期的函数存储
         self.safe_call(self.clear_expired_func_store)
 
-        # 清除已经过期的动态 Crontab 配置
-        self.safe_call(self.clear_expired_dynamic_crontab)
+        # 清除已经过期的动态 Cron 表达式配置
+        self.safe_call(self.clear_expired_dynamic_cron_expr)
 
         # 清理已过时的最近触发记录
         self.safe_call(self.clear_outdated_recent_triggered_data)
@@ -1190,14 +1195,14 @@ class AutoRun(BaseInternalTask):
             }
             self.cache_db.put_tasks(task_req)
 
-class WorkerQueueLimitCrontabConfig(BaseInternalTask):
-    name = 'Internal.WorkerQueueLimitCrontabConfig'
+class UpdateWorkerQueueLimit(BaseInternalTask):
+    name = 'Internal.UpdateWorkerQueueLimit'
 
     def run(self, **kwargs):
         # 上锁
         self.lock()
 
-        # 获取 { 队列: 自动触发配置数量 } 表
+        # 获取 { 队列: 定时任务数量 } 表
         sql = '''
             SELECT
                 COUNT(*) AS `count`
@@ -1205,7 +1210,7 @@ class WorkerQueueLimitCrontabConfig(BaseInternalTask):
                     JSON_EXTRACT(`func`.`extraConfigJSON`, '$.queue')
                 ) AS `queue`
 
-            FROM `biz_main_crontab_config` AS `cron`
+            FROM `biz_main_cron_job` AS `cron`
 
             JOIN `biz_main_func` AS `func`
                 ON `cron`.`funcId` = `func`.`id`
@@ -1220,7 +1225,7 @@ class WorkerQueueLimitCrontabConfig(BaseInternalTask):
 
         count_map = {}
         for d in db_res:
-            queue = str(d.get('queue') or CONFIG['_FUNC_TASK_QUEUE_CRONTAB'])
+            queue = str(d.get('queue') or CONFIG['_FUNC_TASK_QUEUE_CRON_JOB'])
             count = d.get('count')
             if queue not in count_map:
                 count_map[queue] = 0
@@ -1237,16 +1242,16 @@ class WorkerQueueLimitCrontabConfig(BaseInternalTask):
                 worker_queue_limit_map[queue] = None
                 continue
 
-            crontab_config_count = count_map.get(queue)
-            if not crontab_config_count:
-                # 此队列上没有自动触发配置，默认开放
+            count = count_map.get(queue)
+            if not count:
+                # 此队列上没有定时任务，默认开放
                 worker_queue_limit_map[queue] = None
                 continue
 
             # 工作队列长度限制
-            worker_queue_limit = max(crontab_config_count * CONFIG['_WORKER_QUEUE_LIMIT_SCALE_CRONTAB_CONFIG'], CONFIG['_WORKER_QUEUE_LIMIT_MIN'])
+            worker_queue_limit = max(count * CONFIG['_WORKER_QUEUE_LIMIT_SCALE_CRON_JOB'], CONFIG['_WORKER_QUEUE_LIMIT_MIN'])
             worker_queue_limit_map[queue] = worker_queue_limit
 
         # 缓存
-        cache_key = toolkit.get_global_cache_key('cache', 'workerQueueLimitCrontabConfig')
+        cache_key = toolkit.get_global_cache_key('cache', 'workerQueueLimitCronJob')
         self.cache_db.set(cache_key, toolkit.json_dumps(worker_queue_limit_map))

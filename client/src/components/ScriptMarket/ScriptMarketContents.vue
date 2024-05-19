@@ -59,17 +59,17 @@ Stay Here: 留在本页
 
 Script Set Installed Successfully!: 成功安装脚本集！
 
-This Script Set requires 3rd party Python packages                                                          : 本脚本集依赖第三方 Python 包
-Go to PIP Tool                                                                                              : 前往 PIP 工具
-This Script Set includes an example which can be used for deploying Startup Script                          : 本脚本集包含示例，可部署为启动脚本
-'This Script Set includes an example which can be used for deploying Startup Script with following configs:': 本脚本集包含示例，可部署为启动脚本，并包含以下配置项目：
-Deploy Startup Script                                                                                       : 部署启动脚本
-Deploy Crontab Config                                                                                       : 部署自动触发配置
-Startup Script is deployed                                                                                  : 启动脚本已部署
-Crontab Config is deployed                                                                                  : 自动触发配置已部署
-Crontab Config is not deployed yet                                                                          : 自动触发配置尚未部署
-Go to Startup Script                                                                                        : 前往启动脚本
-Go to the Crontab Config                                                                                    : 前往自动触发配置
+This Script Set requires 3rd party Python packages                                                        : 本脚本集依赖第三方 Python 包
+Go to PIP Tool                                                                                            : 前往 PIP 工具
+This Script Set includes an example which can be used for deploying Startup Script                        : 本脚本集包含示例，可部署为启动脚本
+'This Script Set includes an example which can be used for deploying Startup Script with following configs: ': 本脚本集包含示例，可部署为启动脚本，并包含以下配置项目：
+Deploy Startup Script                                                                                     : 部署启动脚本
+Deploy Cron Job                                                                                           : 部署定时任务
+Startup Script is deployed                                                                                : 启动脚本已部署
+Cron Job is deployed                                                                                      : 定时任务已部署
+Cron Job is not deployed yet                                                                              : 定时任务尚未部署
+Go to Startup Script                                                                                      : 前往启动脚本
+Go to the Cron Job                                                                                        : 前往定时任务
 
 The published Script Set will be shown here, you can find and install the ones you need: 发布后的脚本集将在此展示，可以查找并安装需要的脚本集
 
@@ -94,10 +94,10 @@ Are you sure you want to publish the Script Set to the Script Market?: 是否確
 Are you sure you want to reinstall the Script Set?: 是否確認重新安裝此腳本集？
 Are you sure you want to remove the Translation?: 是否確認移除此翻譯？
 Are you sure you want to upgrade the Script Set?: 是否確認升級此腳本集？
-Crontab Config is deployed: 自動觸發配置已部署
-Crontab Config is not deployed yet: 自動觸發配置尚未部署
+Cron Job is deployed: 定時任務已部署
+Cron Job is not deployed yet: 定時任務尚未部署
 Delete Script Set: 刪除腳本集
-Deploy Crontab Config: 部署自動觸發配置
+Deploy Cron Job: 部署定時任務
 Deploy Startup Script: 部署啓動腳本
 Edited: 已修改
 Exactly Match: 完全匹配
@@ -107,7 +107,7 @@ Force Mode: 強制模式
 FoundScriptSetCount: 找不到腳本集 | 共找到 {n} 個腳本集 | 共找到 {n} 個腳本集
 Go to PIP Tool: 前往 PIP 工具
 Go to Startup Script: 前往啓動腳本
-Go to the Crontab Config: 前往自動觸發配置
+Go to the Cron Job: 前往定時任務
 Homepage: 前往主頁
 Homepage URL: 主頁 URL
 Install Script Set: 安裝腳本集
@@ -141,7 +141,7 @@ The published Script Set will be shown here, you can find and install the ones y
 This Script Market is locked by other user ({user}): 當前腳本市場已被其他用户（{user}）鎖定
 This Script Market is locked by you: 當前腳本市場已被您鎖定
 This Script Set includes an example which can be used for deploying Startup Script: 本腳本集包含示例，可部署為啓動腳本
-'This Script Set includes an example which can be used for deploying Startup Script with following configs:': 本腳本集包含示例，可部署為啓動腳本，幷包含以下配置項目：
+'This Script Set includes an example which can be used for deploying Startup Script with following configs: ': 本腳本集包含示例，可部署為啓動腳本，幷包含以下配置項目：
 'This Script Set is edited locally, you can:': 此腳本集已在本地被修改，您可以：
 'This Script Set is not from current Script Market, you can:': 此腳本集並非來自【當前】腳本市場，您可以：
 This Script Set requires 3rd party Python packages: 本腳本集依賴第三方 Python 包
@@ -159,10 +159,10 @@ Are you sure you want to publish the Script Set to the Script Market?: 是否確
 Are you sure you want to reinstall the Script Set?: 是否確認重新安裝此指令碼集？
 Are you sure you want to remove the Translation?: 是否確認移除此翻譯？
 Are you sure you want to upgrade the Script Set?: 是否確認升級此指令碼集？
-Crontab Config is deployed: 自動觸發配置已部署
-Crontab Config is not deployed yet: 自動觸發配置尚未部署
+Cron Job is deployed: 定時任務已部署
+Cron Job is not deployed yet: 定時任務尚未部署
 Delete Script Set: 刪除指令碼集
-Deploy Crontab Config: 部署自動觸發配置
+Deploy Cron Job: 部署定時任務
 Deploy Startup Script: 部署啟動指令碼
 Edited: 已修改
 Exactly Match: 完全匹配
@@ -172,7 +172,7 @@ Force Mode: 強制模式
 FoundScriptSetCount: 找不到指令碼集 | 共找到 {n} 個指令碼集 | 共找到 {n} 個指令碼集
 Go to PIP Tool: 前往 PIP 工具
 Go to Startup Script: 前往啟動指令碼
-Go to the Crontab Config: 前往自動觸發配置
+Go to the Cron Job: 前往定時任務
 Homepage: 前往主頁
 Homepage URL: 主頁 URL
 Install Script Set: 安裝指令碼集
@@ -206,7 +206,7 @@ The published Script Set will be shown here, you can find and install the ones y
 This Script Market is locked by other user ({user}): 當前指令碼市場已被其他使用者（{user}）鎖定
 This Script Market is locked by you: 當前指令碼市場已被您鎖定
 This Script Set includes an example which can be used for deploying Startup Script: 本指令碼集包含示例，可部署為啟動指令碼
-'This Script Set includes an example which can be used for deploying Startup Script with following configs:': 本指令碼集包含示例，可部署為啟動指令碼，幷包含以下配置專案：
+'This Script Set includes an example which can be used for deploying Startup Script with following configs: ': 本指令碼集包含示例，可部署為啟動指令碼，幷包含以下配置專案：
 'This Script Set is edited locally, you can:': 此指令碼集已在本地被修改，您可以：
 'This Script Set is not from current Script Market, you can:': 此指令碼集並非來自【當前】指令碼市場，您可以：
 This Script Set requires 3rd party Python packages: 本指令碼集依賴第三方 Python 包
@@ -574,33 +574,33 @@ Upgrade Script Set: 升級指令碼集
                   </el-form>
                 </template>
 
-                <el-button type="primary" size="small" @click="deploy({ withCrontabConfig: true })" :disabled="isDeploying">
+                <el-button type="primary" size="small" @click="deploy({ withCronJob: true })" :disabled="isDeploying">
                   <i v-if="isDeploying" class="fa fa-fw fa-circle-o-notch fa-spin"></i>
                   <i v-else class="fa fa-fw fa-plus"></i>
                   {{ $t('Deploy Startup Script') }}
                 </el-button>
               </p>
 
-              <!-- 自动触发 -->
-              <template v-if="deployment.startupScriptCrontabFunc">
-                <p v-if="deployment.startupCrontabId">
+              <!-- 定时任务 -->
+              <template v-if="deployment.startupScriptCronJobFunc">
+                <p v-if="deployment.startupCronJobId">
                   <span class="text-good">
                     <i class="fa fa-fw fa-check-circle"></i>
-                    {{ $t('Crontab Config is deployed') }}
-                  </span>
+                    {{ $t('Cron Job is deployed') }}
+                </span>
                   <br>
-                  <el-button type="text" @click="common.goToList('crontab-config-list', { _fuzzySearch: deployment.startupCrontabId })">
+                  <el-button type="text" @click="common.goToList('cron-job-list', { _fuzzySearch: deployment.startupCronJobId })">
                     <i class="fa fa-fw fa-external-link"></i>
-                    {{ $t('Go to the Crontab Config') }}
+                    {{ $t('Go to the Cron Job') }}
                   </el-button>
                 </p>
                 <p v-else-if="deployment.startupScriptId">
-                  {{ $t('Crontab Config is not deployed yet') }}
-                  <br>
-                  <el-button type="primary" size="small" @click="deploy({ withCrontabConfig: true })" :disabled="isDeploying">
+                  {{ $t('Cron Job is not deployed yet') }}
+                <br>
+                  <el-button type="primary" size="small" @click="deploy({ withCronJob: true })" :disabled="isDeploying">
                     <i v-if="isDeploying" class="fa fa-fw fa-circle-o-notch fa-spin"></i>
                     <i v-else class="fa fa-fw fa-plus"></i>
-                    {{ $t('Deploy Crontab Config') }}
+                    {{ $t('Deploy Cron Job') }}
                   </el-button>
                 </p>
               </template>
@@ -1113,8 +1113,8 @@ export default {
             // 提取部署信息
             let exampleScriptId          = apiRes.data.exampleScriptIds[0]                          || null;
             let startupScriptId          = apiRes.data.startupScriptIds[0]                          || null;
-            let startupCrontabId         = apiRes.data.startupCrontabIds[0]                         || null;
-            let startupScriptCrontabFunc = apiRes.data.startupScriptCrontabFuncMap[startupScriptId] || null;
+            let startupCronJobId         = apiRes.data.startupCronJobIds[0]                         || null;
+            let startupScriptCronJobFunc = apiRes.data.startupScriptCronJobFuncMap[startupScriptId] || null;
             let requirements             = apiRes.data.requirements                                 || null;
             let configFields             = apiRes.data.configFields                                 || null;
 
@@ -1133,8 +1133,8 @@ export default {
               configFields            : configFields,
               exampleScriptId         : exampleScriptId,
               startupScriptId         : startupScriptId,
-              startupCrontabId        : startupCrontabId,
-              startupScriptCrontabFunc: startupScriptCrontabFunc,
+              startupCronJobId        : startupCronJobId,
+              startupScriptCronJobFunc: startupScriptCronJobFunc,
             };
             this.configReplacerForm = {};
             this.showDeploy         = true;
@@ -1165,11 +1165,11 @@ export default {
         if (data.startupScriptId) {
           this.deployment.startupScriptId = data.startupScriptId;
         }
-        if (data.startupCrontabId) {
-          this.deployment.startupCrontabId = data.startupCrontabId;
+        if (data.startupCronJobId) {
+          this.deployment.startupCronJobId = data.startupCronJobId;
         }
-        if (data.startupScriptCrontabFunc) {
-          this.deployment.startupScriptCrontabFunc = data.startupScriptCrontabFunc;
+        if (data.startupScriptCronJobFunc) {
+          this.deployment.startupScriptCronJobFunc = data.startupScriptCronJobFunc;
         }
         this.isDeploying = false;
       }, 1 * 1000);

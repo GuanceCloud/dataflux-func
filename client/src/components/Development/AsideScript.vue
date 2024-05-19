@@ -50,14 +50,15 @@ The Script Market has been removed: 脚本市场已被删除
 
 Config    : 配置
 Auth      : 认证
+Cron Expr : Cron 表达式
 Expires   : 过期
 Throttling: 限流
 Created   : 创建
 Run       : 执行
 
-Auth Link List     : 授权链接列表
-Crontab Config List: 自动触发配置列表
-Batch List         : 批处理列表
+Sync API List : 同步 API 列表
+Async API List: 异步 API 列表
+Cron Job List : 定时任务列表
 
 lastSucceeded : '{t}调用成功'
 lastFailed    : '{t}调用失败'
@@ -67,12 +68,12 @@ failureCount  : '失败 {n}'
 
 Are you sure you want to delete the Script Set?<br><strong class="text-bad">{label}</strong>: 是否确认删除此脚本集?<br><strong class="text-bad">{label}</strong>
 Are you sure you want to delete the Script?<br><strong class="text-bad">{label}</strong>: 是否确认删除此脚本<br><strong class="text-bad">{label}</strong>
-Are you sure you want to run the Crontab Config manually?: 是否确认手动执行此自动触发配置？
-Crontab Config Task sent: 自动触发配置任务已发送
+Are you sure you want to start the Cron Job manually?: 是否确认手动启动此定时任务？
+Cron Job Started Manually: 定时任务已手工启动
 
-Auth Links, Crontab Configs and Batches: 授权链接、自动触发配置和批处理
-Go to Recent Task Record               : 前往最近任务记录
-Go to Script Market                    : 前往脚本市场
+Sync, Async APIs and Cron Jobs: 同步、异步 API 和定时任务
+Go to Recent Task Record      : 前往最近任务记录
+Go to Script Market           : 前往脚本市场
 
 Some Script Sets have been hidden: 一些脚本集已被隐藏
 "In most cases, the Script Sets that users doesn't need to care about are hidden by default.": "大多数情况下，用户不需要关心的脚本集默认会被隐藏。"
@@ -83,19 +84,18 @@ Some Script Sets have been hidden: 一些脚本集已被隐藏
 <i18n locale="zh-HK" lang="yaml">
 Are you sure you want to delete the Script Set?<br><strong class="text-bad">{label}</strong>: 是否確認刪除此腳本集?<br><strong class="text-bad">{label}</strong>
 Are you sure you want to delete the Script?<br><strong class="text-bad">{label}</strong>: 是否確認刪除此腳本<br><strong class="text-bad">{label}</strong>
-Are you sure you want to run the Crontab Config manually?: 是否確認手動執行此自動觸發配置？
+Are you sure you want to start the Cron Job manually?: 是否確認手動啓動此定時任務？
 'Assigned to queue #{queue}': '指派到隊列 #{queue}'
+Async API List: 異步 API 列表
 Auth: 認證
-Auth Link List: 授權鏈接列表
-Auth Links, Crontab Configs and Batches: 授權鏈接、自動觸發配置和批處理
-Batch List: 批處理列表
 Cannot not starts with a number: 不得以數字開頭
 Code edited but not published yet: 代碼已修改但尚未發佈
 Config: 配置
 Copy {name} ID: 複製{name} ID
 Created: 創建
-Crontab Config List: 自動觸發配置列表
-Crontab Config Task sent: 自動觸發配置任務已發送
+Cron Expr: Cron 表達式
+Cron Job List: 定時任務列表
+Cron Job Started Manually: 定時任務已手工啓動
 Edited: 已修改
 Example (In Other Script Set): 示例（在其他腳本集中）
 Example (In Same Script Set): 示例（在相同腳本集中）
@@ -133,6 +133,8 @@ Script unlocked: 腳本已解鎖
 Script {id}: 腳本 {id}
 Setup: 配置
 Some Script Sets have been hidden: 一些腳本集已被隱藏
+Sync API List: 同步 API 列表
+Sync, Async APIs and Cron Jobs: 同步、異步 API 和定時任務
 The Script Market has been removed: 腳本市場已被刪除
 Throttling: 限流
 View: 查看
@@ -146,19 +148,18 @@ successCount: 成功 {n}
 <i18n locale="zh-TW" lang="yaml">
 Are you sure you want to delete the Script Set?<br><strong class="text-bad">{label}</strong>: 是否確認刪除此指令碼集?<br><strong class="text-bad">{label}</strong>
 Are you sure you want to delete the Script?<br><strong class="text-bad">{label}</strong>: 是否確認刪除此指令碼<br><strong class="text-bad">{label}</strong>
-Are you sure you want to run the Crontab Config manually?: 是否確認手動執行此自動觸發配置？
+Are you sure you want to start the Cron Job manually?: 是否確認手動啟動此定時任務？
 'Assigned to queue #{queue}': '指派到佇列 #{queue}'
+Async API List: 非同步 API 列表
 Auth: 認證
-Auth Link List: 授權連結列表
-Auth Links, Crontab Configs and Batches: 授權連結、自動觸發配置和批處理
-Batch List: 批處理列表
 Cannot not starts with a number: 不得以數字開頭
 Code edited but not published yet: 程式碼已修改但尚未釋出
 Config: 配置
 Copy {name} ID: 複製{name} ID
 Created: 建立
-Crontab Config List: 自動觸發配置列表
-Crontab Config Task sent: 自動觸發配置任務已傳送
+Cron Expr: Cron 表示式
+Cron Job List: 定時任務列表
+Cron Job Started Manually: 定時任務已手工啟動
 Edited: 已修改
 Example (In Other Script Set): 示例（在其他指令碼集中）
 Example (In Same Script Set): 示例（在相同指令碼集中）
@@ -196,6 +197,8 @@ Script unlocked: 指令碼已解鎖
 Script {id}: 指令碼 {id}
 Setup: 配置
 Some Script Sets have been hidden: 一些指令碼集已被隱藏
+Sync API List: 同步 API 列表
+Sync, Async APIs and Cron Jobs: 同步、非同步 API 和定時任務
 The Script Market has been removed: 指令碼市場已被刪除
 Throttling: 限流
 View: 檢視
@@ -316,8 +319,7 @@ successCount: 成功 {n}
           </div>
 
           <!-- 基本信息 -->
-          <div v-if="data.id"
-            class="aside-tree-node-description">
+          <div v-if="data.id" class="aside-tree-node-description">
             <InfoBlock type="warning" v-if="data.origin === 'builtin'" :title="$t('Built-in Script Set')" />
             <InfoBlock type="warning" v-if="data.origin === 'scriptMarket'" :title="$t('Installed form Script Market')" />
 
@@ -448,11 +450,11 @@ successCount: 成功 {n}
 
             <!-- 关联信息 -->
             <div class="goto-links">
-              <!-- 授权链接、自动触发配置和批处理 -->
+              <!-- 同步、异步 API 和定时任务 -->
               <el-link v-if="data.type === 'func'"
-                @click="openRelEntity(node, data, 'authLink')">
+                @click="openRelEntity(node, data, 'syncAPI')">
                 <i class="fa fa-fw fa-window-restore"></i>
-                {{ $t('Auth Links, Crontab Configs and Batches') }}
+                {{ $t('Sync, Async APIs and Cron Jobs') }}
               </el-link>
 
               <!-- 前往任务记录 -->
@@ -479,11 +481,7 @@ successCount: 成功 {n}
 
     <QuickViewWindow ref="quickViewWindow"></QuickViewWindow>
 
-    <APIExampleDialog ref="apiExampleDialog"
-      :showPostExample="true"
-      :showPostExampleSimplified="true"
-      :showGetExample="true"
-      :showGetExampleSimplified="true"></APIExampleDialog>
+    <APIExampleDialog ref="apiExampleDialog"></APIExampleDialog>
 
     <ScriptSetSetup ref="ScriptSetSetup" />
     <ScriptSetup ref="ScriptSetup" />
@@ -500,14 +498,14 @@ successCount: 成功 {n}
         <span class="text-info press-esc-to-close-tip">{{ $t('Press ESC to close') }}</span>
       </div>
       <el-tabs v-model="relEntityTarget">
-        <el-tab-pane name="authLink">
-          <span slot="label"><i class="fa fa-fw fa-link"></i> {{ $t('Auth Link') }}</span>
+        <el-tab-pane name="syncAPI">
+          <span slot="label"><i class="fa fa-fw fa-link"></i> {{ $t('Sync API') }}</span>
 
           <transition name="fade">
           <el-table
             class="common-table" v-if="showRelEntityData"
-            :data="relEntities.authLinks">
-            <el-table-column :label="$t('Auth Link')">
+            :data="relEntities.syncAPIs">
+            <el-table-column :label="$t('Sync API')">
               <template slot-scope="scope">
                 <span class="text-info">ID</span>
                 &nbsp;<code class="text-main">{{ scope.row.id }}</code>
@@ -541,7 +539,7 @@ successCount: 成功 {n}
                 <span v-if="T.isNothing(scope.row.throttlingJSON)">-</span>
                 <el-tooltip v-else placement="right">
                   <div slot="content">
-                    <template v-for="opt in C.AUTH_LINK_THROTTLING">
+                    <template v-for="opt in C.SYNC_API_THROTTLING">
                       <span v-if="scope.row.throttlingJSON[opt.key]">{{ $tc(opt.name, scope.row.throttlingJSON[opt.key]) }}<br></span>
                     </template>
                   </div>
@@ -577,26 +575,27 @@ successCount: 成功 {n}
 
             <el-table-column align="right" width="180">
               <template slot="header" slot-scope="scope">
-                <el-link type="primary" @click="$router.push({name: 'auth-link-list'})">
-                  {{ $t('Auth Link List') }}
+                <el-link type="primary" @click="$router.push({name: 'sync-api-list'})">
+                  {{ $t('Sync API List') }}
                   <i class="fa fa-fw fa-share-square"></i>
                 </el-link>
               </template>
               <template slot-scope="scope">
-                <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row, '/api/v1/al/:id')">{{ $t('Example') }}</el-link>
+                <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row, '/api/v1/sync/:id')">{{ $t('Example') }}</el-link>
               </template>
             </el-table-column>
           </el-table>
           </transition>
         </el-tab-pane>
-        <el-tab-pane name="crontabConfig">
-          <span slot="label"><i class="fa fa-fw fa-clock-o"></i> {{ $t('Crontab Config') }}</span>
+
+        <el-tab-pane name="asyncAPI">
+          <span slot="label"><i class="fa fa-fw fa-tasks"></i> {{ $t('Async API') }}</span>
 
           <transition name="fade">
           <el-table
             class="common-table" v-if="showRelEntityData"
-            :data="relEntities.crontabConfigs">
-            <el-table-column :label="$t('Crontab Config')">
+            :data="relEntities.asyncAPIs">
+            <el-table-column :label="$t('Async API')">
               <template slot-scope="scope">
                 <span class="text-info">ID</span>
                 &nbsp;<code class="text-main">{{ scope.row.id }}</code>
@@ -612,12 +611,82 @@ successCount: 成功 {n}
 
             <el-table-column :label="$t('Config')" width="220">
               <template slot-scope="scope">
-                <span class="text-info">Crontab{{ $t(':') }}</span>
-                <template v-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCrontab">
-                  <code class="text-main">{{ scope.row.func_extraConfigJSON.fixedCrontab }}</code>
+                <span class="text-info">{{ $t('Auth') }}{{ $t(':') }}</span>
+                <el-tooltip :content="scope.row.apia_title" :disabled="!!!scope.row.apia_title" placement="right">
+                  <span :class="{ 'text-main': !!scope.row.apia_id }">{{ C.API_AUTH_MAP.get(scope.row.apia_type).name }}</span>
+                </el-tooltip>
+              </template>
+            </el-table-column>
+
+            <el-table-column :label="$t('Status')" width="220">
+              <template slot-scope="scope">
+                <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
+                <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
+
+                <template v-if="scope.row.lastStartTime">
+                  <br>
+                  <span v-if="scope.row.lastStatus === 'success'" class="text-good">
+                    <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                  </span>
+                  <span v-else-if="scope.row.lastStatus === 'failure'" class="text-bad">
+                    <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                  </span>
+                  <span v-else class="text-main">
+                    <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                  </span>
+
+                  <br>
+                  <i class="fa fa-fw fa-pie-chart text-info"></i>
+                  <span :class="{ 'text-good': !!scope.row.recentSuccessCount }">{{ $t('successCount', { n: T.numberLimit(scope.row.recentSuccessCount) }) }}</span>
+                  / <span :class="{ 'text-bad': !!scope.row.recentFailureCount }">{{ $t('failureCount', { n: T.numberLimit(scope.row.recentFailureCount) }) }}</span>
+                </template>
+              </template>
+            </el-table-column>
+
+            <el-table-column align="right" width="180">
+              <template slot="header" slot-scope="scope">
+                <el-link type="primary" @click="$router.push({name: 'async-api-list'})">
+                  {{ $t('Async API List') }}
+                  <i class="fa fa-fw fa-share-square"></i>
+                </el-link>
+              </template>
+              <template slot-scope="scope">
+                <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row, '/api/v1/async/:id')">{{ $t('Example') }}</el-link>
+              </template>
+            </el-table-column>
+          </el-table>
+          </transition>
+        </el-tab-pane>
+
+        <el-tab-pane name="cronJob">
+          <span slot="label"><i class="fa fa-fw fa-clock-o"></i> {{ $t('Cron Job') }}</span>
+
+          <transition name="fade">
+          <el-table
+            class="common-table" v-if="showRelEntityData"
+            :data="relEntities.cronJobs">
+            <el-table-column :label="$t('Cron Job')">
+              <template slot-scope="scope">
+                <span class="text-info">ID</span>
+                &nbsp;<code class="text-main">{{ scope.row.id }}</code>
+                <CopyButton :content="scope.row.id" />
+
+                <template v-if="scope.row.note">
+                  <br>
+                  <span class="text-info">&#12288;{{ $t('Note') }}{{ $t(':') }}</span>
+                  <span>{{ scope.row.note }}</span>
+                </template>
+              </template>
+            </el-table-column>
+
+            <el-table-column :label="$t('Config')" width="220">
+              <template slot-scope="scope">
+                <span class="text-info">{{ $t('Cron Expr') }}{{ $t(':') }}</span>
+                <template v-if="scope.row.func_extraConfigJSON && scope.row.func_extraConfigJSON.fixedCronExpr">
+                  <code class="text-main">{{ scope.row.func_extraConfigJSON.fixedCronExpr }}</code>
                   <el-tag size="mini">{{ $t('Fixed') }}</el-tag>
                 </template>
-                <code v-else-if="scope.row.crontab" class="text-main">{{ scope.row.crontab }}</code>
+                <code v-else-if="scope.row.cronExpr" class="text-main">{{ scope.row.cronExpr }}</code>
                 <span v-else class="text-bad">{{ $t('Not Set') }}</span>
 
                 <br>
@@ -661,85 +730,15 @@ successCount: 成功 {n}
 
             <el-table-column align="right" width="180">
               <template slot="header" slot-scope="scope">
-                <el-link type="primary" @click="$router.push({name: 'crontab-config-list'})">
-                  {{ $t('Crontab Config List') }}
+                <el-link type="primary" @click="$router.push({name: 'cron-job-list'})">
+                  {{ $t('Cron Job List') }}
                   <i class="fa fa-fw fa-share-square"></i>
                 </el-link>
               </template>
               <template slot-scope="scope">
-                <el-link @click="runCrontabTask(scope.row)" :disabled="!scope.row.func_id">
+                <el-link @click="startCronJobManually(scope.row)" :disabled="!scope.row.func_id">
                   {{ $t('Run') }}
                 </el-link>
-              </template>
-            </el-table-column>
-          </el-table>
-          </transition>
-        </el-tab-pane>
-
-        <el-tab-pane name="batch">
-          <span slot="label"><i class="fa fa-fw fa-tasks"></i> {{ $t('Batch') }}</span>
-
-          <transition name="fade">
-          <el-table
-            class="common-table" v-if="showRelEntityData"
-            :data="relEntities.batches">
-            <el-table-column :label="$t('Batch')">
-              <template slot-scope="scope">
-                <span class="text-info">ID</span>
-                &nbsp;<code class="text-main">{{ scope.row.id }}</code>
-                <CopyButton :content="scope.row.id" />
-
-                <template v-if="scope.row.note">
-                  <br>
-                  <span class="text-info">&#12288;{{ $t('Note') }}{{ $t(':') }}</span>
-                  <span>{{ scope.row.note }}</span>
-                </template>
-              </template>
-            </el-table-column>
-
-            <el-table-column :label="$t('Config')" width="220">
-              <template slot-scope="scope">
-                <span class="text-info">{{ $t('Auth') }}{{ $t(':') }}</span>
-                <el-tooltip :content="scope.row.apia_title" :disabled="!!!scope.row.apia_title" placement="right">
-                  <span :class="{ 'text-main': !!scope.row.apia_id }">{{ C.API_AUTH_MAP.get(scope.row.apia_type).name }}</span>
-                </el-tooltip>
-              </template>
-            </el-table-column>
-
-            <el-table-column :label="$t('Status')" width="220">
-              <template slot-scope="scope">
-                <span v-if="scope.row.isDisabled" class="text-bad"><i class="fa fa-fw fa-ban"></i> {{ $t('Disabled') }}</span>
-                <span v-else class="text-good"><i class="fa fa-fw fa-check"></i> {{ $t('Enabled') }}</span>
-
-                <template v-if="scope.row.lastStartTime">
-                  <br>
-                  <span v-if="scope.row.lastStatus === 'success'" class="text-good">
-                    <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastStartTime) }) }}
-                  </span>
-                  <span v-else-if="scope.row.lastStatus === 'failure'" class="text-bad">
-                    <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(scope.row.lastStartTime) }) }}
-                  </span>
-                  <span v-else class="text-main">
-                    <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastStartTime) }) }}
-                  </span>
-
-                  <br>
-                  <i class="fa fa-fw fa-pie-chart text-info"></i>
-                  <span :class="{ 'text-good': !!scope.row.recentSuccessCount }">{{ $t('successCount', { n: T.numberLimit(scope.row.recentSuccessCount) }) }}</span>
-                  / <span :class="{ 'text-bad': !!scope.row.recentFailureCount }">{{ $t('failureCount', { n: T.numberLimit(scope.row.recentFailureCount) }) }}</span>
-                </template>
-              </template>
-            </el-table-column>
-
-            <el-table-column align="right" width="180">
-              <template slot="header" slot-scope="scope">
-                <el-link type="primary" @click="$router.push({name: 'batch-list'})">
-                  {{ $t('Batch List') }}
-                  <i class="fa fa-fw fa-share-square"></i>
-                </el-link>
-              </template>
-              <template slot-scope="scope">
-                <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row, '/api/v1/bat/:id')">{{ $t('Example') }}</el-link>
               </template>
             </el-table-column>
           </el-table>
@@ -1412,22 +1411,22 @@ export default {
         }
       };
 
-      // 加载授权链接列表
-      apiRes = await this.T.callAPI_get('/api/v1/auth-links/do/list', listOpt);
+      // 加载同步 API 列表
+      apiRes = await this.T.callAPI_get('/api/v1/sync-apis/do/list', listOpt);
       if (apiRes.ok) {
-        this.relEntities.authLinks = apiRes.data;
+        this.relEntities.syncAPIs = apiRes.data;
       }
 
-      // 加载自动触发配置列表
-      apiRes = await this.T.callAPI_get('/api/v1/crontab-configs/do/list', listOpt);
+      // 加载异步 API 列表
+      apiRes = await this.T.callAPI_get('/api/v1/async-apis/do/list', listOpt);
       if (apiRes.ok) {
-        this.relEntities.crontabConfigs = apiRes.data;
+        this.relEntities.asyncAPIs = apiRes.data;
       }
 
-      // 加载批处理列表
-      apiRes = await this.T.callAPI_get('/api/v1/batches/do/list', listOpt);
+      // 加载定时任务列表
+      apiRes = await this.T.callAPI_get('/api/v1/cron-jobs/do/list', listOpt);
       if (apiRes.ok) {
-        this.relEntities.batches = apiRes.data;
+        this.relEntities.cronJobs = apiRes.data;
       }
     },
     async openRelEntity(node, data, target) {
@@ -1461,12 +1460,12 @@ export default {
 
       this.$refs.apiExampleDialog.update(apiURL, apiBody, funcKwargs);
     },
-    async runCrontabTask(d) {
-      if (!await this.T.confirm(this.$t('Are you sure you want to run the Crontab Config manually?'))) return;
+    async startCronJobManually(d) {
+      if (!await this.T.confirm(this.$t('Are you sure you want to start the Cron Job manually?'))) return;
 
       let apiRes = await this.T.callAPI('post', '/api/v1/cron/:id', {
         params: { id: d.id },
-        alert : { okMessage: this.$t('Crontab Config Task sent') },
+        alert : { okMessage: this.$t('Cron Job Started Manually') },
       });
     },
   },
@@ -1505,13 +1504,11 @@ export default {
       showRelEntity    : false,
       showRelEntityData: false,
       relEntityTarget  : '',
-      relEntityFunc: {
-
-      },
+      relEntityFunc    : {},
       relEntities: {
-        authLinks     : [],
-        crontabConfigs: [],
-        batches       : [],
+        syncAPIs : [],
+        asyncAPIs: [],
+        cronJobs : [],
       },
     };
   },

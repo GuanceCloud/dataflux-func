@@ -727,8 +727,8 @@ kafka.publish(topic='some_topic', message='some_message')`,
     return new MAP_CONST(this.API_AUTH_FIXED_FIELD_LOCATION);
   },
 
-  // 授权链接限流
-  get AUTH_LINK_THROTTLING() {
+  // 同步 API 限流
+  get SYNC_API_THROTTLING() {
     return [
       {
         key : 'bySecond',
@@ -756,8 +756,8 @@ kafka.publish(topic='some_topic', message='some_message')`,
       },
     ];
   },
-  get AUTH_LINK_THROTTLING_MAP() {
-    return new MAP_CONST(this.AUTH_LINK_THROTTLING);
+  get SYNC_API_THROTTLING_MAP() {
+    return new MAP_CONST(this.SYNC_API_THROTTLING);
   },
 
   // 任务状态
@@ -834,19 +834,19 @@ kafka.publish(topic='some_topic', message='some_message')`,
         icon: 'fa-cogs',
       },
       {
-        key : 'authLink',
-        name: i18n.t('Auth Link'),
+        key : 'syncAPI',
+        name: i18n.t('Sync API'),
         icon: 'fa-link',
       },
       {
-        key : 'crontabConfig',
-        name: i18n.t('Crontab Config'),
-        icon: 'fa-clock-o',
+        key : 'asyncAPI',
+        name: i18n.t('Async API'),
+        icon: 'fa-tasks',
       },
       {
-        key : 'batch',
-        name: i18n.t('Batch'),
-        icon: 'fa-tasks',
+        key : 'cronJob',
+        name: i18n.t('Cron Job'),
+        icon: 'fa-clock-o',
       },
       {
         key : 'fileService',
@@ -1096,20 +1096,20 @@ kafka.publish(topic='some_topic', message='some_message')`,
         showField : 'title',
       },
       {
-        key       : 'authLinks',
-        name      : i18n.t('Auth Link'),
+        key       : 'syncAPIs',
+        name      : i18n.t('Sync API'),
         showField : 'funcId',
         showClass : 'text-main code-font',
       },
       {
-        key       : 'crontabConfigs',
-        name      : i18n.t('Crontab Config'),
+        key       : 'asyncAPIs',
+        name      : i18n.t('Async API'),
         showField : 'funcId',
         showClass : 'text-main code-font',
       },
       {
-        key       : 'batches',
-        name      : i18n.t('Batch'),
+        key       : 'cronJobs',
+        name      : i18n.t('Cron Job'),
         showField : 'funcId',
         showClass : 'text-main code-font',
       },

@@ -178,7 +178,7 @@ package or package==1.2.3: package 或 package==1.2.3
             <el-table-column :label="$t('User-installed Version')" width="200">
               <template slot-scope="scope">
                 <el-tooltip effect="dark" :content="$t('Built-in versions have a higher priority than user-installed versions')" placement="top" :disabled="!scope.row.isOverrided">
-                  <code :class="{'overrided': scope.row.isOverrided}">{{ scope.row.userInstalledVersion }}</code>
+                  <code :class="{'deleted': scope.row.isOverrided}">{{ scope.row.userInstalledVersion }}</code>
                 </el-tooltip>
               </template>
             </el-table-column>

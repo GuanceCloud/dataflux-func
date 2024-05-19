@@ -2,7 +2,7 @@
 
 '''
 脚本执行处理任务
-主要用于直接调用函数、通过授权链接调用函数、Crontab 触发调用函数
+主要用于直接调用函数、通过同步 API、异步 API、定时任务调用函数
 '''
 
 # Built-in Modules
@@ -100,7 +100,7 @@ class FuncRunner(FuncBaseTask):
 
         return self.__reduced_print_logs
 
-    def cache_recent_crontab_triggered(self):
+    def cache_recent_cron_job_triggered(self):
         try:
             # 从缓存中获取上次记录
             cache_key = toolkit.get_global_cache_key('cache', 'recentTaskTriggered', [ 'origin', self.origin ])
@@ -115,16 +115,20 @@ class FuncRunner(FuncBaseTask):
             for _exec_mode in list(cache_value.keys()):
                 cache_value[_exec_mode] = toolkit.delta_of_delta_decode(toolkit.repeat_decode(cache_value[_exec_mode]))
 
+            # 兼容处理
+            if 'crontab' in cache_value:
+                cache_value['cronJob'] = cache_value.pop('crontab') or []
+
             # 追加数据
-            exec_mode = self.kwargs.get('crontabExecMode')
+            exec_mode = self.kwargs.get('cronJobExecMode')
             if exec_mode not in cache_value:
                 cache_value[exec_mode] = []
 
             cache_value[exec_mode].append(self.trigger_time)
 
-            # 去除过期数据 / 压缩
+            # 去除过期数据并压缩
             for _exec_mode in list(cache_value.keys()):
-                cache_value[_exec_mode] = list(filter(lambda ts: ts > self.trigger_time - CONFIG['_RECENT_CRONTAB_TRIGGERED_EXPIRES'], cache_value[_exec_mode]))
+                cache_value[_exec_mode] = list(filter(lambda ts: ts > self.trigger_time - CONFIG['_RECENT_CRON_JOB_TRIGGERED_EXPIRES'], cache_value[_exec_mode]))
                 cache_value[_exec_mode] = toolkit.repeat_encode(toolkit.delta_of_delta_encode(cache_value[_exec_mode]))
 
             # 重新写入缓存
@@ -139,7 +143,7 @@ class FuncRunner(FuncBaseTask):
                 raise
 
     def cache_last_task_status(self, status, exception=None):
-        if self.origin not in ( 'authLink', 'crontabConfig', 'batch'):
+        if self.origin not in ( 'syncAPI', 'asyncAPI', 'cronJob' ):
             return
 
         cache_key = toolkit.get_global_cache_key('cache', 'lastTaskStatus', [ 'origin', self.origin ])
@@ -171,14 +175,19 @@ class FuncRunner(FuncBaseTask):
                 'script_set_id': self.script_set_id,
                 'script_id'    : self.script_id,
                 'func_id'      : self.func_id,
+                'func_name'    : self.func_name,
                 'origin'       : self.origin,
                 'origin_id'    : self.origin_id,
+
+                'script_set_title': self.script_set_title or 'UNTITLED',
+                'script_title'    : self.script_title     or 'UNTITLED',
+                'func_title'      : self.func_title       or 'UNTITLED',
             },
             'fields': {
                 'message': self.full_print_log_lines,
 
                 'func_call_kwargs': toolkit.json_dumps(self.func_call_kwargs),
-                'crontab'         : self.kwargs.get('crontab'),
+                'cron_expr'       : self.kwargs.get('cronExpr'),
                 'call_chain'      : toolkit.json_dumps(self.call_chain, keep_none=True),
                 'return_value'    : toolkit.json_dumps(self.return_value, keep_none=True),
                 'delay'           : self.delay,
@@ -218,8 +227,8 @@ class FuncRunner(FuncBaseTask):
             'funcCallKwargsJSON'   : toolkit.json_dumps(self.func_call_kwargs),
             'origin'               : self.origin,
             'originId'             : self.origin_id,
-            'crontab'              : self.kwargs.get('crontab'),
-            'callChainJSON'        : toolkit.json_dumps(self.call_chain, keep_none   = True),
+            'cronExpr'             : self.kwargs.get('cronExpr'),
+            'callChainJSON'        : toolkit.json_dumps(self.call_chain, keep_none=True),
             'triggerTimeMs'        : self.trigger_time_ms,
             'startTimeMs'          : self.start_time_ms,
             'endTimeMs'            : self.end_time_ms,
@@ -234,7 +243,7 @@ class FuncRunner(FuncBaseTask):
             'tracebackTEXT'        : self.traceback,
             'nonCriticalErrorsTEXT': self.non_critical_errors,
             'printLogsTEXT'        : self.reduced_print_logs,
-            'returnValueJSON'      : toolkit.json_dumps(self.return_value, keep_none = True),
+            'returnValueJSON'      : toolkit.json_dumps(self.return_value, keep_none=True),
             'responseControlJSON'  : toolkit.json_dumps(self.response_control, keep_none=True),
         }
         cache_key = toolkit.get_cache_key('dataBuffer', 'taskRecordFunc')
@@ -246,12 +255,17 @@ class FuncRunner(FuncBaseTask):
             'scriptId'   : self.script_id,
             'funcId'     : self.func_id,
             'origin'     : self.origin,
+            'originId'   : self.origin_id,
             'queue'      : str(self.queue),
             'status'     : self.status,
             'timestamp'  : int(self.trigger_time),
             'waitCost'   : self.wait_cost,
             'runCost'    : self.run_cost,
             'totalCost'  : self.total_cost,
+
+            'scriptSetTitle': self.script_set_title,
+            'scriptTitle'   : self.script_title,
+            'funcTitle'     : self.func_title,
         }
         cache_key = toolkit.get_cache_key('dataBuffer', 'funcCallCount')
         self.cache_db.push(cache_key, toolkit.json_dumps(data))
@@ -283,18 +297,18 @@ class FuncRunner(FuncBaseTask):
         super().run(**kwargs)
 
         ### 任务开始
-        # 记录 Crontab 触发时间
-        if self.origin == 'crontabConfig':
-            self.cache_recent_crontab_triggered()
+        # 记录 Cron 触发时间
+        if self.origin == 'cronJob':
+            self.cache_recent_cron_job_triggered()
 
         func_resp = None
         try:
             # 定时任务锁
-            crontab_lock_key   = kwargs.get('crontabLockKey')
-            crontab_lock_value = kwargs.get('crontabLockValue')
+            cron_job_lock_key   = kwargs.get('cronJobLockKey')
+            cron_job_lock_value = kwargs.get('cronJobLockValue')
 
-            if crontab_lock_key and crontab_lock_value:
-                if not self.cache_db.lock(crontab_lock_key, crontab_lock_value, self.timeout):
+            if cron_job_lock_key and cron_job_lock_value:
+                if not self.cache_db.lock(cron_job_lock_key, cron_job_lock_value, self.timeout):
                     raise PreviousTaskNotFinished()
 
             # 缓存任务状态
@@ -341,8 +355,8 @@ class FuncRunner(FuncBaseTask):
 
         finally:
             # 定时任务解锁
-            if crontab_lock_key and crontab_lock_value:
-                self.cache_db.unlock(crontab_lock_key, crontab_lock_value)
+            if cron_job_lock_key and cron_job_lock_value:
+                self.cache_db.unlock(cron_job_lock_key, cron_job_lock_value)
 
             # 清理资源
             self.clean_up()

@@ -47,7 +47,7 @@ var loadConfig = exports.loadConfig = function loadConfig(configFilePath, callba
   var userConfigObj = {};
 
   var configFromEnvPrefix   = configObj.CONFIG_FROM_ENV_PREFIX;
-  var configPrefixForCustom = configObj.CONFIG_FOR_CUSTOM_PREFIX;
+  var configPrefixForCustom = configObj.CUSTOM_CONFIG_PREFIX;
 
   // Collect config field type map
   var configTypeMap = {};

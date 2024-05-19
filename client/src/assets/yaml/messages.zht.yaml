@@ -64,8 +64,6 @@ zh-HK:
   Invalid options, api_timeout is too small: 配置錯誤，api_timeout 過小
   Invalid options, bad JSON format: 配置錯誤，無法解析為 JSON
   Invalid options, eta should be a valid datetime value: 配置錯誤，eta 必須為有效的日期-時間值
-  Invalid options, execMode should be "async" in Crontab or Batch calling: 配置錯誤，調用自動觸發或批處理時，execMode 必須為 "async"
-  Invalid options, execMode should be "sync" in Auth Link calling: 配置錯誤，調用授權鏈接時，execMode 必須為 "sync"
   Invalid options, invalid execMode: 配置錯誤，execMode 值無效
   Invalid options, invalid returnType: 配置錯誤，returnType 值無效
   Invalid options, queue should be an integer between 1 and 9: 配置錯誤，隊列必須為 1 到 9 之間的整數
@@ -78,13 +76,13 @@ zh-HK:
   Invalid username or password: 用户名或密碼無效
   Maximum calling rate exceeded: 達到最大調用頻率
   Modifying built-in Connector is not allowed, please edit the config instead: 不允許修改內置連接器，請修改系統配置
-  No such Auth Link: 不存在此授權鏈接
-  No such Batch: 不存在批處理
-  No such Crontab Config: 不存在自動觸發配置
+  No such Async API: 不存在此異步 API
+  No such Cron Job: 不存在此定時任務
   No such Func: 不存在函數
+  No such Sync API: 不存在此同步 API
   No such branch in the git repo: git 倉庫中不存在此分支
   No such data: 不存在數據
-  No such router. Please make sure that the METHOD is correct and no spelling missing in the URL: 不存在路由，請檢查 HTTP 請求方法以及 URL 拼寫是否正確
+  No such router. Please make sure that the METHOD is correct and no spelling missing in the URL: 不存在此路由，請檢查 HTTP 請求方法以及 URL 拼寫是否正確
   Operation Record cannot be deleted: 操作記錄無法刪除
   Operation Record cannot be modified: 操作記錄無法修改
   Parent directory symbol (..) is not allowed in path: 禁止在根路徑中使用上層目錄符（..）
@@ -102,14 +100,14 @@ zh-HK:
   Socket.io connection gone: Socket.io 連接已斷開
   Specified new file or folder name already existed: 指定的新文件名或目錄名已存在
   Startup Script deploying failed, Please contact the author: 啓動腳本部署失敗，請聯繫作者
-  This Auth Link is already expired: 此授權鏈接已過期
-  This Auth Link is disabled: 此授權鏈接已被禁用
-  This Batch is disabled: 此批處理已被禁用
+  This Async API is disabled: 此異步 API 已被禁用
   This File Service is disabled: 此文件服務已被禁用
   This Script Market has been administered by other DataFlux Func: 此腳本市場已由其他 DataFlux Func 管理
   This Script Market is locked by other user: 此腳本市場已被其他用户鎖定
   This Script Set is locked by other user: 此腳本集已被其他用户鎖定
   This Script is locked by other user: 此腳本已被其他用户鎖定
+  This Sync API is already expired: 此同步 API 已過期
+  This Sync API is disabled: 此同步 API 已被禁用
   This captcha token is already used: 此驗證碼令牌已被使用
   This username is already existed: 此用户名已存在
   This username is used by others: 此用户名已被其他用户使用
@@ -186,8 +184,6 @@ zh-TW:
   Invalid options, api_timeout is too small: 配置錯誤，api_timeout 過小
   Invalid options, bad JSON format: 配置錯誤，無法解析為 JSON
   Invalid options, eta should be a valid datetime value: 配置錯誤，eta 必須為有效的日期-時間值
-  Invalid options, execMode should be "async" in Crontab or Batch calling: 配置錯誤，呼叫自動觸發或批處理時，execMode 必須為 "async"
-  Invalid options, execMode should be "sync" in Auth Link calling: 配置錯誤，呼叫授權連結時，execMode 必須為 "sync"
   Invalid options, invalid execMode: 配置錯誤，execMode 值無效
   Invalid options, invalid returnType: 配置錯誤，returnType 值無效
   Invalid options, queue should be an integer between 1 and 9: 配置錯誤，佇列必須為 1 到 9 之間的整數
@@ -200,13 +196,13 @@ zh-TW:
   Invalid username or password: 使用者名稱或密碼無效
   Maximum calling rate exceeded: 達到最大呼叫頻率
   Modifying built-in Connector is not allowed, please edit the config instead: 不允許修改內建聯結器，請修改系統配置
-  No such Auth Link: 不存在此授權連結
-  No such Batch: 不存在批處理
-  No such Crontab Config: 不存在自動觸發配置
+  No such Async API: 不存在此非同步 API
+  No such Cron Job: 不存在此定時任務
   No such Func: 不存在函式
+  No such Sync API: 不存在此同步 API
   No such branch in the git repo: git 倉庫中不存在此分支
   No such data: 不存在資料
-  No such router. Please make sure that the METHOD is correct and no spelling missing in the URL: 不存在路由，請檢查 HTTP 請求方法以及 URL 拼寫是否正確
+  No such router. Please make sure that the METHOD is correct and no spelling missing in the URL: 不存在此路由，請檢查 HTTP 請求方法以及 URL 拼寫是否正確
   Operation Record cannot be deleted: 操作記錄無法刪除
   Operation Record cannot be modified: 操作記錄無法修改
   Parent directory symbol (..) is not allowed in path: 禁止在根路徑中使用上層目錄符（..）
@@ -224,14 +220,14 @@ zh-TW:
   Socket.io connection gone: Socket.io 連線已斷開
   Specified new file or folder name already existed: 指定的新檔名或目錄名已存在
   Startup Script deploying failed, Please contact the author: 啟動指令碼部署失敗，請聯絡作者
-  This Auth Link is already expired: 此授權連結已過期
-  This Auth Link is disabled: 此授權連結已被禁用
-  This Batch is disabled: 此批處理已被禁用
+  This Async API is disabled: 此非同步 API 已被禁用
   This File Service is disabled: 此檔案服務已被禁用
   This Script Market has been administered by other DataFlux Func: 此指令碼市場已由其他 DataFlux Func 管理
   This Script Market is locked by other user: 此指令碼市場已被其他使用者鎖定
   This Script Set is locked by other user: 此指令碼集已被其他使用者鎖定
   This Script is locked by other user: 此指令碼已被其他使用者鎖定
+  This Sync API is already expired: 此同步 API 已過期
+  This Sync API is disabled: 此同步 API 已被禁用
   This captcha token is already used: 此驗證碼令牌已被使用
   This username is already existed: 此使用者名稱已存在
   This username is used by others: 此使用者名稱已被其他使用者使用

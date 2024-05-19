@@ -4,32 +4,33 @@
 var ROUTE       = require('../utils/yamlResources').get('ROUTE');
 var routeLoader = require('../utils/routeLoader');
 
-var batchAPICtrl = require('../controllers/batchAPICtrl');
+var asyncAPICtrl = require('../controllers/asyncAPICtrl');
 
+// 兼容处理
 routeLoader.load(ROUTE.batchAPI.list, [
-  batchAPICtrl.list,
+  asyncAPICtrl.list,
 ]);
 
 routeLoader.load(ROUTE.batchAPI.add, [
-  batchAPICtrl.add,
+  asyncAPICtrl.add,
 ]);
 
 routeLoader.load(ROUTE.batchAPI.modify, [
-  batchAPICtrl.modify,
+  asyncAPICtrl.modify,
 ]);
 
 routeLoader.load(ROUTE.batchAPI.delete, [
-  batchAPICtrl.delete,
+  asyncAPICtrl.delete,
 ]);
 
 routeLoader.load(ROUTE.batchAPI.addMany, [
-  batchAPICtrl.addMany,
+  asyncAPICtrl.addMany,
 ]);
 
 routeLoader.load(ROUTE.batchAPI.modifyMany, [
-  batchAPICtrl.modifyMany,
+  asyncAPICtrl.modifyMany,
 ]);
 
 routeLoader.load(ROUTE.batchAPI.deleteMany, [
-  batchAPICtrl.deleteMany,
+  asyncAPICtrl.deleteMany,
 ]);

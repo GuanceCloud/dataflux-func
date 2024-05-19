@@ -27,17 +27,14 @@ zh-HK:
   Aliyun Time Series Database for InfluxDB: 阿里雲時序數據庫 InfluxDB 版
   All: 全部
   Anonymity: 匿名
-  Auth Link: 授權鏈接
-  Auth Link Doc: 授權鏈接文檔
-  Auth Link ID: 授權鏈接 ID
+  Async API: 異步 API
+  Async API ID: 異步 API ID
   Auto: 自動
   'Auto: Default': 自動切換：默認
   'Auto: base16': 自動切換：base16
   'Auto: duotone': 自動切換：duotone
   'Auto: idea/darcula': 自動切換：idea/darcula
   'Auto: neat/material-darker': 自動切換：neat/material-darker
-  Batch: 批處理
-  Batch ID: 批處理 ID
   Before Script Lib recover: 腳本庫還原前
   Before package import: 腳本集導入前
   Before package install: 腳本集安裝前
@@ -75,8 +72,8 @@ zh-HK:
   Create: 創建
   Create Time: 創建時間
   Created by user manually: 用户手動創建
-  Crontab Config: 自動觸發配置
-  Crontab Config ID: 自動觸發配置 ID
+  Cron Job: 定時任務
+  Cron Job ID: 定時任務 ID
   DELETE Request: 發送 DELETE 請求
   DIFF: 差異
   Dark Mode: 黑暗模式
@@ -91,6 +88,7 @@ zh-HK:
   Delete: 刪除
   Deleted: 已刪除
   Deploy: 部署
+  Deprecated: 已廢棄
   Description: 描述
   Detail: 詳情
   Dev: 開發
@@ -313,6 +311,9 @@ zh-HK:
   Switch: 分支
   Switch Line: 分支連線
   Switch Node: 分支節點
+  Sync API: 同步 API
+  Sync API Doc: 同步 API 文檔
+  Sync API ID: 同步 API  ID
   System Logs: 系統日誌
   System Setting: 系統設置
   System Status: 系統狀態
@@ -344,6 +345,7 @@ zh-HK:
   User Profile saved: 用户信息已保存
   Username: 登錄賬號
   Value: 值
+  Version: 版本
   Very good: 非常好
   Will be converted by float() automatically: 將自動使用 float() 進行轉換
   Will be converted by int() automatically: 將自動使用 int() 進行轉換
@@ -378,6 +380,8 @@ zh-HK:
   enter: 進入
   exit: 退出
   expand: 展開
+  expireAt: 將於 {t} 過期
+  expireAt2: 將於 {t} 失效
   export: 導出
   filter: 過濾
   git (HTTPS recommended): git（建議使用 HTTPS）
@@ -474,17 +478,14 @@ zh-TW:
   Aliyun Time Series Database for InfluxDB: 阿里雲時序資料庫 InfluxDB 版
   All: 全部
   Anonymity: 匿名
-  Auth Link: 授權連結
-  Auth Link Doc: 授權連結文件
-  Auth Link ID: 授權連結 ID
+  Async API: 非同步 API
+  Async API ID: 非同步 API ID
   Auto: 自動
   'Auto: Default': 自動切換：預設
   'Auto: base16': 自動切換：base16
   'Auto: duotone': 自動切換：duotone
   'Auto: idea/darcula': 自動切換：idea/darcula
   'Auto: neat/material-darker': 自動切換：neat/material-darker
-  Batch: 批處理
-  Batch ID: 批處理 ID
   Before Script Lib recover: 指令碼庫還原前
   Before package import: 指令碼集匯入前
   Before package install: 指令碼集安裝前
@@ -522,8 +523,8 @@ zh-TW:
   Create: 建立
   Create Time: 建立時間
   Created by user manually: 使用者手動建立
-  Crontab Config: 自動觸發配置
-  Crontab Config ID: 自動觸發配置 ID
+  Cron Job: 定時任務
+  Cron Job ID: 定時任務 ID
   DELETE Request: 傳送 DELETE 請求
   DIFF: 差異
   Dark Mode: 黑暗模式
@@ -538,6 +539,7 @@ zh-TW:
   Delete: 刪除
   Deleted: 已刪除
   Deploy: 部署
+  Deprecated: 已廢棄
   Description: 描述
   Detail: 詳情
   Dev: 開發
@@ -760,6 +762,9 @@ zh-TW:
   Switch: 分支
   Switch Line: 分支連線
   Switch Node: 分支節點
+  Sync API: 同步 API
+  Sync API Doc: 同步 API 文件
+  Sync API ID: 同步 API  ID
   System Logs: 系統日誌
   System Setting: 系統設定
   System Status: 系統狀態
@@ -791,6 +796,7 @@ zh-TW:
   User Profile saved: 使用者資訊已儲存
   Username: 登入賬號
   Value: 值
+  Version: 版本
   Very good: 非常好
   Will be converted by float() automatically: 將自動使用 float() 進行轉換
   Will be converted by int() automatically: 將自動使用 int() 進行轉換
@@ -825,6 +831,8 @@ zh-TW:
   enter: 進入
   exit: 退出
   expand: 展開
+  expireAt: 將於 {t} 過期
+  expireAt2: 將於 {t} 失效
   export: 匯出
   filter: 過濾
   git (HTTPS recommended): git（建議使用 HTTPS）

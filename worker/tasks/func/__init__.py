@@ -41,17 +41,39 @@ FIX_INTEGRATION_KEY_MAP = {
     #       返回`True`表示登录成功
     #       返回`False`或`Exception('<错误信息>')`表示登录失败
     #   无配置项
-    'signIn': 'signIn',
-    'login' : 'signIn',
+    'signin' : 'signIn',
+    'sign_in': 'signIn',
+    'login'  : 'signIn',
+    'log_in' : 'signIn',
 
     # 自动运行函数
-    # 集成为独立定时运行任务（即无需配置的自动触发配置）
+    # 集成为独立定时运行任务（即无需配置的定时任务）
     # 函数必须为`def func()`形式（即无参数形式）
     #   配置项：
-    #       crontab        : Crontab 语法自动运行周期
+    #       cronExpr: 自动运行周期（Cron 表达式）
     #       onSystemLaunch : True/False，是否系统启动后运行
     #       onScriptPublish: True/False，是否脚本发布后运行
-    'autoRun': 'autoRun',
+    'autorun' : 'autoRun',
+    'auto_run': 'autoRun',
+}
+
+FIX_INTEGRATION_CONFIG_KEY_MAP = {
+    # Cron 表达式自动执行
+    'cronexpr' : 'cronExpr',
+    'cron_expr': 'cronExpr',
+    'crontab'  : 'cronExpr',
+
+    # 启动启动时运行
+    'onsystemlaunch'  : 'onSystemLaunch',
+    'on_system_launch': 'onSystemLaunch',
+    'onlaunch'        : 'onSystemLaunch',
+    'on_launch'       : 'onSystemLaunch',
+
+    # 脚本发布后运行
+    'onscriptpublish'  : 'onScriptPublish',
+    'on_script_publish': 'onScriptPublish',
+    'onpublish'        : 'onScriptPublish',
+    'on_publish'       : 'onScriptPublish',
 }
 
 # 连接器对应 Helper 类
@@ -1170,81 +1192,97 @@ class BaseFuncEntityHelper(object):
         db_res = self._task.db.query(sql, sql_params)
         return db_res
 
-class FuncAuthLinkHelper(BaseFuncEntityHelper):
-    _table         = 'biz_main_auth_link'
-    _entity_origin = 'authLink'
+class FuncSyncAPIHelper(BaseFuncEntityHelper):
+    _table         = 'biz_main_sync_api'
+    _entity_origin = 'syncAPI'
 
-class FuncCrontabConfigHelper(BaseFuncEntityHelper):
-    _table         = 'biz_main_crontab_config'
-    _entity_origin = 'crontabConfig'
+class FuncAsyncAPIHelper(BaseFuncEntityHelper):
+    _table         = 'biz_main_async_api'
+    _entity_origin = 'asyncAPI'
 
-    def set_crontab(self, crontab, expires=None, entity_id=None):
+class FuncCronJobHelper(BaseFuncEntityHelper):
+    _table         = 'biz_main_cron_job'
+    _entity_origin = 'cronJob'
+
+    def set_cron_expr(self, cron_expr, expires=None, entity_id=None):
         entity_id = self.resolve_entity_id(entity_id)
         if not entity_id:
             return
 
-        cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
+        cache_key = toolkit.get_global_cache_key('cronJob', 'dynamicCronExpr')
         cache_value = {
             'expireTime': None if not expires else int(time.time()) + expires,
-            'value'     : crontab,
+            'value'     : cron_expr,
         }
         self._task.cache_db.hset(cache_key, entity_id, toolkit.json_dumps(cache_value))
 
-    def get_crontab(self, entity_id=None):
+    def get_cron_expr(self, entity_id=None):
         entity_id = self.resolve_entity_id(entity_id)
         if not entity_id:
             return
 
-        cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
-        temp_config = self._task.cache_db.hget(cache_key, entity_id)
-        if not temp_config:
+        cache_key = toolkit.get_global_cache_key('cronJob', 'dynamicCronExpr')
+        dynamic_cron_expr = self._task.cache_db.hget(cache_key, entity_id)
+        if not dynamic_cron_expr:
             return None
 
-        temp_config = toolkit.json_loads(temp_config)
-        if temp_config['expireTime'] and temp_config['expireTime'] < int(time.time()):
+        dynamic_cron_expr = toolkit.json_loads(dynamic_cron_expr)
+        if dynamic_cron_expr['expireTime'] and dynamic_cron_expr['expireTime'] < int(time.time()):
             return None
 
-        return temp_config['value']
+        return dynamic_cron_expr['value']
 
-    def get_all_crontab(self):
-        cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
-        temp_config_map = self._task.cache_db.hgetall(cache_key)
-        if not temp_config_map:
+    def get_all_cron_expr(self):
+        cache_key = toolkit.get_global_cache_key('cronJob', 'dynamicCronExpr')
+        dynamic_cron_expr_map = self._task.cache_db.hgetall(cache_key)
+        if not dynamic_cron_expr_map:
             return {}
 
-        for entity_id in list(temp_config_map.keys()):
-            temp_config = toolkit.json_loads(temp_config_map[entity_id])
-            if temp_config['expireTime'] and temp_config['expireTime'] < int(time.time()):
-                temp_config_map.pop(entity_id, None)
+        for entity_id in list(dynamic_cron_expr_map.keys()):
+            dynamic_cron_expr = toolkit.json_loads(dynamic_cron_expr_map[entity_id])
+            if dynamic_cron_expr['expireTime'] and dynamic_cron_expr['expireTime'] < int(time.time()):
+                dynamic_cron_expr_map.pop(entity_id, None)
             else:
-                temp_config_map[entity_id] = temp_config['value']
+                dynamic_cron_expr_map[entity_id] = dynamic_cron_expr['value']
 
-        return temp_config_map
+        return dynamic_cron_expr_map
 
-    def clear_crontab(self, entity_id=None):
+    def clear_cron_expr(self, entity_id=None):
         entity_id = self.resolve_entity_id(entity_id)
         if not entity_id:
             return
 
-        cache_key = toolkit.get_global_cache_key('tempConfig', 'dynamicCrontab')
+        cache_key = toolkit.get_global_cache_key('cronJob', 'dynamicCronExpr')
         self._task.cache_db.hdel(cache_key, entity_id)
 
-    # 兼容方法（xxx_crontab -> xxx_temp_crontab）
+    def pause(self, expires, entity_id=None):
+        # 暂定必须有过期时间，不得永久暂停
+        entity_id = self.resolve_entity_id(entity_id)
+        if not entity_id:
+            return
+
+        cache_key = toolkit.get_global_cache_key('cronJob', 'pause')
+        cache_value = int(time.time()) + expires
+        self._task.cache_db.hset(cache_key, entity_id, cache_value)
+
+    # 兼容处理
+    def set_crontab(self, *args, **kwargs):
+        return self.set_cron_expr(*args, **kwargs)
+    def get_crontab(self, *args, **kwargs):
+        return self.get_cron_expr(*args, **kwargs)
+    def get_all_crontab(self, *args, **kwargs):
+        return self.get_all_cron_expr(*args, **kwargs)
+    def clear_crontab(self, *args, **kwargs):
+        return self.clear_cron_expr(*args, **kwargs)
+
     def set_temp_crontab(self, *args, **kwargs):
-        return self.set_crontab(*args, **kwargs)
-
+        return self.set_cron_expr(*args, **kwargs)
     def get_temp_crontab(self, *args, **kwargs):
-        return self.get_crontab(*args, **kwargs)
-
+        return self.get_cron_expr(*args, **kwargs)
     def get_all_temp_crontab(self, *args, **kwargs):
-        return self.get_all_crontab(*args, **kwargs)
-
+        return self.get_all_cron_expr(*args, **kwargs)
     def clear_temp_crontab(self, *args, **kwargs):
-        return self.clear_crontab(*args, **kwargs)
-
-class FuncBatchHelper(BaseFuncEntityHelper):
-    _table         = 'biz_main_batch'
-    _entity_origin = 'batch'
+        return self.clear_cron_expr(*args, **kwargs)
 
 class FuncExtraForGuanceHelper(object):
     def __init__(self, task):
@@ -1341,6 +1379,11 @@ class FuncBaseTask(BaseTask):
             self.script_id, self.func_name = self.func_id, None
 
         self.script_set_id, self.script_name = self.script_id.split('__', maxsplit=1)
+
+        # 脚本集、脚本、函数标题
+        self.script_set_title = self.kwargs.get('scriptSetTitle')
+        self.script_title     = self.kwargs.get('scriptTitle')
+        self.func_title       = self.kwargs.get('funcTitle')
 
         # 任务来源
         self.origin    = self.kwargs.get('origin')
@@ -1547,13 +1590,19 @@ class FuncBaseTask(BaseTask):
 
     def _export_as_api(self, safe_scope, title,
                     # 控制类参数
-                    fixed_crontab=None, delayed_crontab=None, timeout=None, api_timeout=None, expires=None, cache_result=None, queue=None,
+                    fixed_cron_expr=None, delayed_cron_job=None, timeout=None, api_timeout=None, expires=None, cache_result=None, queue=None,
                     # 标记类参数
                     category=None, tags=None,
                     # 集成处理参数
                     integration=None, integration_config=None,
                     # 文档控制类参数
-                    is_hidden=False):
+                    is_hidden=False,
+                    # 兼容处理
+                    fixed_crontab=None, delayed_crontab=None):
+        # 兼容处理
+        fixed_cron_expr  = fixed_cron_expr  or fixed_crontab
+        delayed_cron_job = delayed_cron_job or delayed_crontab
+
         ### 参数检查/预处理 ###
         extra_config = {}
 
@@ -1566,30 +1615,49 @@ class FuncBaseTask(BaseTask):
         # 控制类参数 #
         ##############
 
-        # 固定Crontab
+        # 固定 Cron 表达式
+        # 兼容处理
         if fixed_crontab is not None:
-            if not toolkit.is_valid_crontab(fixed_crontab):
-                e = InvalidAPIOption('`fixed_crontab` is not a valid crontab expression')
+            if not toolkit.is_valid_cron_expr(fixed_crontab):
+                e = InvalidAPIOption('`fixed_crontab` is not a valid cron expression')
                 raise e
 
             if len(fixed_crontab.split(' ')) > 5:
                 e = InvalidAPIOption('`fixed_crontab` does not support second part')
                 raise e
 
-            extra_config['fixedCrontab'] = fixed_crontab
+        if fixed_cron_expr is not None:
+            if not toolkit.is_valid_cron_expr(fixed_cron_expr):
+                e = InvalidAPIOption('`fixed_cron_expr` is not a valid cron expression')
+                raise e
 
-        # 延迟Crontab（单位秒，可多个）
+            if len(fixed_cron_expr.split(' ')) > 5:
+                e = InvalidAPIOption('`fixed_cron_expr` does not support second part')
+                raise e
+
+            extra_config['fixedCronExpr'] = fixed_cron_expr
+
+        # 延迟 Cron 任务（单位秒，可多个）
+        # 兼容处理
         if delayed_crontab is not None:
             delayed_crontab = toolkit.as_array(delayed_crontab)
-            delayed_crontab = list(set(delayed_crontab))
-            delayed_crontab.sort()
 
             for d in delayed_crontab:
                 if not isinstance(d, int):
-                    e = InvalidAPIOption('Elements of `delayed_crontab` should be int')
+                    e = InvalidAPIOption('All elements of `delayed_crontab` should be int')
                     raise e
 
-            extra_config['delayedCrontab'] = delayed_crontab
+        if delayed_cron_job is not None:
+            delayed_cron_job = toolkit.as_array(delayed_cron_job)
+            delayed_cron_job = list(set(delayed_cron_job))
+            delayed_cron_job.sort()
+
+            for d in delayed_cron_job:
+                if not isinstance(d, int):
+                    e = InvalidAPIOption('All elements of `delayed_cron_job` should be int')
+                    raise e
+
+            extra_config['delayedCronJob'] = delayed_cron_job
 
         # 执行时限
         timeout = timeout or api_timeout # 兼容 api_timeout
@@ -1677,11 +1745,28 @@ class FuncBaseTask(BaseTask):
                 e = InvalidAPIOption('`integration` should be a string or unicode')
                 raise e
 
-            integration = FIX_INTEGRATION_KEY_MAP.get(integration.lower()) or integration
+            integration_lower = integration.lower()
+            if integration_lower not in FIX_INTEGRATION_KEY_MAP:
+                e = InvalidAPIOption(f'Unsupported `integration` value: {integration}')
+                raise e
+
+            integration = FIX_INTEGRATION_KEY_MAP[integration_lower]
 
         # 功能集成配置
         if integration is not None:
-            extra_config['integrationConfig'] = integration_config
+            fixed_integration_config = {}
+
+            integration_config = integration_config or {}
+            for k, v in integration_config.items():
+                k_lower = k.lower()
+                if k_lower not in FIX_INTEGRATION_CONFIG_KEY_MAP:
+                    e = InvalidAPIOption(f'Unsupported `integration_config` name: {k}')
+                    raise e
+
+                fixed_k = FIX_INTEGRATION_CONFIG_KEY_MAP[k_lower]
+                fixed_integration_config[fixed_k] = v
+
+            extra_config['integrationConfig'] = fixed_integration_config
 
         ##################
         # 文档控制类参数 #
@@ -1788,11 +1873,23 @@ class FuncBaseTask(BaseTask):
         # 检查并获取函数信息
         sql = '''
             SELECT
-                *
-            FROM biz_main_func AS func
+                 *
+
+                ,`sset`.`title` AS `scriptSetTitle`
+                ,`scpt`.`title` AS `scriptTitle`
+                ,`func`.`title` AS `funcTitle`
+
+            FROM `biz_main_func` AS `func`
+
+			JOIN `biz_main_script` AS `scpt`
+  				ON `scpt`.`id` = `func`.`scriptId`
+
+			JOIN `biz_main_script_set` AS `sset`
+  				ON `sset`.`id` = `func`.`scriptSetId`
 
             WHERE
-                `id` = ?
+                `func`.`id` = ?
+
             LIMIT 1
             '''
         sql_params = [func_id]
@@ -1823,8 +1920,12 @@ class FuncBaseTask(BaseTask):
                 'funcCallKwargs': kwargs,
                 'origin'        : safe_scope.get('_DFF_ORIGIN'),
                 'originId'      : safe_scope.get('_DFF_ORIGIN_ID'),
-                'crontab'       : safe_scope.get('_DFF_CRONTAB'),
+                'cronExpr'      : safe_scope.get('_DFF_CRON_EXPR'),
                 'callChain'     : call_chain,
+
+                'scriptSetTitle': func.get('scriptSetTitle'),
+                'scriptTitle'   : func.get('scriptTitle'),
+                'funcTitle'     : func.get('funcTitle'),
             },
             'triggerTime'    : safe_scope.get('_DFF_TRIGGER_TIME'),
             'queue'          : safe_scope.get('_DFF_QUEUE'),
@@ -1981,23 +2082,28 @@ class FuncBaseTask(BaseTask):
             '_DFF_START_TIME_MS'    : int(self.start_time_ms),
             '_DFF_ETA'              : self.eta,
             '_DFF_DELAY'            : self.delay,
-            '_DFF_CRONTAB'          : self.kwargs.get('crontab'),
-            '_DFF_CRONTAB_DELAY'    : self.kwargs.get('crontabDelay') or 0,
-            '_DFF_CRONTAB_EXEC_MODE': self.kwargs.get('crontabExecMode'),
+            '_DFF_CRON_EXPR'        : self.kwargs.get('cronExpr'),
+            '_DFF_CRON_JOB_DELAY'    : self.kwargs.get('cronJobDelay') or 0,
+            '_DFF_CRON_JOB_EXEC_MODE': self.kwargs.get('cronJobExecMode'),
             '_DFF_QUEUE'            : self.queue,
             '_DFF_HTTP_REQUEST'     : self.http_request,
+
+            # 兼容处理
+            '_DFF_CRONTAB'          : self.kwargs.get('cronExpr'),
+            '_DFF_CRONTAB_DELAY'    : self.kwargs.get('cronJobDelay') or 0,
+            '_DFF_CRONTAB_EXEC_MODE': self.kwargs.get('cronJobExecMode'),
         }
 
         # 添加 DataFlux Func 内置方法/对象
-        __connector_helper      = FuncConnectorHelper(self)
-        __env_variable_helper   = FuncEnvVariableHelper(self)
-        __store_helper          = FuncStoreHelper(self, default_scope=script_name)
-        __cache_helper          = FuncCacheHelper(self, default_scope=script_name)
-        __config_helper         = FuncConfigHelper(self)
-        __thread_helper         = FuncThreadHelper(self)
-        __auth_link_helper      = FuncAuthLinkHelper(self)
-        __crontab_config_helper = FuncCrontabConfigHelper(self)
-        __batch_helper          = FuncBatchHelper(self)
+        __connector_helper    = FuncConnectorHelper(self)
+        __env_variable_helper = FuncEnvVariableHelper(self)
+        __store_helper        = FuncStoreHelper(self, default_scope = script_name)
+        __cache_helper        = FuncCacheHelper(self, default_scope = script_name)
+        __config_helper       = FuncConfigHelper(self)
+        __thread_helper       = FuncThreadHelper(self)
+        __sync_api_helper     = FuncSyncAPIHelper(self)
+        __async_api_helper    = FuncAsyncAPIHelper(self)
+        __cron_job_helper     = FuncCronJobHelper(self)
 
         def __print(*args, **kwargs):
             return self._print(safe_scope, *args, **kwargs)
@@ -2060,9 +2166,9 @@ class FuncBaseTask(BaseTask):
             'SYS_DB'      : self.db,       # 当前 DataFlux Func 数据库
             'SYS_CACHE_DB': self.cache_db, # 当前 DataFlux Func 缓存
 
-            'AUTH_LINK'     : __auth_link_helper,      # 授权链接处理模块
-            'CRONTAB_CONFIG': __crontab_config_helper, # 自动触发处理模块
-            'BATCH'         : __batch_helper,          # 批处理处理模块
+            'SYNC_API' : __sync_api_helper,  # 同步 API 处理模块
+            'ASYNC_API': __async_api_helper, # 异步 API 处理模块
+            'CRON_JOB' : __cron_job_helper,  # 定时任务处理模块
 
             # 直接连接器
             'GUANCE_OPENAPI': GuanceOpenAPI,
@@ -2074,6 +2180,11 @@ class FuncBaseTask(BaseTask):
 
             # 用于观测云的额外信息
             'EXTRA_FOR_GUANCE': self.extra_for_guance,
+
+            # 兼容处理
+            'AUTH_LINK'     : __sync_api_helper,  # 授权链接处理模块
+            'BATCH'         : __async_api_helper, # 批处理处理模块
+            'CRONTAB_CONFIG': __cron_job_helper,  # 自动触发处理模块
         }
         safe_scope['DFF'] = DFFWraper(inject_funcs=inject_funcs)
 

@@ -87,11 +87,12 @@ Press {0} to search: 按 {0} 開始搜尋
       </el-main>
 
       <APIExampleDialog ref="apiExampleDialog"
-        :showExecModeOption="true"
-        :showSaveResultOption="true"
-        :showAPITimeoutOption="true"
-        :showPostExample="true"
-        :showGetExample="false"></APIExampleDialog>
+        :showGetExample="false"
+        :showPostExampleSimple="false"
+
+        :showReturnTypeOption="true"
+        :showUnboxOption="true"
+        :showDelayOption="true"></APIExampleDialog>
     </el-container>
   </transition>
 </template>

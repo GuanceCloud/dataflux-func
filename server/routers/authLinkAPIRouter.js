@@ -4,32 +4,33 @@
 var ROUTE       = require('../utils/yamlResources').get('ROUTE');
 var routeLoader = require('../utils/routeLoader');
 
-var authLinkAPICtrl = require('../controllers/authLinkAPICtrl');
+var syncAPICtrl = require('../controllers/syncAPICtrl');
 
+// 兼容处理
 routeLoader.load(ROUTE.authLinkAPI.list, [
-  authLinkAPICtrl.list,
+  syncAPICtrl.list,
 ]);
 
 routeLoader.load(ROUTE.authLinkAPI.add, [
-  authLinkAPICtrl.add,
+  syncAPICtrl.add,
 ]);
 
 routeLoader.load(ROUTE.authLinkAPI.modify, [
-  authLinkAPICtrl.modify,
+  syncAPICtrl.modify,
 ]);
 
 routeLoader.load(ROUTE.authLinkAPI.delete, [
-  authLinkAPICtrl.delete,
+  syncAPICtrl.delete,
 ]);
 
 routeLoader.load(ROUTE.authLinkAPI.addMany, [
-  authLinkAPICtrl.addMany,
+  syncAPICtrl.addMany,
 ]);
 
 routeLoader.load(ROUTE.authLinkAPI.modifyMany, [
-  authLinkAPICtrl.modifyMany,
+  syncAPICtrl.modifyMany,
 ]);
 
 routeLoader.load(ROUTE.authLinkAPI.deleteMany, [
-  authLinkAPICtrl.deleteMany,
+  syncAPICtrl.deleteMany,
 ]);

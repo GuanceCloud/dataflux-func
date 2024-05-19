@@ -98,21 +98,21 @@ const routes = [
       },
 
       {
-        path: 'auth-link-list',
-        name: 'auth-link-list',
-        component: () => import('../components/Management/AuthLinkList.vue'),
+        path: 'sync-api-list',
+        name: 'sync-api-list',
+        component: () => import('../components/Management/SyncAPIList.vue'),
       },
 
       {
-        path: 'crontab-config-list',
-        name: 'crontab-config-list',
-        component: () => import('../components/Management/CrontabConfigList.vue'),
+        path: 'async-api-list',
+        name: 'async-api-list',
+        component: () => import('../components/Management/AsyncAPIList.vue'),
       },
 
       {
-        path: 'batch-list',
-        name: 'batch-list',
-        component: () => import('../components/Management/BatchList.vue'),
+        path: 'cron-job-list',
+        name: 'cron-job-list',
+        component: () => import('../components/Management/CronJobList.vue'),
       },
 
       {
@@ -260,11 +260,11 @@ const routes = [
     component: () => import('../views/FuncDoc.vue'),
   },
 
-  // 授权链接文档
+  // 函数 API 文档
   {
-    path: '/auth-link-func-doc',
-    name: 'auth-link-func-doc',
-    component: () => import('../views/AuthLinkFuncDoc.vue'),
+    path: '/func-api-doc',
+    name: 'func-api-doc',
+    component: () => import('../views/FuncAPIDoc.vue'),
   },
 
   // 梦境
@@ -295,7 +295,7 @@ const router = new VueRouter({
 const noAuthRoutes = [
   'index',
   'func-doc',
-  'auth-link-func-doc',
+  'func-api-doc',
   'dream',
 ];
 const adminOnlyRoutes = [

@@ -27,11 +27,11 @@ from worker import LOGGER, REDIS, LISTINGING_QUEUES, run_background
 from worker.tasks import TaskTimeout
 
 # 任务表
-from worker.tasks.example         import ExampleSuccess, ExampleFailure, ExampleTimeout
-from worker.tasks.crontab_starter import CrontabStarter, CrontabManualStarter
-from worker.tasks.func.debugger   import FuncDebugger
-from worker.tasks.func.runner     import FuncRunner
-from worker.tasks.internal        import SystemMetric, FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache, CheckConnector, QueryConnector, AutoRun, WorkerQueueLimitCrontabConfig
+from worker.tasks.example          import ExampleSuccess, ExampleFailure, ExampleTimeout
+from worker.tasks.cron_job_starter import CronJobStarter, CronJobManualStarter
+from worker.tasks.func.debugger    import FuncDebugger
+from worker.tasks.func.runner      import FuncRunner
+from worker.tasks.internal         import SystemMetric, FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache, CheckConnector, QueryConnector, AutoRun, UpdateWorkerQueueLimit
 
 TASK_CLS_MAP = {
     # 示例任务
@@ -39,24 +39,24 @@ TASK_CLS_MAP = {
     ExampleFailure.name: ExampleFailure,
     ExampleTimeout.name: ExampleTimeout,
 
-    # 自动触发任务
-    CrontabStarter.name      : CrontabStarter,
-    CrontabManualStarter.name: CrontabManualStarter,
+    # 定时任务任务
+    CronJobStarter.name      : CronJobStarter,
+    CronJobManualStarter.name: CronJobManualStarter,
 
     # 函数执行任务
     FuncDebugger.name: FuncDebugger,
     FuncRunner.name  : FuncRunner,
 
     # 内部任务
-    SystemMetric.name                 : SystemMetric,
-    FlushDataBuffer.name              : FlushDataBuffer,
-    AutoClean.name                    : AutoClean,
-    AutoBackupDB.name                 : AutoBackupDB,
-    ReloadDataMD5Cache.name           : ReloadDataMD5Cache,
-    CheckConnector.name               : CheckConnector,
-    QueryConnector.name               : QueryConnector,
-    AutoRun.name                      : AutoRun,
-    WorkerQueueLimitCrontabConfig.name: WorkerQueueLimitCrontabConfig,
+    SystemMetric.name                   : SystemMetric,
+    FlushDataBuffer.name                : FlushDataBuffer,
+    AutoClean.name                      : AutoClean,
+    AutoBackupDB.name                   : AutoBackupDB,
+    ReloadDataMD5Cache.name             : ReloadDataMD5Cache,
+    CheckConnector.name                 : CheckConnector,
+    QueryConnector.name                 : QueryConnector,
+    AutoRun.name                        : AutoRun,
+    UpdateWorkerQueueLimit.name: UpdateWorkerQueueLimit,
 }
 
 def consume(context):

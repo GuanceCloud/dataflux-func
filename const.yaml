@@ -128,4 +128,4 @@ systemSettings:
 tempFlags:
   - restartAllServers
   - restartAllWorkersAndBeat
-  - pauseAllCrontabConfigs
+  - pauseCronJobs

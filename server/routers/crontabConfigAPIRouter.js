@@ -4,36 +4,37 @@
 var ROUTE       = require('../utils/yamlResources').get('ROUTE');
 var routeLoader = require('../utils/routeLoader');
 
-var crontabConfigAPICtrl = require('../controllers/crontabConfigAPICtrl');
+var cronJobAPICtrl = require('../controllers/cronJobAPICtrl');
 
+// 兼容处理
 routeLoader.load(ROUTE.crontabConfigAPI.list, [
-  crontabConfigAPICtrl.list,
+  cronJobAPICtrl.list,
 ]);
 
 routeLoader.load(ROUTE.crontabConfigAPI.listRecentTriggered, [
-  crontabConfigAPICtrl.listRecentTriggered,
+  cronJobAPICtrl.listRecentTriggered,
 ]);
 
 routeLoader.load(ROUTE.crontabConfigAPI.add, [
-  crontabConfigAPICtrl.add,
+  cronJobAPICtrl.add,
 ]);
 
 routeLoader.load(ROUTE.crontabConfigAPI.modify, [
-  crontabConfigAPICtrl.modify,
+  cronJobAPICtrl.modify,
 ]);
 
 routeLoader.load(ROUTE.crontabConfigAPI.delete, [
-  crontabConfigAPICtrl.delete,
+  cronJobAPICtrl.delete,
 ]);
 
 routeLoader.load(ROUTE.crontabConfigAPI.addMany, [
-  crontabConfigAPICtrl.addMany,
+  cronJobAPICtrl.addMany,
 ]);
 
 routeLoader.load(ROUTE.crontabConfigAPI.modifyMany, [
-  crontabConfigAPICtrl.modifyMany,
+  cronJobAPICtrl.modifyMany,
 ]);
 
 routeLoader.load(ROUTE.crontabConfigAPI.deleteMany, [
-  crontabConfigAPICtrl.deleteMany,
+  cronJobAPICtrl.deleteMany,
 ]);

@@ -172,9 +172,6 @@ function toOpenAPISchema(fieldOpt, filesOpt, lang) {
     schemaSpec.maximum = fieldOpt.$maxValue;
   }
 
-  if (fieldOpt.$isDeprecated) {
-    schemaSpec.example
-  }
   if (fieldOpt.$example) {
     schemaSpec.example = fieldOpt.$example;
   }
@@ -246,6 +243,7 @@ function getOpenAPISpec(route, lang) {
       var apiSpec = {
         summary    : api.name,
         description: api.desc,
+        deprecated : !!api.isDeprecated || !!api.deprecated,
         tags       : [ moduleTag ],
         parameters : [],
         responses: {
@@ -265,7 +263,7 @@ function getOpenAPISpec(route, lang) {
             in         : paramType.in,
             description: paramOpt.$desc,
             schema     : toOpenAPISchema(paramOpt, null, lang),
-            deprecated : !!paramOpt.$isDeprecated,
+            deprecated : !!paramOpt.$isDeprecated || !!paramOpt.$deprecated,
             required   : !!(paramType.in === 'path' || paramOpt.$isRequired || paramOpt.$required),
           }
 
@@ -388,11 +386,11 @@ exports.systemInfo = function(req, res, next) {
     _FUNC_TASK_MIN_API_TIMEOUT    : CONFIG._FUNC_TASK_MIN_API_TIMEOUT,
     _FUNC_TASK_MAX_API_TIMEOUT    : CONFIG._FUNC_TASK_MAX_API_TIMEOUT,
 
-    _TASK_INFO_MIN_LIMIT                            : CONFIG._TASK_INFO_MIN_LIMIT,
-    _TASK_RECORD_LIMIT_MAX                          : CONFIG._TASK_RECORD_LIMIT_MAX,
-    _TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK     : CONFIG._TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK,
-    _TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG: CONFIG._TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG,
-    _TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH         : CONFIG._TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_BATCH,
+    _TASK_INFO_MIN_LIMIT                    : CONFIG._TASK_INFO_MIN_LIMIT,
+    _TASK_RECORD_LIMIT_MAX                  : CONFIG._TASK_RECORD_LIMIT_MAX,
+    _TASK_RECORD_FUNC_LIMIT_SYNC_API        : CONFIG._TASK_RECORD_FUNC_LIMIT_SYNC_API,
+    _TASK_RECORD_FUNC_LIMIT_CRON_JOB: CONFIG._TASK_RECORD_FUNC_LIMIT_CRON_JOB,
+    _TASK_RECORD_FUNC_LIMIT_ASYNC_API       : CONFIG._TASK_RECORD_FUNC_LIMIT_ASYNC_API,
 
     _MONITOR_REPORT_INTERVAL: CONFIG._MONITOR_REPORT_INTERVAL,
 

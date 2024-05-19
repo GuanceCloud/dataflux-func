@@ -6,27 +6,30 @@ en:
   ':': ': '
   '(': ' ('
 
-  # const.js - AUTH_LINK_THROTTLING
-  timePerSecond: '{n} time/second | {n} times/second'
-  timePerMinute: '{n} time/minute | {n} times/minute'
-  timePerHour  : '{n} time/hour | {n} times/hour'
-  timePerDay   : '{n} time/day | {n} times/day'
-  timePerMonth : '{n} time/month | {n} times/month'
-  timePerYear  : '{n} time/year | {n} times/year'
+  # const.js - SYNC_API_THROTTLING
+  timePerSecond: '{n} time/second | {n} time/second | {n} times/second'
+  timePerMinute: '{n} time/minute | {n} time/minute | {n} times/minute'
+  timePerHour  : '{n} time/hour | {n} time/hour | {n} times/hour'
+  timePerDay   : '{n} time/day | {n} time/day | {n} times/day'
+  timePerMonth : '{n} time/month | {n} time/month | {n} times/month'
+  timePerYear  : '{n} time/year | {n} time/year | {n} times/year'
 
   # 时长
-  nSeconds: '{n} second | {n} seconds'
-  nMinutes: '{n} minute | {n} minutes'
-  nHours  : '{n} hour | {n} hours'
-  nDays   : '{n} day | {n} days'
-  nMonths : '{n} month | {n} months'
-  nYears  : '{n} year | {n} years'
+  nSeconds: '{n} second | {n} second | {n} seconds'
+  nMinutes: '{n} minute | {n} minute | {n} minutes'
+  nHours  : '{n} hour | {n} hour | {n} hours'
+  nDays   : '{n} day | {n} day | {n} days'
+  nMonths : '{n} month | {n} month | {n} months'
+  nYears  : '{n} year | {n} year | {n} years'
 
   nS: '{n}s'
   nM: '{n}m'
   nH: '{n}h'
   nD: '{n}d'
   nY: '{n}y'
+
+  expireAt : Will expire at {t}
+  expireAt2: Will expire at {t}
 
   # 功能提示
   FeatureNotice_monkeyPatch            : '<h1>No Monkey Patches in Scripts</h1><p>For performance reasons, the script does <strong style="color: red">NOT</strong> run in a sandbox or isolated environment.</p><p>Using monkey patches may cause problems to the entire system.</p>'
@@ -62,6 +65,10 @@ en:
   nD: '{n} 天'
   nY: '{n} 年'
 
+  expireAt : 将于 {t} 过期
+  expireAt2: 将于 {t} 失效
+
+  Version           : 版本
   New Version       : 新版本
   Light Mode        : 明亮模式
   Dark Mode         : 黑暗模式
@@ -76,6 +83,7 @@ en:
   Built-in          : 内置
   Press ESC to close: 按 ECS 关闭
   Show detail       : 显示详情
+  Deprecated        : 已废弃
 
   # 通用 - 按钮 / 表单
   Very good: 非常好
@@ -357,9 +365,9 @@ en:
   Overview                 : 总览
   About                    : 关于
   API Auth                 : API 认证
-  Auth Link                : 授权链接
-  Crontab Config           : 自动触发配置
-  Batch                    : 批处理
+  Sync API                 : 同步 API
+  Async API                : 异步 API
+  Cron Job                 : 定时任务
   Script Set Export        : 脚本集导出
   Script Set Import        : 脚本集导入
   Script Set Export History: 脚本集导出历史
@@ -377,24 +385,24 @@ en:
   File Manage              : 文件管理
   File Service             : 文件服务
   Func Docs                : 函数文档
-  Auth Link Doc            : 授权链接文档
+  Sync API Doc             : 同步 API 文档
   Open API Doc             : Open API 文档
   Func Cache Manage        : 函数缓存管理
   Func Store Manage        : 函数存储管理
   System Logs              : 系统日志
   Abnormal Requests        : 异常请求
 
-  Script Set ID    : 脚本集 ID
-  Script ID        : 脚本 ID
-  Func ID          : 函数 ID
-  Connector ID     : 连接器 ID
-  ENV ID           : 环境变量 ID
-  Auth Link ID     : 授权链接 ID
-  Crontab Config ID: 自动触发配置 ID
-  Batch ID         : 批处理 ID
-  File Service ID  : 文件服务 ID
-  User ID          : 用户 ID
-  Blueprint ID     : 蓝图 ID
+  Script Set ID  : 脚本集 ID
+  Script ID      : 脚本 ID
+  Func ID        : 函数 ID
+  Connector ID   : 连接器 ID
+  ENV ID         : 环境变量 ID
+  Sync API ID    : 同步 API  ID
+  Async API ID   : 异步 API ID
+  Cron Job ID    : 定时任务 ID
+  File Service ID: 文件服务 ID
+  User ID        : 用户 ID
+  Blueprint ID   : 蓝图 ID
 
   # const.js - ENV_VARIABLE
   'String'                                                     : '字符串'
@@ -419,7 +427,7 @@ en:
   'HTTP Query' : 'HTTP Query 参数'
   'HTTP Body'  : 'HTTP Body 字段'
 
-  # const.js - AUTH_LINK_THROTTLING
+  # const.js - SYNC_API_THROTTLING
   'timePerSecond': '{n} 次/秒'
   'timePerMinute': '{n} 次/分钟'
   'timePerHour'  : '{n} 次/小时'

@@ -145,198 +145,6 @@ mainAPI:
           $desc: Deprecated options
           $type: any
 
-  callAuthLinkByGet:
-    showInDoc    : true
-    name         : Call Auth Link (GET)
-    name_zhCN    : 调用授权链接（GET 方式）
-    method       : get
-    url          : /api/v1/al/:id
-    response     : json
-    requireSignIn: false
-    params:
-      id:
-        $desc: 授权链接 ID
-        $type: string
-    query:
-      kwargs:
-        $desc   : Func calling arguments in dict format (**kwargs)
-        $type   : jsonstring
-        $example: '{"msg": "Tom"}'
-      options:
-        $desc   : options
-        $type   : jsonstring
-        $example: '{ "returnType": "ALL" }'
-
-  callAuthLinkByGetWithFormat:
-    showInDoc    : true
-    name         : Call Auth Link (GET with specified format)
-    name_zhCN    : 调用授权链接（GET 方式，指定形式）
-    method       : get
-    url          : [ /api/v1/al/:id/:format, /api/v1/al/:id/:format/* ]
-    response     : json
-    requireSignIn: false
-    params:
-      id:
-        $desc: 授权链接 ID
-        $type: string
-      format:
-        $desc: 调用形式
-        $type: enum
-        $in:
-          - normal
-          - s
-          - simplified
-
-  callAuthLinkByPost:
-    showInDoc    : true
-    name         : Call Auth Link (POST)
-    name_zhCN    : 调用授权链接（POST 方式）
-    method       : post
-    url          : /api/v1/al/:id
-    response     : json
-    requireSignIn: false
-    privilege    : general_r
-    params:
-      id:
-        $desc: 授权链接 ID
-        $type: string
-    body:
-      kwargs:
-        $desc: Func calling arguments in dict format (**kwargs)
-        $type: json
-        $example: {'msg': 'Tom'}
-      options:
-        $desc: 选项
-        returnType:
-          $desc: Return type (default "raw")
-          $type: enum
-          $in:
-            - raw
-            - jsonDumps
-
-  callAuthLinkByPostWithFormat:
-    showInDoc    : true
-    name         : Call Auth Link (POST with specified format)
-    name_zhCN    : 调用授权链接（POST 方式，指定形式）
-    method       : post
-    url          : [ /api/v1/al/:id/:format, /api/v1/al/:id/:format/* ]
-    response     : json
-    requireSignIn: false
-    params:
-      id:
-        $desc: 授权链接 ID
-        $type: string
-      format:
-        $desc: 调用形式
-        $type: enum
-        $in:
-          - normal
-          - s
-          - simplified
-    files:
-      $desc        : File (limit 10GB)
-      $desc_zhCN   : 文件（10GB 以内）
-      $limitSize   : 10GB
-      $allowedTypes: '*/*'
-
-  runCrontabConfigManually:
-    showInDoc    : true
-    name         : Run Crontab Config manually
-    name_zhCN    : 手动执行自动触发配置
-    method       : post
-    url          : /api/v1/cron/:id
-    response     : json
-    requireSignIn: $NOT_CONFIG._IS_STREAKING
-    privilege    : general_r
-    params:
-      id:
-        $desc: 批处理 ID
-        $type: string
-
-  callBatchByGet:
-    showInDoc    : true
-    name         : Call Batch (GET)
-    name_zhCN    : 调用批处理（GET 方式）
-    method       : get
-    url          : /api/v1/bat/:id
-    response     : json
-    requireSignIn: false
-    privilege    : general_r
-    params:
-      id:
-        $desc: 批处理 ID
-        $type: string
-    query:
-      kwargs:
-        $desc   : Func calling arguments in dict format (**kwargs)
-        $type   : jsonstring
-        $example: '{"msg": "Tom"}'
-
-  callBatchByGetWithFormat:
-    showInDoc    : true
-    name         : Call Batch (GET with specified format)
-    name_zhCN    : 调用批处理（GET 方式，指定形式）
-    method       : get
-    url          : [ /api/v1/bat/:id/:format, /api/v1/bat/:id/:format/* ]
-    response     : json
-    requireSignIn: false
-    privilege    : general_r
-    params:
-      id:
-        $desc: 批处理 ID
-        $type: string
-      format:
-        $desc: 调用形式
-        $type: enum
-        $in:
-          - normal
-          - s
-          - simplified
-
-  callBatchByPost:
-    showInDoc    : true
-    name         : Call Batch (POST)
-    name_zhCN    : 调用批处理（POST 方式）
-    method       : post
-    url          : /api/v1/bat/:id
-    response     : json
-    requireSignIn: false
-    privilege    : general_r
-    params:
-      id:
-        $desc: 批处理 ID
-        $type: string
-    body:
-      kwargs:
-        $desc: Func calling arguments in dict format (**kwargs)
-        $type: json
-        $example: {'msg': 'Tom'}
-
-  callBatchByPostWithFormat:
-    showInDoc    : true
-    name         : Call Batch (POST with specified format)
-    name_zhCN    : 调用批处理（POST 方式，指定形式）
-    method       : post
-    url          : [ /api/v1/bat/:id/:format, /api/v1/bat/:id/:format/* ]
-    response     : json
-    requireSignIn: false
-    params:
-      id:
-        $desc: 批处理 ID
-        $type: string
-      format:
-        $desc: 调用形式
-        $type: enum
-        $in:
-          - normal
-          - s
-          - simplified
-    files:
-      $desc        : File (limit 10GB)
-      $desc_zhCN   : 文件（10GB 以内）
-      $limitSize   : 10GB
-      $allowedTypes: '*/*'
-
   callFuncDraft:
     showInDoc    : true
     name         : Call Func in draft
@@ -361,6 +169,202 @@ mainAPI:
         $desc: Func calling arguments in dict format (**kwargs)
         $type: json
         $example: {'msg': 'Tom'}
+
+  callSyncAPIByGet:
+    showInDoc    : true
+    name         : Call Sync API (GET)
+    name_zhCN    : 调用 Sync API（GET 方式）
+    method       : get
+    url          : /api/v1/sync/:id
+    response     : json
+    requireSignIn: false
+    params:
+      id:
+        $desc: Sync API ID
+        $type: string
+    query:
+      kwargs:
+        $desc   : Func calling arguments in dict format (**kwargs)
+        $type   : jsonstring
+        $example: '{"msg": "Tom"}'
+      options:
+        $desc: options
+        returnType:
+          $desc: Return type (default "raw")
+          $type: enum
+          $in:
+            - raw
+            - jsonDumps
+
+  callSyncAPIByGetWithFormat:
+    showInDoc    : true
+    name         : Call Sync API (GET with specified format)
+    name_zhCN    : 调用 Sync API（GET 方式，指定形式）
+    method       : get
+    url          : [ /api/v1/sync/:id/:format, /api/v1/sync/:id/:format/* ]
+    response     : json
+    requireSignIn: false
+    params:
+      id:
+        $desc: Sync API ID
+        $type: string
+      format:
+        $desc: 调用格式
+        $type: enum
+        $in:
+          - normal
+          - s
+          - simplified
+
+  callSyncAPIByPost:
+    showInDoc    : true
+    name         : Call Sync API (POST)
+    name_zhCN    : 调用 Sync API（POST 方式）
+    method       : post
+    url          : /api/v1/sync/:id
+    response     : json
+    requireSignIn: false
+    privilege    : general_r
+    params:
+      id:
+        $desc: Sync API ID
+        $type: string
+    body:
+      kwargs:
+        $desc: Func calling arguments in dict format (**kwargs)
+        $type: json
+        $example: {'msg': 'Tom'}
+      options:
+        $desc: options
+        returnType:
+          $desc: Return type (default "raw")
+          $type: enum
+          $in:
+            - raw
+            - jsonDumps
+
+  callSyncAPIByPostWithFormat:
+    showInDoc    : true
+    name         : Call Sync API (POST with specified format)
+    name_zhCN    : 调用 Sync API（POST 方式，指定形式）
+    method       : post
+    url          : [ /api/v1/sync/:id/:format, /api/v1/sync/:id/:format/* ]
+    response     : json
+    requireSignIn: false
+    params:
+      id:
+        $desc: Sync API ID
+        $type: string
+      format:
+        $desc: 调用格式
+        $type: enum
+        $in:
+          - normal
+          - s
+          - simplified
+    files:
+      $desc        : File (limit 10GB)
+      $desc_zhCN   : 文件（10GB 以内）
+      $limitSize   : 10GB
+      $allowedTypes: '*/*'
+
+  callAsyncAPIByGet:
+    showInDoc    : true
+    name         : Call Async API (GET)
+    name_zhCN    : 调用 Async API（GET 方式）
+    method       : get
+    url          : /api/v1/async/:id
+    response     : json
+    requireSignIn: false
+    privilege    : general_r
+    params:
+      id:
+        $desc: Async API ID
+        $type: string
+    query:
+      kwargs:
+        $desc   : Func calling arguments in dict format (**kwargs)
+        $type   : jsonstring
+        $example: '{"msg": "Tom"}'
+
+  callAsyncAPIByGetWithFormat:
+    showInDoc    : true
+    name         : Call Async API (GET with specified format)
+    name_zhCN    : 调用 Async API（GET 方式，指定形式）
+    method       : get
+    url          : [ /api/v1/async/:id/:format, /api/v1/async/:id/:format/* ]
+    response     : json
+    requireSignIn: false
+    privilege    : general_r
+    params:
+      id:
+        $desc: Async API ID
+        $type: string
+      format:
+        $desc: 调用格式
+        $type: enum
+        $in:
+          - normal
+          - s
+          - simplified
+
+  callAsyncAPIByPost:
+    showInDoc    : true
+    name         : Call Async API (POST)
+    name_zhCN    : 调用 Async API（POST 方式）
+    method       : post
+    url          : /api/v1/async/:id
+    response     : json
+    requireSignIn: false
+    privilege    : general_r
+    params:
+      id:
+        $desc: Async API ID
+        $type: string
+    body:
+      kwargs:
+        $desc: Func calling arguments in dict format (**kwargs)
+        $type: json
+        $example: {'msg': 'Tom'}
+
+  callAsyncAPIByPostWithFormat:
+    showInDoc    : true
+    name         : Call Async API (POST with specified format)
+    name_zhCN    : 调用 Async API（POST 方式，指定形式）
+    method       : post
+    url          : [ /api/v1/async/:id/:format, /api/v1/async/:id/:format/* ]
+    response     : json
+    requireSignIn: false
+    params:
+      id:
+        $desc: Async API ID
+        $type: string
+      format:
+        $desc: 调用格式
+        $type: enum
+        $in:
+          - normal
+          - s
+          - simplified
+    files:
+      $desc        : File (limit 10GB)
+      $desc_zhCN   : 文件（10GB 以内）
+      $limitSize   : 10GB
+      $allowedTypes: '*/*'
+
+  runCronJobManually:
+    showInDoc    : true
+    name         : Run Cron Job manually
+    name_zhCN    : 手动执行一次 定时任务
+    method       : post
+    url          : /api/v1/cron/:id
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_r
+    params:
+      id:
+        $desc: 定时任务 ID
+        $type: string
 
   getFuncList:
     showInDoc    : true
@@ -444,12 +448,12 @@ mainAPI:
         $desc: 根据标签名模式搜索（通配方式，如`key|*`）
         $type: string
 
-  getAuthLinkFuncList:
+  getFuncAPIList:
     showInDoc    : true
-    name         : Auth Link list
-    name_zhCN    : 授权链接列表
+    name         : Func API list
+    name_zhCN    : 函数 API 列表
     method       : get
-    url          : /api/v1/auth-link-func-list
+    url          : /api/v1/func-api-list
     response     : json
     requireSignIn: false
     fuzzySearch:
@@ -457,6 +461,13 @@ mainAPI:
       - func.title
       - func.description
     query:
+      apiType:
+        $desc: API 类型
+        $type: enum
+        $in:
+          - syncAPI
+          - asyncAPI
+          - ALL
       funcId:
         $desc      : 根据函数 ID 过滤
         $type      : commaArray
@@ -536,6 +547,248 @@ mainAPI:
       id:
         $desc: 文件服务 ID
         $type: string
+
+  # 兼容处理
+  callAuthLinkByGet:
+    showInDoc    : true
+    deprecated   : true
+    name         : Call Auth Link (GET) - *Use "Sync API" Instead*
+    name_zhCN    : 调用授权链接（GET 方式） - *请改用「同步 API」*
+    method       : get
+    url          : /api/v1/al/:id
+    response     : json
+    requireSignIn: false
+    params:
+      id:
+        $desc: 授权链接 ID
+        $type: string
+    query:
+      kwargs:
+        $desc   : Func calling arguments in dict format (**kwargs)
+        $type   : jsonstring
+        $example: '{"msg": "Tom"}'
+      options:
+        $desc   : options
+        $type   : jsonstring
+        $example: '{ "returnType": "ALL" }'
+
+  callAuthLinkByGetWithFormat:
+    showInDoc    : true
+    deprecated   : true
+    name         : Call Auth Link (GET with specified format) - *Use "Sync API" Instead*
+    name_zhCN    : 调用授权链接（GET 方式，指定形式） - *请改用「同步 API」*
+    method       : get
+    url          : [ /api/v1/al/:id/:format, /api/v1/al/:id/:format/* ]
+    response     : json
+    requireSignIn: false
+    params:
+      id:
+        $desc: 授权链接 ID
+        $type: string
+      format:
+        $desc: 调用形式
+        $type: enum
+        $in:
+          - normal
+          - s
+          - simplified
+
+  callAuthLinkByPost:
+    showInDoc    : true
+    deprecated   : true
+    name         : Call Auth Link (POST) - *Use "Sync API" Instead*
+    name_zhCN    : 调用授权链接（POST 方式） - *请改用「同步 API」*
+    method       : post
+    url          : /api/v1/al/:id
+    response     : json
+    requireSignIn: false
+    privilege    : general_r
+    params:
+      id:
+        $desc: 授权链接 ID
+        $type: string
+    body:
+      kwargs:
+        $desc: Func calling arguments in dict format (**kwargs)
+        $type: json
+        $example: {'msg': 'Tom'}
+      options:
+        $desc: 选项
+        returnType:
+          $desc: Return type (default "raw")
+          $type: enum
+          $in:
+            - raw
+            - jsonDumps
+
+  callAuthLinkByPostWithFormat:
+    showInDoc    : true
+    deprecated   : true
+    name         : Call Auth Link (POST with specified format) - *Use "Sync API" Instead*
+    name_zhCN    : 调用授权链接（POST 方式，指定形式） - *请改用「同步 API」*
+    method       : post
+    url          : [ /api/v1/al/:id/:format, /api/v1/al/:id/:format/* ]
+    response     : json
+    requireSignIn: false
+    params:
+      id:
+        $desc: 授权链接 ID
+        $type: string
+      format:
+        $desc: 调用形式
+        $type: enum
+        $in:
+          - normal
+          - s
+          - simplified
+    files:
+      $desc        : File (limit 10GB)
+      $desc_zhCN   : 文件（10GB 以内）
+      $limitSize   : 10GB
+      $allowedTypes: '*/*'
+
+  runCrontabConfigManually:
+    showInDoc    : true
+    name         : Run Crontab Config manually - *Use "Cron Job" Instead*
+    name_zhCN    : 手动执行自动触发配置 - *请改用「定时任务」*
+    method       : post
+    url          : /api/v1/cron/:id
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_r
+    params:
+      id:
+        $desc: 批处理 ID
+        $type: string
+
+  callBatchByGet:
+    showInDoc    : true
+    name         : Call Batch (GET) - *Use "Async API" Instead*
+    name_zhCN    : 调用批处理（GET 方式） - *请改用「异步 API」*
+    method       : get
+    url          : /api/v1/bat/:id
+    response     : json
+    requireSignIn: false
+    privilege    : general_r
+    params:
+      id:
+        $desc: 批处理 ID
+        $type: string
+    query:
+      kwargs:
+        $desc   : Func calling arguments in dict format (**kwargs)
+        $type   : jsonstring
+        $example: '{"msg": "Tom"}'
+
+  callBatchByGetWithFormat:
+    showInDoc    : true
+    name         : Call Batch (GET with specified format) - *Use "Async API" Instead*
+    name_zhCN    : 调用批处理（GET 方式，指定形式） - *请改用「异步 API」*
+    method       : get
+    url          : [ /api/v1/bat/:id/:format, /api/v1/bat/:id/:format/* ]
+    response     : json
+    requireSignIn: false
+    privilege    : general_r
+    params:
+      id:
+        $desc: 批处理 ID
+        $type: string
+      format:
+        $desc: 调用形式
+        $type: enum
+        $in:
+          - normal
+          - s
+          - simplified
+
+  callBatchByPost:
+    showInDoc    : true
+    name         : Call Batch (POST) - *Use "Async API" Instead*
+    name_zhCN    : 调用批处理（POST 方式） - *请改用「异步 API」*
+    method       : post
+    url          : /api/v1/bat/:id
+    response     : json
+    requireSignIn: false
+    privilege    : general_r
+    params:
+      id:
+        $desc: 批处理 ID
+        $type: string
+    body:
+      kwargs:
+        $desc: Func calling arguments in dict format (**kwargs)
+        $type: json
+        $example: {'msg': 'Tom'}
+
+  callBatchByPostWithFormat:
+    showInDoc    : true
+    name         : Call Batch (POST with specified format) - *Use "Async API" Instead*
+    name_zhCN    : 调用批处理（POST 方式，指定形式） - *请改用「异步 API」*
+    method       : post
+    url          : [ /api/v1/bat/:id/:format, /api/v1/bat/:id/:format/* ]
+    response     : json
+    requireSignIn: false
+    params:
+      id:
+        $desc: 批处理 ID
+        $type: string
+      format:
+        $desc: 调用形式
+        $type: enum
+        $in:
+          - normal
+          - s
+          - simplified
+    files:
+      $desc        : File (limit 10GB)
+      $desc_zhCN   : 文件（10GB 以内）
+      $limitSize   : 10GB
+      $allowedTypes: '*/*'
+
+  getAuthLinkFuncList:
+    showInDoc    : true
+    deprecated   : true
+    name         : Auth Link list - *Use "Func API List" Instead*
+    name_zhCN    : 授权链接列表 - *请改用「函数 API 列表」*
+    method       : get
+    url          : /api/v1/auth-link-func-list
+    response     : json
+    requireSignIn: false
+    fuzzySearch:
+      - func.id
+      - func.title
+      - func.description
+    query:
+      funcId:
+        $desc      : 根据函数 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.id
+      funcName:
+        $desc      : 根据函数名过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.name
+      funcCategory:
+        $desc      : 根据类型过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.category
+      funcTags:
+        $desc      : 根据函数标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : func.tagsJSON
+      scriptId:
+        $desc      : 根据所属脚本 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : scpt.id
+      scriptSetId:
+        $desc      : 根据所属脚本集 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : sset.id
 
 # 杂项
 indexAPI:
@@ -1552,18 +1805,33 @@ scriptSetAPI:
           $desc      : 环境变量 ID
           $isRequired: true
           $type      : string
+      includeSyncAPIs:
+        $desc     : 是否包含关联的同步 API
+        $allowNull: true
+        $type     : boolean
+      includeAsyncAPIs:
+        $desc     : 是否包含关联的异步 API
+        $allowNull: true
+        $type     : boolean
+      includeCronJobs:
+        $desc     : 是否包含关联的 定时任务
+        $allowNull: true
+        $type     : boolean
       includeAuthLinks:
-        $desc     : 是否包含关联的授权链接
-        $allowNull: true
-        $type     : boolean
+        $desc        : 是否包含关联的授权链接 - *请改用`includeSyncAPIs`*
+        $isDeprecated: true
+        $allowNull   : true
+        $type        : boolean
       includeCrontabConfigs:
-        $desc     : 是否包含关联的自动触发配置
-        $allowNull: true
-        $type     : boolean
+        $desc        : 是否包含关联的自动触发配置 - *请改用`includeAsyncAPIs`*
+        $isDeprecated: true
+        $allowNull   : true
+        $type        : boolean
       includeBatches:
-        $desc     : 是否包含关联的批处理
-        $allowNull: true
-        $type     : boolean
+        $desc        : 是否包含关联的批处理 - *请改用`includeCronJobs`*
+        $isDeprecated: true
+        $allowNull   : true
+        $type        : boolean
       note:
         $desc      : 备注
         $allowNull : true
@@ -1625,10 +1893,15 @@ scriptSetAPI:
         $desc: 脚本集 ID
         $type: string
     body:
-      withCrontabConfig:
-        $desc   : 是否部署自动触发配置
+      withCronJob:
+        $desc   : 是否部署 定时任务
         $type   : boolean
         $example: true
+      withCrontabConfig:
+        $desc        : 是否部署自动触发配置 - *请改用`withCronJob`*
+        $isDeprecated: true
+        $type        : boolean
+        $example     : true
       startupScriptTitle:
         $desc     : 启动脚本标题
         $type     : string
@@ -2075,17 +2348,17 @@ scriptMarketAPI:
         $type      : commaArray
         $searchType: in
         $searchKey : smkt.id
-      name:
-        $isDeprecated: true
-        $desc      : 根据名称搜索*（已过时，请改用`title`字段）*
-        $type      : string
-        $searchType: like
-        $searchKey : smkt.title
       title:
         $desc      : 根据标题搜索
         $type      : string
         $searchType: like
         $searchKey : smkt.title
+      name:
+        $desc        : 根据名称搜索 - *请改用`title`*
+        $isDeprecated: true
+        $type        : string
+        $searchType  : like
+        $searchKey   : smkt.title
       type:
         $desc      : 根据类型过滤
         $type      : commaArray
@@ -2112,15 +2385,15 @@ scriptMarketAPI:
         $type      : boolean
       data:
         $isRequired: true
-        name:
-          $isDeprecated: true
-          $desc      : 名称*（已过时，请改用`title`字段）*
-          $allowNull : true
-          $type      : string
         title:
           $desc      : 标题
           $allowNull : true
           $type      : string
+        name:
+          $desc        : 名称 - *请改用`title`*
+          $isDeprecated: true
+          $allowNull   : true
+          $type        : string
         description:
           $desc      : 描述
           $allowNull : true
@@ -2207,15 +2480,15 @@ scriptMarketAPI:
     body:
       data:
         $isRequired: true
-        name:
-          $isDeprecated: true
-          $desc      : 名称*（已过时，请改用`title`字段）*
-          $allowNull : true
-          $type      : string
         title:
           $desc      : 标题
           $allowNull : true
           $type      : string
+        name:
+          $isDeprecated: true
+          $desc        : 名称 - *请改用`title`*
+          $allowNull   : true
+          $type        : string
         description:
           $desc      : 描述
           $allowNull : true
@@ -2404,10 +2677,15 @@ scriptMarketAPI:
           $desc   : 是否部署启动脚本
           $type   : boolean
           $example: true
-        withCrontabConfig:
-          $desc   : 是否部署自动触发配置
+        withCronJob:
+          $desc   : 是否部署 定时任务
           $type   : boolean
           $example: true
+        withCrontabConfig:
+          $desc        : 是否部署自动触发配置 - *请改用`withCronJob`*
+          $isDeprecated: true
+          $type        : boolean
+          $example     : true
         startupScriptTitle:
           $desc     : 启动脚本标题
           $type     : string
@@ -3130,17 +3408,17 @@ apiAuthAPI:
           - httpBasic
           - httpDigest
           - func
-      name:
-        $isDeprecated: true
-        $desc      : 根据名称搜索*（已过时，请改用`title`字段）*
-        $type      : string
-        $searchType: like
-        $searchKey : apia.title
       title:
         $desc      : 根据标题搜索
         $type      : string
         $searchType: like
         $searchKey : apia.title
+      name:
+        $desc        : 根据名称搜索 - *请改用`title`*
+        $isDeprecated: true
+        $type        : string
+        $searchType  : like
+        $searchKey   : apia.title
       note:
         $desc      : 根据备注搜索
         $type      : string
@@ -3159,15 +3437,15 @@ apiAuthAPI:
     body:
       data:
         $isRequired: true
-        name:
-          $isDeprecated: true
-          $desc     : 名称*（已过时，请改用`title`字段）*
-          $allowNull: true
-          $type     : string
         title:
           $desc      : 标题
           $allowNull : true
           $type      : string
+        name:
+          $desc        : 名称 - *请改用`title`*
+          $isDeprecated: true
+          $allowNull   : true
+          $type        : string
         type:
           $desc      : 类型
           $isRequired: true
@@ -3238,15 +3516,15 @@ apiAuthAPI:
     body:
       data:
         $isRequired: true
-        name:
-          $isDeprecated: true
-          $desc      : 名称*（已过时，请改用`title`字段）*
-          $allowNull : true
-          $type      : string
         title:
           $desc      : 标题
           $allowNull : true
           $type      : string
+        name:
+          $desc        : 名称 - *请改用`title`*
+          $isDeprecated: true
+          $allowNull   : true
+          $type        : string
         configJSON:
           $desc      : 配置JSON（根据不同类型，需要包含的字段有所不同）
           $isRequired: false
@@ -3305,17 +3583,17 @@ apiAuthAPI:
         $desc: API认证 ID
         $type: string
 
-# 授权链接
-authLinkAPI:
-  $tag     : Auth Link
-  $tag_zhCN: 授权链接
+# 同步 API
+syncAPI:
+  $tag     : Sync API
+  $tag_zhCN: 同步 API
 
   list:
     showInDoc    : true
-    name         : List Auth Links
-    name_zhCN    : 列出授权链接
+    name         : List Sync APIs
+    name_zhCN    : 列出同步 API
     method       : get
-    url          : /api/v1/auth-links/do/list
+    url          : /api/v1/sync-apis/do/list
     response     : json
     requireSignIn: true
     privilege    : general_r
@@ -3323,15 +3601,15 @@ authLinkAPI:
     paging       : true
     fieldSelecting: true
     orderFields:
-      seq   : auln.seq
-      funcId: auln.funcId
+      seq   : sapi.seq
+      funcId: sapi.funcId
     fuzzySearch:
-      - auln.id
-      - auln.funcId
-      - auln.funcCallKwargsJSON
-      - auln.tagsJSON
-      - auln.originId
-      - auln.note
+      - sapi.id
+      - sapi.funcId
+      - sapi.funcCallKwargsJSON
+      - sapi.tagsJSON
+      - sapi.originId
+      - sapi.note
       - func.title
       - func.description
       - func.tagsJSON
@@ -3340,27 +3618,27 @@ authLinkAPI:
         $desc      : 根据 ID 过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : auln.id
+        $searchKey : sapi.id
       funcId:
         $desc      : 根据函数 ID 过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : auln.funcId
+        $searchKey : sapi.funcId
       tags:
-        $desc      : 根据授权链接标签过滤
+        $desc      : 根据同步 API 标签过滤
         $type      : commaArray
         $searchType: jsonArrayHasAll
-        $searchKey : auln.tagsJSON
+        $searchKey : sapi.tagsJSON
       origin:
         $desc      : 根据来源过滤
         $type      : string
         $searchType: eq
-        $searchKey : auln.origin
+        $searchKey : sapi.origin
       originId:
         $desc      : 根据来源 ID 过滤
         $type      : string
         $searchType: eq
-        $searchKey : auln.originId
+        $searchKey : sapi.originId
       func_scriptSetId:
         $desc      : 根据脚本集 ID 过滤
         $type      : commaArray
@@ -3379,6 +3657,1486 @@ authLinkAPI:
 
   add:
     showInDoc    : true
+    name         : Add Sync API
+    name_zhCN    : 添加同步 API
+    descType: markdown
+    desc: |
+      可以通过`data.funcCallKwargsJSON`限制最终调用方传递参数。
+
+      如存在函数`def func(arg1, arg2, arg3, arg4=None)`，且配置为以下内容：
+
+      ```json
+      {
+        "data": {
+          "funcCallKwargsJSON": {
+            "arg1": "hello, world.",
+            "arg2": null,
+            "arg3": "INPUT_BY_CALLER"
+          },
+          ...
+        }
+      }
+      ```
+
+      则表示：
+
+      - `"arg1"`参数：*不允许*调用时指定，调用时自动指定参数值为`"hello, world."`
+      - `"arg2"`参数：*不允许*调用时指定，调用时自动指定参数值为`null`
+      - `"arg3"`参数：允许调用时指定
+      - `"arg4"`参数：*不允许*调用时指定，调用时也不传递此参数
+
+    method       : post
+    url          : /api/v1/sync-apis/do/add
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    body:
+      data:
+        $isRequired: true
+        id:
+          $desc      : ID（不指定自动生成）
+          $isRequired: false
+          $allowNull : true
+          $type      : string
+        funcId:
+          $desc      : 函数 ID
+          $isRequired: true
+          $type      : string
+        funcCallKwargsJSON:
+          $desc      : 函数调用参数JSON (kwargs)
+          $isRequired: true
+          $type      : json
+          $example   : {"msg": "INPUT_BY_CALLER"}
+        tagsJSON:
+          $desc     : 同步 API 标签（直接替换完整数组）
+          $allowNull: true
+          $:
+            $desc      : 标签
+            $isRequired: true
+            $type      : string
+        apiAuthId:
+          $desc     : API 认证 ID
+          $allowNull: true
+          $type     : string
+        expireTime:
+          $desc      : 过期时间（ISO8601格式）
+          $allowNull : true
+          $type      : string
+          $isISO8601 : true
+          $example   : '2019-01-01T00:00:00Z'
+        throttlingJSON:
+          $desc      : 限流JSON
+          $allowNull : true
+          bySecond:
+            $desc     : 按秒限流（次数）
+            $allowNull: true
+            $type     : int
+            $minValue : 1
+            $example  : 2
+          byMinute:
+            $desc     : 按分钟限流（次数）
+            $allowNull: true
+            $type     : int
+            $minValue : 1
+            $example  : 5
+          byHour:
+            $desc     : 按小时限流（次数）
+            $allowNull: true
+            $type     : int
+            $minValue : 1
+            $example  : 10
+          byDay:
+            $desc     : 按天限流（次数）
+            $allowNull: true
+            $type     : int
+            $minValue : 1
+            $example  : 100
+          byMonth:
+            $desc     : 按月限流（次数）
+            $allowNull: true
+            $type     : int
+            $minValue : 1
+            $example  : 1000
+          byYear:
+            $desc     : 按年限流（次数）
+            $allowNull: true
+            $type     : int
+            $minValue : 1
+            $example  : 10000
+        showInDoc:
+          $desc      : 是否显示于文档
+          $isRequired: false
+          $type      : boolean
+        taskRecordLimit:
+          $desc      : 任务记录保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 0
+          $maxValue  : 10000
+        isDisabled:
+          $desc      : 是否禁用
+          $isRequired: false
+          $type      : boolean
+        note:
+          $desc      : 备注
+          $allowNull : true
+          $type      : string
+
+  modify:
+    showInDoc    : true
+    name         : Modify Sync API
+    name_zhCN    : 修改同步 API
+    method       : post
+    url          : /api/v1/sync-apis/:id/do/modify
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 同步 API ID
+        $type: string
+    body:
+      data:
+        $isRequired: true
+        funcId:
+          $desc      : 函数 ID
+          $isRequired: false
+          $type      : string
+        funcCallKwargsJSON:
+          $desc      : 函数调用参数JSON (kwargs)
+          $isRequired: false
+          $type      : json
+          $example   : {"msg": "INPUT_BY_CALLER"}
+        tagsJSON:
+          $desc     : 同步 API 标签（直接替换完整数组）
+          $allowNull: true
+          $:
+            $desc      : 标签
+            $isRequired: true
+            $type      : string
+        apiAuthId:
+          $desc     : API 认证 ID
+          $allowNull: true
+          $type     : string
+        expireTime:
+          $desc      : 过期时间（ISO8601格式）
+          $allowNull : true
+          $type      : string
+          $isISO8601 : true
+          $example   : '2019-01-01T00:00:00Z'
+        throttlingJSON:
+          $desc      : 限流JSON
+          $allowNull : true
+          bySecond:
+            $desc     : 按秒限流（次数）
+            $allowNull: true
+            $type     : int
+            $minValue : 1
+            $example  : 2
+          byMinute:
+            $desc     : 按分钟限流（次数）
+            $allowNull: true
+            $type     : int
+            $minValue : 1
+            $example  : 5
+          byHour:
+            $desc     : 按小时限流（次数）
+            $allowNull: true
+            $type     : int
+            $minValue : 1
+            $example  : 10
+          byDay:
+            $desc     : 按天限流（次数）
+            $allowNull: true
+            $type     : int
+            $minValue : 1
+            $example  : 100
+          byMonth:
+            $desc     : 按月限流（次数）
+            $allowNull: true
+            $type     : int
+            $minValue : 1
+            $example  : 1000
+          byYear:
+            $desc     : 按年限流（次数）
+            $allowNull: true
+            $type     : int
+            $minValue : 1
+            $example  : 10000
+        showInDoc:
+          $desc      : 是否显示于文档
+          $isRequired: false
+          $type      : boolean
+        taskRecordLimit:
+          $desc      : 任务记录保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 0
+          $maxValue  : 10000
+        isDisabled:
+          $desc      : 是否禁用
+          $isRequired: false
+          $type      : boolean
+        note:
+          $desc      : 备注
+          $allowNull : true
+          $type      : string
+
+  delete:
+    showInDoc    : true
+    name         : Delete Sync API
+    name_zhCN    : 删除同步 API
+    method       : get
+    url          : /api/v1/sync-apis/:id/do/delete
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    params:
+      id:
+        $desc: 同步 API ID
+        $type: string
+
+  addMany:
+    showInDoc    : true
+    name         : Add many Sync APIs
+    name_zhCN    : 批量添加同步 API
+    method       : post
+    url          : /api/v1/sync-apis/do/add-many
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    body:
+      data:
+        $isRequired: true
+        $:
+          id:
+            $desc      : ID（不指定自动生成）
+            $isRequired: false
+            $allowNull : true
+            $type      : string
+          funcId:
+            $desc      : 函数 ID
+            $isRequired: true
+            $type      : string
+          funcCallKwargsJSON:
+            $desc      : 函数调用参数JSON (kwargs)
+            $isRequired: true
+            $type      : json
+            $example   : {"msg": "INPUT_BY_CALLER"}
+          tagsJSON:
+            $desc     : 同步 API 标签（直接替换完整数组）
+            $allowNull: true
+            $:
+              $desc      : 标签
+              $isRequired: true
+              $type      : string
+          apiAuthId:
+            $desc     : API 认证 ID
+            $allowNull: true
+            $type     : string
+          expireTime:
+            $desc      : 过期时间（ISO8601格式）
+            $allowNull : true
+            $type      : string
+            $isISO8601 : true
+            $example   : '2019-01-01T00:00:00Z'
+          throttlingJSON:
+            $desc      : 限流JSON
+            $allowNull : true
+            bySecond:
+              $desc     : 按秒限流（次数）
+              $allowNull: true
+              $type     : int
+              $minValue : 1
+              $example  : 2
+            byMinute:
+              $desc     : 按分钟限流（次数）
+              $allowNull: true
+              $type     : int
+              $minValue : 1
+              $example  : 5
+            byHour:
+              $desc     : 按小时限流（次数）
+              $allowNull: true
+              $type     : int
+              $minValue : 1
+              $example  : 10
+            byDay:
+              $desc     : 按天限流（次数）
+              $allowNull: true
+              $type     : int
+              $minValue : 1
+              $example  : 100
+            byMonth:
+              $desc     : 按月限流（次数）
+              $allowNull: true
+              $type     : int
+              $minValue : 1
+              $example  : 1000
+            byYear:
+              $desc     : 按年限流（次数）
+              $allowNull: true
+              $type     : int
+              $minValue : 1
+              $example  : 10000
+          showInDoc:
+            $desc      : 是否显示于文档
+            $isRequired: false
+            $type      : boolean
+          taskRecordLimit:
+            $desc      : 任务记录保留数
+            $isRequired: false
+            $allowNull : true
+            $type      : int
+            $minValue  : 0
+            $maxValue  : 10000
+          isDisabled:
+            $desc      : 是否禁用
+            $isRequired: false
+            $type      : boolean
+          note:
+            $desc      : 备注
+            $allowNull : true
+            $type      : string
+
+  modifyMany:
+    showInDoc    : true
+    name         : Modify many Sync APIs
+    name_zhCN    : 批量修改同步 API
+    descType: markdown
+    desc: |
+      *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来修改所有数据*
+
+      当指定`funcCallKwargsJSON`时，会在*函数的参数级别*进行替换，如：
+
+      存在函数`def func(a, b)`，那么
+
+      |      更新前      | `funcCallKwargsJSON`参数 |         更新后         |
+      |------------------|--------------------------|------------------------|
+      | {"a": 1, "b": 2} | { "a": 8, "b": 9 }       | { *"a": 8*, *"b": 9* } |
+      | {"a": 1, "b": 2} | { "b": 9 }`              | { "a": 1, *"b": 9* }   |
+
+    method       : post
+    url          : /api/v1/sync-apis/do/modify-many
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    query:
+      id:
+        $desc      : 根据 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : sapi.id
+      funcId:
+        $desc      : 根据函数 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : sapi.funcId
+      tags:
+        $desc      : 根据同步 API 标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : sapi.tagsJSON
+      origin:
+        $desc      : 根据来源过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : sapi.origin
+      originId:
+        $desc      : 根据来源 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : sapi.originId
+      func_scriptSetId:
+        $desc      : 根据脚本集 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptSetId
+      func_scriptId:
+        $desc      : 根据脚本 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptId
+      func_tags:
+        $desc      : 根据执行函数标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : func.tagsJSON
+    body:
+      data:
+        $isRequired: true
+        funcId:
+          $desc      : 函数 ID
+          $isRequired: false
+          $type      : string
+        funcCallKwargsJSON:
+          $desc      : 函数调用参数JSON (kwargs)
+          $isRequired: false
+          $type      : json
+          $example  : {"msg": "INPUT_BY_CALLER"}
+        tagsJSON:
+          $desc     : 同步 API 标签（直接替换完整数组）
+          $allowNull: true
+          $:
+            $desc      : 标签
+            $isRequired: true
+            $type      : string
+        apiAuthId:
+          $desc     : API 认证 ID
+          $allowNull: true
+          $type     : string
+        taskRecordLimit:
+          $desc      : 任务记录保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 0
+          $maxValue  : 10000
+        isDisabled:
+          $desc      : 是否禁用
+          $isRequired: false
+          $type      : boolean
+        note:
+          $desc      : 备注
+          $allowNull : true
+          $type      : string
+
+  deleteMany:
+    showInDoc    : true
+    name         : Delete many Sync APIs
+    name_zhCN    : 批量删除同步 API
+    descType: markdown
+    desc: |
+      *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来清空所有数据*
+    method       : get
+    url          : /api/v1/sync-apis/do/delete-many
+    response     : json
+    requireSignIn: true
+    privilege    : general_w
+    query:
+      id:
+        $desc      : 根据 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : sapi.id
+      funcId:
+        $desc      : 根据函数 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : sapi.funcId
+      tags:
+        $desc      : 根据同步 API 标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : sapi.tagsJSON
+      origin:
+        $desc      : 根据来源过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : sapi.origin
+      originId:
+        $desc      : 根据来源 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : sapi.originId
+      func_scriptSetId:
+        $desc      : 根据脚本集 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptSetId
+      func_scriptId:
+        $desc      : 根据脚本 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptId
+      func_tags:
+        $desc      : 根据执行函数标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : func.tagsJSON
+
+# 异步 API
+asyncAPI:
+  $tag     : Async API
+  $tag_zhCN: 异步 API
+
+  list:
+    showInDoc    : true
+    name         : List Async APIs
+    name_zhCN    : 列出异步 API
+    method       : get
+    url          : /api/v1/async-apis/do/list
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_r
+    export       : true
+    paging       : true
+    fieldSelecting: true
+    orderFields:
+      seq   : aapi.seq
+      funcId: aapi.funcId
+    fuzzySearch:
+      - aapi.id
+      - aapi.funcId
+      - aapi.funcCallKwargsJSON
+      - aapi.originId
+      - aapi.tagsJSON
+      - aapi.note
+      - func.title
+      - func.description
+      - func.tagsJSON
+    query:
+      id:
+        $desc      : 根据 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : aapi.id
+      funcId:
+        $desc      : 根据函数 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : aapi.funcId
+      tags:
+        $desc      : 根据异步 API 标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : aapi.tagsJSON
+      origin:
+        $desc      : 根据来源过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : aapi.origin
+      originId:
+        $desc      : 根据来源 ID 过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : aapi.originId
+      func_scriptSetId:
+        $desc      : 根据脚本集 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptSetId
+      func_scriptId:
+        $desc      : 根据脚本 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptId
+      func_tags:
+        $desc      : 根据执行函数标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : func.tagsJSON
+
+  add:
+    showInDoc    : true
+    name         : Add Async API
+    name_zhCN    : 添加异步 API
+    descType: markdown
+    desc: |
+      可以通过`data.funcCallKwargsJSON`限制最终调用方传递参数。
+
+      如存在函数`def func(arg1, arg2, arg3, arg4=None)`，且配置为以下内容：
+
+      ```json
+      {
+        "data": {
+          "funcCallKwargsJSON": {
+            "arg1": "hello, world.",
+            "arg2": null,
+            "arg3": "INPUT_BY_CALLER"
+          },
+          ...
+        }
+      }
+      ```
+
+      则表示：
+
+      - `"arg1"`参数：*不允许*调用时指定，调用时自动指定参数值为`"hello, world."`
+      - `"arg2"`参数：*不允许*调用时指定，调用时自动指定参数值为`null`
+      - `"arg3"`参数：允许调用时指定
+      - `"arg4"`参数：*不允许*调用时指定，调用时也不传递此参数
+
+    method       : post
+    url          : /api/v1/async-apis/do/add
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_w
+    body:
+      data:
+        $isRequired: true
+        id:
+          $desc      : ID（不指定自动生成）
+          $isRequired: false
+          $allowNull : true
+          $type      : string
+        funcId:
+          $desc      : 函数 ID
+          $isRequired: true
+          $type      : string
+        funcCallKwargsJSON:
+          $desc      : 函数调用参数JSON (kwargs)
+          $isRequired: true
+          $type      : json
+          $example  : {"msg": "INPUT_BY_CALLER"}
+        tagsJSON:
+          $desc     : 异步 API 标签（直接替换完整数组）
+          $allowNull: true
+          $:
+            $desc      : 标签
+            $isRequired: true
+            $type      : string
+        apiAuthId:
+          $desc     : API 认证 ID
+          $allowNull: true
+          $type     : string
+        showInDoc:
+          $desc      : 是否显示于文档
+          $isRequired: false
+          $type      : boolean
+        taskRecordLimit:
+          $desc      : 任务记录保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 0
+          $maxValue  : 10000
+        isDisabled:
+          $desc      : 是否禁用
+          $isRequired: false
+          $type      : boolean
+        note:
+          $desc      : 备注
+          $allowNull : true
+          $type      : string
+
+  modify:
+    showInDoc    : true
+    name         : Modify Async API
+    name_zhCN    : 修改异步 API
+    method       : post
+    url          : /api/v1/async-apis/:id/do/modify
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_w
+    params:
+      id:
+        $desc: 异步 API ID
+        $type: string
+    body:
+      data:
+        $isRequired: true
+        funcId:
+          $desc      : 函数 ID
+          $isRequired: false
+          $type      : string
+        funcCallKwargsJSON:
+          $desc      : 函数调用参数JSON (kwargs)
+          $isRequired: false
+          $type      : json
+          $example   : {"msg": "INPUT_BY_CALLER"}
+        tagsJSON:
+          $desc     : 异步 API 标签（直接替换完整数组）
+          $allowNull: true
+          $:
+            $desc      : 标签
+            $isRequired: true
+            $type      : string
+        apiAuthId:
+          $desc     : API 认证 ID
+          $allowNull: true
+          $type     : string
+        showInDoc:
+          $desc      : 是否显示于文档
+          $isRequired: false
+          $type      : boolean
+        taskRecordLimit:
+          $desc      : 任务记录保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 0
+          $maxValue  : 10000
+        isDisabled:
+          $desc      : 是否禁用
+          $isRequired: false
+          $type      : boolean
+        note:
+          $desc      : 备注
+          $allowNull : true
+          $type      : string
+
+  delete:
+    showInDoc    : true
+    name         : Delete Async API
+    name_zhCN    : 删除异步 API
+    method       : get
+    url          : /api/v1/async-apis/:id/do/delete
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_w
+    params:
+      id:
+        $desc: 异步 API ID
+        $type: string
+
+  addMany:
+    showInDoc    : true
+    name         : Add many Async APIs
+    name_zhCN    : 批量添加异步 API
+    method       : post
+    url          : /api/v1/async-apis/do/add-many
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_w
+    body:
+      data:
+        $isRequired: true
+        $:
+          id:
+            $desc      : ID（不指定自动生成）
+            $isRequired: false
+            $allowNull : true
+            $type      : string
+          funcId:
+            $desc      : 函数 ID
+            $isRequired: true
+            $type      : string
+          funcCallKwargsJSON:
+            $desc      : 函数调用参数JSON (kwargs)
+            $isRequired: true
+            $type      : json
+            $example  : {"msg": "INPUT_BY_CALLER"}
+          tagsJSON:
+            $desc     : 异步 API 标签（直接替换完整数组）
+            $allowNull: true
+            $:
+              $desc      : 标签
+              $isRequired: true
+              $type      : string
+          apiAuthId:
+            $desc     : API 认证 ID
+            $allowNull: true
+            $type     : string
+          showInDoc:
+            $desc      : 是否显示于文档
+            $isRequired: false
+            $type      : boolean
+          taskRecordLimit:
+            $desc      : 任务记录保留数
+            $isRequired: false
+            $allowNull : true
+            $type      : int
+            $minValue  : 0
+            $maxValue  : 10000
+          isDisabled:
+            $desc      : 是否禁用
+            $isRequired: false
+            $type      : boolean
+          note:
+            $desc      : 备注
+            $allowNull : true
+            $type      : string
+
+  modifyMany:
+    showInDoc    : true
+    name         : Modify many Async APIs
+    name_zhCN    : 批量修改异步 API
+    descType: markdown
+    desc: |
+      *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来修改所有数据*
+
+      当指定`funcCallKwargsJSON`时，会在*函数的参数级别*进行替换，如：
+
+      存在函数`def func(a, b)`，那么
+
+      |      更新前      | `funcCallKwargsJSON`参数 |         更新后         |
+      |------------------|--------------------------|------------------------|
+      | {"a": 1, "b": 2} | { "a": 8, "b": 9 }       | { *"a": 8*, *"b": 9* } |
+      | {"a": 1, "b": 2} | { "b": 9 }`              | { "a": 1, *"b": 9* }   |
+    method       : post
+    url          : /api/v1/async-apis/do/modify-many
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_w
+    query:
+      id:
+        $desc      : 根据 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : aapi.id
+      funcId:
+        $desc      : 根据函数 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : aapi.funcId
+      tags:
+        $desc      : 根据异步 API 标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : aapi.tagsJSON
+      origin:
+        $desc      : 根据来源过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : aapi.origin
+      originId:
+        $desc      : 根据来源 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : aapi.originId
+      func_scriptSetId:
+        $desc      : 根据脚本集 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptSetId
+      func_scriptId:
+        $desc      : 根据脚本 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptId
+      func_tags:
+        $desc      : 根据执行函数标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : func.tagsJSON
+    body:
+      data:
+        $isRequired: true
+        funcId:
+          $desc      : 函数 ID
+          $isRequired: false
+          $type      : string
+        funcCallKwargsJSON:
+          $desc      : 函数调用参数JSON (kwargs)
+          $isRequired: false
+          $type      : json
+          $example   : {"msg": "INPUT_BY_CALLER"}
+        tagsJSON:
+          $desc     : 异步 API 标签（直接替换完整数组）
+          $allowNull: true
+          $:
+            $desc      : 标签
+            $isRequired: true
+            $type      : string
+        apiAuthId:
+          $desc     : API 认证 ID
+          $allowNull: true
+          $type     : string
+        taskRecordLimit:
+          $desc      : 任务记录保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 0
+          $maxValue  : 10000
+        isDisabled:
+          $desc      : 是否禁用
+          $isRequired: false
+          $type      : boolean
+        note:
+          $desc      : 备注
+          $allowNull : true
+          $type      : string
+
+  deleteMany:
+    showInDoc    : true
+    name         : Delete many Async APIs
+    name_zhCN    : 批量删除异步 API
+    method       : get
+    url          : /api/v1/async-apis/do/delete-many
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_w
+    query:
+      id:
+        $desc      : 根据 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : aapi.id
+      funcId:
+        $desc      : 根据函数 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : aapi.funcId
+      tags:
+        $desc      : 根据异步 API 标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : aapi.tagsJSON
+      origin:
+        $desc      : 根据来源过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : aapi.origin
+      originId:
+        $desc      : 根据来源 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : aapi.originId
+      func_scriptSetId:
+        $desc      : 根据脚本集 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptSetId
+      func_scriptId:
+        $desc      : 根据脚本 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptId
+      func_tags:
+        $desc      : 根据执行函数标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : func.tagsJSON
+
+# 定时任务
+cronJobAPI:
+  $tag     : Cron Job
+  $tag_zhCN: 自动触发配置
+
+  list:
+    showInDoc    : true
+    name         : List Cron Jobs
+    name_zhCN    : 列出自动触发配置
+    method       : get
+    url          : /api/v1/cron-jobs/do/list
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_r
+    export       : true
+    paging       : true
+    fieldSelecting: true
+    orderFields:
+      seq   : cron.seq
+      funcId: cron.funcId
+    fuzzySearch:
+      - cron.id
+      - cron.funcId
+      - cron.funcCallKwargsJSON
+      - cron.tagsJSON
+      - cron.originId
+      - cron.note
+      - func.title
+      - func.description
+      - func.tagsJSON
+    query:
+      id:
+        $desc      : 根据 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.id
+      funcId:
+        $desc      : 根据函数 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.funcId
+      tags:
+        $desc      : 根据自动触发配置标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : cron.tagsJSON
+      scope:
+        $desc      : 根据范围过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.scope
+      origin:
+        $desc      : 根据来源过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : cron.origin
+      originId:
+        $desc      : 根据来源 ID 过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : cron.originId
+      func_scriptSetId:
+        $desc      : 根据脚本集 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptSetId
+      func_scriptId:
+        $desc      : 根据脚本 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptId
+      func_tags:
+        $desc      : 根据执行函数标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : func.tagsJSON
+
+  listRecentTriggered:
+    showInDoc    : true
+    name         : List Recent Triggered Time of the Cron Job
+    name_zhCN    : 列出自动触发配置最近触发时间
+    method       : get
+    url          : /api/v1/cron-jobs/:id/recent-triggered/do/list
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_r
+    params:
+      id:
+        $desc: 自动触发配置 ID
+        $type: string
+
+  add:
+    showInDoc    : true
+    name         : Add Cron Job
+    name_zhCN    : 添加自动触发配置
+    descType     : markdown
+    method       : post
+    url          : /api/v1/cron-jobs/do/add
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_w
+    body:
+      data:
+        $isRequired: true
+        id:
+          $desc      : ID（不指定自动生成）
+          $isRequired: false
+          $allowNull : true
+          $type      : string
+        funcId:
+          $desc      : 函数 ID
+          $isRequired: true
+          $type      : string
+        funcCallKwargsJSON:
+          $desc      : 函数调用参数JSON (kwargs)
+          $isRequired: true
+          $type      : json
+          $example   : {"msg": "Tom"}
+        cronExpr:
+          $desc     : Cron 表达式（仅支持到分钟级）
+          $allowNull: true
+          $type     : string
+          $example  : 0 * * * *
+        tagsJSON:
+          $desc     : 自动触发配置标签（直接替换完整数组）
+          $allowNull: true
+          $:
+            $desc      : 标签
+            $isRequired: true
+            $type      : string
+        scope:
+          $desc        : 范围 - *已不再使用*
+          $isDeprecated: true
+          $allowNull   : true
+          $type        : string
+          $maxLength   : 255
+        expireTime:
+          $desc      : 过期时间（ISO8601格式）
+          $allowNull : true
+          $type      : string
+          $isISO8601 : true
+          $example   : '2019-01-01T00:00:00Z'
+        taskRecordLimit:
+          $desc      : 任务记录保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 0
+          $maxValue  : 10000
+        isDisabled:
+          $desc      : 是否禁用
+          $isRequired: false
+          $type      : boolean
+        note:
+          $desc      : 备注
+          $allowNull : true
+          $type      : string
+
+  modify:
+    showInDoc    : true
+    name         : Modify Cron Job
+    name_zhCN    : 修改自动触发配置
+    method       : post
+    url          : /api/v1/cron-jobs/:id/do/modify
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_w
+    params:
+      id:
+        $desc: 自动触发配置 ID
+        $type: string
+    body:
+      data:
+        $isRequired: true
+        funcId:
+          $desc      : 函数 ID
+          $isRequired: false
+          $type      : string
+        funcCallKwargsJSON:
+          $desc      : 函数调用参数JSON (kwargs)
+          $isRequired: false
+          $type      : json
+          $example   : {"msg": "Tom"}
+        cronExpr:
+          $desc     : Cron 表达式（仅支持到分钟级）
+          $allowNull: true
+          $type     : string
+          $example  : 0 * * * *
+        tagsJSON:
+          $desc     : 自动触发配置标签（直接替换完整数组）
+          $allowNull: true
+          $:
+            $desc      : 标签
+            $isRequired: true
+            $type      : string
+        scope:
+          $desc        : 范围 - *已不再使用*
+          $isDeprecated: true
+          $allowNull   : true
+          $type        : string
+          $maxLength   : 255
+        expireTime:
+          $desc      : 过期时间（ISO8601格式）
+          $allowNull : true
+          $type      : string
+          $isISO8601 : true
+          $example   : '2019-01-01T00:00:00Z'
+        taskRecordLimit:
+          $desc      : 任务记录保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 0
+          $maxValue  : 10000
+        isDisabled:
+          $desc      : 是否禁用
+          $isRequired: false
+          $type      : boolean
+        note:
+          $desc      : 备注
+          $allowNull : true
+          $type      : string
+
+  delete:
+    showInDoc    : true
+    name         : Delete Cron Job
+    name_zhCN    : 删除自动触发配置
+    method       : get
+    url          : /api/v1/cron-jobs/:id/do/delete
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_w
+    params:
+      id:
+        $desc: 自动触发配置 ID
+        $type: string
+
+  addMany:
+    showInDoc    : true
+    name         : Add many Cron Jobs
+    name_zhCN    : 批量添加自动触发配置
+    method       : post
+    url          : /api/v1/cron-jobs/do/add-many
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_w
+    body:
+      data:
+        $isRequired: true
+        $:
+          funcId:
+            $desc      : 函数 ID
+            $isRequired: true
+            $type      : string
+          funcCallKwargsJSON:
+            $desc      : 函数调用参数JSON (kwargs)
+            $isRequired: true
+            $type      : json
+            $example   : {"msg": "Tom"}
+          cronExpr:
+            $desc     : Cron 表达式（仅支持到分钟级）
+            $allowNull: true
+            $type     : string
+            $example  : 0 * * * *
+          tagsJSON:
+            $desc     : 自动触发配置标签（直接替换完整数组）
+            $allowNull: true
+            $:
+              $desc      : 标签
+              $isRequired: true
+              $type      : string
+          scope:
+            $desc        : 范围 - *已不再使用*
+            $isDeprecated: true
+            $allowNull   : true
+            $type        : string
+            $maxLength   : 255
+          expireTime:
+            $desc      : 过期时间（ISO8601格式）
+            $allowNull : true
+            $type      : string
+            $isISO8601 : true
+            $example   : '2019-01-01T00:00:00Z'
+          taskRecordLimit:
+            $desc      : 任务记录保留数
+            $isRequired: false
+            $allowNull : true
+            $type      : int
+            $minValue  : 0
+            $maxValue  : 10000
+          isDisabled:
+            $desc      : 是否禁用
+            $isRequired: false
+            $type      : boolean
+          note:
+            $desc      : 备注
+            $allowNull : true
+            $type      : string
+
+  modifyMany:
+    showInDoc    : true
+    name         : Modify many Cron Jobs
+    name_zhCN    : 批量修改自动触发配置
+    descType: markdown
+    desc: |
+      *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来修改所有数据*
+
+      当指定`funcCallKwargsJSON`时，会在*函数的参数级别*进行替换，如：
+
+      存在函数`def func(a, b)`，那么
+
+      |      更新前      | `funcCallKwargsJSON`参数 |       更新后       |
+      |------------------|--------------------------|--------------------|
+      | {"a": 1, "b": 2} | { "a": 8, "b": 9 }       | { "a": 8, "b": 9 } |
+      | {"a": 1, "b": 2} | { "b": 9 }               | { "a": 1, "b": 9 } |
+
+    method       : post
+    url          : /api/v1/cron-jobs/do/modify-many
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_w
+    query:
+      id:
+        $desc      : 根据 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.id
+      funcId:
+        $desc      : 根据函数 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.funcId
+      tags:
+        $desc      : 根据自动触发配置标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : cron.tagsJSON
+      scope:
+        $desc        : 范围 - *已不再使用*
+        $isDeprecated: true
+        $type        : commaArray
+        $searchType  : in
+        $searchKey   : cron.scope
+      origin:
+        $desc      : 根据来源过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.origin
+      originId:
+        $desc      : 根据来源 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.originId
+      func_scriptSetId:
+        $desc      : 根据脚本集 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptSetId
+      func_scriptId:
+        $desc      : 根据脚本 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptId
+      func_tags:
+        $desc      : 根据执行函数标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : func.tagsJSON
+    body:
+      data:
+        $isRequired: true
+        funcId:
+          $desc      : 函数 ID
+          $isRequired: false
+          $type      : string
+        funcCallKwargsJSON:
+          $desc      : 函数调用参数JSON (kwargs)
+          $isRequired: false
+          $type      : json
+          $example   : {"msg": "Tom"}
+        cronExpr:
+          $desc     : Cron 表达式（仅支持到分钟级）
+          $allowNull: true
+          $type     : string
+          $example  : 0 * * * *
+        tagsJSON:
+          $desc     : 自动触发配置标签（直接替换完整数组）
+          $allowNull: true
+          $:
+            $desc      : 标签
+            $isRequired: true
+            $type      : string
+        taskRecordLimit:
+          $desc      : 任务记录保留数
+          $isRequired: false
+          $allowNull : true
+          $type      : int
+          $minValue  : 0
+          $maxValue  : 10000
+        isDisabled:
+          $desc      : 是否禁用
+          $isRequired: false
+          $type      : boolean
+        note:
+          $desc      : 备注
+          $allowNull : true
+          $type      : string
+
+  deleteMany:
+    showInDoc    : true
+    name         : Delete many Cron Jobs
+    name_zhCN    : 批量删除自动触发配置
+    descType: markdown
+    desc: |
+      *注意：使用本接口时至少需要制定一个条件，不允许通过不指定条件来清空所有数据*
+    method       : get
+    url          : /api/v1/cron-jobs/do/delete-many
+    response     : json
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
+    privilege    : general_w
+    query:
+      id:
+        $desc      : 根据 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.id
+      funcId:
+        $desc      : 根据函数 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.funcId
+      tags:
+        $desc      : 根据自动触发配置标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : cron.tagsJSON
+      scope:
+        $desc        : 范围 - *已不再使用*
+        $isDeprecated: true
+        $type        : commaArray
+        $searchType  : in
+        $searchKey   : cron.scope
+      origin:
+        $desc      : 根据来源过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.origin
+      originId:
+        $desc      : 根据来源 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : cron.originId
+      func_scriptSetId:
+        $desc      : 根据脚本集 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptSetId
+      func_scriptId:
+        $desc      : 根据脚本 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptId
+      func_tags:
+        $desc      : 根据执行函数标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : func.tagsJSON
+
+# 兼容处理
+# 授权链接
+authLinkAPI:
+  $tag     : Auth Link - *Use "Sync API" Instead*
+  $tag_zhCN: 授权链接 - *请改用「同步 API」*
+
+  list:
+    showInDoc    : true
+    deprecated   : true
+    name         : List Auth Links
+    name_zhCN    : 列出授权链接
+    method       : get
+    url          : /api/v1/auth-links/do/list
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+    export       : true
+    paging       : true
+    fieldSelecting: true
+    orderFields:
+      seq   : sapi.seq
+      funcId: sapi.funcId
+    fuzzySearch:
+      - sapi.id
+      - sapi.funcId
+      - sapi.funcCallKwargsJSON
+      - sapi.tagsJSON
+      - sapi.originId
+      - sapi.note
+      - func.title
+      - func.description
+      - func.tagsJSON
+    query:
+      id:
+        $desc      : 根据 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : sapi.id
+      funcId:
+        $desc      : 根据函数 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : sapi.funcId
+      tags:
+        $desc      : 根据授权链接标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : sapi.tagsJSON
+      origin:
+        $desc      : 根据来源过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : sapi.origin
+      originId:
+        $desc      : 根据来源 ID 过滤
+        $type      : string
+        $searchType: eq
+        $searchKey : sapi.originId
+      func_scriptSetId:
+        $desc      : 根据脚本集 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptSetId
+      func_scriptId:
+        $desc      : 根据脚本 ID 过滤
+        $type      : commaArray
+        $searchType: in
+        $searchKey : func.scriptId
+      func_tags:
+        $desc      : 根据执行函数标签过滤
+        $type      : commaArray
+        $searchType: jsonArrayHasAll
+        $searchKey : func.tagsJSON
+
+  add:
+    showInDoc    : true
+    deprecated   : true
     name         : Add Auth Link
     name_zhCN    : 添加授权链接
     descType: markdown
@@ -3507,6 +5265,7 @@ authLinkAPI:
 
   modify:
     showInDoc    : true
+    deprecated   : true
     name         : Modify Auth Link
     name_zhCN    : 修改授权链接
     method       : post
@@ -3608,6 +5367,7 @@ authLinkAPI:
 
   delete:
     showInDoc    : true
+    deprecated   : true
     name         : Delete Auth Link
     name_zhCN    : 删除授权链接
     method       : get
@@ -3622,6 +5382,7 @@ authLinkAPI:
 
   addMany:
     showInDoc    : true
+    deprecated   : true
     name         : Add many Auth Links
     name_zhCN    : 批量添加授权链接
     method       : post
@@ -3725,6 +5486,7 @@ authLinkAPI:
 
   modifyMany:
     showInDoc    : true
+    deprecated   : true
     name         : Modify many Auth Links
     name_zhCN    : 批量修改授权链接
     descType: markdown
@@ -3750,27 +5512,27 @@ authLinkAPI:
         $desc      : 根据 ID 过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : auln.id
+        $searchKey : sapi.id
       funcId:
         $desc      : 根据函数 ID 过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : auln.funcId
+        $searchKey : sapi.funcId
       tags:
         $desc      : 根据授权链接标签过滤
         $type      : commaArray
         $searchType: jsonArrayHasAll
-        $searchKey : auln.tagsJSON
+        $searchKey : sapi.tagsJSON
       origin:
         $desc      : 根据来源过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : auln.origin
+        $searchKey : sapi.origin
       originId:
         $desc      : 根据来源 ID 过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : auln.originId
+        $searchKey : sapi.originId
       func_scriptSetId:
         $desc      : 根据脚本集 ID 过滤
         $type      : commaArray
@@ -3827,6 +5589,7 @@ authLinkAPI:
 
   deleteMany:
     showInDoc    : true
+    deprecated   : true
     name         : Delete many Auth Links
     name_zhCN    : 批量删除授权链接
     descType: markdown
@@ -3842,27 +5605,27 @@ authLinkAPI:
         $desc      : 根据 ID 过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : auln.id
+        $searchKey : sapi.id
       funcId:
         $desc      : 根据函数 ID 过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : auln.funcId
+        $searchKey : sapi.funcId
       tags:
         $desc      : 根据授权链接标签过滤
         $type      : commaArray
         $searchType: jsonArrayHasAll
-        $searchKey : auln.tagsJSON
+        $searchKey : sapi.tagsJSON
       origin:
         $desc      : 根据来源过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : auln.origin
+        $searchKey : sapi.origin
       originId:
         $desc      : 根据来源 ID 过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : auln.originId
+        $searchKey : sapi.originId
       func_scriptSetId:
         $desc      : 根据脚本集 ID 过滤
         $type      : commaArray
@@ -3879,13 +5642,15 @@ authLinkAPI:
         $searchType: jsonArrayHasAll
         $searchKey : func.tagsJSON
 
+# 兼容处理
 # 自动触发配置
 crontabConfigAPI:
-  $tag     : Contab Config
-  $tag_zhCN: 自动触发配置
+  $tag     : Contab Config - *Use "Cron Job" Instead*
+  $tag_zhCN: 自动触发配置 - *请改用「定时任务」*
 
   list:
     showInDoc    : true
+    deprecated   : true
     name         : List Crontab Configs
     name_zhCN    : 列出自动触发配置
     method       : get
@@ -3958,6 +5723,7 @@ crontabConfigAPI:
 
   listRecentTriggered:
     showInDoc    : true
+    deprecated   : true
     name         : List Recent Triggered Time of the Crontab Config
     name_zhCN    : 列出自动触发配置最近触发时间
     method       : get
@@ -3972,6 +5738,7 @@ crontabConfigAPI:
 
   add:
     showInDoc    : true
+    deprecated   : true
     name         : Add Crontab Config
     name_zhCN    : 添加自动触发配置
     descType: markdown
@@ -4047,6 +5814,7 @@ crontabConfigAPI:
 
   modify:
     showInDoc    : true
+    deprecated   : true
     name         : Modify Crontab Config
     name_zhCN    : 修改自动触发配置
     method       : post
@@ -4112,6 +5880,7 @@ crontabConfigAPI:
 
   delete:
     showInDoc    : true
+    deprecated   : true
     name         : Delete Crontab Config
     name_zhCN    : 删除自动触发配置
     method       : get
@@ -4126,6 +5895,7 @@ crontabConfigAPI:
 
   addMany:
     showInDoc    : true
+    deprecated   : true
     name         : Add many Crontab Configs
     name_zhCN    : 批量添加自动触发配置
     method       : post
@@ -4188,6 +5958,7 @@ crontabConfigAPI:
 
   modifyMany:
     showInDoc    : true
+    deprecated   : true
     name         : Modify many Crontab Configs
     name_zhCN    : 批量修改自动触发配置
     descType: markdown
@@ -4296,6 +6067,7 @@ crontabConfigAPI:
 
   deleteMany:
     showInDoc    : true
+    deprecated   : true
     name         : Delete many Crontab Configs
     name_zhCN    : 批量删除自动触发配置
     descType: markdown
@@ -4353,13 +6125,15 @@ crontabConfigAPI:
         $searchType: jsonArrayHasAll
         $searchKey : func.tagsJSON
 
+# 兼容处理
 # 批处理
 batchAPI:
-  $tag     : Batch
-  $tag_zhCN: 批处理
+  $tag     : Batch - *Use "Async API" Instead*
+  $tag_zhCN: 批处理 - *请改用「异步 API」*
 
   list:
     showInDoc    : true
+    deprecated   : true
     name         : List Batches
     name_zhCN    : 列出批处理
     method       : get
@@ -4371,15 +6145,15 @@ batchAPI:
     paging       : true
     fieldSelecting: true
     orderFields:
-      seq   : bat.seq
-      funcId: bat.funcId
+      seq   : aapi.seq
+      funcId: aapi.funcId
     fuzzySearch:
-      - bat.id
-      - bat.funcId
-      - bat.funcCallKwargsJSON
-      - bat.originId
-      - bat.tagsJSON
-      - bat.note
+      - aapi.id
+      - aapi.funcId
+      - aapi.funcCallKwargsJSON
+      - aapi.originId
+      - aapi.tagsJSON
+      - aapi.note
       - func.title
       - func.description
       - func.tagsJSON
@@ -4388,27 +6162,27 @@ batchAPI:
         $desc      : 根据 ID 过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : bat.id
+        $searchKey : aapi.id
       funcId:
         $desc      : 根据函数 ID 过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : bat.funcId
+        $searchKey : aapi.funcId
       tags:
         $desc      : 根据批处理标签过滤
         $type      : commaArray
         $searchType: jsonArrayHasAll
-        $searchKey : bat.tagsJSON
+        $searchKey : aapi.tagsJSON
       origin:
         $desc      : 根据来源过滤
         $type      : string
         $searchType: eq
-        $searchKey : bat.origin
+        $searchKey : aapi.origin
       originId:
         $desc      : 根据来源 ID 过滤
         $type      : string
         $searchType: eq
-        $searchKey : bat.originId
+        $searchKey : aapi.originId
       func_scriptSetId:
         $desc      : 根据脚本集 ID 过滤
         $type      : commaArray
@@ -4427,6 +6201,7 @@ batchAPI:
 
   add:
     showInDoc    : true
+    deprecated   : true
     name         : Add Batch
     name_zhCN    : 添加批处理
     descType: markdown
@@ -4510,6 +6285,7 @@ batchAPI:
 
   modify:
     showInDoc    : true
+    deprecated   : true
     name         : Modify Batch
     name_zhCN    : 修改批处理
     method       : post
@@ -4566,6 +6342,7 @@ batchAPI:
 
   delete:
     showInDoc    : true
+    deprecated   : true
     name         : Delete Batch
     name_zhCN    : 删除批处理
     method       : get
@@ -4580,6 +6357,7 @@ batchAPI:
 
   addMany:
     showInDoc    : true
+    deprecated   : true
     name         : Add many Batches
     name_zhCN    : 批量添加批处理
     method       : post
@@ -4638,6 +6416,7 @@ batchAPI:
 
   modifyMany:
     showInDoc    : true
+    deprecated   : true
     name         : Modify many Batches
     name_zhCN    : 批量修改批处理
     descType: markdown
@@ -4662,27 +6441,27 @@ batchAPI:
         $desc      : 根据 ID 过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : bat.id
+        $searchKey : aapi.id
       funcId:
         $desc      : 根据函数 ID 过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : bat.funcId
+        $searchKey : aapi.funcId
       tags:
         $desc      : 根据批处理标签过滤
         $type      : commaArray
         $searchType: jsonArrayHasAll
-        $searchKey : bat.tagsJSON
+        $searchKey : aapi.tagsJSON
       origin:
         $desc      : 根据来源过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : bat.origin
+        $searchKey : aapi.origin
       originId:
         $desc      : 根据来源 ID 过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : bat.originId
+        $searchKey : aapi.originId
       func_scriptSetId:
         $desc      : 根据脚本集 ID 过滤
         $type      : commaArray
@@ -4739,6 +6518,7 @@ batchAPI:
 
   deleteMany:
     showInDoc    : true
+    deprecated   : true
     name         : Delete many Batches
     name_zhCN    : 批量删除批处理
     method       : get
@@ -4751,27 +6531,27 @@ batchAPI:
         $desc      : 根据 ID 过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : bat.id
+        $searchKey : aapi.id
       funcId:
         $desc      : 根据函数 ID 过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : bat.funcId
+        $searchKey : aapi.funcId
       tags:
         $desc      : 根据批处理标签过滤
         $type      : commaArray
         $searchType: jsonArrayHasAll
-        $searchKey : bat.tagsJSON
+        $searchKey : aapi.tagsJSON
       origin:
         $desc      : 根据来源过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : bat.origin
+        $searchKey : aapi.origin
       originId:
         $desc      : 根据来源 ID 过滤
         $type      : commaArray
         $searchType: in
-        $searchKey : bat.originId
+        $searchKey : aapi.originId
       func_scriptSetId:
         $desc      : 根据脚本集 ID 过滤
         $type      : commaArray

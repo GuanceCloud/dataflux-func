@@ -43,11 +43,11 @@ Cost             : 耗时
 Request          : 请求
 Response         : 响应
 
-When the Work Queue length reaches the limit, Crontab Configs will stop generating new tasks: 当工作队列长度达到限制时，自动触发配置将停止产生新任务
+When the Work Queue length reaches the limit, Cron Jobs will stop generating new tasks: 当工作队列长度达到限制时，定时任务将停止产生新任务
 
 Exclude Disabled Items: 不包括已禁用的项
 
-Crontab Config     : 自动触发配置
+Cron Job           : 定时任务
 Triggers Per Second: 每秒触发次数
 Triggers Per Minute: 每分钟触发次数
 Triggers Per Hour  : 每小时触发次数
@@ -62,7 +62,7 @@ Client: 客户端
 Client ID: 客户端 ID
 Collapse And Categorize: 摺疊並歸類
 Cost: 耗時
-Crontab Config: 自動觸發配置
+Cron Job: 定時任務
 'Current browser-server time difference:': 當前瀏覽器與服務器時差：
 DELETE: 刪除操作
 Data ID: 數據 ID
@@ -91,7 +91,7 @@ Up Time: 已運行
 Up Time AVG: 平均已運行
 Up Time MAX: 最長已運行
 Up Time MIN: 最短已運行
-When the Work Queue length reaches the limit, Crontab Configs will stop generating new tasks: 當工作隊列長度達到限制時，自動觸發配置將停止產生新任務
+When the Work Queue length reaches the limit, Cron Jobs will stop generating new tasks: 當工作隊列長度達到限制時，定時任務將停止產生新任務
 Worker: 工作單元
 Worker Queue: 工作隊列
 generalCount: '{n} 個'
@@ -105,7 +105,7 @@ Client: 客戶端
 Client ID: 客戶端 ID
 Collapse And Categorize: 摺疊並歸類
 Cost: 耗時
-Crontab Config: 自動觸發配置
+Cron Job: 定時任務
 'Current browser-server time difference:': 當前瀏覽器與伺服器時差：
 DELETE: 刪除操作
 Data ID: 資料 ID
@@ -134,7 +134,7 @@ Up Time: 已執行
 Up Time AVG: 平均已執行
 Up Time MAX: 最長已執行
 Up Time MIN: 最短已執行
-When the Work Queue length reaches the limit, Crontab Configs will stop generating new tasks: 當工作佇列長度達到限制時，自動觸發配置將停止產生新任務
+When the Work Queue length reaches the limit, Cron Jobs will stop generating new tasks: 當工作佇列長度達到限制時，定時任務將停止產生新任務
 Worker: 工作單元
 Worker Queue: 工作佇列
 generalCount: '{n} 個'
@@ -265,7 +265,7 @@ taskCount: '{n} 個任務'
                 </tr>
                 <tr v-if="q.workerQueueLimit" class="text-main">
                   <td>
-                    <el-tooltip effect="dark" :content="$t('When the Work Queue length reaches the limit, Crontab Configs will stop generating new tasks')" placement="bottom">
+                    <el-tooltip effect="dark" :content="$t('When the Work Queue length reaches the limit, Cron Jobs will stop generating new tasks')" placement="bottom">
                       <span>{{ $t('Queue Limit') }}</span>
                     </el-tooltip>
                   </td>

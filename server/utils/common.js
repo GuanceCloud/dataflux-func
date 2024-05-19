@@ -35,9 +35,9 @@ var SCRIPT_MD5_FIELDS = [
 
 var IMPORT_DATA_KEYS_WITH_ORIGIN = [
   'scriptSets',
-  'authLinks',
-  'crontabConfigs',
-  'batches',
+  'syncAPIs',
+  'asyncAPIs',
+  'cronJobs',
 ];
 
 common.IMPORT_EXPORT_DATA_SCHEMA_VERSION = 2;

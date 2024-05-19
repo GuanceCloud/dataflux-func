@@ -381,7 +381,7 @@ exports.afterServe = function(app, server) {
             cmd = 'python';
           }
 
-          var baseURL = CONFIG.GUANCE_FUNC_BASE_URL_FOR_INIT_SCRIPTS;
+          var baseURL = CONFIG.GUANCE_FUNC_BASE_URL;
           if (!baseURL) {
             var protocol = toolkit.toBoolean(process.env['GUANCE_SELF_TLS_ENABLE']) ? 'https' : 'http';
             var webBind = CONFIG.WEB_BIND === '0.0.0.0' ? 'localhost' : CONFIG.WEB_BIND;

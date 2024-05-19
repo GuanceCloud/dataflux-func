@@ -22,8 +22,8 @@ For managing stored data from Scripts: 用于管理脚本产生的存储数据
 Once enabled, it can be accessed from Management page {0} Func Store Manage: 启用后，可在「管理」{0}「函数存储管理」进入
 
 Enable Func Doc: 启用函数文档
-Document page for all exported Python functions and Auth Links: 函数的文档，包含所有导出的 Python 函数和授权链接
-Once enabled, it can be accessed from Management page {0} Func Doc / Auth Link Doc: 启用后，可在「管理」{0}「函数文档 / 授权链接文档」进入
+Document page for all Python functions with DFF.API decorator: 函数文档，包含所有添加 DFF.API 装饰器的 Python 函数
+Once enabled, it can be accessed from Management page {0} Func Doc: 启用后，可在「管理」{0}「函数文档」进入
 
 Enable Open API Doc: 启用 Open API 文档
 Document page for Open API powered by Swagger: 基于 Swagger 的 Open API 文档
@@ -58,7 +58,7 @@ Once enabled, it can be accessed from Management page {0} Access Keys: 启用后
 <i18n locale="zh-HK" lang="yaml">
 Abnormal Request Page for current system: 本系統異常請求查看頁面
 Document page for Open API powered by Swagger: 基於 Swagger 的 Open API 文檔
-Document page for all exported Python functions and Auth Links: 函數的文檔，包含所有導出的 Python 函數和授權鏈接
+Document page for all Python functions with DFF.API decorator: 函數文檔，包含所有添加 DFF.API 裝飾器的 Python 函數
 Enable Abnormal Request Page: 啓用異常請求查看頁面
 Enable Access Key Manage: 啓用 Access Key 管理
 Enable File Manage: 啓用文件管理
@@ -88,7 +88,7 @@ Once enabled, it can be accessed from Management page {0} Access Keys: 啓用後
 Once enabled, it can be accessed from Management page {0} File Manage: 啓用後，可在「管理」{0}「文件管理」進入
 Once enabled, it can be accessed from Management page {0} File Service: 啓用後，可在「管理」{0}「文件服務」進入
 Once enabled, it can be accessed from Management page {0} Func Cache Manage: 啓用後，可在「管理」{0}「函數緩存管理」進入
-Once enabled, it can be accessed from Management page {0} Func Doc / Auth Link Doc: 啓用後，可在「管理」{0}「函數文檔 / 授權鏈接文檔」進入
+Once enabled, it can be accessed from Management page {0} Func Doc: 啓用後，可在「管理」{0}「函數文檔」進入
 Once enabled, it can be accessed from Management page {0} Func Store Manage: 啓用後，可在「管理」{0}「函數存儲管理」進入
 Once enabled, it can be accessed from Management page {0} Open API Doc: 啓用後，可在「管理」{0}「Open API 文檔」進入
 Once enabled, it can be accessed from Management page {0} PIP tool: 啓用後，可在「管理」{0}「PIP 工具」進入
@@ -101,7 +101,7 @@ Status Page for current system: 本系統狀態查看頁面
 <i18n locale="zh-TW" lang="yaml">
 Abnormal Request Page for current system: 本系統異常請求檢視頁面
 Document page for Open API powered by Swagger: 基於 Swagger 的 Open API 文件
-Document page for all exported Python functions and Auth Links: 函式的文件，包含所有匯出的 Python 函式和授權連結
+Document page for all Python functions with DFF.API decorator: 函式文件，包含所有新增 DFF.API 裝飾器的 Python 函式
 Enable Abnormal Request Page: 啟用異常請求檢視頁面
 Enable Access Key Manage: 啟用 Access Key 管理
 Enable File Manage: 啟用檔案管理
@@ -131,7 +131,7 @@ Once enabled, it can be accessed from Management page {0} Access Keys: 啟用後
 Once enabled, it can be accessed from Management page {0} File Manage: 啟用後，可在「管理」{0}「檔案管理」進入
 Once enabled, it can be accessed from Management page {0} File Service: 啟用後，可在「管理」{0}「檔案服務」進入
 Once enabled, it can be accessed from Management page {0} Func Cache Manage: 啟用後，可在「管理」{0}「函式快取管理」進入
-Once enabled, it can be accessed from Management page {0} Func Doc / Auth Link Doc: 啟用後，可在「管理」{0}「函式文件 / 授權連結文件」進入
+Once enabled, it can be accessed from Management page {0} Func Doc: 啟用後，可在「管理」{0}「函式文件」進入
 Once enabled, it can be accessed from Management page {0} Func Store Manage: 啟用後，可在「管理」{0}「函式儲存管理」進入
 Once enabled, it can be accessed from Management page {0} Open API Doc: 啟用後，可在「管理」{0}「Open API 文件」進入
 Once enabled, it can be accessed from Management page {0} PIP tool: 啟用後，可在「管理」{0}「PIP 工具」進入
@@ -205,8 +205,8 @@ Status Page for current system: 本系統狀態檢視頁面
                 <el-form-item prop="FuncDoc">
                   <el-switch :active-text="$t('Enable Func Doc')" v-model="form.FuncDoc"></el-switch>
                   <div class="text-small form-item-tip">
-                    {{ $t('Document page for all exported Python functions and Auth Links') }}
-                    <br><i18n path="Once enabled, it can be accessed from Management page {0} Func Doc / Auth Link Doc"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
+                    {{ $t('Document page for all Python functions with DFF.API decorator') }}
+                    <br><i18n path="Once enabled, it can be accessed from Management page {0} Func Doc"><i class="fa fa-fw fa-long-arrow-right"></i></i18n>
                   </div>
                 </el-form-item>
 

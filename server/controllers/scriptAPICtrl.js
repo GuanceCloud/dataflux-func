@@ -363,7 +363,7 @@ exports.publish = function(req, res, next) {
             funcId         : funcId,
             origin         : 'integration',
             originId       : `autoRun.onScriptPublish-${funcId}`,
-            taskRecordLimit: CONFIG._TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_INTEGRATION,
+            taskRecordLimit: CONFIG._TASK_RECORD_FUNC_LIMIT_INTEGRATION,
             ignoreResult   : true,
           }
           mainAPICtrl.createFuncRunnerTaskReq(res.locals, opt, function(err, _taskReq) {

@@ -408,6 +408,7 @@ export default {
   background-color: #fff;
   position: relative;
   border-radius: 10px;
+  box-shadow: 0 2px 2px 0 rgba(155,155,184,.1);
 }
 .sign-in-panel .ui-extra {
   display: flex;
@@ -430,8 +431,6 @@ export default {
 
 .sign-in-form {
   padding: 40px 50px 5px 50px;
-  border-radius: 3px;
-  box-shadow: 0 1px 2px 0 rgba(155,155,184,.15);
 }
 .sign-in-title {
   font-size: 20px;
@@ -466,8 +465,9 @@ export default {
 }
 
 .version-info {
-  text-align: right;
-  margin: 5px 15px 0 0;
+  text-align: center;
+  margin-top: 5px;
+  margin-right: 15px;
   font-size: 12px;
 }
 </style>
