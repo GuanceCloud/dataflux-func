@@ -147,7 +147,7 @@ exports.listRecentTriggered = function(req, res, next) {
     // 兼容处理
     if ('undefined' !== typeof data.crontab) {
       data.cronJob = data.crontab;
-      delete data.crontab
+      delete data.crontab;
     }
 
     let recentTriggered = [];
@@ -177,6 +177,7 @@ exports.add = function(req, res, next) {
 
   // 兼容处理
   data.cronExpr = data.cronExpr || data.crontab;
+  delete data.crontab;
 
   _add(res.locals, data, function(err, addedId) {
     if (err) return next(err);
@@ -194,6 +195,7 @@ exports.modify = function(req, res, next) {
 
   // 兼容处理
   data.cronExpr = data.cronExpr || data.crontab;
+  delete data.crontab;
 
   _modify(res.locals, id, data, null, function(err, modifiedId) {
     if (err) return next(err);
@@ -210,6 +212,7 @@ exports.addMany = function(req, res, next) {
 
   // 兼容处理
   data.cronExpr = data.cronExpr || data.crontab;
+  delete data.crontab;
 
   var addedIds = [];
 
@@ -246,6 +249,7 @@ exports.modifyMany = function(req, res, next) {
 
   // 兼容处理
   data.cronExpr = data.cronExpr || data.crontab;
+  delete data.crontab;
 
   var cronJobModel = cronJobMod.createModel(res.locals);
 
