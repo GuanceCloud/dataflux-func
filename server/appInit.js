@@ -95,7 +95,9 @@ exports.prepare = function(callback) {
     function(asyncCallback) {
       var conn = getDBConnection();
       conn.query("SHOW VARIABLES LIKE '%time_zone%'", function(err, dbRes) {
-        conn.end();
+        conn.end(function(err) {
+          // Nope
+        });
 
         // 无法连接数据库也不要报错
         if (err) {
