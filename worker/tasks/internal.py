@@ -1269,8 +1269,10 @@ class MigrationDataFix(BaseInternalTask):
 
             WHERE
                 JSON_EXTRACT(`extraConfigJSON`, '$.integrationConfig.crontab') IS NOT NULL
-                OR
+ 				OR
                 JSON_EXTRACT(`extraConfigJSON`, '$.fixedCrontab') IS NOT NULL
+                OR
+                JSON_EXTRACT(`extraConfigJSON`, '$.delayedCrontab') IS NOT NULL
             '''
         data = self.db.query(sql)
 
@@ -1294,6 +1296,15 @@ class MigrationDataFix(BaseInternalTask):
             else:
                 if _crontab:
                     extra_config['fixedCronExpr'] = extra_config.pop('fixedCrontab')
+
+            # extraConfigJSON.delayedCrontab -> delayedCronJob
+            try:
+                _crontab = extra_config['delayedCrontab']
+            except KeyError as e:
+                pass
+            else:
+                if _crontab:
+                    extra_config['delayedCronJob'] = extra_config.pop('delayedCrontab')
 
             # 回写
             sql = '''
