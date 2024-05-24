@@ -100,13 +100,6 @@ class CronJobStarter(BaseTask):
             if isinstance(c['funcExtraConfig'], str):
                 c['funcExtraConfig'] = toolkit.json_loads(c['funcExtraConfig']) or {}
 
-            # 兼容处理
-            c['cronExpr'] = c.get('cronExpr') or c.get('crontab')
-
-            fixed_crontab = c['funcExtraConfig'].get('fixedCrontab')
-            if fixed_crontab:
-                c['funcExtraConfig']['fixedCronExpr'] = fixed_crontab
-
             # 判断最终 Cron 表达式
             c['cronExpr'] = c.get('dynamicCronExpr') or c['funcExtraConfig'].get('fixedCronExpr') or c.get('cronExpr')
 
@@ -137,9 +130,6 @@ class CronJobStarter(BaseTask):
                 ,JSON_UNQUOTE(
                     JSON_EXTRACT(`func`.`extraConfigJSON`, '$.integrationConfig.cronExpr')
                 ) AS `cronExpr`
-                ,JSON_UNQUOTE(
-                    JSON_EXTRACT(`func`.`extraConfigJSON`, '$.integrationConfig.crontab')
-                ) AS `crontab`
 
                 ,`sset`.`title` AS `scriptSetTitle`
                 ,`scpt`.`title` AS `scriptTitle`

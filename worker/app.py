@@ -31,7 +31,7 @@ from worker.tasks.example          import ExampleSuccess, ExampleFailure, Exampl
 from worker.tasks.cron_job_starter import CronJobStarter, CronJobManualStarter
 from worker.tasks.func.debugger    import FuncDebugger
 from worker.tasks.func.runner      import FuncRunner
-from worker.tasks.internal         import SystemMetric, FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache, CheckConnector, QueryConnector, AutoRun, UpdateWorkerQueueLimit
+from worker.tasks.internal         import SystemMetric, FlushDataBuffer, AutoClean, AutoBackupDB, ReloadDataMD5Cache, CheckConnector, QueryConnector, AutoRun, UpdateWorkerQueueLimit, MigrationDataFix
 
 TASK_CLS_MAP = {
     # 示例任务
@@ -57,6 +57,7 @@ TASK_CLS_MAP = {
     QueryConnector.name        : QueryConnector,
     AutoRun.name               : AutoRun,
     UpdateWorkerQueueLimit.name: UpdateWorkerQueueLimit,
+    MigrationDataFix.name      : MigrationDataFix,
 }
 
 def consume(context):

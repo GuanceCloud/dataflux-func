@@ -1177,7 +1177,6 @@ exports.overview = function(req, res, next) {
               'cron.id',
               'cron.cronExpr',
               "func.extraConfigJSON->>'$.fixedCronExpr' AS fixedCronExpr",
-              "func.extraConfigJSON->>'$.fixedCrontab'  AS fixedCrontab",
             ],
             filters: {
               'cron.isDisabled': { eq: false },
@@ -1249,7 +1248,7 @@ exports.overview = function(req, res, next) {
           var totalTriggerCount   = 0;
           var cronTriggerCountMap = {}
           cronJobs.forEach(function(c) {
-            var cronExpr = c.dynamicCronExpr || c.fixedCronExpr || c.fixedCrontab || c.cronExpr;
+            var cronExpr = c.dynamicCronExpr || c.fixedCronExpr || c.cronExpr;
             if (!cronExpr) return;
 
             if (c.isPaused) return;

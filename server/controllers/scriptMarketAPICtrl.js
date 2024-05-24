@@ -2033,20 +2033,16 @@ exports.install = function(req, res, next) {
           'func.id',
           'func.scriptId',
           'func.extraConfigJSON',
-          "func.extraConfigJSON->>'$.fixedCronExpr' AS fixedCronExpr",
-          "func.extraConfigJSON->>'$.fixedCrontab'  AS fixedCrontab",
         ],
         filters: {
-          'scpt.id': { in : startupScriptIds },
+          'func.extraConfigJSON->>$.fixedCronExpr': { isnotnull: true },
+          'scpt.id'                               : { in : startupScriptIds },
         }
       }
       funcModel.list(opt, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
         dbRes.forEach(function(d) {
-          d.fixedCronExpr = d.fixedCronExpr || d.fixedCrontab;
-          if (!d.fixedCronExpr) return;
-
           if (startupScriptCronJobFuncMap[d.scriptId]) return;
           startupScriptCronJobFuncMap[d.scriptId] = d;
         });

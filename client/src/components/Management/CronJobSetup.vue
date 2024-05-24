@@ -997,7 +997,7 @@ export default {
   display: inline-block;
 }
 
-.crontab-expr-parts {
+.cron-expr-parts {
   font-size: 35px;
   margin-right: 20px;
   vertical-align: middle;

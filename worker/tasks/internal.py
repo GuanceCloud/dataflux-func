@@ -1255,3 +1255,60 @@ class UpdateWorkerQueueLimit(BaseInternalTask):
         # 缓存
         cache_key = toolkit.get_global_cache_key('cache', 'workerQueueLimitCronJob')
         self.cache_db.set(cache_key, toolkit.json_dumps(worker_queue_limit_map))
+
+class MigrationDataFix(BaseInternalTask):
+    name = 'Internal.MigrationDataFix'
+
+    def migrate_crontab_config_to_cron_job(self):
+        sql = '''
+            SELECT
+                 `id`
+                ,`extraConfigJSON`
+
+            FROM `biz_main_func`
+
+            WHERE
+                JSON_EXTRACT(`extraConfigJSON`, '$.integrationConfig.crontab') IS NOT NULL
+                OR
+                JSON_EXTRACT(`extraConfigJSON`, '$.fixedCrontab') IS NOT NULL
+            '''
+        data = self.db.query(sql)
+
+        for d in data:
+            extra_config = toolkit.json_loads(d['extraConfigJSON'])
+
+            # extraConfigJSON.integrationConfig.crontab -> cronExpr
+            try:
+                _crontab = extra_config['integrationConfig']['crontab']
+            except KeyError as e:
+                pass
+            else:
+                if _crontab:
+                    extra_config['integrationConfig']['cronExpr'] = extra_config['integrationConfig'].pop('crontab')
+
+            # extraConfigJSON.fixedCrontab -> fixedCronExpr
+            try:
+                _crontab = extra_config['fixedCrontab']
+            except KeyError as e:
+                pass
+            else:
+                if _crontab:
+                    extra_config['fixedCronExpr'] = extra_config.pop('fixedCrontab')
+
+            # 回写
+            sql = '''
+                UPDATE `biz_main_func`
+                SET
+                    extraConfigJSON = ?
+                WHERE
+                    id = ?
+                '''
+            sql_params = [ toolkit.json_dumps(extra_config), d['id'] ]
+            self.db.query(sql, sql_params)
+
+    def run(self, **kwargs):
+        # 上锁
+        self.lock()
+
+        # 迁移
+        self.safe_call(self.migrate_crontab_config_to_cron_job)
