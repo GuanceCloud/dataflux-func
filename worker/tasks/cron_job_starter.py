@@ -374,7 +374,7 @@ class CronJobManualStarter(CronJobStarter):
             return None
 
         cron_jobs = self.prepare_cron_jobs(cron_jobs)
-        return cron_job[0]
+        return cron_jobs[0]
 
     def run(self, **kwargs):
         # 执行函数、参数
