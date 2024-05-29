@@ -1204,6 +1204,29 @@ class FuncCronJobHelper(BaseFuncEntityHelper):
     _table         = 'biz_main_cron_job'
     _entity_origin = 'cronJob'
 
+    # 兼容处理
+    _field_remap = {
+        'crontab': 'cronExpr',
+    }
+
+    def query(self, fields=None, filters=None):
+        # 兼容处理
+        if fields:
+            next_fields = []
+            for f in fields:
+                next_fields.append(self._field_remap.get(f, f))
+
+            fields = next_fields
+
+        if filters:
+            next_filters = {}
+            for k, v in filters.items():
+                next_filters[self._field_remap.get(f, f)] = v
+
+            filters = next_filters
+
+        return super().query(fields, filters)
+
     def set_cron_expr(self, cron_expr, expires=None, entity_id=None):
         entity_id = self.resolve_entity_id(entity_id)
         if not entity_id:
