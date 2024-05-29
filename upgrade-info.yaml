@@ -786,9 +786,18 @@ upgradeInfo:
   # 于观测云 SaaS 2024-05-29 迭代中实装
   - seq: 29
     database: |-
-      -- 扩充 AccessKey Secret 字段用于存放加密后内容
+      -- 确保 AccessKey secretCipher 字段为 longtext
       ALTER TABLE wat_main_access_key
-        MODIFY COLUMN `secretCipher` varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL;
+        ADD COLUMN `secretCipher_tmp` longtext
+        AFTER `secretCipher`;
+
+      UPDATE wat_main_access_key SET `secretCipher_tmp` = `secretCipher`;
+
+      ALTER TABLE wat_main_access_key
+        DROP COLUMN `secretCipher`;
+
+      ALTER TABLE wat_main_access_key
+        CHANGE `secretCipher_tmp` `secretCipher` longtext;
 
       -- 重命名 crontab 为 cronExpr
       ALTER TABLE biz_main_task_record_func

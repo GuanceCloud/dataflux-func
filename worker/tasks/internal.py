@@ -617,7 +617,7 @@ class AutoClean(BaseInternalTask):
 
         # 搜集任务记录里的 Origin ID 列表
         sql = '''
-            SELECT DISTINCT originId FROM biz_main_task_info
+            SELECT DISTINCT originId FROM biz_main_task_record_func
             '''
         db_res = self.db.query(sql)
         task_info_origin_ids = set()
@@ -628,7 +628,7 @@ class AutoClean(BaseInternalTask):
         outdated_origin_ids = task_info_origin_ids - current_origin_ids
         if outdated_origin_ids:
             sql = '''
-                DELETE FROM biz_main_task_info WHERE originId IN (?)
+                DELETE FROM biz_main_task_record_func WHERE originId IN (?)
                 '''
             sql_params = [ outdated_origin_ids ]
             self.db.non_query(sql, sql_params)
