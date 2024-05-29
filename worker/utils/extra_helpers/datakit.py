@@ -6,6 +6,7 @@ import types
 import json
 import re
 import math
+import ssl
 
 try:
     from urllib import urlencode
@@ -210,7 +211,7 @@ def colored(s, name):
         raise AttributeError("Color '{}' not supported.".format(name))
 
 class BaseDataKit(object):
-    def __init__(self, url=None, host=None, port=None, protocol=None, timeout=None, debug=False, dry_run=False, write_size=None, raise_for_status=True):
+    def __init__(self, url=None, host=None, port=None, protocol=None, timeout=None, debug=False, dry_run=False, write_size=None, raise_for_status=True, verify_https=True):
         self.url        = url        or None
         self.host       = host       or 'localhost'
         self.port       = port       or None
@@ -221,6 +222,7 @@ class BaseDataKit(object):
         self.write_size = write_size or 100
 
         self.raise_for_status = raise_for_status or False
+        self.verify_https     = verify_https     or False
 
         if url:
             splited_url = urlsplit(url)
@@ -390,7 +392,8 @@ class BaseDataKit(object):
         if not self.dry_run:
             conn = None
             if self.protocol == 'https':
-                conn = httplib.HTTPSConnection(self.host, port=self.port, timeout=self.timeout)
+                ctx = None if self.verify_https else ssl._create_unverified_context()
+                conn = httplib.HTTPSConnection(self.host, port=self.port, timeout=self.timeout, context=ctx)
             else:
                 conn = httplib.HTTPConnection(self.host, port=self.port, timeout=self.timeout)
 
