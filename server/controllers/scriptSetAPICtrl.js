@@ -814,6 +814,7 @@ function doDeploy(locals, scriptSetId, options, callback) {
           id                : startupCronJobId,
           funcId            : cronJobFuncId,
           funcCallKwargsJSON: {},
+          taskRecordLimit   : CONFIG._TASK_RECORD_FUNC_LIMIT_CRON_JOB_BY_DEPLOY,
         }
         return cronJobModel.add(_data, asyncCallback);
       });
