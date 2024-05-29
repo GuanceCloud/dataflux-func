@@ -1220,7 +1220,7 @@ class FuncCronJobHelper(BaseFuncEntityHelper):
 
         if filters:
             next_filters = {}
-            for k, v in filters.items():
+            for f, v in filters.items():
                 next_filters[self._field_remap.get(f, f)] = v
 
             filters = next_filters
