@@ -7,6 +7,7 @@
 
 # Built-in Modules
 import os
+import time
 import traceback
 import pprint
 import textwrap
@@ -14,6 +15,7 @@ import zipfile
 
 # 3rd-party Modules
 import arrow
+from croniter import croniter
 from datasize import DataSize
 
 # Project Modules
@@ -40,7 +42,7 @@ class SystemMetric(BaseInternalTask):
     '''
     name = 'Internal.SystemMetric'
 
-    def upload_metric_queue(self):
+    def collect_metric_queue(self):
         guance_data = []
 
         for queue in list(range(CONFIG['_WORKER_QUEUE_COUNT'])):
@@ -87,7 +89,7 @@ class SystemMetric(BaseInternalTask):
         if self.guance_data_upload_url and guance_data:
             self.upload_guance_data('metric', guance_data)
 
-    def upload_metric_cache_db(self):
+    def collect_metric_cache_db(self):
         cache_res = self.cache_db.info()
         db_info   = cache_res.get(f"db{CONFIG['REDIS_DATABASE'] or 0}") or {}
 
@@ -117,7 +119,7 @@ class SystemMetric(BaseInternalTask):
 
             self.upload_guance_data('metric', guance_data)
 
-    def upload_metric_cache_db_key(self):
+    def collect_metric_cache_db_key(self):
         key_prefix_count_map = {}
 
         keys = self.cache_db.keys()
@@ -155,7 +157,7 @@ class SystemMetric(BaseInternalTask):
         if self.guance_data_upload_url and guance_data:
             self.upload_guance_data('metric', guance_data)
 
-    def upload_metric_db(self):
+    def collect_metric_db(self):
         guance_data = []
 
         db_res = self.db.query('SHOW TABLE STATUS')
@@ -195,21 +197,191 @@ class SystemMetric(BaseInternalTask):
         if self.guance_data_upload_url and guance_data:
             self.upload_guance_data('metric', guance_data)
 
+    def collect_entity_count(self):
+        # 仅在开启观测云数据上报时执行
+        if not self.guance_data_upload_url:
+            return
+
+        guance_data = []
+
+        sql = '''
+            SELECT 'scriptSet_count'   AS name, COUNT(*) AS value FROM biz_main_script_set
+            UNION
+            SELECT 'script_count'      AS name, COUNT(*) AS value FROM biz_main_script
+            UNION
+            SELECT 'func_count'        AS name, COUNT(*) AS value FROM biz_main_func
+            UNION
+            SELECT 'connector_count'   AS name, COUNT(*) AS value FROM biz_main_connector
+            UNION
+            SELECT 'envVariable_count' AS name, COUNT(*) AS value FROM biz_main_env_variable
+            UNION
+            SELECT 'syncAPI_count'     AS name, COUNT(*) AS value FROM biz_main_sync_api
+            UNION
+            SELECT 'asyncAPI_count'    AS name, COUNT(*) AS value FROM biz_main_async_api
+            UNION
+            SELECT 'cronJob_count'     AS name, COUNT(*) AS value FROM biz_main_cron_job
+            UNION
+            SELECT 'fileService_count' AS name, COUNT(*) AS value FROM biz_main_file_service
+            UNION
+            SELECT 'user_count'        AS name, COUNT(*) AS value FROM wat_main_user
+
+            UNION
+            SELECT 'syncAPI_enabled_count'  AS name, COUNT(*) AS value FROM biz_main_sync_api  WHERE isDisabled = False
+            UNION
+            SELECT 'asyncAPI_enabled_count' AS name, COUNT(*) AS value FROM biz_main_async_api WHERE isDisabled = False
+            UNION
+            SELECT 'cronJob_enabled_count'  AS name, COUNT(*) AS value FROM biz_main_cron_job  WHERE isDisabled = False
+            '''
+        db_res = self.db.query(sql)
+
+        entity_count_map = {}
+        for d in db_res:
+            value = d['value']
+            entity, field = d['name'].split('_', 1)
+
+            if entity not in entity_count_map:
+                entity_count_map[entity] = {}
+
+            entity_count_map[entity][field] = value
+
+        # 观测云
+        for entity, fields in entity_count_map.items():
+            guance_data = {
+                'measurement': CONFIG['_SELF_MONITOR_GUANCE_MEASUREMENT_ENTITY'],
+                'tags': {
+                    'entity': entity,
+                },
+                'fields': fields,
+                'timestamp': self.trigger_time,
+            }
+            self.upload_guance_data('metric', guance_data)
+
+    def collect_cron_job_trigger_count(self):
+        # 仅在开启观测云数据上报时执行
+        if not self.guance_data_upload_url:
+            return
+
+        # 获取所有定时任务
+        sql = '''
+            SELECT
+                 cron.id
+                ,cron.cronExpr
+                ,func.extraConfigJSON->>'$.fixedCronExpr' AS fixedCronExpr
+            FROM biz_main_cron_job AS cron
+
+            JOIN biz_main_func AS func
+                ON cron.funcId = func.id
+
+            WHERE
+                cron.isDisabled = False
+            '''
+        cron_jobs = self.db.query(sql)
+
+        if not cron_jobs:
+            return
+
+        # 定时任务动态频率
+        cache_key = toolkit.get_global_cache_key('cronJob', 'dynamicCronExpr')
+        dynamic_cron_expr_map = self.cache_db.hgetall(cache_key)
+
+        # 定时任务暂停标记
+        cache_key = toolkit.get_global_cache_key('cronJob', 'pause')
+        pause_expire_time_map = self.cache_db.hgetall(cache_key)
+
+        now = int(time.time())
+
+        trigger_count_map = {}
+        total_trigger_count = 0
+
+        for c in cron_jobs:
+            # 检查定时任务暂停标记
+            c['isPaused'] = False
+
+            pause_expire_time = pause_expire_time_map.get(c['id'])
+            if pause_expire_time:
+                pause_expire_time = int(pause_expire_time)
+
+                if pause_expire_time and pause_expire_time > now:
+                    continue
+
+            # 追加定时任务动态频率
+            c['dynamicCronExpr'] = None
+
+            dynamic_cron_expr = dynamic_cron_expr_map.get(c['id'])
+            if dynamic_cron_expr:
+                dynamic_cron_expr = toolkit.json_loads(dynamic_cron_expr)
+
+                if dynamic_cron_expr['expireTime'] and dynamic_cron_expr['expireTime'] > now:
+                    c['dynamicCronExpr'] = dynamic_cron_expr['value']
+
+            # 计算未来 24 小时触发次数
+            cron_expr = c.get('dynamicCronExpr') or c['fixedCronExpr'] or c['cronExpr']
+            if not cron_expr:
+                continue
+
+            if cron_expr in trigger_count_map:
+                # 已经计算过的不重复计算
+                total_trigger_count += trigger_count_map[cron_expr]
+
+            else:
+                # 首次遇到的 Cron 表达式需要计算
+                start_time = now
+                end_time   = start_time + 24 * 3600
+
+                cron = croniter(cron_expr, start_time=start_time)
+                curr_time = cron.next()
+
+                trigger_count = 0
+                while curr_time < end_time:
+                    curr_time = cron.next()
+                    trigger_count += 1
+
+                total_trigger_count += trigger_count
+
+                trigger_count_map[cron_expr] = trigger_count
+
+        trigger_count_per_day    = float(total_trigger_count)
+        trigger_count_per_hour   = float(round(total_trigger_count / 24, 1))
+        trigger_count_per_minute = float(round(total_trigger_count / (24 * 60), 1))
+        trigger_count_per_second = float(round(total_trigger_count / (24 * 3600), 1))
+
+        # 观测云
+        guance_data = {
+            'measurement': CONFIG['_SELF_MONITOR_GUANCE_MEASUREMENT_CRON_JOB'],
+            'tags': {
+                'bizMetric': 'cronJobTriggerCount',
+            },
+            'fields': {
+                'trigger_count_per_day'   : trigger_count_per_day,
+                'trigger_count_per_hour'  : trigger_count_per_hour,
+                'trigger_count_per_minute': trigger_count_per_minute,
+                'trigger_count_per_second': trigger_count_per_second,
+            },
+            'timestamp': self.trigger_time,
+        }
+        self.upload_guance_data('metric', guance_data)
+
     def run(self, **kwargs):
         # 上锁
         self.lock()
 
-        # 上报队列数据
-        self.safe_call(self.upload_metric_queue)
+        # 搜集队列数据
+        self.safe_call(self.collect_metric_queue)
 
-        # 上报缓存数据库信息
-        self.safe_call(self.upload_metric_cache_db)
+        # 搜集缓存数据库信息
+        self.safe_call(self.collect_metric_cache_db)
 
-        # 上报缓存数据库 Key 信息
-        self.safe_call(self.upload_metric_cache_db_key)
+        # 搜集缓存数据库 Key 信息
+        self.safe_call(self.collect_metric_cache_db_key)
 
-        # 上报数据库信息
-        self.safe_call(self.upload_metric_db)
+        # 搜集数据库信息
+        self.safe_call(self.collect_metric_db)
+
+        # 搜集搜集各业务实体数量
+        self.safe_call(self.collect_entity_count)
+
+        # 搜集定时任务触发次数信息
+        self.safe_call(self.collect_cron_job_trigger_count)
 
 class FlushDataBuffer(BaseInternalTask):
     '''
@@ -459,7 +631,22 @@ class FlushDataBuffer(BaseInternalTask):
 class AutoClean(BaseInternalTask):
     name = 'Internal.AutoClean'
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # 获取当前所有表
+        self._all_tables = set()
+
+        sql = '''SHOW TABLES'''
+        db_res = self.db.query(sql)
+        for d in db_res:
+            self._all_tables.add(list(d.values())[0])
+
     def _delete_by_seq(self, table, seq, include=True):
+        # 忽略不存在的表
+        if table not in self._all_tables:
+            return
+
         if seq <= 0:
             return
 
@@ -475,6 +662,10 @@ class AutoClean(BaseInternalTask):
         self.db.query(sql, sql_params)
 
     def clear_table_by_limit(self, table, limit):
+        # 忽略不存在的表
+        if table not in self._all_tables:
+            return
+
         sql = '''
             SELECT
                 MAX(`seq`) AS maxSeq
@@ -493,6 +684,10 @@ class AutoClean(BaseInternalTask):
         self._delete_by_seq(table, delete_from_seq, include=True)
 
     def clear_table_by_expires(self, table, expires):
+        # 忽略不存在的表
+        if table not in self._all_tables:
+            return
+
         delete_from_seq = 0
 
         # 开始SEQ
@@ -571,6 +766,10 @@ class AutoClean(BaseInternalTask):
             self._delete_by_seq(table, delete_from_seq, include=False)
 
     def clear_table(self, table):
+        # 忽略不存在的表
+        if table not in self._all_tables:
+            return
+
         sql = '''TRUNCATE ??'''
         sql_params = [table]
         self.db.query(sql, sql_params)
