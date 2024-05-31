@@ -112,15 +112,16 @@ Using {0} and {1} to setting and getting cache data in Script: 可以使用 {0} 
 
           <el-table-column :label="$t('Memory usage')" sortable sort-by="memoryUsage" align="right" width="150">
             <template slot-scope="scope">
-              <code :class="{ 'text-bad': scope.row.isOverSized }">{{ scope.row.memoryUsageHuman }}</code>
+              <code>{{ scope.row.memoryUsageHuman }}</code>
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="200">
+          <el-table-column align="right" width="320">
             <template slot-scope="scope">
               <el-link v-if="['string', 'list', 'hash'].indexOf(scope.row.type) >= 0 && !scope.row.isOverSized" @click="showDetail(scope.row)">
                 {{ $t('Show content') }}
               </el-link>
+              <el-link @click="download(scope.row)">{{ $t('Download') }}</el-link>
               <el-link @click="quickSubmitData(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
             </template>
           </el-table-column>
@@ -134,6 +135,7 @@ Using {0} and {1} to setting and getting cache data in Script: 可以使用 {0} 
 
 <script>
 import LongTextDialog from '@/components/LongTextDialog'
+import FileSaver from 'file-saver';
 
 export default {
   name: 'FuncCacheManage',
@@ -209,6 +211,20 @@ export default {
       let createTimeStr = this.M(d.createTime).format('YYYYMMDD_HHmmss');
       let fileName = `${d.scope}.${d.key}.${createTimeStr}`;
       this.$refs.longTextDialog.update(content, fileName);
+    },
+    async download(d) {
+      let apiRes = await this.T.callAPI_get('/api/v1/func-caches/:scope/:key/do/get', {
+        params: { scope: d.scope, key: encodeURIComponent(d.key) }
+      });
+      if (!apiRes.ok) return
+
+      let content = apiRes.data;
+
+      let blob = new Blob([content], {type: 'text/plain'});
+      let fileName = `DFF.CACHE.${d.key}.${this.M().format('YYYYMMDD_HHmmss')}.txt`;
+      FileSaver.saveAs(blob, fileName);
+
+      return fileName;
     },
   },
   computed: {
