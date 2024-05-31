@@ -146,6 +146,9 @@ class DataFluxFuncBaseException(Exception):
 class EntityNotFound(DataFluxFuncBaseException):
     pass
 
+class BadEntityCall(DataFluxFuncBaseException):
+    pass
+
 class FuncCircularCall(DataFluxFuncBaseException):
     pass
 
@@ -1149,8 +1152,15 @@ class BaseFuncEntityHelper(object):
     _table         = None
     _entity_origin = None
 
+    _entity_queue_default   = CONFIG['_FUNC_TASK_QUEUE_DEFAULT']
+    _entity_timeout_default = CONFIG['_FUNC_TASK_TIMEOUT_DEFAULT']
+    _entity_expires_default = CONFIG['_FUNC_TASK_EXPIRES_DEFAULT']
+
     def __init__(self, task):
         self._task = task
+
+    def __call__(self, *args, **kwargs):
+        return self.call(*args, **kwargs)
 
     def resolve_entity_id(self, entity_id=None):
         if not entity_id:
@@ -1163,7 +1173,29 @@ class BaseFuncEntityHelper(object):
 
     def get(self, entity_id=None):
         sql = '''
-            SELECT * FROM ?? WHERE id = ? LIMIT 1
+            SELECT
+                entity.*
+                ,sset.title AS scriptSetTitle
+                ,scpt.title AS scriptTitle
+                ,func.title AS funcTitle
+
+                ,func.extraConfigJSON AS funcExtraConfigJSON
+
+            FROM ?? AS entity
+
+            LEFT JOIN biz_main_func AS func
+              ON func.id = entity.funcId
+
+            LEFT JOIN biz_main_script AS scpt
+              ON scpt.id = func.scriptId
+
+            LEFT JOIN biz_main_script_set AS sset
+              ON sset.id = func.scriptSetId
+
+            WHERE
+                entity.id = ?
+
+            LIMIT 1
             '''
         sql_params = [ self._table, self.resolve_entity_id(entity_id) ]
         db_res = self._task.db.query(sql, sql_params)
@@ -1192,6 +1224,113 @@ class BaseFuncEntityHelper(object):
         db_res = self._task.db.query(sql, sql_params)
         return db_res
 
+    def call(self, entity_id, kwargs=None, trigger_time=None, queue=None, timeout=None, expires=None):
+        entity = self.get(entity_id)
+
+        func_extra_config = {}
+        if entity.get('funcExtraConfigJSON'):
+            func_extra_config = toolkit.json_loads(entity['funcExtraConfigJSON'])
+
+        # 任务请求
+        task_req = {
+            'name': 'Func.Runner',
+            'kwargs': {
+                'funcId'         : entity['funcId'],
+                'funcCallKwargs' : kwargs,
+                'origin'         : self._entity_origin,
+                'originId'       : entity_id,
+
+                'scriptSetTitle': entity.get('scriptSetTitle'),
+                'scriptTitle'   : entity.get('scriptTitle'),
+                'funcTitle'     : entity.get('funcTitle'),
+            },
+
+            'triggerTime'    : trigger_time,
+            'queue'          : None,
+            'timeout'        : None,
+            'expires'        : None,
+            'taskRecordLimit': entity['taskRecordLimit'],
+        }
+
+        # 进一步配置
+        # NOTE: 此处参考 mainAPICtrl.js#createFuncRunnerTaskReq(...)
+
+        # 队列 taskReq.queue
+        #    优先级：直接指定 > 函数配置 > 默认值
+        if queue is not None:
+            # 直接指定
+            queue_number = int(queue)
+            if queue_number < 1 or queue_number > 9:
+                e = BadEntityCall('Invalid options, queue should be an integer between 1 and 9')
+                raise e
+
+            task_req['queue'] = queue_number
+
+        elif func_extra_config.get('queue') is not None:
+            # 函数配置
+            task_req['queue'] = int(func_extra_config['queue'])
+
+        else:
+            # 默认值
+            task_req['queue'] = self._entity_queue_default
+
+        # 任务执行超时 taskReq.timeout
+        #    优先级：调用时指定 > 函数配置 > 默认值
+        if timeout is not None:
+            # 调用时指定
+            timeout = int(timeout)
+
+            if timeout < CONFIG['_FUNC_TASK_TIMEOUT_MIN']:
+                e = BadEntityCall('Invalid options, timeout is too small')
+                raise e
+
+            elif timeout > CONFIG['_FUNC_TASK_TIMEOUT_MAX']:
+                e = BadEntityCall('Invalid options, timeout is too large')
+                raise e
+
+            task_req['timeout'] = timeout
+
+        elif func_extra_config.get('timeout') is not None:
+            # 函数配置
+            task_req['timeout'] = int(func_extra_config['timeout'])
+
+        else:
+            # 默认值
+            task_req['timeout'] = self._entity_timeout_default
+
+        # 任务执行超时 taskReq.expires
+        #    优先级：调用时指定 > 函数配置 > 默认值
+        if expires is not None:
+            # 调用时指定
+            expires = int(expires)
+
+            if expires < CONFIG['_FUNC_TASK_EXPIRES_MIN']:
+                e = BadEntityCall('Invalid options, expires is too small')
+                raise e
+
+            elif expires > CONFIG['_FUNC_TASK_EXPIRES_MAX']:
+                e = BadEntityCall('Invalid options, expires is too large')
+                raise e
+
+            task_req['expires'] = expires
+
+        elif func_extra_config.get('expires') is not None:
+            # 函数配置
+            task_req['expires'] = int(func_extra_config['expires'])
+
+        else:
+            # 默认值
+            if self._entity_origin in ('syncAPI', 'asyncAPI'):
+                # 同步/异步 API 过期与超时相同
+                task_req['expires'] = task_req.get('timeout') or self._entity_expires_default
+            else:
+                task_req['expires'] = self._entity_expires_default
+
+        # 返回类型 taskReq.returnType
+        # NOTE: 函数内调用业务实体都是异步，不存在返回值问题
+
+        self._task.cache_db.put_tasks(task_req)
+
 class FuncSyncAPIHelper(BaseFuncEntityHelper):
     _table         = 'biz_main_sync_api'
     _entity_origin = 'syncAPI'
@@ -1200,9 +1339,14 @@ class FuncAsyncAPIHelper(BaseFuncEntityHelper):
     _table         = 'biz_main_async_api'
     _entity_origin = 'asyncAPI'
 
+    _entity_queue_default   = CONFIG['_FUNC_TASK_QUEUE_ASYNC_API']
+    _entity_timeout_default = CONFIG['_FUNC_TASK_TIMEOUT_ASYNC_API']
+
 class FuncCronJobHelper(BaseFuncEntityHelper):
     _table         = 'biz_main_cron_job'
     _entity_origin = 'cronJob'
+
+    _entity_queue_default = CONFIG['_FUNC_TASK_QUEUE_CRON_JOB']
 
     # 兼容处理
     _field_remap = {

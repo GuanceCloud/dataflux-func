@@ -310,13 +310,9 @@ function createFuncRunnerTaskReq(locals, options, callback) {
       // 默认值
       switch(options.origin) {
         case 'syncAPI':
-          // 同步 API 过期与超时相同
-          taskReq.expires = taskReq.timeout || CONFIG._FUNC_TASK_TIMEOUT_DEFAULT;
-          break;
-
         case 'asyncAPI':
-          // 异步 API 不过期
-          delete taskReq.expires;
+          // 同步/异步 API 过期与超时相同
+          taskReq.expires = taskReq.timeout || CONFIG._FUNC_TASK_TIMEOUT_DEFAULT;
           break;
 
         default:
