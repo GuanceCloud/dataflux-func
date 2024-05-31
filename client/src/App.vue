@@ -931,6 +931,9 @@ kbd {
 }
 
 /* Element-UI 修正 */
+.el-badge__content {
+  border: none !important;
+}
 .el-upload-dragger .fa {
   font-size: 67px;
   color: #C0C4CC;

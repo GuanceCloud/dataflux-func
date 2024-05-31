@@ -335,7 +335,7 @@ lastSucceeded: '{t}執行成功'
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="380">
+          <el-table-column align="right" width="400">
             <template slot-scope="scope">
               <el-tooltip effect="dark" :content="$t('Local Func task record is disabled')" placement="left" :disabled="isLocalFuncTaskRecordEnabled">
                 <el-badge type="primary" :max="99" :hidden="!funcTaskRecordCountMap[scope.row.id]" :value="funcTaskRecordCountMap[scope.row.id] && funcTaskRecordCountMap[scope.row.id].count || 0">
@@ -346,7 +346,7 @@ lastSucceeded: '{t}執行成功'
                   </el-link>
                 </el-badge>
               </el-tooltip>
-              &nbsp;
+              &emsp;
 
               <el-link @click="runTask(scope.row)" :disabled="!scope.row.func_id">
                 {{ $t('Run') }}

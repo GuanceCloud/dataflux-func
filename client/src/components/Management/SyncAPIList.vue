@@ -210,7 +210,7 @@ you must first create an Sync API for the Python function and access the Python 
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="380">
+          <el-table-column align="right" width="400">
             <template slot-scope="scope">
               <el-tooltip effect="dark" :content="$t('Local Func task record is disabled')" placement="left" :disabled="isLocalFuncTaskRecordEnabled">
                 <el-badge type="primary" :max="99" :hidden="!funcTaskRecordCountMap[scope.row.id]" :value="funcTaskRecordCountMap[scope.row.id] && funcTaskRecordCountMap[scope.row.id].count || 0">
@@ -221,7 +221,7 @@ you must first create an Sync API for the Python function and access the Python 
                   </el-link>
                 </el-badge>
               </el-tooltip>
-              &nbsp;
+              &emsp;
 
               <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)">{{ $t('Example') }}</el-link>
               <el-link :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" v-prevent-re-click @click="quickSubmitData(scope.row, 'enable')">{{ $t('Enable') }}</el-link>
