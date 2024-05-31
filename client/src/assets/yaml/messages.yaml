@@ -97,7 +97,7 @@ en: {}
   Specified new file or folder name already existed                                                       : 指定的新文件名或目录名已存在
   This Sync API is already expired                                                                        : 此同步 API 已过期
   This Sync API is disabled                                                                               : 此同步 API 已被禁用
-  This Async API is disabled                                                                                  : 此异步 API 已被禁用
+  This Async API is disabled                                                                              : 此异步 API 已被禁用
   This captcha token is already used                                                                      : 此验证码令牌已被使用
   This File Service is disabled                                                                           : 此文件服务已被禁用
   This Script is locked by other user                                                                     : 此脚本已被其他用户锁定
@@ -121,5 +121,6 @@ en: {}
   Failed to access git repo                                                                               : 访问 git 仓库失败
   No such branch in the git repo                                                                          : git 仓库中不存在此分支
   Startup Script deploying failed, Please contact the author                                              : 启动脚本部署失败，请联系作者
+  Local Func task record is disabled                                                                      : 本地函数任务记录已禁用
 
   'Exception: Guance API Key NOT match to API Key ID!': '错误：观测云 API Key ID 与 API Key 不匹配'

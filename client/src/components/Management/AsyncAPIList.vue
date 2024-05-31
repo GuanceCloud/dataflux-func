@@ -135,7 +135,7 @@ lastSucceeded: '{t}執行成功'
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Config')" width="240">
+          <el-table-column :label="$t('Config')" width="255">
             <template slot-scope="scope">
               <span class="text-info">{{ $t('Auth') }}{{ $t(':') }}</span>
               <el-tooltip :content="scope.row.apia_title" :disabled="!!!scope.row.apia_title" placement="right">
@@ -144,7 +144,7 @@ lastSucceeded: '{t}執行成功'
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('Status')" width="260">
+          <el-table-column :label="$t('Status')" width="255">
             <template slot-scope="scope">
               <span v-if="scope.row.isDisabled" class="text-bad">
                 <i class="fa fa-fw fa-ban"></i>
@@ -182,11 +182,16 @@ lastSucceeded: '{t}執行成功'
 
           <el-table-column align="right" width="350">
             <template slot-scope="scope">
-              <template v-if="funcTaskRecordCountMap[scope.row.id]">
-                <el-link @click="common.goToTaskRecord({ origin: 'asyncAPI', originId: scope.row.id }, { hlDataId: scope.row.id })" :disabled="!funcTaskRecordCountMap[scope.row.id].count">
-                  {{ $t('Task Record') }} <code v-if="funcTaskRecordCountMap[scope.row.id].count">({{ T.numberLimit(funcTaskRecordCountMap[scope.row.id].count) }})</code>
-                </el-link>
-              </template>
+              <el-tooltip effect="dark" :content="$t('Local Func task record is disabled')" placement="left" :disabled="isLocalFuncTaskRecordEnabled">
+                <el-badge type="primary" :max="99" :hidden="!funcTaskRecordCountMap[scope.row.id]" :value="funcTaskRecordCountMap[scope.row.id] && funcTaskRecordCountMap[scope.row.id].count || 0">
+                  <el-link
+                    @click="common.goToTaskRecord({ origin: 'asyncAPI', originId: scope.row.id }, { hlDataId: scope.row.id })"
+                    :disabled="!isLocalFuncTaskRecordEnabled">
+                    {{ $t('Task Record') }}
+                  </el-link>
+                </el-badge>
+              </el-tooltip>
+              &nbsp;
 
               <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)">{{ $t('Example') }}</el-link>
               <el-link :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" v-prevent-re-click @click="quickSubmitData(scope.row, 'enable')">{{ $t('Enable') }}</el-link>

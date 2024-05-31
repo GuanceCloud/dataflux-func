@@ -74,6 +74,7 @@ zh-HK:
   Invalid request post data: 請求體數據無效
   Invalid request query: 請求參數無效
   Invalid username or password: 用户名或密碼無效
+  Local Func task record is disabled: 本地函數任務記錄已禁用
   Maximum calling rate exceeded: 達到最大調用頻率
   Modifying built-in Connector is not allowed, please edit the config instead: 不允許修改內置連接器，請修改系統配置
   No such Async API: 不存在此異步 API
@@ -194,6 +195,7 @@ zh-TW:
   Invalid request post data: 請求體資料無效
   Invalid request query: 請求引數無效
   Invalid username or password: 使用者名稱或密碼無效
+  Local Func task record is disabled: 本地函式任務記錄已禁用
   Maximum calling rate exceeded: 達到最大呼叫頻率
   Modifying built-in Connector is not allowed, please edit the config instead: 不允許修改內建聯結器，請修改系統配置
   No such Async API: 不存在此非同步 API
