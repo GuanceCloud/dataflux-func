@@ -60,6 +60,9 @@ TASK_CLS_MAP = {
     MigrationDataFix.name      : MigrationDataFix,
 }
 
+class BadTaskReq(Exception):
+    pass
+
 def consume(context):
     '''
     消费队列中任务
@@ -74,6 +77,10 @@ def consume(context):
     task_req = toolkit.json_loads(task_req_dumps)
 
     # 生成任务对象
+    if not isinstance(task_req, dict):
+        e = BadTaskReq(repr(task_req))
+        raise e
+
     task_name = task_req['name']
     task_cls = TASK_CLS_MAP.get(task_name)
     if not task_cls:

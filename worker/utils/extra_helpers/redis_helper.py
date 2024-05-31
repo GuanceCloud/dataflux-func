@@ -48,11 +48,37 @@ LIMIT_ARGS_DUMP = 200
 
 # LUA
 LUA_UNLOCK_SCRIPT_KEY_COUNT = 1
-LUA_UNLOCK_SCRIPT = 'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end '
+LUA_UNLOCK_SCRIPT = '''
+    if redis.call("get", KEYS[1]) == ARGV[1] then
+        return redis.call("del", KEYS[1]);
+    else
+        return 0;
+    end
+'''
 
 LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT = 2
-LUA_ZPOP_BELOW_LPUSH_SCRIPT = 'if redis.call("zcount", KEYS[1], "-inf", ARGV[1]) > 0 then return redis.call("lpush", KEYS[2], redis.call("zpopmin", KEYS[1])[1]) else return nil end '
-LUA_ZPOP_ABOVE_LPUSH_SCRIPT = 'if redis.call("zcount", KEYS[1], ARGV[1], "+inf") > 0 then return redis.call("lpush", KEYS[2], redis.call("zpopmax", KEYS[1])[1]) else return nil end '
+LUA_ZPOP_BELOW_LPUSH_SCRIPT = '''
+    if redis.call("zcount", KEYS[1], "-inf", ARGV[1]) > 0 then
+        return redis.call("lpush", KEYS[2], redis.call("zpopmin", KEYS[1])[1]);
+    else
+        return nil;
+    end
+'''
+LUA_ZPOP_ABOVE_LPUSH_SCRIPT = '''
+    if redis.call("zcount", KEYS[1], ARGV[1], "+inf") > 0 then
+        return redis.call("lpush", KEYS[2], redis.call("zpopmax", KEYS[1])[1]);
+    else
+        return nil;
+    end
+'''
+LUA_ZPOP_BELOW_LPUSH_ALL_SCRIPT = '''
+    local count = 0
+    while redis.call("zcount", KEYS[1], "-inf", ARGV[1]) > 0 do
+        redis.call("lpush", KEYS[2], redis.call("zpopmin", KEYS[1])[1]);
+        count = count + 1;
+    end
+    return count;
+'''
 
 CLIENT_CONFIG = None
 CLIENT        = None
@@ -139,21 +165,26 @@ class RedisHelper(object):
         elif len(command_args) > 0:
             key = command_args[0]
 
+
         options_dump = ''
         if options:
             options_dump = 'options=' + toolkit.json_dumps(options)
+
+        # Ensure one-line
+        key_dump      = key.replace('\n', ' ').strip()
+        ooptions_dump = ooptions_dump.replace('\n', ' ').strip()
 
         try:
             dt = toolkit.DiffTimer()
             result = self.client.execute_command(*args, **options)
 
             if not self.skip_log:
-                self.logger.debug(f'[REDIS] Query `{command.upper()} {key}` {options_dump} (Cost: {dt.tick()} ms)')
+                self.logger.debug(f"[REDIS] Query `{command.upper()} {key_dump} {ooptions_dump}` (Cost: {dt.tick()} ms)")
 
             return result
 
         except Exception as e:
-            self.logger.error(f'[REDIS] Query `{command.upper()} {key}` {options_dump} (Cost: {dt.tick()} ms)')
+            self.logger.error(f"[REDIS] Query `{command.upper()} {key_dump} {ooptions_dump}` (Cost: {dt.tick()} ms)")
             raise
 
     def run(self, *args, **kwargs):
@@ -168,24 +199,28 @@ class RedisHelper(object):
             elif isinstance(key, dict):
                 key = ', '.join(key.keys())
 
-        args_kwargs_dumps = ' '.join([
+        args_kwargs_dump = ' '.join([
             ' '.join([ str(x) for x in command_args[1:]]),
             ' '.join([ f'{k}={v}' for k, v in kwargs.items()])
         ]).strip()
 
-        args_kwargs_dumps = toolkit.limit_text(args_kwargs_dumps, max_length=100)
+        args_kwargs_dump = toolkit.limit_text(args_kwargs_dump, max_length=100)
+
+        # Ensure one-line
+        key_dump         = key.replace('\n', ' ').strip()
+        args_kwargs_dump = args_kwargs_dump.replace('\n', ' ').strip()
 
         try:
             dt = toolkit.DiffTimer()
             result = getattr(self.client, command)(*command_args, **kwargs)
 
             if not self.skip_log:
-                self.logger.debug(f'[REDIS] Run `{command.upper()} {key}` {args_kwargs_dumps} (Cost: {dt.tick()} ms)')
+                self.logger.debug(f"[REDIS] Run `{command.upper()} {key_dump} {args_kwargs_dump}` (Cost: {dt.tick()} ms)")
 
             return result
 
         except Exception as e:
-            self.logger.error(f'[REDIS] Run `{command.upper()} {key}` {args_kwargs_dumps} (Cost: {dt.tick()} ms)')
+            self.logger.error(f"[REDIS] Run `{command.upper()} {key_dump} {args_kwargs_dump}` (Cost: {dt.tick()} ms)")
             raise
 
     def publish(self, topic, message):
@@ -562,6 +597,9 @@ class RedisHelper(object):
 
     def zpop_above_lpush(self, key, dest_key, score):
         return self.run('eval', LUA_ZPOP_ABOVE_LPUSH_SCRIPT, LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT, key, dest_key, score)
+
+    def zpop_below_lpush_all(self, key, dest_key, score):
+        return self.run('eval', LUA_ZPOP_BELOW_LPUSH_ALL_SCRIPT, LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT, key, dest_key, score)
 
     def put_tasks(self, task_reqs):
         task_reqs = toolkit.as_array(task_reqs)

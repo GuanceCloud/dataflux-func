@@ -156,8 +156,10 @@ def tick(context):
             dest_cache_key = toolkit.get_worker_queue(queue)
 
             while True:
-                cache_res = REDIS.zpop_below_lpush(src_cache_key, dest_cache_key, tick_time)
-                if not cache_res:
+                released_count = REDIS.zpop_below_lpush_all(src_cache_key, dest_cache_key, tick_time)
+                if released_count:
+                    LOGGER.info(f'[DELAYED] Released {released_count} tasks (Queue #{queue})')
+                else:
                     break
 
 def main():

@@ -12,7 +12,13 @@ var logHelper = require('../logHelper');
 
 /* Lua */
 var LUA_UNLOCK_SCRIPT_KEY_COUNT = 1;
-var LUA_UNLOCK_SCRIPT = 'if redis.call("get", KEYS[1]) == ARGV[1] then return redis.call("del", KEYS[1]) else return 0 end ';
+var LUA_UNLOCK_SCRIPT = `
+  if redis.call("get", KEYS[1]) == ARGV[1] then
+    return redis.call("del", KEYS[1])
+  else
+    return 0
+  end
+`;
 
 /* Init */
 
@@ -181,7 +187,10 @@ RedisHelper.prototype.run = function() {
 
   if (!this.skipLog) {
     if ('string' === typeof args[0]) {
-      this.logger.debug('[REDIS] Run `{0} {1} ...`', command.toUpperCase(), args[0]);
+      // Ensure one-line
+      var keyDump = `${args[0]}`.replaceAll('\n', ' ').trim();
+
+      this.logger.debug('[REDIS] Run `{0} {1} ...`', command.toUpperCase(), keyDump);
     } else {
       this.logger.debug('[REDIS] Run `{0}`', command.toUpperCase());
     }
