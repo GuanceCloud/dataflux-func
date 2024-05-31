@@ -22,7 +22,7 @@ FILE_CACHE = {}
 # Init
 CONFIG_KEY           = 'CONFIG'
 CONFIG_FILE_PATH_KEY = 'CONFIG_FILE_PATH'
-PRINT_DETAIL         = sys.argv[0].split('/')[-1] == 'python'
+PRINT_DETAIL         = sys.argv[0] in ('worker/app.py', 'worker/beat.py')
 
 def load_file(key, file_path):
     obj = None
