@@ -1718,6 +1718,7 @@ export function jumpToCodeMirrorLine(codeMirror, cursor) {
   }
 
   codeMirror.scrollIntoView(cursor, margin);
+  codeMirror.setCursor(cursor);
 };
 
 export function foldCode(codeMirror, level) {
