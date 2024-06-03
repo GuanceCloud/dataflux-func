@@ -205,7 +205,7 @@ you must first create an Sync API for the Python function and access the Python 
               </el-tooltip>
               <span v-else class="text-info">
                 <i class="fa fa-fw fa-ellipsis-h"></i>
-                {{ $t('No recent record') }}
+                {{ $t('No task record') }}
               </span>
             </template>
           </el-table-column>
@@ -213,7 +213,7 @@ you must first create an Sync API for the Python function and access the Python 
           <el-table-column align="right" width="400">
             <template slot-scope="scope">
               <el-tooltip effect="dark" :content="$t('Local Func task record is disabled')" placement="left" :disabled="isLocalFuncTaskRecordEnabled">
-                <el-badge type="primary" :max="99" :hidden="!funcTaskRecordCountMap[scope.row.id]" :value="funcTaskRecordCountMap[scope.row.id] && funcTaskRecordCountMap[scope.row.id].count || 0">
+                <el-badge class="task-record-button" type="primary" :max="99" :hidden="!funcTaskRecordCountMap[scope.row.id]" :value="1000 || funcTaskRecordCountMap[scope.row.id] && funcTaskRecordCountMap[scope.row.id].count || 0">
                   <el-link
                     @click="common.goToTaskRecord({ origin: 'syncAPI', originId: scope.row.id }, { hlDataId: scope.row.id })"
                     :disabled="!isLocalFuncTaskRecordEnabled">
@@ -221,7 +221,6 @@ you must first create an Sync API for the Python function and access the Python 
                   </el-link>
                 </el-badge>
               </el-tooltip>
-              &emsp;
 
               <el-link :disabled="T.isNothing(scope.row.func_id)" @click="showAPI(scope.row)">{{ $t('Example') }}</el-link>
               <el-link :disabled="T.isNothing(scope.row.func_id)" v-if="scope.row.isDisabled" v-prevent-re-click @click="quickSubmitData(scope.row, 'enable')">{{ $t('Enable') }}</el-link>
@@ -407,6 +406,9 @@ export default {
 </script>
 
 <style scoped>
+.task-record-button {
+  margin-right: 15px;
+}
 .datetime-tip {
   font-size: 16px;
 }

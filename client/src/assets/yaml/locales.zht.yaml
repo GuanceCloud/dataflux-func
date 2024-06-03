@@ -215,7 +215,7 @@ zh-HK:
   'No': 否
   No Data: 暫無數據
   No matched data found: 當前過濾條件無匹配數據
-  No recent record: 沒有近期記錄
+  No task record: 沒有任務記錄
   None: 無
   Normal: 正常
   Not Signed In: 尚未登錄
@@ -666,7 +666,7 @@ zh-TW:
   'No': 否
   No Data: 暫無資料
   No matched data found: 當前過濾條件無匹配資料
-  No recent record: 沒有近期記錄
+  No task record: 沒有任務記錄
   None: 無
   Normal: 正常
   Not Signed In: 尚未登入

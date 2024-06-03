@@ -712,6 +712,9 @@ p.form-item {
 .common-table {
   width: 100%;
 }
+.common-table .el-badge {
+  vertical-align: unset;
+}
 .common-table .fa-spin {
   font-size: 1.1em;
 }
