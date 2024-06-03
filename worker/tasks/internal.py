@@ -20,7 +20,7 @@ from datasize import DataSize
 
 # Project Modules
 from worker.utils import toolkit, yaml_resources
-from worker.utils.extra_helpers import HexStr, format_sql_v2 as format_sql
+from worker.utils.extra_helpers import HexStr, format_sql
 from worker.tasks import BaseTask
 from worker.tasks.func import CONNECTOR_HELPER_CLASS_MAP, decipher_connector_config
 
@@ -457,8 +457,7 @@ class FlushDataBuffer(BaseInternalTask):
         if not self.is_local_func_task_record_enabled:
             self.cache_db.delete(cache_key)
 
-            sql = '''TRUNCATE biz_main_task_record_func'''
-            self.db.query(sql)
+            self.db.clear_table('biz_main_task_record_func')
             return 0
 
         # 搜集数据
@@ -770,9 +769,7 @@ class AutoClean(BaseInternalTask):
         if table not in self._all_tables:
             return
 
-        sql = '''TRUNCATE ??'''
-        sql_params = [table]
-        self.db.query(sql, sql_params)
+        self.db.clear_table(table)
 
     def clear_cache_key(self, cache_key):
         self.cache_db.delete(cache_key)

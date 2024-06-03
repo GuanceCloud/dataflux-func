@@ -81,67 +81,10 @@ def escape_sql_param(s):
         s = "'{}'".format(s)
         return s
 
-def format_sql(sql, sql_params=None):
-    if not sql_params:
-        return sql
-
-    sql_format_data = {}
-
-    for sql_params_index in range(len(sql_params)):
-        sql_param = sql_params[sql_params_index]
-
-        placeholder_position = sql.find('?')
-
-        if placeholder_position >= 0:
-            placeholder       = '__sql_placeholder_{}'.format(sql_params_index)
-            placeholder_token = '{' + placeholder + '}'
-
-            if (placeholder_position != len(sql) - 1) and (sql[placeholder_position + 1] == '?'):
-                # Found placeholder without escaping
-                sql = sql.replace('??', placeholder_token, 1)
-                sql_format_data[placeholder] = str(sql_param)
-
-            else:
-                if isinstance(sql_param, dict):
-                    # Dict -> field = 'Value', ...
-                    expressions = []
-                    for k, v in sql_param.items():
-                        if v is None:
-                            expressions.append('{} = NULL'.format(k))
-
-                        else:
-                            expressions.append("{} = {}".format(k, escape_sql_param(v)))
-
-                    sql = sql.replace('?', placeholder_token, 1)
-                    sql_format_data[placeholder] = ', '.join(expressions)
-
-                elif isinstance(sql_param, (tuple, list, set)):
-                    # Tuple, List -> 'value1', 'value2', ...
-                    expressions = []
-                    for x in sql_param:
-                        if isinstance(x, (tuple, list, set)):
-                            values = [escape_sql_param(v) for v in x]
-                            expressions.append('({})'.format(', '.join(values)))
-
-                        else:
-                            expressions.append(escape_sql_param(x))
-
-                    sql = sql.replace('?', placeholder_token, 1)
-                    sql_format_data[placeholder] = ', '.join(expressions)
-
-                else:
-                    # Other -> 'value'
-                    sql = sql.replace('?', placeholder_token, 1)
-                    sql_format_data[placeholder] = escape_sql_param(sql_param)
-
-    sql = sql.format(**sql_format_data)
-
-    return sql.strip()
-
-def format_sql_v2(sql, sql_params=None, pretty=False):
+def format_sql(sql, sql_params=None, pretty=False):
     # Inspired by https://github.com/mysqljs/sqlstring/blob/master/lib/SqlString.js
     if not sql_params:
-        return sql
+        return sql.strip()
 
     if not isinstance(sql_params, (list, tuple)):
         sql_params = [sql_params]
@@ -198,14 +141,17 @@ def format_sql_v2(sql, sql_params=None, pretty=False):
         sql_param_index += 1
 
     if chunk_index == 0:
-        return sql
+        return sql.strip()
 
     if chunk_index < len(sql):
-        return result + sql[chunk_index:]
+        return (result + sql[chunk_index:]).strip()
 
     return result.strip()
 
-def to_db_res_dict(cur, db_res):
+def to_debug_sql(sql):
+    return re.sub('\s+', ' ', sql, flags=re.M).strip()
+
+def to_dict_rows(cur, db_res):
     fields = [desc[0] for desc in cur.description]
     db_res_dict = None
     if db_res:

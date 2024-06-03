@@ -9,8 +9,8 @@ from dbutils.pooled_db import PooledDB
 
 # Project Modules
 from worker.utils import toolkit
-from worker.utils.extra_helpers import format_sql_v2 as format_sql
-from worker.utils.extra_helpers import to_db_res_dict
+from worker.utils.extra_helpers import format_sql, to_debug_sql
+from worker.utils.extra_helpers import to_dict_rows
 
 def get_config(c):
     config = {
@@ -112,9 +112,7 @@ class PostgreSQLHelper(object):
 
     def _trans_execute(self, trans_conn, sql, sql_params=None):
         formatted_sql = format_sql(sql, sql_params)
-
-        if not self.skip_log:
-            self.logger.debug('[POSTGRESQL] Trans Query `{}`'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
+        debug_sql     = to_debug_sql(formatted_sql)
 
         if not trans_conn:
             raise Exception('Transaction not started')
@@ -122,27 +120,47 @@ class PostgreSQLHelper(object):
         conn = trans_conn['conn']
         cur  = trans_conn['cur']
 
-        count  = cur.execute(formatted_sql)
-        db_res = cur.fetchall()
+        try:
+            dt = toolkit.DiffTimer()
 
-        db_res = to_db_res_dict(cur, db_res)
-        return list(db_res), count
+            count  = cur.execute(formatted_sql)
+            db_res = cur.fetchall()
+
+            if not self.skip_log:
+                self.logger.debug(f'[POSTGRESQL] Trans Query `{debug_sql}` (Cost: {dt.tick()} ms)')
+
+            db_res = to_dict_rows(cur, db_res)
+
+            return db_res, count
+
+        except Exception as e:
+            self.logger.error(f'[POSTGRESQL] Trans Query `{debug_sql}` (Cost: {dt.tick()} ms)')
+            raise
 
     def _execute(self, sql, sql_params=None):
         formatted_sql = format_sql(sql, sql_params)
-
-        if not self.skip_log:
-            self.logger.debug('[POSTGRESQL] Query `{}`'.format(re.sub('\s+', ' ', formatted_sql, flags=re.M)))
+        debug_sql     = to_debug_sql(formatted_sql)
 
         conn = None
         cur  = None
 
         try:
+            dt = toolkit.DiffTimer()
+
             conn = self.client.connection()
             cur  = conn.cursor()
 
             count  = cur.execute(formatted_sql)
             db_res = cur.fetchall()
+
+            conn.commit()
+
+            if not self.skip_log:
+                self.logger.debug(f'[POSTGRESQL] Query `{debug_sql}` (Cost: {dt.tick()} ms)')
+
+            db_res = to_dict_rows(cur, db_res)
+
+            return db_res, count
 
         except Exception as e:
             for line in traceback.format_exc().splitlines():
@@ -151,13 +169,8 @@ class PostgreSQLHelper(object):
             if conn:
                 conn.rollback()
 
+            self.logger.error(f'[POSTGRESQL] Query `{debug_sql}` (Cost: {dt.tick()} ms)')
             raise
-
-        else:
-            conn.commit()
-
-            db_res = to_db_res_dict(cur, db_res)
-            return list(db_res), count
 
         finally:
             if cur:

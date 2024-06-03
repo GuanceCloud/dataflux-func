@@ -9,7 +9,7 @@ from dbutils.pooled_db import PooledDB
 
 # Project Modules
 from worker.utils import toolkit
-from worker.utils.extra_helpers import format_sql_v2 as format_sql
+from worker.utils.extra_helpers import format_sql
 
 def get_config(c):
     config = {

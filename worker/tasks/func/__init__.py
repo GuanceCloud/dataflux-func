@@ -20,7 +20,7 @@ import funcsigs
 # Project Modules
 from worker.tasks import BaseTask
 from worker.utils import yaml_resources, toolkit
-from worker.utils.extra_helpers import format_sql_v2 as format_sql
+from worker.utils.extra_helpers import format_sql
 from worker.utils.extra_helpers import WhereSQLGenerator
 from worker.utils.extra_helpers import GuanceHelper, DataKitHelper, DataWayHelper, SidecarHelper
 from worker.utils.extra_helpers import InfluxDBHelper, MySQLHelper, RedisHelper, MemcachedHelper, ClickHouseHelper

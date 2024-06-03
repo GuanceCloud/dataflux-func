@@ -9,8 +9,8 @@ from dbutils.pooled_db import PooledDB
 
 # Project Modules
 from worker.utils import toolkit
-from worker.utils.extra_helpers import format_sql_v2 as format_sql
-from worker.utils.extra_helpers import to_db_res_dict
+from worker.utils.extra_helpers import format_sql
+from worker.utils.extra_helpers import to_dict_rows
 
 def get_config(c):
     config = {
@@ -125,7 +125,7 @@ class SQLServerHelper(object):
         count  = cur.execute(formatted_sql)
         db_res = cur.fetchall()
 
-        db_res = to_db_res_dict(cur, db_res)
+        db_res = to_dict_rows(cur, db_res)
         return list(db_res), count
 
     def _execute(self, sql, sql_params=None):
@@ -156,7 +156,7 @@ class SQLServerHelper(object):
         else:
             conn.commit()
 
-            db_res = to_db_res_dict(cur, db_res)
+            db_res = to_dict_rows(cur, db_res)
             return list(db_res), count
 
         finally:

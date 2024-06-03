@@ -9,8 +9,8 @@ from dbutils.pooled_db import PooledDB
 
 # Project Modules
 from worker.utils import toolkit
-from worker.utils.extra_helpers import format_sql_v2 as format_sql
-from worker.utils.extra_helpers import to_db_res_dict
+from worker.utils.extra_helpers import format_sql
+from worker.utils.extra_helpers import to_dict_rows
 
 def get_config(c):
     host     = c.get('host') or '127.0.0.1'
@@ -128,7 +128,7 @@ class OracleDatabaseHelper(object):
         count  = cur.execute(formatted_sql)
         db_res = cur.fetchall()
 
-        db_res = to_db_res_dict(cur, db_res)
+        db_res = to_dict_rows(cur, db_res)
         return list(db_res), count
 
     def _execute(self, sql, sql_params=None):
@@ -159,7 +159,7 @@ class OracleDatabaseHelper(object):
         else:
             conn.commit()
 
-            db_res = to_db_res_dict(cur, db_res)
+            db_res = to_dict_rows(cur, db_res)
             return list(db_res), count
 
         finally:

@@ -15,7 +15,7 @@ from dbutils.pooled_db import PooledDB
 
 # Project Modules
 from worker.utils import toolkit, yaml_resources
-from worker.utils.extra_helpers import format_sql_v2 as format_sql
+from worker.utils.extra_helpers import format_sql, to_debug_sql
 
 CONFIG = yaml_resources.get('CONFIG')
 
@@ -197,7 +197,7 @@ class MySQLHelper(object):
 
     def _trans_execute(self, trans_conn, sql, sql_params=None):
         formatted_sql = format_sql(sql, sql_params)
-        one_line_sql  = re.sub('\s+', ' ', formatted_sql, flags=re.M)
+        debug_sql     = to_debug_sql(formatted_sql)
 
         if not trans_conn:
             raise Exception('Transaction not started')
@@ -212,7 +212,7 @@ class MySQLHelper(object):
             db_res = cur.fetchall()
 
             if not self.skip_log:
-                self.logger.debug(f'[MYSQL] Trans Query `{one_line_sql}` (Cost: {dt.tick()} ms)')
+                self.logger.debug(f'[MYSQL] Trans Query `{debug_sql}` (Cost: {dt.tick()} ms)')
 
             db_res = list(db_res)
             db_res = self._convert_timezone(db_res)
@@ -220,12 +220,12 @@ class MySQLHelper(object):
             return db_res, count
 
         except Exception as e:
-            self.logger.error(f'[MYSQL] Trans Query `{one_line_sql}` (Cost: {dt.tick()} ms)')
+            self.logger.error(f'[MYSQL] Trans Query `{debug_sql}` (Cost: {dt.tick()} ms)')
             raise
 
     def _execute(self, sql, sql_params=None):
         formatted_sql = format_sql(sql, sql_params)
-        one_line_sql  = re.sub('\s+', ' ', formatted_sql, flags=re.M)
+        debug_sql     = to_debug_sql(formatted_sql)
 
         conn = None
         cur  = None
@@ -242,7 +242,7 @@ class MySQLHelper(object):
             conn.commit()
 
             if not self.skip_log:
-                self.logger.debug(f'[MYSQL] Query `{one_line_sql}` (Cost: {dt.tick()} ms)')
+                self.logger.debug(f'[MYSQL] Query `{debug_sql}` (Cost: {dt.tick()} ms)')
 
             db_res = list(db_res)
             db_res = self._convert_timezone(db_res)
@@ -256,7 +256,7 @@ class MySQLHelper(object):
             if conn:
                 conn.rollback()
 
-            self.logger.error(f'[MYSQL] Query `{one_line_sql}` (Cost: {dt.tick()} ms)')
+            self.logger.error(f'[MYSQL] Query `{debug_sql}` (Cost: {dt.tick()} ms)')
             raise
 
         finally:
@@ -287,3 +287,22 @@ class MySQLHelper(object):
         Dump JSON to string
         '''
         return toolkit.json_dumps(val)
+
+    def clear_table(self, table):
+        sql_params = [ table ]
+
+        # 获取表状态
+        sql = '''SHOW TABLE STATUS LIKE ?'''
+        table_status = self.query(sql, sql_params)
+        if not table_status:
+            # 不存在表，跳过
+            return
+
+        # 判断是否存在数据
+        sql = '''SELECT * FROM ?? LIMIT 1'''
+        has_data = bool(self.query(sql, sql_params))
+
+        # 执行清理
+        if has_data:
+            sql = '''TRUNCATE ??'''
+            self.query(sql, sql_params)
