@@ -1044,8 +1044,10 @@ exports.overview = function(req, res, next) {
             overview.serviceInfo.push({
               hostname: parsedKey.tags.hostname,
               pid     : parsedKey.tags.pid,
-              uptime  : cacheRes.value.uptime,
               name    : cacheRes.value.name,
+              uptime  : cacheRes.value.uptime,
+              version : cacheRes.value.version,
+              edition : cacheRes.value.edition,
               queues  : cacheRes.value.queues,
               ttl     : cacheRes.ttl,
             });

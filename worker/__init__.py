@@ -71,8 +71,10 @@ def heartbeat():
             service_name = 'worker'
 
         service_info = {
-            'name'  : service_name,
-            'uptime': toolkit.sys_up_time(),
+            'name'   : service_name,
+            'version': IMAGE_INFO['VERSION'],
+            'edition': IMAGE_INFO['EDITION'],
+            'uptime' : toolkit.sys_up_time(),
         }
 
         if service_name == 'worker':

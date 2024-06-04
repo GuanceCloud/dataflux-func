@@ -15,9 +15,10 @@ var yamlResources = require('./utils/yamlResources');
 var toolkit       = require('./utils/toolkit');
 var routeLoader   = require('./utils/routeLoader');
 
-var ROUTE   = yamlResources.get('ROUTE');
-var CONFIG  = yamlResources.get('CONFIG');
-var TZ_ABBR = yamlResources.get('TZ_ABBR');
+var ROUTE      = yamlResources.get('ROUTE');
+var CONFIG     = yamlResources.get('CONFIG');
+var IMAGE_INFO = yamlResources.get('IMAGE_INFO');
+var TZ_ABBR    = yamlResources.get('TZ_ABBR');
 
 if (!TZ_ABBR) {
   TZ_ABBR = yamlResources.loadFile('TZ_ABBR', path.join(__dirname, '../tz-abbr.yaml'));
@@ -195,8 +196,10 @@ exports.afterServe = function(app, server) {
     }
 
     var serviceInfo = {
-        name  : serviceName,
-        uptime: toolkit.sysUpTime(),
+        name   : serviceName,
+        version: IMAGE_INFO.VERSION,
+        edition: IMAGE_INFO.EDITION,
+        uptime : toolkit.sysUpTime(),
     }
     var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'serviceInfo', [ 'hostname', hostname, 'pid', process.pid ]);
     var expires  = parseInt(CONFIG._MONITOR_REPORT_INTERVAL * 3);

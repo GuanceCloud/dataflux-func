@@ -176,47 +176,61 @@ taskCount: '{n} 個任務'
               <div class="service-info">
                 <span class="service-name">{{ service.name }}</span>
                 <table>
-                  <tr v-if="serviceGroupCollapsed && group.length > 1">
-                    <td>{{ $t('Up Time') }}</td>
-                    <td>{{ $t(':') }}</td>
-                    <td><code>AVG. {{ T.duration(serviceGroupUptime_avg[service.name]) }}</code></td>
-                  </tr>
-                  <tr v-if="serviceGroupCollapsed && group.length > 1">
-                    <td></td>
-                    <td></td>
-                    <td><code>MIN. {{ T.duration(serviceGroupUptime_min[service.name]) }}</code></td>
-                  </tr>
-                  <tr v-if="serviceGroupCollapsed && group.length > 1">
-                    <td></td>
-                    <td></td>
-                    <td><code>MAX. {{ T.duration(serviceGroupUptime_max[service.name]) }}</code></td>
-                  </tr>
-                  <tr v-if="serviceGroupCollapsed && service.name === 'worker'">
-                    <td>{{ $t('Queues')}}</td>
-                    <td>{{ $t(':') }}</td>
-                    <td><code>{{ serviceGroupQueues.map(q => `#${q}`).join(' ') }}</code></td>
-                  </tr>
+                  <template v-if="serviceGroupCollapsed">
+                    <tr>
+                      <td>{{ $t('Version') }}</td>
+                      <td>{{ $t(':') }}</td>
+                      <td><code :class="{ 'text-bad': serviceGroupVersionEditions[service.name].length > 1 }">{{ serviceGroupVersionEditions[service.name].join(', ') }}</code></td>
+                    </tr>
+                    <tr>
+                      <td>{{ $t('Up Time') }}</td>
+                      <td>{{ $t(':') }}</td>
+                      <td><code>AVG. {{ T.duration(serviceGroupUptime_avg[service.name]) }}</code></td>
+                    </tr>
+                    <tr>
+                      <td></td>
+                      <td></td>
+                      <td><code>MIN. {{ T.duration(serviceGroupUptime_min[service.name]) }}</code></td>
+                    </tr>
+                    <tr>
+                      <td></td>
+                      <td></td>
+                      <td><code>MAX. {{ T.duration(serviceGroupUptime_max[service.name]) }}</code></td>
+                    </tr>
+                    <tr v-if="service.name === 'worker'">
+                      <td>{{ $t('Queues')}}</td>
+                      <td>{{ $t(':') }}</td>
+                      <td><code>{{ serviceGroupQueues.map(q => `#${q}`).join(' ') }}</code></td>
+                    </tr>
+                  </template>
 
-                  <tr v-if="!serviceGroupCollapsed">
-                    <td>{{ $t('Hostname') }}</td>
-                    <td>{{ $t(':') }}</td>
-                    <td><code>{{ service.hostname }}</code></td>
-                  </tr>
-                  <tr v-if="!serviceGroupCollapsed">
-                    <td>{{ $t('Process ID') }}</td>
-                    <td>{{ $t(':') }}</td>
-                    <td><code>{{ service.pid }}</code></td>
-                  </tr>
-                  <tr v-if="!serviceGroupCollapsed || group.length === 1">
-                    <td>{{ $t('Up Time') }}</td>
-                    <td>{{ $t(':') }}</td>
-                    <td><code>{{ T.duration(service.uptime * 1000) }}</code></td>
-                  </tr>
-                  <tr v-if="!serviceGroupCollapsed && service.queues">
-                    <td>{{ $t('Queues')}}</td>
-                    <td>{{ $t(':') }}</td>
-                    <td><code>{{ service.queues.map(q => `#${q}`).join(' ') }}</code></td>
-                  </tr>
+                  <template v-else>
+                    <tr>
+                      <td>{{ $t('Version') }}</td>
+                      <td>{{ $t(':') }}</td>
+                      <td><code>{{ service.version }} <span v-if="service.edition">({{ service.edition }})</span></code></td>
+                    </tr>
+                    <tr>
+                      <td>{{ $t('Hostname') }}</td>
+                      <td>{{ $t(':') }}</td>
+                      <td><code>{{ service.hostname }}</code></td>
+                    </tr>
+                    <tr>
+                      <td>{{ $t('Process ID') }}</td>
+                      <td>{{ $t(':') }}</td>
+                      <td><code>{{ service.pid }}</code></td>
+                    </tr>
+                    <tr>
+                      <td>{{ $t('Up Time') }}</td>
+                      <td>{{ $t(':') }}</td>
+                      <td><code>{{ T.duration(service.uptime * 1000) }}</code></td>
+                    </tr>
+                    <tr v-if="service.queues">
+                      <td>{{ $t('Queues')}}</td>
+                      <td>{{ $t(':') }}</td>
+                      <td><code>{{ service.queues.map(q => `#${q}`).join(' ') }}</code></td>
+                    </tr>
+                  </template>
                 </table>
 
                 <div class="service-active">
@@ -549,12 +563,30 @@ export default {
         beat  : Math.max.apply(null, this.serviceGroup_beat.map(x => x.uptime))    * 1000,
       }
     },
-    serviceGroupQueues() {
-      let queues = this.serviceGroup_workers.reduce((acc, x) => acc.concat(x.queues || []), [])
-      queues = this.T.noDuplication(queues);
-      queues.sort();
+    serviceGroupVersionEditions() {
+      let _reduceFunc = (acc, x) => {
+        let versionEdition = `${x.version}`;
+        if (x.edition) versionEdition += ` (${x.edition})`;
 
-      return queues;
+        acc.push(versionEdition);
+        acc = this.T.noDuplication(acc);
+        acc.sort();
+        return acc;
+      }
+      return {
+        server: this.serviceGroup_servers.reduce(_reduceFunc, []),
+        worker: this.serviceGroup_workers.reduce(_reduceFunc, []),
+        beat  : this.serviceGroup_beat.reduce(_reduceFunc, []),
+      }
+    },
+    serviceGroupQueues() {
+      let _reduceFunc = (acc, x) => {
+        acc = acc.concat(x.queues || []);
+        acc = this.T.noDuplication(acc);
+        acc.sort();
+        return acc;
+      }
+      return this.serviceGroup_workers.reduce(_reduceFunc, []);
     },
   },
   props: {
@@ -625,7 +657,7 @@ export default {
 
 .service-card {
   width: 300px;
-  height: 160px;
+  height: 175px;
   display: inline-block;
   margin: 10px 10px;
   position: relative;
