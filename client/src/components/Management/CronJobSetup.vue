@@ -286,7 +286,7 @@ shortcutDays: '{n} 天'
                 :precision="0"
                 v-model="form.taskRecordLimit"></el-input-number>
               <span class="task-record-limit-unit">{{ $tc('recentTaskCount', form.taskRecordLimit, { n: '' }) }} </span>
-              <el-link class="right-button" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_CRONTAB_CONFIG')">{{ $t('Restore Default') }}</el-link>
+              <el-link class="right-button" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_CRON_JOB')">{{ $t('Restore Default') }}</el-link>
             </el-form-item>
 
             <!-- Cron 表达式配置 -->

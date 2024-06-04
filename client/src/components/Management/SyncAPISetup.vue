@@ -197,7 +197,7 @@ shortcutDays: '{n} 天'
                 :precision="0"
                 v-model="form.taskRecordLimit"></el-input-number>
               <span class="task-record-limit-unit">{{ $tc('recentTaskCount', form.taskRecordLimit, { n: '' }) }} </span>
-              <el-link class="right-button" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_BY_ORIGIN_AUTH_LINK')">{{ $t('Restore Default') }}</el-link>
+              <el-link class="right-button" type="primary" @click.stop="form.taskRecordLimit = $store.getters.SYSTEM_INFO('_TASK_RECORD_FUNC_LIMIT_SYNC_API')">{{ $t('Restore Default') }}</el-link>
             </el-form-item>
 
             <el-form-item :label="$t('API Auth')" prop="apiAuthId">

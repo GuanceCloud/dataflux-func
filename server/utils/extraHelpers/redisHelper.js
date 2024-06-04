@@ -542,6 +542,7 @@ RedisHelper.prototype.getByPattern = function(pattern, callback) {
         if (Array.isArray(cacheRes)) {
           var ret = {};
           for (var i = 0; i < keys.length; i++) {
+            if (toolkit.isNullOrUndefined(cacheRes[i])) continue;
             ret[keys[i]] = cacheRes[i];
           }
           return callback(null, ret);
