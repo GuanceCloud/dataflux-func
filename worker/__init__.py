@@ -7,6 +7,7 @@ import socket
 import multiprocessing
 import signal
 import time
+import traceback
 
 # 3rd-party Modules
 import psutil
@@ -82,22 +83,23 @@ def heartbeat():
 
         # 记录每个队列 Worker / 进程数量
         if LISTINGING_QUEUES and WORKER_ID:
-
             for q in LISTINGING_QUEUES:
                 cache_key = toolkit.get_monitor_cache_key('heartbeat', 'workerOnQueue', tags=[ 'workerQueue', q, 'workerId', WORKER_ID ])
                 REDIS.setex(cache_key, monitor_report_expires, CONFIG['_WORKER_CONCURRENCY'])
 
                 cache_pattern = toolkit.get_monitor_cache_key('heartbeat', 'workerOnQueue', tags=[ 'workerQueue', q, 'workerId', '*' ])
-                worker_process_count_list = REDIS.get_by_pattern(cache_pattern)
+                worker_process_count_map = REDIS.get_by_pattern(cache_pattern)
+                if not worker_process_count_map:
+                    continue
 
                 cache_key = toolkit.get_monitor_cache_key('heartbeat', 'workerCountOnQueue', tags=[ 'workerQueue', q ])
-                worker_count = len(worker_process_count_list)
+                worker_count = len(worker_process_count_map)
                 REDIS.setex(cache_key, monitor_report_expires, worker_count)
 
                 cache_key = toolkit.get_monitor_cache_key('heartbeat', 'processCountOnQueue', tags=[ 'workerQueue', q ])
                 process_count = 0
-                for count in worker_process_count_list:
-                    process_count += int(count)
+                for count in worker_process_count_map.values():
+                    process_count += int(count or 0)
                 REDIS.setex(cache_key, monitor_report_expires, process_count)
 
         # 记录 CPU / 使用
@@ -240,8 +242,12 @@ def run_background(func, pool_size=1, max_tasks=-1):
         toolkit.sys_exit_ok()
 
     except Exception as e:
+        for line in traceback.format_exc().splitlines():
+            LOGGER.error(line)
+
         LOGGER.error(f'System: {repr(e)}')
         LOGGER.error(f'Unexpected error occured, system exit')
+
         shutdown_event.set()
 
         # 其他错误退出

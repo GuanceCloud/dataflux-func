@@ -440,7 +440,10 @@ class RedisHelper(object):
         if len(keys) <= 0:
             return None
         else:
-            return self.mget(keys)
+            result = zip(keys, self.mget(keys))
+            result = filter(lambda x: x[1] is not None, result)
+            result = dict(result)
+            return result
 
     def del_by_pattern(self, pattern):
         if not self.skip_log:
