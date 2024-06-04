@@ -1390,7 +1390,7 @@ exports.overview = function(req, res, next) {
           overview.bizEntityInfo.push({
             name        : meta.name,
             count       : dbRes[0].count,
-            countEnabled: dbRes[0].countEnabled || undefined,
+            countEnabled: 'countEnabled' in dbRes[0] ? parseInt(dbRes[0].countEnabled || 0) : undefined,
           });
 
           return eachCallback();

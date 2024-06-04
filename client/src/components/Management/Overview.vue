@@ -278,13 +278,16 @@ taskCount: '{n} 個任務'
                   <td><span class="cover">{{ $tc('taskCount', q.workerQueueLength) }}</span></td>
                 </tr>
                 <tr v-if="q.workerQueueLimit" class="text-main">
+                  <td>{{ $t('Queue Limit') }}</td>
+                  <td>{{ $t(':') }}</td>
                   <td>
                     <el-tooltip effect="dark" :content="$t('When the Work Queue length reaches the limit, Cron Jobs will stop generating new tasks')" placement="bottom">
-                      <span>{{ $t('Queue Limit') }}</span>
+                      <span class="cover">
+                        &le; {{ $tc('taskCount', q.workerQueueLimit) }}
+                        <i class="fa fa-fw fa-question-circle"></i>
+                      </span>
                     </el-tooltip>
                   </td>
-                  <td>{{ $t(':') }}</td>
-                  <td><span class="cover">&le; {{ $tc('taskCount', q.workerQueueLimit) }}</span></td>
                 </tr>
               </tbody>
             </table>
@@ -311,7 +314,7 @@ taskCount: '{n} 個任務'
 
           <span class="biz-entity-name">{{ C.OVERVIEW_ENTITY_MAP.get(d.name).name }}</span>
 
-          <template v-if="d.countEnabled">
+          <template v-if="T.notNothing(d.countEnabled)">
             <span class="biz-entity-count">
               <el-tooltip effect="dark" :content="$t('Exclude Disabled Items')" placement="left">
                 <span class="text-good">
