@@ -142,7 +142,7 @@ if [ ${OPT_DOWNLOAD_DIR} != "DEFAULT" ]; then
     __DOWNLOAD_DIR=${OPT_DOWNLOAD_DIR}
 else
     __DOWNLOAD_DIR=dataflux-func-portable-${_ARCH}-${_VERSION}
-    if [ ${OPT_FOR} != "DEFAULT" ] && [ ${OPT_FOR} != "dev" ]; then
+    if [ ${OPT_FOR} != "DEFAULT" ]; then
         __DOWNLOAD_DIR="${__DOWNLOAD_DIR}-${OPT_FOR}"
     fi
 fi

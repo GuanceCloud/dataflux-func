@@ -369,13 +369,13 @@ otherPortableFile_singleton:
     - echo DATAFLUX_FUNC_IMAGE=${IMAGE_PUBLIC}:${CI_COMMIT_REF_NAME}       >> portable/${IMAGE_LIST_FILE}-x86_64
     - echo DATAFLUX_FUNC_IMAGE=${IMAGE_PUBLIC}-arm64:${CI_COMMIT_REF_NAME} >> portable/${IMAGE_LIST_FILE}-aarch64
     # 上传文件
-    - tools/ossutil64 cp portable/${DOWNLOAD_PORTABLE_FILE}     ${OSS_WORKDIR_BASE_URL}/portable/${DOWNLOAD_PORTABLE_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${RUN_PORTABLE_FILE}          ${OSS_WORKDIR_BASE_URL}/portable/${RUN_PORTABLE_FILE}         -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${DOCKER_STACK_EXAMPLE_FILE}  ${OSS_WORKDIR_BASE_URL}/portable/${DOCKER_STACK_EXAMPLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${DOCKER_SERVICE_FILE}        ${OSS_WORKDIR_BASE_URL}/portable/${DOCKER_SERVICE_FILE}       -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE}-x86_64     ${OSS_WORKDIR_BASE_URL}/portable/x86_64/${IMAGE_LIST_FILE}    -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE}-aarch64    ${OSS_WORKDIR_BASE_URL}/portable/aarch64/${IMAGE_LIST_FILE}   -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
-    - tools/ossutil64 cp ${VERSION_FILE}                        ${OSS_WORKDIR_BASE_URL}/portable/${VERSION_FILE}              -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${DOWNLOAD_PORTABLE_FILE}     ${OSS_WORKDIR_BASE_URL}/portable-common/${DOWNLOAD_PORTABLE_FILE} -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${RUN_PORTABLE_FILE}          ${OSS_WORKDIR_BASE_URL}/portable/${RUN_PORTABLE_FILE}             -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${DOCKER_STACK_EXAMPLE_FILE}  ${OSS_WORKDIR_BASE_URL}/portable/${DOCKER_STACK_EXAMPLE_FILE}     -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${DOCKER_SERVICE_FILE}        ${OSS_WORKDIR_BASE_URL}/portable/${DOCKER_SERVICE_FILE}           -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE}-x86_64     ${OSS_WORKDIR_BASE_URL}/portable/x86_64/${IMAGE_LIST_FILE}        -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp portable/${IMAGE_LIST_FILE}-aarch64    ${OSS_WORKDIR_BASE_URL}/portable/aarch64/${IMAGE_LIST_FILE}       -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
+    - tools/ossutil64 cp ${VERSION_FILE}                        ${OSS_WORKDIR_BASE_URL}/portable/${VERSION_FILE}                  -f -e ${ZY_STATIC_OSS_ENDPOINT} -i ${ZY_STATIC_OSS_AK_ID} -k ${ZY_STATIC_OSS_AK_SECRET}
     # 刷新 CDN 缓存
     - pip install -i https://pypi.tuna.tsinghua.edu.cn/simple/ -r tools/requirements-ci.txt
     - python tools/cdn-refresh-tool.py
