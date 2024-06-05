@@ -681,10 +681,10 @@ class DataKit(BaseDataKit):
         query = {
             'input': self.source,
         }
-        super()._write(query=query, *args, **kwargs)
+        return super()._write(query=query, *args, **kwargs)
 
     def _write_many(self, *args, **kwargs):
         query = {
             'input': self.source,
         }
-        super()._write_many(query=query, *args, **kwargs)
+        return super()._write_many(query=query, *args, **kwargs)
