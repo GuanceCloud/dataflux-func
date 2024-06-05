@@ -525,19 +525,35 @@ def decipher_by_aes_old(data, key, salt=None):
 
     return six.ensure_str(text).strip()
 
-def get_base64(s):
+def get_base64(s, url_safe=False):
     s = six.ensure_binary(s)
 
-    encoded = base64.b64encode(s)
+    if url_safe:
+        encoded = base64.urlsafe_b64encode(s)
+    else:
+        encoded = base64.b64encode(s)
+
     encoded = six.ensure_str(encoded)
+
+    if url_safe:
+        encoded = encoded.strip('=')
 
     return encoded
 
 def from_base64(s):
+    url_safe = '-' in s or '_' in s
+    if len(s) % 4 != 0:
+        s += '=' * (4 - len(s) % 4)
+
     s = six.ensure_binary(s)
 
-    decoded = base64.b64decode(s)
+    if url_safe:
+        decoded = base64.urlsafe_b64decode(s)
+    else:
+        decoded = base64.b64decode(s)
+
     decoded = six.ensure_str(decoded)
+
     return decoded
 
 def gen_rand_string(length=None, chars=None):
