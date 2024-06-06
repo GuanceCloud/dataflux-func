@@ -88,7 +88,7 @@ class CronJobStarter(BaseTask):
             dynamic_cron_expr = dynamic_cron_expr_map.get(c['id'])
             if dynamic_cron_expr:
                 dynamic_cron_expr = toolkit.json_loads(dynamic_cron_expr)
-                if dynamic_cron_expr['expireTime'] and dynamic_cron_expr['expireTime'] >= self.trigger_time:
+                if not dynamic_cron_expr.get('expireTime') or dynamic_cron_expr['expireTime'] >= self.trigger_time:
                     c['dynamicCronExpr'] = dynamic_cron_expr['value']
 
             # 反序列化 JSON 字段
