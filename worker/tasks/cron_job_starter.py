@@ -101,7 +101,10 @@ class CronJobStarter(BaseTask):
                 c['funcExtraConfig'] = toolkit.json_loads(c['funcExtraConfig']) or {}
 
             # 判断最终 Cron 表达式
-            c['cronExpr'] = c.get('dynamicCronExpr') or c['funcExtraConfig'].get('fixedCronExpr') or c.get('cronExpr')
+            final_cron_expr = c.get('dynamicCronExpr') or c['funcExtraConfig'].get('fixedCronExpr') or c.get('cronExpr')
+            self.logger.debug(f"[PREPARE] CronJob ID: {c['id']}, Cron Expr: {final_cron_expr} <= Dynamic ({c.get('dynamicCronExpr')}) OR Fixed ({c['funcExtraConfig'].get('fixedCronExpr')}) OR Self ({c.get('cronExpr')})")
+
+            c['cronExpr'] = final_cron_expr
 
         return cron_jobs
 
