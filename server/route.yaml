@@ -6966,6 +6966,10 @@ funcCacheAPI:
       key:
         $desc: 根据Key过滤
         $type: string
+    query:
+      preferJSON:
+        $desc: 是否尽可能解析为 JSON
+        $type: boolean
 
   delete:
     showInDoc    : true

@@ -84,6 +84,7 @@ zh-HK:
   No such branch in the git repo: git 倉庫中不存在此分支
   No such data: 不存在數據
   No such router. Please make sure that the METHOD is correct and no spelling missing in the URL: 不存在此路由，請檢查 HTTP 請求方法以及 URL 拼寫是否正確
+  Number of recent task records to be kept is not specified: 未指定近期任務記錄保留數量
   Operation Record cannot be deleted: 操作記錄無法刪除
   Operation Record cannot be modified: 操作記錄無法修改
   Parent directory symbol (..) is not allowed in path: 禁止在根路徑中使用上層目錄符（..）
@@ -205,6 +206,7 @@ zh-TW:
   No such branch in the git repo: git 倉庫中不存在此分支
   No such data: 不存在資料
   No such router. Please make sure that the METHOD is correct and no spelling missing in the URL: 不存在此路由，請檢查 HTTP 請求方法以及 URL 拼寫是否正確
+  Number of recent task records to be kept is not specified: 未指定近期任務記錄保留數量
   Operation Record cannot be deleted: 操作記錄無法刪除
   Operation Record cannot be modified: 操作記錄無法修改
   Parent directory symbol (..) is not allowed in path: 禁止在根路徑中使用上層目錄符（..）

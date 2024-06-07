@@ -1,9 +1,8 @@
 <i18n locale="zh-CN" lang="yaml">
-Type        : 类型
-Expires     : 有效期
-Never       : 永不过期
-Data Size   : 数据大小
-Show content: 显示内容
+Type     : 类型
+Expires  : 有效期
+Never    : 永不过期
+Data Size: 数据大小
 
 Func Store data deleted: 函数缓存数据已删除
 
@@ -24,7 +23,6 @@ Func Store data deleted: 函數緩存數據已刪除
 Never: 永不過期
 No Func Store data has ever been added: 從未添加過任何函數存儲數據
 See {0} for more information: 查看 {0} 來獲取更多信息
-Show content: 顯示內容
 Type: 類型
 Using {0} and {1} to setting and getting store data in Script: 可以使用 {0} 和 {1} 在腳本中存取數據
 </i18n>
@@ -36,7 +34,6 @@ Func Store data deleted: 函式快取資料已刪除
 Never: 永不過期
 No Func Store data has ever been added: 從未新增過任何函式儲存資料
 See {0} for more information: 檢視 {0} 來獲取更多資訊
-Show content: 顯示內容
 Type: 型別
 Using {0} and {1} to setting and getting store data in Script: 可以使用 {0} 和 {1} 在指令碼中存取資料
 </i18n>
@@ -115,9 +112,10 @@ Using {0} and {1} to setting and getting store data in Script: 可以使用 {0} 
             </template>
           </el-table-column>
 
-          <el-table-column align="right" width="200">
+          <el-table-column align="right" width="320">
             <template slot-scope="scope">
-              <el-link v-if="!scope.row.isOverSized" @click="showDetail(scope.row)">{{ $t('Show content') }}</el-link>
+              <el-link v-if="!scope.row.isOverSized" @click="preview(scope.row)">{{ $t('Preview') }}</el-link>
+              <el-link @click="download(scope.row)">{{ $t('Download') }}</el-link>
               <el-link @click="quickSubmitData(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
             </template>
           </el-table-column>
@@ -134,6 +132,7 @@ Using {0} and {1} to setting and getting store data in Script: 可以使用 {0} 
 
 <script>
 import LongTextDialog from '@/components/LongTextDialog'
+import FileSaver from 'file-saver';
 
 export default {
   name: 'FuncStoreManage',
@@ -194,20 +193,34 @@ export default {
 
       await this.loadData();
     },
-    async showDetail(d) {
+    async preview(d) {
       let apiRes = await this.T.callAPI_get('/api/v1/func-stores/:id/do/get', {
         params: { id: d.id }
       });
       if (!apiRes.ok) return
 
       let content = apiRes.data.valueJSON;
-      if ('string' !== typeof content) {
-        content = JSON.stringify(content, null, 2);
-      }
+      content = JSON.stringify(content, null, 2);
 
       let createTimeStr = this.M(d.createTime).format('YYYYMMDD_HHmmss');
-      let fileName = `${d.scope}.${d.key}.${createTimeStr}`;
+      let fileName = `DFF.STORE.${d.scope}.${d.key}.${createTimeStr}.json`;
       this.$refs.longTextDialog.update(content, fileName);
+    },
+    async download(d) {
+      let apiRes = await this.T.callAPI_get('/api/v1/func-stores/:id/do/get', {
+        params: { id: d.id }
+      });
+      if (!apiRes.ok) return
+
+      let content = apiRes.data.valueJSON;
+      content = JSON.stringify(content, null, 2);
+
+      let blob = new Blob([content], {type: 'text/plain'});
+      let createTimeStr = this.M(d.createTime).format('YYYYMMDD_HHmmss');
+      let fileName = `DFF.STORE.${d.scope}.${d.key}.${createTimeStr}.json`;
+      FileSaver.saveAs(blob, fileName);
+
+      return fileName;
     },
   },
   computed: {

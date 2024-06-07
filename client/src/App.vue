@@ -820,6 +820,10 @@ kbd {
   align-items: center;
   justify-content: space-between;
 }
+.common-page-header > h1:first-child > small {
+  margin-left: 10px;
+}
+.common-page-header > h1:first-child,
 .common-page-header > div:first-child > h1 {
   display: inline;
   font-weight: bold;

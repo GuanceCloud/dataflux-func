@@ -2,7 +2,6 @@
 Type         : 类型
 Never        : 永不过期
 Memory usage : 内存使用
-Show content : 显示内容
 
 Func Cache data deleted: 函数缓存数据已删除
 
@@ -12,6 +11,8 @@ No Func Cache data has ever been added: 从未添加过任何函数缓存数据
 Are you sure you want to delete the Func Cache data?: 是否确认删除此函数缓存数据？
 
 Using {0} and {1} to setting and getting cache data in Script: 可以使用 {0} 和 {1} 在脚本中存取缓存数据
+
+Preview will parse the data to JSON if possible, Download will be raw data: 预览时会尽可能解析数据为 JSON ，下载时则为原始数据
 See {0} for more information: 查看 {0} 来获取更多信息
 </i18n>
 
@@ -22,9 +23,9 @@ Func Cache data deleted: 函數緩存數據已刪除
 Memory usage: 內存使用
 Never: 永不過期
 No Func Cache data has ever been added: 從未添加過任何函數緩存數據
+Preview will parse the data to JSON if possible, Download will be raw data: 預覽時會盡可能解析數據為 JSON ，下載時則為原始數據
 Search for more data: 搜索以查看更多內容
 See {0} for more information: 查看 {0} 來獲取更多信息
-Show content: 顯示內容
 Type: 類型
 Using {0} and {1} to setting and getting cache data in Script: 可以使用 {0} 和 {1} 在腳本中存取緩存數據
 </i18n>
@@ -34,9 +35,9 @@ Func Cache data deleted: 函式快取資料已刪除
 Memory usage: 記憶體使用
 Never: 永不過期
 No Func Cache data has ever been added: 從未新增過任何函式快取資料
+Preview will parse the data to JSON if possible, Download will be raw data: 預覽時會盡可能解析資料為 JSON ，下載時則為原始資料
 Search for more data: 搜尋以檢視更多內容
 See {0} for more information: 檢視 {0} 來獲取更多資訊
-Show content: 顯示內容
 Type: 型別
 Using {0} and {1} to setting and getting cache data in Script: 可以使用 {0} 和 {1} 在指令碼中存取快取資料
 </i18n>
@@ -48,7 +49,7 @@ Using {0} and {1} to setting and getting cache data in Script: 可以使用 {0} 
       <!-- 标题区 -->
       <el-header height="60px">
         <div class="common-page-header">
-          <h1>{{ $t('Func Cache Manage') }}</h1>
+          <h1>{{ $t('Func Cache Manage') }} <small>{{ $t('Preview will parse the data to JSON if possible, Download will be raw data') }}</small></h1>
           <div class="header-control">
             <small class="text-info">{{ $t('Search for more data') }}</small>
             <FuzzySearchInput :dataFilter="dataFilter"></FuzzySearchInput>
@@ -118,10 +119,10 @@ Using {0} and {1} to setting and getting cache data in Script: 可以使用 {0} 
 
           <el-table-column align="right" width="320">
             <template slot-scope="scope">
-              <el-link v-if="['string', 'list', 'hash'].indexOf(scope.row.type) >= 0 && !scope.row.isOverSized" @click="showDetail(scope.row)">
-                {{ $t('Show content') }}
-              </el-link>
-              <el-link @click="download(scope.row)">{{ $t('Download') }}</el-link>
+              <template v-if="['string', 'list', 'hash', 'set', 'zset'].indexOf(scope.row.type) >= 0">
+                <el-link v-if="!scope.row.isOverSized" @click="preview(scope.row)">{{ $t('Preview') }}</el-link>
+                <el-link @click="download(scope.row)">{{ $t('Download') }}</el-link>
+              </template>
               <el-link @click="quickSubmitData(scope.row, 'delete')">{{ $t('Delete') }}</el-link>
             </template>
           </el-table-column>
@@ -196,9 +197,10 @@ export default {
 
       await this.loadData();
     },
-    async showDetail(d) {
+    async preview(d) {
       let apiRes = await this.T.callAPI_get('/api/v1/func-caches/:scope/:key/do/get', {
-        params: { scope: d.scope, key: encodeURIComponent(d.key) }
+        params: { scope: d.scope, key: encodeURIComponent(d.key) },
+        query : { preferJSON: 'true' }
       });
       if (!apiRes.ok) return
 
@@ -209,19 +211,24 @@ export default {
       } catch(_) {}
 
       let createTimeStr = this.M(d.createTime).format('YYYYMMDD_HHmmss');
-      let fileName = `${d.scope}.${d.key}.${createTimeStr}`;
+      let fileName = `DFF.CACHE.${d.scope}.${d.key}.${createTimeStr}.json`;
       this.$refs.longTextDialog.update(content, fileName);
     },
     async download(d) {
       let apiRes = await this.T.callAPI_get('/api/v1/func-caches/:scope/:key/do/get', {
-        params: { scope: d.scope, key: encodeURIComponent(d.key) }
+        params: {scope: d.scope, key: encodeURIComponent(d.key) }
       });
       if (!apiRes.ok) return
 
       let content = apiRes.data;
+      try {
+        if ('string' === typeof content) content = JSON.parse(content);
+        content = JSON.stringify(content, null, 2);
+      } catch(_) {}
 
       let blob = new Blob([content], {type: 'text/plain'});
-      let fileName = `DFF.CACHE.${d.key}.${this.M().format('YYYYMMDD_HHmmss')}.txt`;
+      let createTimeStr = this.M(d.createTime).format('YYYYMMDD_HHmmss');
+      let fileName = `DFF.CACHE.${d.scope}.${d.key}.${createTimeStr}.json`;
       FileSaver.saveAs(blob, fileName);
 
       return fileName;

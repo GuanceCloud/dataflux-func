@@ -11,8 +11,7 @@ var CONFIG  = require('../utils/yamlResources').get('CONFIG');
 var toolkit = require('../utils/toolkit');
 
 /* Init */
-var LIST_KEY_LIMIT   = 500;
-var PREVIEW_LIMIT_MB = 5;
+var LIST_KEY_LIMIT = 100;
 
 /* Handlers */
 
@@ -147,6 +146,8 @@ exports.get = function(req, res, next) {
   var scope = req.params.scope;
   var key   = req.params.key;
 
+  var preferJSON = req.query.preferJSON;
+
   var cacheKey = toolkit.getWorkerCacheKey('funcCache', scope, [ 'key', key ]);
 
   var contentType = null;
@@ -162,21 +163,6 @@ exports.get = function(req, res, next) {
         return asyncCallback();
       })
     },
-    // 检查大小
-    function(asyncCallback) {
-      if (content) return asyncCallback();
-
-      res.locals.cacheDB.run('MEMORY', 'USAGE', cacheKey, 'SAMPLES', '0', function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        var dataSize = parseInt(cacheRes);
-        if (dataSize > 1024 * 1024 * PREVIEW_LIMIT_MB) {
-          content = `<Preview of large data (over ${PREVIEW_LIMIT_MB}MB) is not supported>`;
-        }
-
-        return asyncCallback()
-      });
-    },
     // 获取数据
     function(asyncCallback) {
       if (content) return asyncCallback();
@@ -188,17 +174,8 @@ exports.get = function(req, res, next) {
 
             content = cacheRes;
 
-            return asyncCallback();
-          });
-          break;
-
-        case 'hash':
-          res.locals.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
-            if (err) return asyncCallback(err);
-
-            content = cacheRes;
-            for (let k in content) {
-              try { content[k] = JSON.parse(content[k]); } catch(_) {}
+            if (preferJSON) {
+              try { content = JSON.parse(content); } catch(_) {}
             }
 
             return asyncCallback();
@@ -210,8 +187,63 @@ exports.get = function(req, res, next) {
             if (err) return asyncCallback(err);
 
             content = cacheRes;
-            for (let i = 0; i < content.length; i++) {
-              try { content[i] = JSON.parse(content[i]); } catch(_) {}
+
+            if (preferJSON) {
+              for (let i = 0; i < content.length; i++) {
+                try { content[i] = JSON.parse(content[i]); } catch(_) {}
+              }
+            }
+
+            return asyncCallback();
+          });
+          break;
+
+        case 'hash':
+          res.locals.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
+            if (err) return asyncCallback(err);
+
+            content = cacheRes;
+
+            if (preferJSON) {
+              for (let k in content) {
+                try { content[k] = JSON.parse(content[k]); } catch(_) {}
+              }
+            }
+
+            return asyncCallback();
+          });
+          break;
+
+        case 'set':
+          res.locals.cacheDB.client.smembers(cacheKey, function(err, cacheRes) {
+            if (err) return asyncCallback(err);
+
+            content = cacheRes;
+
+            if (preferJSON) {
+              for (let i = 0; i < content.length; i++) {
+                try { content[i] = JSON.parse(content[i]); } catch(_) {}
+              }
+            }
+
+            return asyncCallback();
+          });
+          break;
+
+        case 'zset':
+          res.locals.cacheDB.client.zrange(cacheKey, 0, -1, 'WITHSCORES', function(err, cacheRes) {
+            if (err) return asyncCallback(err);
+
+            content = [];
+            for (let i = 0; i < cacheRes.length / 2; i++) {
+              var score = parseFloat(cacheRes[i * 2 + 1]);
+              var value = cacheRes[i * 2];
+
+              if (preferJSON) {
+                try { value = JSON.parse(value); } catch(_) {}
+              }
+
+              content.push({ score, value });
             }
 
             return asyncCallback();
@@ -219,7 +251,7 @@ exports.get = function(req, res, next) {
           break;
 
         default:
-          content = `<Preview of ${contentType} data is not supported>`;
+          content = `<Getting type of ${contentType} data is not supported>`;
           return asyncCallback();
       }
     },

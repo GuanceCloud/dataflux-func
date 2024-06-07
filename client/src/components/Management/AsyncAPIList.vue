@@ -182,11 +182,11 @@ lastSucceeded: '{t}執行成功'
 
           <el-table-column align="right" width="400">
             <template slot-scope="scope">
-              <el-tooltip effect="dark" :content="$t('Local Func task record is disabled')" placement="left" :disabled="isLocalFuncTaskRecordEnabled">
-                <el-badge class="task-record-button" type="primary" :max="99" :hidden="!funcTaskRecordCountMap[scope.row.id]" :value="funcTaskRecordCountMap[scope.row.id] && funcTaskRecordCountMap[scope.row.id].count || 0">
+              <el-tooltip effect="dark" :content="scope.row.localFuncTaskRecordUnavailableReason" placement="left" :disabled="scope.row.isLocalFuncTaskRecordAvailable">
+                <el-badge class="task-record-button" type="primary" :max="99" :hidden="!funcTaskRecordCountMap[scope.row.id] || !scope.row.isLocalFuncTaskRecordAvailable" :value="funcTaskRecordCountMap[scope.row.id] && funcTaskRecordCountMap[scope.row.id].count || 0">
                   <el-link
                     @click="common.goToTaskRecord({ origin: 'asyncAPI', originId: scope.row.id }, { hlDataId: scope.row.id })"
-                    :disabled="!isLocalFuncTaskRecordEnabled">
+                    :disabled="!scope.row.isLocalFuncTaskRecordAvailable">
                     {{ $t('Task Record') }}
                   </el-link>
                 </el-badge>
@@ -248,6 +248,19 @@ export default {
         query: _listQuery,
       });
       if (!apiRes || !apiRes.ok) return;
+
+      apiRes.data.forEach(d => {
+        d.isLocalFuncTaskRecordAvailable = true;
+
+        if (!this.isLocalFuncTaskRecordEnabled) {
+          d.isLocalFuncTaskRecordAvailable       = false;
+          d.localFuncTaskRecordUnavailableReason = this.$t('Local Func task record is disabled');
+
+        } else if (!d.taskRecordLimit) {
+          d.isLocalFuncTaskRecordAvailable       = false;
+          d.localFuncTaskRecordUnavailableReason = this.$t('Number of recent task records to be kept is not specified');
+        }
+      });
 
       this.data = apiRes.data;
       this.pageInfo = apiRes.pageInfo;
