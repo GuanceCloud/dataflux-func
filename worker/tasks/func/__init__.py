@@ -700,7 +700,11 @@ class FuncCacheHelper(object):
 
     def type(self, key, scope=None):
         key = self._get_cache_key(key, scope)
-        return self._task.cache_db.run('type', key)
+        data_type = self._convert_result(self._task.cache_db.run('type', key))
+        if data_type == 'none':
+            data_type = None
+
+        return data_type
 
     def set(self, key, value, scope=None, expire=None, not_exists=False):
         key = self._get_cache_key(key, scope)
