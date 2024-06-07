@@ -843,6 +843,24 @@ class FuncCacheHelper(object):
         res = self._task.cache_db.run('rpoplpush', key, dest_key)
         return self._convert_result(res)
 
+    def sadd(self, key, value, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self._task.cache_db.run('sadd', key, value)
+
+    def scard(self, key, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self._task.cache_db.run('scard', key)
+
+    def smembers(self, key, scope=None):
+        key = self._get_cache_key(key, scope)
+        res = self._task.cache_db.run('smembers', key)
+        res = list(map(self._convert_result, res))
+        return res
+
+    def sismember(self, key, value, scope=None):
+        key = self._get_cache_key(key, scope)
+        return self._task.cache_db.run('sismember', key, value)
+
 class FuncConfigHelper(object):
     MASKED_CONFIG = toolkit.json_mask(CONFIG)
 
