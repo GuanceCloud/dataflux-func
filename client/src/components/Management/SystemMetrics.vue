@@ -107,7 +107,6 @@ Worker Queue Length: 工作佇列長度
         <el-divider content-position="left"><h1>{{ $t('Cache') }}</h1></el-divider>
         <div id="cacheDBMemoryUsed" class="chart"></div>
         <div id="cacheDBKeyUsed" class="chart"></div>
-        <div id="cacheDBKeyCountByPrefix" class="chart"></div>
 
         <el-divider content-position="left"><h1>{{ $t('Database') }}</h1></el-divider>
         <div id="dbTableTotalUsed" class="chart"></div>
@@ -592,14 +591,6 @@ export default {
         cacheDBKeyUsed: {
           textStyle: textStyle,
           title  : this.createTitleOpt(this.$t('Cache Key Used')),
-          tooltip: this.createTSTooltipOpt({ unit: ['Keys', 'Key'], nDigits: 0 }),
-          grid   : this.createCommonGridOpt(),
-          xAxis  : this.createTimeXAxisOpt(),
-          yAxis  : this.createCountYAxisOpt(),
-        },
-        cacheDBKeyCountByPrefix: {
-          textStyle: textStyle,
-          title  : this.createTitleOpt(this.$t('Cache Key Count by Prefix')),
           tooltip: this.createTSTooltipOpt({ unit: ['Keys', 'Key'], nDigits: 0 }),
           grid   : this.createCommonGridOpt(),
           xAxis  : this.createTimeXAxisOpt(),

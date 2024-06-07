@@ -11,7 +11,7 @@ var CONFIG  = require('../utils/yamlResources').get('CONFIG');
 var toolkit = require('../utils/toolkit');
 
 /* Init */
-var LIST_KEY_LIMIT = 100;
+var LIST_KEY_LIMIT = 50;
 
 /* Handlers */
 

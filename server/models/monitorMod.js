@@ -168,27 +168,6 @@ EntityModel.prototype.getSystemMetrics = function(callback) {
         return asyncCallback();
       });
     },
-    // Get Cache key prefixs
-    function(asyncCallback) {
-      var metric = 'cacheDBKeyCountByPrefix';
-
-      data[metric] = {};
-
-      var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'prefix', '*']);
-      var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, fillZero: true };
-
-      self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
-        if (err) return asyncCallback(err);
-
-        for (var k in tsDataMap) {
-          var prefix = toolkit.parseCacheKey(k).tags.prefix;
-          prefix = toolkit.fromBase64(prefix);
-          data[metric][prefix] = tsDataMap[k];
-        }
-
-        return asyncCallback();
-      });
-    },
     // Get Matched route count
     function(asyncCallback) {
       var metric = 'matchedRouteCount';

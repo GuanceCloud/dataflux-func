@@ -119,44 +119,6 @@ class SystemMetric(BaseInternalTask):
 
             self.upload_guance_data('metric', guance_data)
 
-    def collect_metric_cache_db_key(self):
-        key_prefix_count_map = {}
-
-        keys = self.cache_db.keys()
-        for k in keys:
-            if k.startswith(CONFIG['APP_NAME']):
-                prefix = k.split(':')[0] + ':...'
-            else:
-                prefix = 'NON_DFF_KEY'
-
-            if prefix not in key_prefix_count_map:
-                key_prefix_count_map[prefix] = 0
-
-            key_prefix_count_map[prefix] += 1
-
-        guance_data = []
-        for prefix, count in key_prefix_count_map.items():
-            # 内置监控
-            cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'cacheDBKeyCountByPrefix', 'prefix', toolkit.get_base64(prefix)])
-            self.cache_db.ts_add(cache_key, count, timestamp=self.trigger_time)
-
-            # 观测云
-            if self.guance_data_upload_url:
-                guance_data.append({
-                    'measurement': CONFIG['_SELF_MONITOR_GUANCE_MEASUREMENT_CACHE_DB_KEY'],
-                    'tags': {
-                        'target': f"{CONFIG['REDIS_HOST']}: {CONFIG['REDIS_PORT']}/{CONFIG['REDIS_DATABASE']}",
-                        'prefix': prefix,
-                    },
-                    'fields': {
-                        'count': count,
-                    },
-                    'timestamp': self.trigger_time,
-                })
-
-        if self.guance_data_upload_url and guance_data:
-            self.upload_guance_data('metric', guance_data)
-
     def collect_metric_db(self):
         guance_data = []
 
@@ -370,9 +332,6 @@ class SystemMetric(BaseInternalTask):
 
         # 搜集缓存数据库信息
         self.safe_call(self.collect_metric_cache_db)
-
-        # 搜集缓存数据库 Key 信息
-        self.safe_call(self.collect_metric_cache_db_key)
 
         # 搜集数据库信息
         self.safe_call(self.collect_metric_db)
