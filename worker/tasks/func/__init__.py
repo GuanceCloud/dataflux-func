@@ -731,8 +731,9 @@ class FuncCacheHelper(object):
         return self._task.cache_db.run('expire', key, expires)
 
     def delete(self, key, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self._task.cache_db.run('delete', key)
+        keys = toolkit.as_array(key)
+        keys = list(map(lambda k: self._get_cache_key(k, scope), keys))
+        return self._task.cache_db.run('delete', *keys)
 
     def incr(self, key, step=1, scope=None):
         key = self._get_cache_key(key, scope)
