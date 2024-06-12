@@ -665,6 +665,10 @@ exports.detailedRedisReport = function(req, res, next) {
           keyPattern = keyPattern.replace(/:userId:[a-zA-Z0-9_-]+:/g,           ':userId:<User ID>:');
           keyPattern = keyPattern.replace(/:username:[a-zA-Z0-9_-]+:/g,         ':username:<Username>:');
           keyPattern = keyPattern.replace(/:workerId:[a-zA-Z0-9_-]+:/g,         ':workerId:<Worker ID>:');
+          keyPattern = keyPattern.replace(/:queue:[0-9]+:/g,                    ':queue:<Queue>:');
+          keyPattern = keyPattern.replace(/:workerQueue:[0-9]+:/g,              ':workerQueue:<Worker Queue>:');
+          keyPattern = keyPattern.replace(/:funcId:[a-zA-Z0-9_.]+:/g,           ':funcId:<Func ID>:');
+          keyPattern = keyPattern.replace(/:table:[a-zA-Z0-9_]+:/g,             ':table:<Table>:');
 
           REDIS_KEYS[keyPattern] = REDIS_KEYS[keyPattern] || {
             keyPattern      : keyPattern,
