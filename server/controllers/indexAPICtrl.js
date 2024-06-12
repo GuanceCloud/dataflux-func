@@ -663,6 +663,8 @@ exports.detailedRedisReport = function(req, res, next) {
           keyPattern = keyPattern.replace(/:pid:[0-9]+:/g,                      ':pid:<Process ID>:');
           keyPattern = keyPattern.replace(/:xAuthTokenId:[a-zA-Z0-9_-]+:/g,     ':xAuthTokenId:<X-Auth-Token ID>:');
           keyPattern = keyPattern.replace(/:userId:[a-zA-Z0-9_-]+:/g,           ':userId:<User ID>:');
+          keyPattern = keyPattern.replace(/:username:[a-zA-Z0-9_-]+:/g,         ':username:<Username>:');
+          keyPattern = keyPattern.replace(/:workerId:[a-zA-Z0-9_-]+:/g,         ':workerId:<Worker ID>:');
 
           REDIS_KEYS[keyPattern] = REDIS_KEYS[keyPattern] || {
             keyPattern      : keyPattern,
