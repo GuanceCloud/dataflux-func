@@ -9,9 +9,10 @@ case $1 in
     * )
         echo "DataFlux Func Redis Tool"
         echo "Usage:"
-        echo "  $0 cli          : Use CLI to access Redis"
-        echo "  $0 show-command : Show CLI command to access Redis"
-        echo "  $0 key-info     : Show information of all the keys in Redis"
+        echo "  $ bash $0 cli                     : Use CLI to access Redis"
+        echo "  $ bash $0 show-command            : Show CLI command to access Redis"
+        echo "  $ bash $0 key-info                : Show information of all the keys in CSV format"
+        echo "  $ bash $0 key-info > key-info.csv : Export information of all the keys into a CSV file"
         exit
         ;;
 esac
@@ -21,41 +22,46 @@ port=`python _config.py REDIS_PORT`
 db=`python _config.py REDIS_DATABASE`
 user=`python _config.py REDIS_USER`
 password=`python _config.py REDIS_PASSWORD`
-authtype=`python _config.py REDIS_AUTH_TYPE`
+authType=`python _config.py REDIS_AUTH_TYPE`
+
+hostOpt=""
+portOpt=""
+dbOpt=""
+passwordOpt=""
 
 if [ ${host} ]; then
-    host="-h ${host}"
+    hostOpt="-h ${host}"
 fi
 if [ ${port} ]; then
-    port="-p ${port}"
+    portOpt="-p ${port}"
 fi
 if [ ${db} ]; then
-    db="-n ${db}"
+    dbOpt="-n ${db}"
 fi
 if [ ${password} ]; then
-    if [ ${authtype} = "aliyun" ]; then
-        password="-a ${user}:${password}"
+    if [ ${authType} = "aliyun" ]; then
+        passwordOpt="-a ${user}:${password}"
     else
-        password="-a ${password}"
+        passwordOpt="-a ${password}"
     fi
 fi
 
 case ${COMMAND} in
     cli )
-        redis-cli ${host} ${port} ${db} ${password} --no-auth-warning
+        redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning
         ;;
 
     show-command )
-        echo "redis-cli ${host} ${port} ${db} ${password} --no-auth-warning"
+        echo "redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt}"
         ;;
 
     key-info )
         echo "Type,Key,TTL,Mem Usage, Mem Usage Human"
-        keys=$(redis-cli ${host} ${port} ${db} ${password} --no-auth-warning keys "*")
+        keys=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning keys "*")
         for key in $keys; do
-            keyType=$(redis-cli ${host} ${port} ${db} ${password} --no-auth-warning type "$key")
-            keyTTL=$(redis-cli ${host} ${port} ${db} ${password} --no-auth-warning ttl "$key")
-            keyMemUsage=$(redis-cli ${host} ${port} ${db} ${password} --no-auth-warning memory usage "$key")
+            keyType=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning type "$key")
+            keyTTL=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning ttl "$key")
+            keyMemUsage=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning memory usage "$key")
 
             keyMemUsageHuman="${keyMemUsage} Bytes"
             if [ ${keyMemUsage} -gt 1048576 ]; then
