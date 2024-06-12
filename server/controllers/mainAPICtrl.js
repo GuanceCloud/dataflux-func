@@ -987,10 +987,10 @@ exports.overview = function(req, res, next) {
   ];
 
   var overview = {
-    serviceInfo     : [],
-    queueInfo       : [],
+    services        : [],
+    queues          : [],
     bizMetrics      : [],
-    bizEntityInfo   : [],
+    bizEntities     : [],
     latestOperations: [],
   };
 
@@ -1030,7 +1030,7 @@ exports.overview = function(req, res, next) {
     },
     // 获取运行中服务列表
     function(asyncCallback) {
-      if (sectionMap && !sectionMap.serviceInfo) return asyncCallback();
+      if (sectionMap && !sectionMap.services) return asyncCallback();
 
       var cacheKeyPattern = toolkit.getMonitorCacheKey('heartbeat', 'serviceInfo', [ 'hostname', '*', 'pid', '*' ]);
       res.locals.cacheDB.keys(cacheKeyPattern, function(err, keys) {
@@ -1041,7 +1041,7 @@ exports.overview = function(req, res, next) {
             if (err) return eachCallback(err);
 
             var parsedKey = toolkit.parseCacheKey(key);
-            overview.serviceInfo.push({
+            overview.services.push({
               hostname: parsedKey.tags.hostname,
               pid     : parsedKey.tags.pid,
               name    : cacheRes.value.name,
@@ -1058,7 +1058,7 @@ exports.overview = function(req, res, next) {
           if (err) return asyncCallback(err);
 
           var serviceOrder = [ 'server', 'worker', 'beat' ];
-          overview.serviceInfo.sort(function(a, b) {
+          overview.services.sort(function(a, b) {
             var serviceOrder_a = serviceOrder.indexOf(a.name);
             var serviceOrder_b = serviceOrder.indexOf(b.name);
 
@@ -1082,10 +1082,10 @@ exports.overview = function(req, res, next) {
     },
     // 各队列工作单元数量、工作进程数量、队列长度
     function(asyncCallback) {
-      if (sectionMap && !sectionMap.queueInfo) return asyncCallback();
+      if (sectionMap && !sectionMap.queues) return asyncCallback();
 
       async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(i, timesCallback) {
-        overview.queueInfo[i] = {
+        overview.queues[i] = {
           workerCount      : 0,
           processCount     : 0,
           delayQueueLength : 0,
@@ -1100,7 +1100,7 @@ exports.overview = function(req, res, next) {
             res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
               if (err) return innerCallback(err);
 
-              overview.queueInfo[i].workerCount = parseInt(cacheRes || 0) || 0;
+              overview.queues[i].workerCount = parseInt(cacheRes || 0) || 0;
 
               return innerCallback();
 
@@ -1111,7 +1111,7 @@ exports.overview = function(req, res, next) {
             res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
               if (err) return innerCallback(err);
 
-              overview.queueInfo[i].processCount = parseInt(cacheRes || 0) || 0;
+              overview.queues[i].processCount = parseInt(cacheRes || 0) || 0;
 
               return innerCallback();
 
@@ -1123,10 +1123,10 @@ exports.overview = function(req, res, next) {
               if (err) return innerCallback(err);
 
               var length = parseInt(cacheRes || 0) || 0;
-              overview.queueInfo[i].workerQueueLength = length;
+              overview.queues[i].workerQueueLength = length;
 
               // 计算负载（每个进程需要处理的任务数量）
-              overview.queueInfo[i].workerQueueLoad = parseInt(length / (overview.queueInfo[i].processCount || 1));
+              overview.queues[i].workerQueueLoad = parseInt(length / (overview.queues[i].processCount || 1));
 
               return innerCallback();
             });
@@ -1136,7 +1136,7 @@ exports.overview = function(req, res, next) {
             res.locals.cacheDB.run('zcard', delayQueue, function(err, cacheRes) {
               if (err) return innerCallback(err);
 
-              overview.queueInfo[i].delayQueueLength = parseInt(cacheRes || 0) || 0;
+              overview.queues[i].delayQueueLength = parseInt(cacheRes || 0) || 0;
 
               return innerCallback();
             });
@@ -1146,7 +1146,7 @@ exports.overview = function(req, res, next) {
     },
     // 工作队列长度限制
     function(asyncCallback) {
-      if (sectionMap && !sectionMap.queueInfo) return asyncCallback();
+      if (sectionMap && !sectionMap.queues) return asyncCallback();
 
       var cacheKey = toolkit.getGlobalCacheKey('cache', 'workerQueueLimitCronJob');
       res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
@@ -1156,7 +1156,7 @@ exports.overview = function(req, res, next) {
 
         cacheRes = JSON.parse(cacheRes);
         for (var queue in cacheRes) {
-          overview.queueInfo[queue].workerQueueLimit = cacheRes[queue];
+          overview.queues[queue].workerQueueLimit = cacheRes[queue];
         }
 
         return asyncCallback();
@@ -1311,7 +1311,7 @@ exports.overview = function(req, res, next) {
     },
     // 业务实体计数
     function(asyncCallback) {
-      if (sectionMap && !sectionMap.bizEntityInfo) return asyncCallback();
+      if (sectionMap && !sectionMap.bizEntities) return asyncCallback();
 
       async.eachSeries(bizEntityMeta, function(meta, eachCallback) {
         var opt       = null;
@@ -1387,7 +1387,7 @@ exports.overview = function(req, res, next) {
         meta.model._list(opt, function(err, dbRes) {
           if (err) return eachCallback(err);
 
-          overview.bizEntityInfo.push({
+          overview.bizEntities.push({
             name        : meta.name,
             count       : dbRes[0].count,
             countEnabled: 'countEnabled' in dbRes[0] ? parseInt(dbRes[0].countEnabled || 0) : undefined,

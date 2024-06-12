@@ -3,10 +3,10 @@
 /* Built-in Modules */
 
 /* 3rd-party Modules */
+var fs    = require('fs-extra');
 var async = require('async');
 
 /* Project Modules */
-var fs      = require('fs-extra');
 var E       = require('../utils/serverError');
 var CONFIG  = require('../utils/yamlResources').get('CONFIG');
 var toolkit = require('../utils/toolkit');

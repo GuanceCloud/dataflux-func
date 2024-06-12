@@ -3,7 +3,7 @@
 /* Built-in Modules */
 
 /* 3rd-party Modules */
-var async = require('async');
+var fs = require('fs-extra');
 
 /* Project Modules */
 var E           = require('../utils/serverError');
@@ -65,7 +65,7 @@ EntityModel.prototype.list = function(options, callback) {
 EntityModel.prototype.add = function(data, callback) {
   // 自动填入基础数据
   data.canvasJSON = toolkit.isNullOrUndefined(data.canvasJSON)
-                 ? CONFIG._BLUEPRINT_BASE_CANVAS_JSON
+                 ? JSON.parse(fs.readFileSync('blueprint-example.json'))
                  : data.canvasJSON;
 
   data.viewJSON = {};

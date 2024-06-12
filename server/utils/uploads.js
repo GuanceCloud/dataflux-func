@@ -1,11 +1,11 @@
 'use strict';
 
 /* Build-in Modules */
-var fs   = require('fs-extra');
 var os   = require('os');
 var path = require('path');
 
 /* 3rd-part Modules */
+var fs     = require('fs-extra');
 var multer = require('multer');
 var moment = require('moment-timezone');
 

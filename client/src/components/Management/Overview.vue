@@ -159,7 +159,7 @@ taskCount: '{n} 個任務'
           <TimeDuration :duration="browserServerTimeDiff" unit="ms" />
         </span>
 
-        <el-divider content-position="left"><h1>{{ $t('Services') }} {{ $t('(') }}{{ $tc('generalCount', serviceInfo.length) }}{{ $t(')') }}</h1></el-divider>
+        <el-divider content-position="left"><h1>{{ $t('Services') }} {{ $t('(') }}{{ $tc('generalCount', services.length) }}{{ $t(')') }}</h1></el-divider>
         <div class="service-group-expand-button">
           <el-link @click="serviceGroupCollapsed = !serviceGroupCollapsed">
             <i class="fa fa-angle-left" :class="{ 'fa-flip-horizontal': !serviceGroupCollapsed }"></i><i class="fa fa-angle-left" :class="{ 'fa-flip-horizontal': serviceGroupCollapsed }" style="margin-left: 2px;"></i>
@@ -248,7 +248,7 @@ taskCount: '{n} 個任務'
         </template>
 
         <el-divider content-position="left"><h1>{{ $t('Queues') }}</h1></el-divider>
-        <el-card v-for="q, i in queueInfo"
+        <el-card v-for="q, i in queues"
           class="queue-card"
           :class="{ 'queue-highlight': q.workerQueueLength > 0 }"
           shadow="hover"
@@ -308,7 +308,7 @@ taskCount: '{n} 個任務'
         </el-card>
 
         <el-divider content-position="left"><h1>{{ $t('Biz Entities') }}</h1></el-divider>
-        <el-card class="biz-entity-card" shadow="hover" v-for="d in bizEntityInfo" :key="d.name">
+        <el-card class="biz-entity-card" shadow="hover" v-for="d in bizEntities" :key="d.name">
           <i v-if="C.OVERVIEW_ENTITY_MAP.get(d.name).icon" class="fa fa-fw biz-entity-icon" :class="C.OVERVIEW_ENTITY_MAP.get(d.name).icon"></i>
           <i v-else-if="C.OVERVIEW_ENTITY_MAP.get(d.name).tagText" type="info" class="biz-entity-icon biz-entity-icon-text"><code>{{ C.OVERVIEW_ENTITY_MAP.get(d.name).tagText }}</code></i>
 
@@ -455,10 +455,10 @@ export default {
         this[section] = apiRes.data[section];
 
         switch (section) {
-          case 'serviceInfo':
+          case 'services':
             // 计算进度条
             let monitorInterval = this.$store.getters.SYSTEM_INFO('_MONITOR_REPORT_INTERVAL');
-            this.serviceInfo.forEach(s => {
+            this.services.forEach(s => {
               if (s.ttl >= monitorInterval) {
                 s.activePercent = 100;
                 s.activeStatus  = 'success';
@@ -537,13 +537,13 @@ export default {
       ];
     },
     serviceGroup_servers() {
-      return this.serviceInfo.filter(s => s.name === 'server');
+      return this.services.filter(s => s.name === 'server');
     },
     serviceGroup_workers() {
-      return this.serviceInfo.filter(s => s.name === 'worker');
+      return this.services.filter(s => s.name === 'worker');
     },
     serviceGroup_beat() {
-      return this.serviceInfo.filter(s => s.name === 'beat');
+      return this.services.filter(s => s.name === 'beat');
     },
     serviceGroupUptime_avg() {
       return {
@@ -599,10 +599,10 @@ export default {
       browserServerTimeDiff: 0,
       serviceGroupCollapsed: true,
 
-      queueInfo       : [],
-      serviceInfo     : [],
+      services        : [],
+      queues          : [],
       bizMetrics      : [],
-      bizEntityInfo   : [],
+      bizEntities     : [],
       latestOperations: [],
 
       autoRefreshTimer: null,
@@ -610,7 +610,7 @@ export default {
   },
   mounted() {
     this.autoRefreshTimer = setInterval(() => {
-      this.loadData([ 'serviceInfo', 'queueInfo' ], { mute: true });
+      this.loadData([ 'services', 'queues' ], { mute: true });
     }, 5 * 1000);
   },
   beforeDestroy() {

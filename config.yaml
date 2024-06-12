@@ -187,41 +187,6 @@ _FUNC_EXPORT_FILENAME: dataflux-func
 # 脚本集导入确认超时
 _FUNC_IMPORT_CONFIRM_TIMEOUT: 900
 
-# 示例代码
-_SAMPLE_SCRIPT: |-
-  @DFF.API('Hello, world')
-  def hello_world(name=''):
-      '''
-      A hello world function
-
-      Parameters:
-        name {str} name
-
-      return {str} "Hello, world! {name}"
-      '''
-      return f"Hello, world! {name}"
-
-  def test_hello_world():
-      '''
-      Test hello world function
-      '''
-      assert hello_world('Tom') == "Hello, world! Tom"
-      return 'OK'
-
-# 基础蓝图数据
-_BLUEPRINT_BASE_CANVAS_JSON: |-
-  {
-    "nodes": [
-      {
-        "id": "entry",
-        "type": "EntryNode",
-        "x": 240,
-        "y": 40,
-        "properties": {}
-      }
-    ]
-  }
-
 # 官方脚本市场
 _OFFICIAL_SCRIPT_MARKET_ID : smkt-official
 _OFFICIAL_SCRIPT_MARKET_URL: https://static.guance.com/dataflux-func/script-market/official

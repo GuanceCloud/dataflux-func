@@ -3,6 +3,7 @@
 /* Built-in Modules */
 
 /* 3rd-party Modules */
+var fs    = require('fs-extra');
 var async = require('async');
 
 /* Project Modules */
@@ -148,7 +149,7 @@ EntityModel.prototype.add = function(data, callback) {
 
   // 自动填入示例代码
   data.codeDraft = toolkit.isNullOrUndefined(data.codeDraft)
-                 ? CONFIG._SAMPLE_SCRIPT
+                 ? fs.readFileSync('script-example.py').toString()
                  : data.codeDraft;
 
   try {

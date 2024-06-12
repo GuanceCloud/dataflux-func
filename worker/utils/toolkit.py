@@ -314,10 +314,11 @@ def json_mask(j):
     for k, v in j.items():
         masked[k] = j[k]
 
-        for kw in MASK_KEYWORDS:
-            if kw in k.lower():
-                masked[k] = '*****'
-                break
+        if masked[k]:
+            for kw in MASK_KEYWORDS:
+                if kw in k.lower():
+                    masked[k] = '*****'
+                    break
 
     return masked
 

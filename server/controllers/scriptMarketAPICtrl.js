@@ -5,9 +5,9 @@ var path = require('path');
 var URL  = require('url').URL;
 
 /* 3rd-party Modules */
+var fs            = require('fs-extra');
 var async         = require('async');
 var yaml          = require('js-yaml');
-var fs            = require('fs-extra');
 var markdownTable = require('markdown-table');
 var stringWidth   = require('string-width');
 var simpleGit     = require('simple-git');

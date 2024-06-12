@@ -503,8 +503,8 @@ exports.proxy = function(req, res, next) {
 };
 
 exports.systemReport = function(req, res, next) {
-  // 主程序相关
-  var MAIN = IMAGE_INFO;
+  // 镜像信息
+  var IMAGE = IMAGE_INFO;
 
   // 配置信息
   var _CONFIG = toolkit.jsonMask(CONFIG);
@@ -529,13 +529,19 @@ exports.systemReport = function(req, res, next) {
     packages: toolkit.safeReadFileSync(path.join(__dirname, '../../client/package.json'), 'json').dependencies,
   };
 
-  var WORKER      = {};
-  var REDIS       = {};
-  var MYSQL       = {};
-  var MYSQL_TABLE = {};
+  var topN = 10;
+
+  var SERVICES       = {};
+  var QUEUES         = {};
+  var REDIS          = {};
+  var REDIS_KEYS     = {};
+  var REDIS_ANALYSIS = {};
+  var MYSQL          = {};
+  var MYSQL_TABLES   = {};
+  var MYSQL_ANALYSIS = {};
 
   async.series([
-    // Redis 信息
+    // Redis
     function(asyncCallback) {
       res.locals.cacheDB.info(function(err, cacheRes) {
         if (err) return asyncCallback(err);
@@ -556,7 +562,88 @@ exports.systemReport = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // MySQL 信息
+    // Redis Key
+    function(asyncCallback) {
+      res.locals.cacheDB.keys('*', function(err, keys) {
+        if (err) return asyncCallback(err);
+
+        async.eachLimit(keys, 10, function(key, eachCallback) {
+          var keyPattern = key;
+          keyPattern = keyPattern.replace(/[a-zA-Z0-9]{32}/g, '<Hash>');
+          keyPattern = keyPattern.replace(/:date:[0-9]{4}-[0-9]{2}-[0-9]{2}:/g, ':date:<Date>:');
+          keyPattern = keyPattern.replace(/:hostname:[a-zA-Z0-9_-]+:/g,         ':hostname:<Hostname>:');
+          keyPattern = keyPattern.replace(/:pid:[0-9]+:/g,                      ':pid:<Process ID>:');
+          keyPattern = keyPattern.replace(/:xAuthTokenId:[a-zA-Z0-9_-]+:/g,     ':xAuthTokenId:<X-Auth-Token ID>:');
+          keyPattern = keyPattern.replace(/:userId:[a-zA-Z0-9_-]+:/g,           ':userId:<User ID>:');
+
+          REDIS_KEYS[keyPattern] = REDIS_KEYS[keyPattern] || {
+            keyPattern      : keyPattern,
+            count           : 0,
+            type            : [],
+            memoryUsageAvg  : 0,
+            memoryUsageTotal: 0,
+          };
+
+          REDIS_KEYS[keyPattern].count += 1;
+
+          async.series([
+            // 获取类型
+            function(innerCallback) {
+              res.locals.cacheDB.client.type(key, function(err, cacheRes) {
+                if (err) return innerCallback(err);
+
+                var type = cacheRes;
+                if (REDIS_KEYS[keyPattern].type.indexOf(type) < 0) {
+                  REDIS_KEYS[keyPattern].type.push(type);
+                }
+
+                return innerCallback(err);
+              })
+            },
+            // 获取内存使用量
+            function(innerCallback) {
+              res.locals.cacheDB.run('MEMORY', 'USAGE', key, 'SAMPLES', '0', function(err, cacheRes) {
+                if (err) return innerCallback(err);
+
+                REDIS_KEYS[keyPattern].memoryUsageTotal += parseInt(cacheRes) || 0;
+
+                return innerCallback(err);
+              })
+            },
+          ], eachCallback);
+        }, function(err) {
+          if (err) return asyncCallback(err);
+
+          // 整理数据
+          for (var keyPattern in REDIS_KEYS) {
+            if (REDIS_KEYS[keyPattern].type.length === 1) {
+              REDIS_KEYS[keyPattern].type = REDIS_KEYS[keyPattern].type[0];
+            }
+
+            REDIS_KEYS[keyPattern].memoryUsageAvg = parseInt(REDIS_KEYS[keyPattern].memoryUsageTotal / REDIS_KEYS[keyPattern].count);
+
+            // 易读大小
+            REDIS_KEYS[keyPattern].memoryUsageAvg_human   = toolkit.byteSizeHuman(REDIS_KEYS[keyPattern].memoryUsageAvg).toString();
+            REDIS_KEYS[keyPattern].memoryUsageTotal_human = toolkit.byteSizeHuman(REDIS_KEYS[keyPattern].memoryUsageTotal).toString();
+          }
+
+          var sortedRedisKeys = {};
+          Object.keys(REDIS_KEYS).sort().forEach(function(key) {
+            sortedRedisKeys[key] = REDIS_KEYS[key];
+          });
+          REDIS_KEYS = sortedRedisKeys;
+
+          // 统计
+          REDIS_ANALYSIS = {
+            topCount      : toolkit.sortByKeyValue(Object.values(REDIS_KEYS), 'count', 'desc').slice(0, topN),
+            topMemoryUsage: toolkit.sortByKeyValue(Object.values(REDIS_KEYS), 'memoryUsageTotal', 'desc').slice(0, topN),
+          };
+
+          return asyncCallback();
+        });
+      });
+    },
+    // MySQL
     function(asyncCallback) {
       res.locals.db.query('SHOW VARIABLES', null, function(err, dbRes) {
         if (err) return asyncCallback(err);
@@ -575,10 +662,25 @@ exports.systemReport = function(req, res, next) {
       res.locals.db.query('SHOW TABLE STATUS', null, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        MYSQL_TABLE = dbRes.reduce(function(acc, x) {
+        MYSQL_TABLES = dbRes.reduce(function(acc, x) {
           acc[x.Name] = x;
+          acc[x.Name].Total_length = acc[x.Name].Data_length + acc[x.Name].Index_length;
+
+          // 易读大小
+          acc[x.Name].Data_length_human  = toolkit.byteSizeHuman(acc[x.Name].Data_length).toString();
+          acc[x.Name].Index_length_human = toolkit.byteSizeHuman(acc[x.Name].Index_length).toString();
+          acc[x.Name].Total_length_human = toolkit.byteSizeHuman(acc[x.Name].Total_length).toString();
+
           return acc;
         }, {});
+
+        // 统计
+        MYSQL_ANALYSIS = {
+          topRows       : toolkit.sortByKeyValue(dbRes, 'Rows', 'desc').slice(0, topN),
+          topDataLength : toolkit.sortByKeyValue(dbRes, 'Data_length', 'desc').slice(0, topN),
+          topIndexLength: toolkit.sortByKeyValue(dbRes, 'Index_length', 'desc').slice(0, topN),
+          topTotalLength: toolkit.sortByKeyValue(dbRes, 'Total_length', 'desc').slice(0, topN),
+        };
 
         return asyncCallback();
       });
@@ -587,15 +689,12 @@ exports.systemReport = function(req, res, next) {
     if (err) return next(err);
 
     var systemReport = {
-      MAIN,
+      IMAGE,
       CONFIG: _CONFIG,
-      WORKER,
-      PYTHON,
-      NODE,
+      NODE, PYTHON,
       WEB_CLIENT,
-      REDIS,
-      MYSQL,
-      MYSQL_TABLE,
+      REDIS, REDIS_KEYS, REDIS_ANALYSIS,
+      MYSQL, MYSQL_TABLES, MYSQL_ANALYSIS,
     };
 
     var ret = toolkit.initRet(systemReport);

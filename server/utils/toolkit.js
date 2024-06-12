@@ -494,7 +494,7 @@ var jsonDumps = toolkit.jsonDumps = function jsonDumps(j, indent) {
       return toolkit.strf('<function {0}(...)>', v.name);
 
     } else if (Buffer.isBuffer(v)) {
-      return toolkit.strf('<Buffer size:{0}>', byteSize(v.length));
+      return toolkit.strf('<Buffer size:{0}>', byteSizeHuman(v.length));
 
     } else {
       return v;
@@ -518,11 +518,13 @@ var jsonMask = toolkit.jsonMask = function(j) {
   for (var k in j) {
     masked[k] = j[k];
 
-    for (var i = 0; i < MASK_KEYWORDS.length; i++) {
-      var kw = MASK_KEYWORDS[i].toLowerCase();
-      if (k.toLowerCase().indexOf(kw) >= 0) {
-        masked[k] = '*****';
-        break;
+    if (masked[k]) {
+      for (var i = 0; i < MASK_KEYWORDS.length; i++) {
+        var kw = MASK_KEYWORDS[i].toLowerCase();
+        if (k.toLowerCase().indexOf(kw) >= 0) {
+          masked[k] = '*****';
+          break;
+        }
       }
     }
   }
@@ -2562,4 +2564,20 @@ var repeatDecode = toolkit.repeatDecode = function repeatDecode(data) {
   }
 
   return decoded;
+};
+
+var sortByKeyValue = toolkit.sortByKeyValue = function sortByKeyValue(arr, key, order) {
+  order = order || 'ASC';
+  order = order.toUpperCase();
+
+  var sortFuncRetVal = order === 'ASC' ? 1 : -1;
+  return arr.sort(function(a, b) {
+    if (a[key] > b[key]) return sortFuncRetVal
+    else if (a[key] < b[key]) return sortFuncRetVal * -1
+    else return 0;
+  })
+};
+
+var byteSizeHuman = toolkit.byteSizeHuman = function byteSizeHuman(s) {
+  return byteSize(s, { units: 'iec' });
 };

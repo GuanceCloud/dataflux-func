@@ -10,12 +10,12 @@ var https        = require('https');
 var childProcess = require('child_process');
 
 /* 3rd-party Modules */
+var fs               = require('fs-extra');
 var express          = require('express');
 var expressUseragent = require('express-useragent');
 var bodyParser       = require('body-parser');
 var cookieParser     = require('cookie-parser');
 var cors             = require('cors');
-var fs               = require('fs-extra');
 
 /* Init */
 

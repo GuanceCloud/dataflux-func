@@ -1,0 +1,11 @@
+{
+  "nodes": [
+    {
+      "id": "entry",
+      "type": "EntryNode",
+      "x": 240,
+      "y": 40,
+      "properties": {}
+    }
+  ]
+}

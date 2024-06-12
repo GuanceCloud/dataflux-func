@@ -3,9 +3,9 @@
 /* Built-in Modules */
 var path = require('path');
 var http = require('http');
-var fs   = require('fs-extra');
 
 /* 3rd-party Modules */
+var fs         = require('fs-extra');
 var express    = require('express');
 var bodyParser = require('body-parser');
 var async      = require('async');

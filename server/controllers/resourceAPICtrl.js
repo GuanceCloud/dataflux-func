@@ -1,12 +1,12 @@
 'use strict';
 
 /* Built-in Modules */
-var fs   = require('fs-extra');
 var path = require('path');
 
 /* 3rd-party Modules */
 
 /* Project Modules */
+var fs      = require('fs-extra');
 var E       = require('../utils/serverError');
 var CONFIG  = require('../utils/yamlResources').get('CONFIG');
 var toolkit = require('../utils/toolkit');

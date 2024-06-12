@@ -28,7 +28,7 @@ Download as a JSON file: 作為 JSON 檔案下載
           <i class="fa fa-fw fa-download"></i>
         </el-link>
       </div>
-      <json-viewer :value="jsonContent" theme="json-view-theme" sort></json-viewer>
+      <json-viewer :value="jsonContent" theme="json-view-theme" show-double-quotes></json-viewer>
     </div>
   </el-dialog>
 </template>

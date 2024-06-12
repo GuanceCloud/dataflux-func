@@ -61,7 +61,7 @@ case ${COMMAND} in
         for key in $keys; do
             keyType=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning type "$key")
             keyTTL=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning ttl "$key")
-            keyMemUsage=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning memory usage "$key")
+            keyMemUsage=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning memory usage "$key" SAMPLES 0)
 
             keyMemUsageHuman="${keyMemUsage} Bytes"
             if [ ${keyMemUsage} -gt 1048576 ]; then

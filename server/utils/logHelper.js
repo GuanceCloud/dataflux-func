@@ -2,10 +2,10 @@
 
 /* Built-in Modules */
 var os   = require('os');
-var fs   = require('fs-extra');
 var path = require('path');
 
 /* 3rd-party Modules */
+var fs      = require('fs-extra');
 var colors  = require('colors/safe');
 var winston = require('winston');
 var moment  = require('moment-timezone');

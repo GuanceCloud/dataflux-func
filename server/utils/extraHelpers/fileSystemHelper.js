@@ -1,8 +1,10 @@
 'use strict';
 
-/* 3rd-party Modules */
-var fs   = require('fs-extra');
+/* Built-in Modules */
 var path = require('path');
+
+/* 3rd-party Modules */
+var fs = require('fs-extra');
 
 /* Project Modules */
 var CONFIG    = require('../yamlResources').get('CONFIG');
