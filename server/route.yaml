@@ -964,6 +964,16 @@ indexAPI:
     requireSignIn: true
     privilege    : general_r
 
+  detailedRedisReport:
+    showInDoc    : true
+    name         : Detailed Redis Report
+    name_zhCN    : Redis 详细报告
+    method       : get
+    url          : /api/v1/detailed-redis-report
+    response     : json
+    requireSignIn: true
+    privilege    : general_r
+
 # Authentication
 authAPI:
   $tag     : Authentication

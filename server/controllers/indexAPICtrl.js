@@ -534,8 +534,6 @@ exports.systemReport = function(req, res, next) {
   var SERVICES       = {};
   var QUEUES         = {};
   var REDIS          = {};
-  var REDIS_KEYS     = {};
-  var REDIS_ANALYSIS = {};
   var MYSQL          = {};
   var MYSQL_TABLES   = {};
   var MYSQL_ANALYSIS = {};
@@ -562,7 +560,97 @@ exports.systemReport = function(req, res, next) {
         return asyncCallback();
       });
     },
-    // Redis Key
+    // MySQL
+    function(asyncCallback) {
+      res.locals.db.query('SHOW VARIABLES', null, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        dbRes.forEach(function(d) {
+          var k = d['Variable_name'];
+          var v = d['Value'];
+          MYSQL[k] = v;
+        });
+
+        return asyncCallback();
+      });
+    },
+    // MySQL 表
+    function(asyncCallback) {
+      res.locals.db.query('SHOW TABLE STATUS', null, function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        MYSQL_TABLES = dbRes.reduce(function(acc, x) {
+          acc[x.Name] = x;
+          acc[x.Name].Total_length = acc[x.Name].Data_length + acc[x.Name].Index_length;
+
+          // 易读大小
+          acc[x.Name].Data_length_human  = toolkit.byteSizeHuman(acc[x.Name].Data_length).toString();
+          acc[x.Name].Index_length_human = toolkit.byteSizeHuman(acc[x.Name].Index_length).toString();
+          acc[x.Name].Total_length_human = toolkit.byteSizeHuman(acc[x.Name].Total_length).toString();
+
+          return acc;
+        }, {});
+
+        // 统计
+        MYSQL_ANALYSIS = {
+          topRows       : toolkit.sortByKeyValue(dbRes, 'Rows', 'desc').slice(0, topN),
+          topDataLength : toolkit.sortByKeyValue(dbRes, 'Data_length', 'desc').slice(0, topN),
+          topIndexLength: toolkit.sortByKeyValue(dbRes, 'Index_length', 'desc').slice(0, topN),
+          topTotalLength: toolkit.sortByKeyValue(dbRes, 'Total_length', 'desc').slice(0, topN),
+        };
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return next(err);
+
+    var systemReport = {
+      IMAGE,
+      CONFIG: _CONFIG,
+      NODE, PYTHON,
+      WEB_CLIENT,
+      REDIS,
+      MYSQL, MYSQL_TABLES, MYSQL_ANALYSIS,
+    };
+
+    var ret = toolkit.initRet(systemReport);
+    return res.locals.sendJSON(ret);
+  });
+};
+
+exports.detailedRedisReport = function(req, res, next) {
+  var t1 = Date.now();
+
+  var topN = 20;
+
+  var REDIS          = {};
+  var REDIS_KEYS     = {};
+  var REDIS_ANALYSIS = {};
+
+  async.series([
+    // Redis
+    function(asyncCallback) {
+      res.locals.cacheDB.info(function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        cacheRes.split('\n').forEach(function(line) {
+          line = line.trim();
+          if (!line || line[0] === '#') return;
+
+          var parts = line.split(':');
+          var k = parts[0].trim();
+          var v = '';
+          if (parts.length >= 2) {
+            v = parts[1].trim();
+          }
+          REDIS[k] = v;
+        });
+
+        return asyncCallback();
+      });
+    },
+    // Redis Keys
     function(asyncCallback) {
       res.locals.cacheDB.keys('*', function(err, keys) {
         if (err) return asyncCallback(err);
@@ -643,61 +731,20 @@ exports.systemReport = function(req, res, next) {
         });
       });
     },
-    // MySQL
-    function(asyncCallback) {
-      res.locals.db.query('SHOW VARIABLES', null, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        dbRes.forEach(function(d) {
-          var k = d['Variable_name'];
-          var v = d['Value'];
-          MYSQL[k] = v;
-        });
-
-        return asyncCallback();
-      });
-    },
-    // MySQL 表
-    function(asyncCallback) {
-      res.locals.db.query('SHOW TABLE STATUS', null, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        MYSQL_TABLES = dbRes.reduce(function(acc, x) {
-          acc[x.Name] = x;
-          acc[x.Name].Total_length = acc[x.Name].Data_length + acc[x.Name].Index_length;
-
-          // 易读大小
-          acc[x.Name].Data_length_human  = toolkit.byteSizeHuman(acc[x.Name].Data_length).toString();
-          acc[x.Name].Index_length_human = toolkit.byteSizeHuman(acc[x.Name].Index_length).toString();
-          acc[x.Name].Total_length_human = toolkit.byteSizeHuman(acc[x.Name].Total_length).toString();
-
-          return acc;
-        }, {});
-
-        // 统计
-        MYSQL_ANALYSIS = {
-          topRows       : toolkit.sortByKeyValue(dbRes, 'Rows', 'desc').slice(0, topN),
-          topDataLength : toolkit.sortByKeyValue(dbRes, 'Data_length', 'desc').slice(0, topN),
-          topIndexLength: toolkit.sortByKeyValue(dbRes, 'Index_length', 'desc').slice(0, topN),
-          topTotalLength: toolkit.sortByKeyValue(dbRes, 'Total_length', 'desc').slice(0, topN),
-        };
-
-        return asyncCallback();
-      });
-    },
   ], function(err) {
     if (err) return next(err);
 
-    var systemReport = {
-      IMAGE,
-      CONFIG: _CONFIG,
-      NODE, PYTHON,
-      WEB_CLIENT,
-      REDIS, REDIS_KEYS, REDIS_ANALYSIS,
-      MYSQL, MYSQL_TABLES, MYSQL_ANALYSIS,
+    var detailedRedisReport = {
+      REDIS,
+      REDIS_KEYS,
+      REDIS_ANALYSIS,
     };
 
-    var ret = toolkit.initRet(systemReport);
-    return res.locals.sendJSON(ret);
+    var ret = toolkit.initRet(detailedRedisReport);
+
+    // 给用户造成较为耗时的感觉，防止用户滥用使用本功能
+    setTimeout(function() {
+      return res.locals.sendJSON(ret);
+    }, Math.max(0, t1 + 3000 - Date.now()));
   });
 };

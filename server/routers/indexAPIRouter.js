@@ -42,3 +42,7 @@ routeLoader.load(ROUTE.indexAPI.proxy, [
 routeLoader.load(ROUTE.indexAPI.systemReport, [
   indexAPICtrl.systemReport,
 ]);
+
+routeLoader.load(ROUTE.indexAPI.detailedRedisReport, [
+  indexAPICtrl.detailedRedisReport,
+]);
