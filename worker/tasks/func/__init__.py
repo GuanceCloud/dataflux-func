@@ -733,6 +733,8 @@ class FuncCacheHelper(object):
     def delete(self, key, scope=None):
         keys = toolkit.as_array(key)
         keys = list(map(lambda k: self._get_cache_key(k, scope), keys))
+        if not keys:
+            return 0
         return self._task.cache_db.run('delete', *keys)
 
     def incr(self, key, step=1, scope=None):
@@ -788,6 +790,8 @@ class FuncCacheHelper(object):
     def hdel(self, key, field, scope=None):
         key = self._get_cache_key(key, scope)
         field = toolkit.as_array(field)
+        if not field:
+            return 0
         return self._task.cache_db.run('hdel', key, *field)
 
     def lpush(self, key, value, scope=None):

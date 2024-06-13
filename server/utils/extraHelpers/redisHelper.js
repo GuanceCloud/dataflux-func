@@ -1173,6 +1173,7 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
     SUB_CLIENT = self.client.duplicate();
     TASK_ON_RESPONSE_MAP = {};
 
+    // TODO 优化 Key 搜索
     var taskRespCacheKey = toolkit.getWorkerCacheKey('task', 'response', [ 'name', '*', 'id', '*' ]);
     SUB_CLIENT.psubscribe(taskRespCacheKey);
 

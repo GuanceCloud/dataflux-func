@@ -1032,6 +1032,7 @@ exports.overview = function(req, res, next) {
     function(asyncCallback) {
       if (sectionMap && !sectionMap.services) return asyncCallback();
 
+      // TODO 优化 Key 搜索
       var cacheKeyPattern = toolkit.getMonitorCacheKey('heartbeat', 'serviceInfo', [ 'hostname', '*', 'pid', '*' ]);
       res.locals.cacheDB.keys(cacheKeyPattern, function(err, keys) {
         if (err) return asyncCallback(err);

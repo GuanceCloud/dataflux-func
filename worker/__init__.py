@@ -89,6 +89,7 @@ def heartbeat():
                 cache_key = toolkit.get_monitor_cache_key('heartbeat', 'workerOnQueue', tags=[ 'workerQueue', q, 'workerId', WORKER_ID ])
                 REDIS.setex(cache_key, monitor_report_expires, CONFIG['_WORKER_CONCURRENCY'])
 
+                # TODO 优化 Key 搜索
                 cache_pattern = toolkit.get_monitor_cache_key('heartbeat', 'workerOnQueue', tags=[ 'workerQueue', q, 'workerId', '*' ])
                 worker_process_count_map = REDIS.get_by_pattern(cache_pattern)
                 if not worker_process_count_map:

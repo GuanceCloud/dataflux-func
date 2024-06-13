@@ -299,8 +299,9 @@ class RedisHelper(object):
         return self.run('incrby', key, amount=increment)
 
     def delete(self, keys):
-        if not isinstance(keys, list):
-            keys = [keys]
+        keys = toolkit.as_array(keys)
+        if not keys:
+            return 0
         return self.run('delete', *keys)
 
     def expire(self, key, expires):
@@ -342,7 +343,6 @@ class RedisHelper(object):
 
     def hmget(self, key, fields):
         fields = toolkit.as_array(fields)
-
         if not fields:
             return {}
 
@@ -367,6 +367,8 @@ class RedisHelper(object):
 
     def hdel(self, key, field):
         field = toolkit.as_array(field)
+        if not field:
+            return 0
         return self.run('hdel', key, *field)
 
     def lpush(self, key, *value):

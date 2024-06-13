@@ -227,6 +227,7 @@ EntityModel.prototype.update = function(scriptId, apiFuncs, callback) {
       if (scopeErr) return callback(scopeErr);
 
       // 清除函数名缓存
+      // TODO 优化 Key 搜索
       var cacheKeyPattern = toolkit.getCacheKey('cache', 'integrationFuncId', [ '*' ]);
       self.cacheDB.delByPattern(cacheKeyPattern, callback);
     });

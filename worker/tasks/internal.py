@@ -749,8 +749,8 @@ class AutoClean(BaseInternalTask):
                     file_path = os.path.join(folder_path, file_name)
                     os.remove(file_path)
 
-    def clear_outdated_task_info(self):
-        # TODO
+    def clear_outdated_task_record_func(self):
+        # TODO 清理过时的任务记录
         # 搜集实际存活的 Origin ID 列表
         sql = '''
             SELECT id FROM biz_main_connector
@@ -769,6 +769,8 @@ class AutoClean(BaseInternalTask):
         current_origin_ids = set()
         for d in db_res:
             current_origin_ids.add(d['id'])
+
+
 
         # 搜集任务记录里的 Origin ID 列表
         sql = '''

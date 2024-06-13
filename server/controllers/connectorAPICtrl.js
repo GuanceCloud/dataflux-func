@@ -522,6 +522,7 @@ exports.listSubInfo = function(req, res, next) {
     },
     // 查询最近消费信息
     function(asyncCallback) {
+      // TODO 优化 Key 搜索
       var cachePattern = toolkit.getCacheKey('cache', 'recentSubConsumeInfo', [
         'connectorId', connectorId || '*',
         'topic',       '*',

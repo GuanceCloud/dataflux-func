@@ -2291,6 +2291,7 @@ var sum = toolkit.sum = function sum(arr) {
     return acc + x;
   }, 0);
 };
+var total = toolkit.total = sum;
 var percentile = toolkit.percentile = function percentile(arr, p) {
   if (arr.length === 1) {
     return arr[0];

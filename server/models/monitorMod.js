@@ -28,6 +28,7 @@ var GROUP_TIME = 10 * 60;
  * System stats data in Redis
  */
 EntityModel.prototype.getSystemMetrics = function(callback) {
+  // TODO 优化 Key 搜索
   var self = this;
 
   var data = {};

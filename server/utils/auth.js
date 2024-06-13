@@ -41,6 +41,7 @@ exports.getCacheKey = function(xAuthTokenObj) {
  * @return {String} - Cache key pattern
  */
 exports.getCachePattern = function(options) {
+  // TODO 优化 Key 搜索
   options = options || {};
   var tags = [
     'xAuthTokenId', options.xAuthTokenId || '*',
