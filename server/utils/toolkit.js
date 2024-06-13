@@ -2265,18 +2265,18 @@ var asNumberArr = toolkit.asNumberArr = function asNumberArr(arr) {
   });
 };
 
-var mathMin = toolkit.mathMin = function mathMin(arr) {
+var min = toolkit.min = function min(arr) {
   return Math.min.apply(null, asNumberArr(arr));
 };
-var mathMax = toolkit.mathMax = function mathMax(arr) {
+var max = toolkit.max = function max(arr) {
   return Math.max.apply(null, asNumberArr(arr));
 };
-var mathAvg = toolkit.mathAvg = function mathAvg(arr) {
+var avg = toolkit.avg = function avg(arr) {
   return asNumberArr(arr).reduce(function(acc, x) {
     return acc + x;
   }) / arr.length;
 };
-var mathMedian = toolkit.mathMedian = function mathMedian(arr) {
+var median = toolkit.median = function median(arr) {
   arr = asNumberArr(arr).sort(function(a, b) {
     return a - b;
   });
@@ -2286,7 +2286,16 @@ var mathMedian = toolkit.mathMedian = function mathMedian(arr) {
     return arr[Math.floor(arr.length / 2)];
   }
 };
-var mathPercentile = toolkit.mathPercentile = function mathPercentile(arr, p) {
+var sum = toolkit.sum = function sum(arr) {
+  return arr.reduce(function(acc, x) {
+    return acc + x;
+  }, 0);
+};
+var percentile = toolkit.percentile = function percentile(arr, p) {
+  if (arr.length === 1) {
+    return arr[0];
+  }
+
   arr = asNumberArr(arr).sort(function(a, b) {
     return a - b;
   });
@@ -2298,6 +2307,15 @@ var mathPercentile = toolkit.mathPercentile = function mathPercentile(arr, p) {
   var n2 = arr[pos];
 
   return n1 + (n2 - n1) * extra;
+};
+var p99 = toolkit.p99 = function p99(arr) {
+  return percentile(arr, 99);
+};
+var p95 = toolkit.p95 = function p95(arr) {
+  return percentile(arr, 99);
+};
+var p90 = toolkit.p90 = function p90(arr) {
+  return percentile(arr, 99);
 };
 
 var toShortUnixTimestamp = toolkit.toShortUnixTimestamp = function toShortUnixTimestamp(t) {
@@ -2572,8 +2590,8 @@ var sortJSONArray = toolkit.sortJSONArray = function sortJSONArray(arr, key, ord
 
   var sortFuncRetVal = order === 'ASC' ? 1 : -1;
   return arr.sort(function(a, b) {
-    if (a[key] > b[key]) return sortFuncRetVal
-    else if (a[key] < b[key]) return sortFuncRetVal * -1
+    if ((a[key] || 0) > (b[key] || 0)) return sortFuncRetVal
+    else if ((a[key] || 0) < (b[key] || 0)) return sortFuncRetVal * -1
     else return 0;
   })
 };

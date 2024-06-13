@@ -17,6 +17,7 @@ var toolkit    = require('../utils/toolkit');
 var common     = require('../utils/common');
 
 var funcMod = require('../models/funcMod');
+const { BYTE_ORDER_MARK } = require('babyparse');
 
 /* Init */
 var API_LIST_CACHE = {};
@@ -674,9 +675,10 @@ exports.detailedRedisReport = function(req, res, next) {
 
         async.eachLimit(keys, 10, function(key, eachCallback) {
           REDIS_KEYS[key] = {
-            key        : key,
-            type       : null,
-            memoryUsage: 0,
+            key             : key,
+            type            : null,
+            memoryUsage     : 0,
+            memoryUsageHuman: 0,
           }
 
           var keyPattern = key;
@@ -685,17 +687,16 @@ exports.detailedRedisReport = function(req, res, next) {
           });
 
           REDIS_KEY_PATTERNS[keyPattern] = REDIS_KEY_PATTERNS[keyPattern] || {
-            keyPattern      : keyPattern,
-            count           : 0,
-            type            : [],
-            memoryUsageAvg  : 0,
-            memoryUsageTotal: 0,
+            keyPattern     : keyPattern,
+            type           : [],
+            count          : 0,
+            memoryUsageList: [],
           };
 
           REDIS_KEY_PATTERNS[keyPattern].count += 1;
 
           async.series([
-            // 获取类型
+            // 获取类型 / 元素数量
             function(innerCallback) {
               res.locals.cacheDB.client.type(key, function(err, cacheRes) {
                 if (err) return innerCallback(err);
@@ -708,7 +709,30 @@ exports.detailedRedisReport = function(req, res, next) {
                   REDIS_KEY_PATTERNS[keyPattern].type.push(type);
                 }
 
-                return innerCallback(err);
+                var typeLengthCmdMap = {
+                  list: 'llen',
+                  hash: 'hlen',
+                  set : 'scard',
+                  zset: 'zcard',
+                };
+                if (typeLengthCmdMap[type]) {
+                  res.locals.cacheDB.run(typeLengthCmdMap[type], key, function(err, cacheRes) {
+                    if (err) return innerCallback(err);
+
+                    var elementCount = parseInt(cacheRes);
+
+                    REDIS_KEYS[key].elementCount = elementCount;
+
+                    if (!REDIS_KEY_PATTERNS[keyPattern].elementCountList) {
+                      REDIS_KEY_PATTERNS[keyPattern].elementCountList = [];
+                    }
+                    REDIS_KEY_PATTERNS[keyPattern].elementCountList.push(elementCount);
+
+                    return innerCallback();
+                  })
+                } else {
+                  return innerCallback();
+                }
               })
             },
             // 获取内存使用量
@@ -719,7 +743,8 @@ exports.detailedRedisReport = function(req, res, next) {
                 var memoryUsage = parseInt(cacheRes) || 0;
 
                 REDIS_KEYS[key].memoryUsage = memoryUsage
-                REDIS_KEY_PATTERNS[keyPattern].memoryUsageTotal += memoryUsage;
+
+                REDIS_KEY_PATTERNS[keyPattern].memoryUsageList.push(memoryUsage);
 
                 return innerCallback(err);
               })
@@ -737,7 +762,7 @@ exports.detailedRedisReport = function(req, res, next) {
             keyTypeCount[keyDetail.type] += 1;
 
             // 易读大小
-            REDIS_KEYS[key].memoryUsage_human = toolkit.byteSizeHuman(REDIS_KEYS[key].memoryUsage).toString();
+            REDIS_KEYS[key].memoryUsageHuman = toolkit.byteSizeHuman(REDIS_KEYS[key].memoryUsage).toString();
           }
 
           for (var keyPattern in REDIS_KEY_PATTERNS) {
@@ -745,11 +770,41 @@ exports.detailedRedisReport = function(req, res, next) {
               REDIS_KEY_PATTERNS[keyPattern].type = REDIS_KEY_PATTERNS[keyPattern].type[0];
             }
 
-            REDIS_KEY_PATTERNS[keyPattern].memoryUsageAvg = parseInt(REDIS_KEY_PATTERNS[keyPattern].memoryUsageTotal / REDIS_KEY_PATTERNS[keyPattern].count);
+            if (REDIS_KEY_PATTERNS[keyPattern].count <= 1) {
+              // 只有一个 Key 不做统计
+              REDIS_KEY_PATTERNS[keyPattern].memoryUsage       = REDIS_KEY_PATTERNS[keyPattern].memoryUsageList[0];
+              REDIS_KEY_PATTERNS[keyPattern].memoryUsageHuman = toolkit.byteSizeHuman(REDIS_KEY_PATTERNS[keyPattern].memoryUsage).toString();
 
-            // 易读大小
-            REDIS_KEY_PATTERNS[keyPattern].memoryUsageAvg_human   = toolkit.byteSizeHuman(REDIS_KEY_PATTERNS[keyPattern].memoryUsageAvg).toString();
-            REDIS_KEY_PATTERNS[keyPattern].memoryUsageTotal_human = toolkit.byteSizeHuman(REDIS_KEY_PATTERNS[keyPattern].memoryUsageTotal).toString();
+              if (REDIS_KEY_PATTERNS[keyPattern].elementCountList) {
+                REDIS_KEY_PATTERNS[keyPattern].elementCount = REDIS_KEY_PATTERNS[keyPattern].elementCountList[0];
+              }
+
+            } else {
+              // 多个 Key 做统计
+              var methods = [ 'sum', 'max', 'min', 'avg', 'median', 'p99', 'p95', 'p90'];
+
+              methods.forEach(function(method) {
+                var memoryUsageField = `memoryUsage_${method}`;
+                REDIS_KEY_PATTERNS[keyPattern][memoryUsageField] = toolkit[method](REDIS_KEY_PATTERNS[keyPattern].memoryUsageList);
+              })
+
+              // 易读大小
+              methods.forEach(function(method) {
+                var memoryUsageField      = `memoryUsage_${method}`;
+                var memoryUsageFieldHuman = `memoryUsageHuman_${method}`;
+                REDIS_KEY_PATTERNS[keyPattern][memoryUsageFieldHuman] = toolkit.byteSizeHuman(REDIS_KEY_PATTERNS[keyPattern][memoryUsageField]).toString();
+              })
+
+              if (REDIS_KEY_PATTERNS[keyPattern].elementCountList) {
+                methods.forEach(function(method) {
+                  var elementCountField = `elementCount_${method}`;
+                  REDIS_KEY_PATTERNS[keyPattern][elementCountField] = toolkit[method](REDIS_KEY_PATTERNS[keyPattern].elementCountList);
+                });
+              }
+            }
+
+            delete REDIS_KEY_PATTERNS[keyPattern].memoryUsageList;
+            delete REDIS_KEY_PATTERNS[keyPattern].elementCountList;
           }
 
           var sortedRedisKeys = {};
@@ -762,6 +817,7 @@ exports.detailedRedisReport = function(req, res, next) {
           REDIS_ANALYSIS = {
             keyTypeCount            : toolkit.sortJSONKeys(keyTypeCount, 'DESC'),
             topKeyMemoryUsage       : toolkit.sortJSONArray(Object.values(REDIS_KEYS), 'memoryUsage', 'DESC').slice(0, topN),
+            topKeyElementCount      : toolkit.sortJSONArray(Object.values(REDIS_KEYS), 'elementCount', 'DESC').slice(0, topN),
             topKeyPatternCount      : toolkit.sortJSONArray(Object.values(REDIS_KEY_PATTERNS), 'count', 'DESC').slice(0, topN),
             topKeyPatternMemoryUsage: toolkit.sortJSONArray(Object.values(REDIS_KEY_PATTERNS), 'memoryUsageTotal', 'DESC').slice(0, topN),
           };
