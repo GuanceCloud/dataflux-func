@@ -56,13 +56,33 @@ case ${COMMAND} in
         ;;
 
     key-info )
-        echo "Type,Key,TTL,Mem Usage, Mem Usage Human"
+        echo "Type,Key,Elements,TTL,Mem Usage, Mem Usage Human"
         keys=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning keys "*")
         for key in $keys; do
             keyType=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning type "$key")
-            keyTTL=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning ttl "$key")
-            keyMemUsage=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning memory usage "$key" SAMPLES 0)
 
+            keyElementCount="-"
+            case ${keyType} in
+                list )
+                    keyElementCount=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning llen "$key")
+                    ;;
+                hash )
+                    keyElementCount=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning hlen "$key")
+                    ;;
+                set )
+                    keyElementCount=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning scard "$key")
+                    ;;
+                zset )
+                    keyElementCount=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning zcard "$key")
+                    ;;
+            esac
+
+            keyTTL=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning ttl "$key")
+            if [ ${keyTTL} -eq -1 ]; then
+                keyTTL="-"
+            fi
+
+            keyMemUsage=$(redis-cli ${hostOpt} ${portOpt} ${dbOpt} ${passwordOpt} --no-auth-warning memory usage "$key" SAMPLES 0)
             keyMemUsageHuman="${keyMemUsage} Bytes"
             if [ ${keyMemUsage} -gt 1048576 ]; then
                 keyMemUsageHuman="$((keyMemUsage / 1048576)) MB"
@@ -70,6 +90,6 @@ case ${COMMAND} in
                 keyMemUsageHuman="$((keyMemUsage / 1024)) KB"
             fi
 
-            echo "${keyType},${key},${keyTTL},${keyMemUsage},${keyMemUsageHuman}"
+            echo "${keyType},${key},${keyElementCount},${keyTTL},${keyMemUsage},${keyMemUsageHuman}"
         done
 esac
