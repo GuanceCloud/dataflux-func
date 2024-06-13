@@ -2566,7 +2566,7 @@ var repeatDecode = toolkit.repeatDecode = function repeatDecode(data) {
   return decoded;
 };
 
-var sortByKeyValue = toolkit.sortByKeyValue = function sortByKeyValue(arr, key, order) {
+var sortJSONArray = toolkit.sortJSONArray = function sortJSONArray(arr, key, order) {
   order = order || 'ASC';
   order = order.toUpperCase();
 
@@ -2576,6 +2576,21 @@ var sortByKeyValue = toolkit.sortByKeyValue = function sortByKeyValue(arr, key, 
     else if (a[key] < b[key]) return sortFuncRetVal * -1
     else return 0;
   })
+};
+
+var sortJSONKeys = toolkit.sortJSONKeys = function sortJSONKeys(j, order) {
+  var _tmp = [];
+  for (var key in j) {
+    _tmp.push({ key, value: j[key] });
+  }
+  _tmp = sortJSONArray(_tmp, 'value', order);
+
+  var sorted = _tmp.reduce(function(acc, x) {
+    acc[x.key] = x.value;
+    return acc;
+  }, {});
+
+  return sorted;
 };
 
 var byteSizeHuman = toolkit.byteSizeHuman = function byteSizeHuman(s) {

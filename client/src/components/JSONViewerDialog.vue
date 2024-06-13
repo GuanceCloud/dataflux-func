@@ -28,7 +28,7 @@ Download as a JSON file: 作為 JSON 檔案下載
           <i class="fa fa-fw fa-download"></i>
         </el-link>
       </div>
-      <json-viewer :value="jsonContent" theme="json-view-theme" show-double-quotes></json-viewer>
+      <json-viewer :value="jsonContent" theme="json-view-theme" show-double-quotes :show-array-index="false"></json-viewer>
     </div>
   </el-dialog>
 </template>
@@ -89,13 +89,20 @@ export default {
 .json-view-theme {
   font-size: 16px;
 
+  .jv-toggle {
+    position: absolute;
+    left: -15px;
+    top: 5px;
+  }
+
   .jv-ellipsis {
     color: white;
     background-color: #FF6600;
     display: inline-block;
-    line-height: 0.9;
+    line-height: 0.8;
     font-size: 16px;
-    padding: 0px 4px 2px 4px;
+    padding: 0px 8px 5px 8px;
+    margin: 0 4px 0 4px;
     border-radius: 3px;
     vertical-align: 2px;
     cursor: pointer;
@@ -112,8 +119,6 @@ export default {
   }
   .jv-item {
     font-family: "Iosevka";
-    padding-left: 10px;
-    padding-right: 10px;
 
     &.jv-boolean { color: #fc1e70 }
     &.jv-function { color: #067bca }

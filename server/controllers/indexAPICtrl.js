@@ -27,8 +27,23 @@ var OPEN_API_PARAM_TYPES = [
 ];
 var LANGUAGE_ZH_CN_SUFFIX = '_zhCN';
 
-// OpenMetric
-var METRIC_MAP = {};
+// Redis Key agg
+var REDIS_KEY_AGG = [
+  [ /[a-zA-Z0-9]{32}/g,                              '<Hash>'],
+  [ /:date:[0-9]{4}-[0-9]{2}-[0-9]{2}:/g,            ':date:<Date>:'],
+  [ /:hostname:[a-zA-Z0-9_-]+:/g,                    ':hostname:<Hostname>:'],
+  [ /:pid:[0-9]+:/g,                                 ':pid:<Process ID>:'],
+  [ /:xAuthTokenId:[a-zA-Z0-9_-]+:/g,                ':xAuthTokenId:<X-Auth-Token ID>:'],
+  [ /:userId:[a-zA-Z0-9_-]+:/g,                      ':userId:<User ID>:'],
+  [ /:username:[a-zA-Z0-9_-]+:/g,                    ':username:<Username>:'],
+  [ /:workerId:[a-zA-Z0-9_-]+:/g,                    ':workerId:<Worker ID>:'],
+  [ /:queue:[0-9]+:/g,                               ':queue:<Queue>:'],
+  [ /:workerQueue:[0-9]+:/g,                         ':workerQueue:<Worker Queue>:'],
+  [ /:funcId:[a-zA-Z0-9_.]+:/g,                      ':funcId:<Func ID>:'],
+  [ /:table:[a-zA-Z0-9_]+:/g,                        ':table:<Table>:'],
+  [ /:routeName:[a-zA-Z0-9_-]+:/g,                   ':routeName:<Route Name>:'],
+  [ /:routeParams\.[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+:/g, ':routeParams.<Field>:<Value>:'],
+]
 
 function useLanguage(j, lang) {
   lang = lang.replace(/[-_]/g, '');
@@ -593,10 +608,10 @@ exports.systemReport = function(req, res, next) {
 
         // 统计
         MYSQL_ANALYSIS = {
-          topRows       : toolkit.sortByKeyValue(dbRes, 'Rows', 'desc').slice(0, topN),
-          topDataLength : toolkit.sortByKeyValue(dbRes, 'Data_length', 'desc').slice(0, topN),
-          topIndexLength: toolkit.sortByKeyValue(dbRes, 'Index_length', 'desc').slice(0, topN),
-          topTotalLength: toolkit.sortByKeyValue(dbRes, 'Total_length', 'desc').slice(0, topN),
+          topRows       : toolkit.sortJSONArray(dbRes, 'Rows', 'DESC').slice(0, topN),
+          topDataLength : toolkit.sortJSONArray(dbRes, 'Data_length', 'DESC').slice(0, topN),
+          topIndexLength: toolkit.sortJSONArray(dbRes, 'Index_length', 'DESC').slice(0, topN),
+          topTotalLength: toolkit.sortJSONArray(dbRes, 'Total_length', 'DESC').slice(0, topN),
         };
 
         return asyncCallback();
@@ -624,9 +639,11 @@ exports.detailedRedisReport = function(req, res, next) {
 
   var topN = 20;
 
-  var REDIS          = {};
-  var REDIS_KEYS     = {};
-  var REDIS_ANALYSIS = {};
+  var REDIS              = {};
+  var REDIS_KEYS         = {};
+  var REDIS_KEY_PATTERNS = {};
+  var REDIS_ANALYSIS     = {};
+
 
   async.series([
     // Redis
@@ -656,21 +673,18 @@ exports.detailedRedisReport = function(req, res, next) {
         if (err) return asyncCallback(err);
 
         async.eachLimit(keys, 10, function(key, eachCallback) {
-          var keyPattern = key;
-          keyPattern = keyPattern.replace(/[a-zA-Z0-9]{32}/g, '<Hash>');
-          keyPattern = keyPattern.replace(/:date:[0-9]{4}-[0-9]{2}-[0-9]{2}:/g, ':date:<Date>:');
-          keyPattern = keyPattern.replace(/:hostname:[a-zA-Z0-9_-]+:/g,         ':hostname:<Hostname>:');
-          keyPattern = keyPattern.replace(/:pid:[0-9]+:/g,                      ':pid:<Process ID>:');
-          keyPattern = keyPattern.replace(/:xAuthTokenId:[a-zA-Z0-9_-]+:/g,     ':xAuthTokenId:<X-Auth-Token ID>:');
-          keyPattern = keyPattern.replace(/:userId:[a-zA-Z0-9_-]+:/g,           ':userId:<User ID>:');
-          keyPattern = keyPattern.replace(/:username:[a-zA-Z0-9_-]+:/g,         ':username:<Username>:');
-          keyPattern = keyPattern.replace(/:workerId:[a-zA-Z0-9_-]+:/g,         ':workerId:<Worker ID>:');
-          keyPattern = keyPattern.replace(/:queue:[0-9]+:/g,                    ':queue:<Queue>:');
-          keyPattern = keyPattern.replace(/:workerQueue:[0-9]+:/g,              ':workerQueue:<Worker Queue>:');
-          keyPattern = keyPattern.replace(/:funcId:[a-zA-Z0-9_.]+:/g,           ':funcId:<Func ID>:');
-          keyPattern = keyPattern.replace(/:table:[a-zA-Z0-9_]+:/g,             ':table:<Table>:');
+          REDIS_KEYS[key] = {
+            key        : key,
+            type       : null,
+            memoryUsage: 0,
+          }
 
-          REDIS_KEYS[keyPattern] = REDIS_KEYS[keyPattern] || {
+          var keyPattern = key;
+          REDIS_KEY_AGG.forEach(function(agg) {
+            keyPattern = keyPattern.replace(agg[0], agg[1]);
+          });
+
+          REDIS_KEY_PATTERNS[keyPattern] = REDIS_KEY_PATTERNS[keyPattern] || {
             keyPattern      : keyPattern,
             count           : 0,
             type            : [],
@@ -678,7 +692,7 @@ exports.detailedRedisReport = function(req, res, next) {
             memoryUsageTotal: 0,
           };
 
-          REDIS_KEYS[keyPattern].count += 1;
+          REDIS_KEY_PATTERNS[keyPattern].count += 1;
 
           async.series([
             // 获取类型
@@ -687,8 +701,11 @@ exports.detailedRedisReport = function(req, res, next) {
                 if (err) return innerCallback(err);
 
                 var type = cacheRes;
-                if (REDIS_KEYS[keyPattern].type.indexOf(type) < 0) {
-                  REDIS_KEYS[keyPattern].type.push(type);
+
+                REDIS_KEYS[key].type = type;
+
+                if (REDIS_KEY_PATTERNS[keyPattern].type.indexOf(type) < 0) {
+                  REDIS_KEY_PATTERNS[keyPattern].type.push(type);
                 }
 
                 return innerCallback(err);
@@ -699,7 +716,10 @@ exports.detailedRedisReport = function(req, res, next) {
               res.locals.cacheDB.run('MEMORY', 'USAGE', key, 'SAMPLES', '0', function(err, cacheRes) {
                 if (err) return innerCallback(err);
 
-                REDIS_KEYS[keyPattern].memoryUsageTotal += parseInt(cacheRes) || 0;
+                var memoryUsage = parseInt(cacheRes) || 0;
+
+                REDIS_KEYS[key].memoryUsage = memoryUsage
+                REDIS_KEY_PATTERNS[keyPattern].memoryUsageTotal += memoryUsage;
 
                 return innerCallback(err);
               })
@@ -709,28 +729,41 @@ exports.detailedRedisReport = function(req, res, next) {
           if (err) return asyncCallback(err);
 
           // 整理数据
-          for (var keyPattern in REDIS_KEYS) {
-            if (REDIS_KEYS[keyPattern].type.length === 1) {
-              REDIS_KEYS[keyPattern].type = REDIS_KEYS[keyPattern].type[0];
-            }
+          var keyTypeCount = {};
+          for (var key in REDIS_KEYS) {
+            var keyDetail = REDIS_KEYS[key];
 
-            REDIS_KEYS[keyPattern].memoryUsageAvg = parseInt(REDIS_KEYS[keyPattern].memoryUsageTotal / REDIS_KEYS[keyPattern].count);
+            keyTypeCount[keyDetail.type] = keyTypeCount[keyDetail.type] || 0;
+            keyTypeCount[keyDetail.type] += 1;
 
             // 易读大小
-            REDIS_KEYS[keyPattern].memoryUsageAvg_human   = toolkit.byteSizeHuman(REDIS_KEYS[keyPattern].memoryUsageAvg).toString();
-            REDIS_KEYS[keyPattern].memoryUsageTotal_human = toolkit.byteSizeHuman(REDIS_KEYS[keyPattern].memoryUsageTotal).toString();
+            REDIS_KEYS[key].memoryUsage_human = toolkit.byteSizeHuman(REDIS_KEYS[key].memoryUsage).toString();
+          }
+
+          for (var keyPattern in REDIS_KEY_PATTERNS) {
+            if (REDIS_KEY_PATTERNS[keyPattern].type.length === 1) {
+              REDIS_KEY_PATTERNS[keyPattern].type = REDIS_KEY_PATTERNS[keyPattern].type[0];
+            }
+
+            REDIS_KEY_PATTERNS[keyPattern].memoryUsageAvg = parseInt(REDIS_KEY_PATTERNS[keyPattern].memoryUsageTotal / REDIS_KEY_PATTERNS[keyPattern].count);
+
+            // 易读大小
+            REDIS_KEY_PATTERNS[keyPattern].memoryUsageAvg_human   = toolkit.byteSizeHuman(REDIS_KEY_PATTERNS[keyPattern].memoryUsageAvg).toString();
+            REDIS_KEY_PATTERNS[keyPattern].memoryUsageTotal_human = toolkit.byteSizeHuman(REDIS_KEY_PATTERNS[keyPattern].memoryUsageTotal).toString();
           }
 
           var sortedRedisKeys = {};
-          Object.keys(REDIS_KEYS).sort().forEach(function(key) {
-            sortedRedisKeys[key] = REDIS_KEYS[key];
+          Object.keys(REDIS_KEY_PATTERNS).sort().forEach(function(key) {
+            sortedRedisKeys[key] = REDIS_KEY_PATTERNS[key];
           });
-          REDIS_KEYS = sortedRedisKeys;
+          REDIS_KEY_PATTERNS = sortedRedisKeys;
 
           // 统计
           REDIS_ANALYSIS = {
-            topCount      : toolkit.sortByKeyValue(Object.values(REDIS_KEYS), 'count', 'desc').slice(0, topN),
-            topMemoryUsage: toolkit.sortByKeyValue(Object.values(REDIS_KEYS), 'memoryUsageTotal', 'desc').slice(0, topN),
+            keyTypeCount            : toolkit.sortJSONKeys(keyTypeCount, 'DESC'),
+            topKeyMemoryUsage       : toolkit.sortJSONArray(Object.values(REDIS_KEYS), 'memoryUsage', 'DESC').slice(0, topN),
+            topKeyPatternCount      : toolkit.sortJSONArray(Object.values(REDIS_KEY_PATTERNS), 'count', 'DESC').slice(0, topN),
+            topKeyPatternMemoryUsage: toolkit.sortJSONArray(Object.values(REDIS_KEY_PATTERNS), 'memoryUsageTotal', 'DESC').slice(0, topN),
           };
 
           return asyncCallback();
@@ -742,7 +775,7 @@ exports.detailedRedisReport = function(req, res, next) {
 
     var detailedRedisReport = {
       REDIS,
-      REDIS_KEYS,
+      REDIS_KEY_PATTERNS,
       REDIS_ANALYSIS,
     };
 
@@ -751,6 +784,6 @@ exports.detailedRedisReport = function(req, res, next) {
     // 给用户造成较为耗时的感觉，防止用户滥用使用本功能
     setTimeout(function() {
       return res.locals.sendJSON(ret);
-    }, Math.max(0, t1 + 3000 - Date.now()));
+    }, Math.max(0, t1 + 1500 - Date.now()));
   });
 };
