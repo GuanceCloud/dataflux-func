@@ -83,7 +83,7 @@ export default {
         tagType       : 'primary',
         debugSupported: false,
         sampleCode    : `guance = DFF.CONN('{0}')
-res = guance.openapi('GET', '/api/v1/workspace/get')`,
+res = guance.do_get('/api/v1/workspace/get')`,
         configFields: {
           guanceNode        : { default: null, isRequired: true },
           guanceOpenAPIURL  : { default: null, isRequired: true },
