@@ -13,18 +13,26 @@ export function getPythonCodeItems(pythonCode, scriptId) {
   pythonCode.split('\n').forEach((l, i) => {
     l = l.trimEnd();
 
-    let first3chars = l.slice(0, 3);
-    if ([ '"""', "'''" ].indexOf(first3chars) >= 0) {
-      let lastBlockCommentIndex = commentStack.lastIndexOf(first3chars);
-      if (lastBlockCommentIndex >= 0) {
-        commentStack = commentStack.slice(0, lastBlockCommentIndex);
+    // 判断是否在块注释内部
+    let isOneLineBlockCommnet = false;
+    [ '"""', "'''" ].forEach(kw => {
+      if (l.indexOf(kw) < 0) return;
+
+      if (l.indexOf(kw) !== l.lastIndexOf(kw)) {
+        // 单行块注释
+        isOneLineBlockCommnet = true;
       } else {
-        commentStack.push(first3chars);
+        // 多行块注释
+        if (commentStack.length > 0 && commentStack[commentStack.length - 1] === kw) {
+          commentStack.pop(kw);
+        } else {
+          commentStack.push(kw);
+        }
       }
-    }
+    })
 
     // 位于注释内部时跳过
-    if (commentStack.length > 0) return;
+    if (isOneLineBlockCommnet || commentStack.length > 0) return;
 
     try {
       // 注释项目
@@ -33,7 +41,7 @@ export function getPythonCodeItems(pythonCode, scriptId) {
         let _pos = l.indexOf(_tag);
         if (_pos >= 0) {
           let id   = `${scriptId}.__L${i}`;
-          let name = (l.slice(_pos + _tag.length) || '').trim() || x.key;
+          let name = (l.slice(_pos + _tag.length) || '').replace(/^[ :：]*/, '').trim() || x.key;
           todoItems.push({
             id      : id,
             type    : 'todo',
