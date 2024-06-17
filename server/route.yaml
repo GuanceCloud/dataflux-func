@@ -2023,6 +2023,10 @@ scriptAPI:
           $desc      : 草稿
           $isRequired: false
           $type      : string
+        codeDraftBase64:
+          $desc      : 草稿（Base64 方式）
+          $isRequired: false
+          $type      : string
 
   modify:
     showInDoc    : true
@@ -2054,6 +2058,10 @@ scriptAPI:
           $type      : string
         codeDraft:
           $desc      : 草稿（需同时传递`prevCodeDraftMD5`参数）
+          $isRequired: false
+          $type      : string
+        codeDraftBase64:
+          $desc      : 草稿（Base64 方式）
           $isRequired: false
           $type      : string
         isLocked:

@@ -147,10 +147,16 @@ EntityModel.prototype.add = function(data, callback) {
   // 保证空代码为空字符串
   data.code = data.code || '';
 
+  // 处理 Base64 方式传递代码
+  if (data.codeDraftBase64) {
+    data.codeDraft = toolkit.fromBase64(data.codeDraftBase64);
+    delete data.codeDraftBase64;
+  }
+
   // 自动填入示例代码
   data.codeDraft = toolkit.isNullOrUndefined(data.codeDraft)
-                 ? fs.readFileSync('script-example.py').toString()
-                 : data.codeDraft;
+                ? fs.readFileSync('script-example.py').toString()
+                : data.codeDraft;
 
   try {
     data = _prepareData(data);
@@ -169,6 +175,12 @@ EntityModel.prototype.add = function(data, callback) {
 };
 
 EntityModel.prototype.modify = function(id, data, callback) {
+  // 处理 Base64 方式传递代码
+  if (data.codeDraftBase64) {
+    data.codeDraft = toolkit.fromBase64(data.codeDraftBase64);
+    delete data.codeDraftBase64;
+  }
+
   try {
     data = _prepareData(data);
   } catch(err) {

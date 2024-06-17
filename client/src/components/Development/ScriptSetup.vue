@@ -269,6 +269,12 @@ export default {
           break;
       }
 
+      // 使用 Base64 方式传递代码
+      if (_data.codeDraft) {
+        _data.codeDraftBase64 = this.T.getBase64(_data.codeDraft);
+        delete _data.codeDraft;
+      }
+
       let apiRes = await this.T.callAPI('post', '/api/v1/scripts/do/add', {
         body : { data: _data },
         alert: { okMessage: this.$t('Script created') },
@@ -288,6 +294,12 @@ export default {
     async modifyData() {
       let _formData = this.T.jsonCopy(this.form);
       delete _formData.id;
+
+      // 使用 Base64 方式传递代码
+      if (_formData.codeDraft) {
+        _formData.codeDraftBase64 = this.T.getBase64(_formData.codeDraft);
+        delete _formData.codeDraft;
+      }
 
       let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/modify', {
         params: { id: this.scriptId },

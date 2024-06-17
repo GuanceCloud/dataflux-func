@@ -624,9 +624,12 @@ export default {
       // 添加行尾空行
       if (codeDraft) codeDraft += '\n';
 
+      // 使用 Base64 方式传递代码
+      let codeDraftBase64 = this.T.getBase64(codeDraft);
+
       let apiRes = await this.T.callAPI('post', '/api/v1/scripts/:id/do/modify', {
         params: { id: this.scriptId },
-        body  : { data: {codeDraft: codeDraft }, prevCodeDraftMD5: prevCodeDraftMD5 },
+        body  : { data: { codeDraftBase64 }, prevCodeDraftMD5: prevCodeDraftMD5 },
         alert : { okMessage: options.mute ? null : this.$t('Script saved'), muteError: true }, // 错误信息在下方特殊处理
       });
 
