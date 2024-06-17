@@ -91,18 +91,21 @@ export default {
       this.$store.commit('updateLoadStatus', true);
     },
     logClass(row) {
-      let levelTag = row.split(' ')[1];
-      if (levelTag === '[D]') {
-        return 'log-debug';
-      } else if (levelTag === '[I]') {
-        return 'log-info';
-      } else if (levelTag === '[W]') {
-        return 'log-warning';
-      } else if (levelTag === '[E]') {
-        return 'log-error';
-      } else {
-        return '';
-      }
+      let m = row.match(/\[\d{2}-\d{2} \d{2}:\d{2}:\d{2}\] \[L\d{4,5}] (\[\w+\])/);
+      if (!m) return '';
+
+      switch (m[1]) {
+        case '[D]':
+          return 'log-debug';
+        case '[I]':
+          return 'log-info';
+        case '[W]':
+          return 'log-warning';
+        case '[E]':
+          return 'log-error';
+        default:
+          return '';
+        }
     },
   },
   computed: {
@@ -142,8 +145,8 @@ export default {
 <style scoped>
 .log-line {
   margin: 0;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 12px;
+  line-height: 1.25;
 }
 .log-debug {
   color: darkgrey;
