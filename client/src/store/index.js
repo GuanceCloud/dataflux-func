@@ -271,20 +271,24 @@ export default new Vuex.Store({
     isSocketIOReady: state => {
       return state.isSocketIOAuthed && state.xAuthToken;
     },
-    getConflictStatus: state => routeInfo => {
+    getConflictInfo: state => routeInfo => {
       let routeKey = getRouteKey(routeInfo);
-      let conflictId = state.conflictedRouteMap[routeKey];
-      if (!conflictId) {
+      let conflictInfo = state.conflictedRouteMap[routeKey];
+      if (!conflictInfo) {
         // 没有冲突
         return false;
 
       } else {
         // 存在冲突
-        if (conflictId.split(':')[0] === window.conflictId.split(':')[0]) {
-          // 相同客户端冲突
-          return 'otherTab';
-        } else {
-          return 'otherClient';
+        let conflictId = conflictInfo.conflictId;
+        let conflictScope = conflictId.split(':')[0] === window.conflictId.split(':')[0]
+                          ? 'sameClientOtherTab' // 相同客户端，不同 Tab
+                          : 'otherClient'        // 不同客户端
+
+        let user = conflictInfo.user;
+        return {
+          scope: conflictScope,
+          user : user,
         }
       }
     },
@@ -368,7 +372,14 @@ export default new Vuex.Store({
 
       let nextConflictedRouteMap = T.jsonCopy(state.conflictedRouteMap);
       if (payload.isConflict) {
-        nextConflictedRouteMap[routeKey] = payload.conflictId;
+        let conflictInfo = {};
+        for (let k in payload) {
+          if (k === 'routeInfo') continue;
+          conflictInfo[k] = payload[k];
+        }
+
+        nextConflictedRouteMap[routeKey] = conflictInfo;
+
       } else {
         delete nextConflictedRouteMap[routeKey];
       }

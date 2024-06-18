@@ -2011,15 +2011,17 @@ exports.integratedSignIn = function(req, res, next) {
         // 避免与内置系统用户 ID 冲突（igu: Integration Generated User)
         userId = toolkit.strf('igu_{0}-{1}', toolkit.getMD5(funcId), userId);
 
+        var user = {
+          id      : userId,
+          username: username,
+          name    : userDisplayName,
+          email   : userEmail
+        }
         // 发行登录令牌
-        var authTokenObj = auth.genXAuthTokenObj(userId);
-        authTokenObj.ig = true;
-        authTokenObj.un = username
-        authTokenObj.nm = userDisplayName;
-        authTokenObj.em = userEmail;
-        xAuthToken = auth.signXAuthTokenObj(authTokenObj)
+        var xAuthTokenObj = auth.genXAuthTokenObj(user, true);
+        xAuthToken = auth.signXAuthTokenObj(xAuthTokenObj)
 
-        var cacheKey     = auth.getCacheKey(authTokenObj);
+        var cacheKey     = auth.getCacheKey(xAuthTokenObj);
         var xAuthExpires = CONFIG._WEB_AUTH_EXPIRES;
         res.locals.cacheDB.setex(cacheKey, xAuthExpires, 'x', asyncCallback);
       });

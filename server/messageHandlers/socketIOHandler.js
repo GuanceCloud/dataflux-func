@@ -212,22 +212,37 @@ module.exports = function(app, server) {
           if (!conflictSource) return asyncCallback();
 
           var cacheKey = toolkit.getCacheKey('cache', 'clientConflict', conflictSource);
+          var conflictInfo = {
+            conflictId: data.conflictId,
+            user: {
+              username: xAuthTokenObj.un,
+              name    : xAuthTokenObj.nm,
+            },
+          }
           async.series([
             function(innerCallback) {
               if (data.checkOnly) return innerCallback();
 
-              app.locals.cacheDB.setexnx(cacheKey, CONFIG._CLIENT_CONFLICT_EXPIRES, data.conflictId, innerCallback);
+              app.locals.cacheDB.setexnx(cacheKey, CONFIG._CLIENT_CONFLICT_EXPIRES, JSON.stringify(conflictInfo), innerCallback);
             },
             function(innerCallback) {
               app.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
                 if (err) return innerCallback(err);
 
+                var remoteConflictInfo = {}
+                if (cacheRes) remoteConflictInfo = JSON.parse(cacheRes) || {};
+
+                var remoteConflictId = remoteConflictInfo.conflictId || null;
+                var user             = remoteConflictInfo.user || null;
+                var isConflict       = remoteConflictId && data.conflictId !== remoteConflictId
+
                 retData = {
-                  conflictId: cacheRes,
-                  isConflict: cacheRes && data.conflictId !== cacheRes,
+                  conflictId: remoteConflictId,
+                  isConflict: isConflict,
+                  user      : user,
                 }
 
-                if (data.conflictId === cacheRes && !data.checkOnly) {
+                if (!isConflict && !data.checkOnly) {
                   app.locals.cacheDB.expire(cacheKey, CONFIG._CLIENT_CONFLICT_EXPIRES);
                 }
 
@@ -259,12 +274,12 @@ module.exports = function(app, server) {
     socket.on('disconnect', function(reason) {
       var xAuthTokenObj = AUTHED_SOCKET_IO_CLIENT_MAP[socket.id];
 
-      var userId = null;
+      var username = null;
       if (xAuthTokenObj) {
-        userId = xAuthTokenObj.uid;
+        username = xAuthTokenObj.un;
       }
 
-      app.locals.logger.debug('[SOCKET IO] Client disconnected. id=`{0}`, userId=`{1}`, reason=`{2}`', socket.id, userId, reason);
+      app.locals.logger.debug('[SOCKET IO] Client disconnected. id=`{0}`, username=`{1}`, reason=`{2}`', socket.id, username, reason);
 
       delete AUTHED_SOCKET_IO_CLIENT_MAP[socket.id];
     });

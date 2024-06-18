@@ -77,10 +77,9 @@ exports.signIn = function(req, res, next) {
     },
     // Generate x-auth-token
     function(asyncCallback) {
-      var xAuthTokenObj = auth.genXAuthTokenObj(dbUser.id);
-
-      var cacheKey   = auth.getCacheKey(xAuthTokenObj);
-      var xAuthToken = auth.signXAuthTokenObj(xAuthTokenObj);
+      var xAuthTokenObj = auth.genXAuthTokenObj(dbUser);
+      var cacheKey      = auth.getCacheKey(xAuthTokenObj);
+      var xAuthToken    = auth.signXAuthTokenObj(xAuthTokenObj);
 
       res.locals.cacheDB.setex(cacheKey, CONFIG._WEB_AUTH_EXPIRES, 'x', function(err) {
         if (err) return asyncCallback(err);

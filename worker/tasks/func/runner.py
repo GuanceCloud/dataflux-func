@@ -291,7 +291,7 @@ class FuncRunner(FuncBaseTask):
         # 缓存函数运行结果
         if self.cache_result and self.cache_result_key:
             task_resp_dumps = toolkit.json_dumps(task_resp)
-            self.cache_db.setex(self.cache_result_key, self.cache_result, task_resp_dumps)
+            self.cache_db.set(self.cache_result_key, task_resp_dumps, expires=self.cache_result)
 
     def run(self, **kwargs):
         super().run(**kwargs)

@@ -527,7 +527,7 @@ exports.listSubInfo = function(req, res, next) {
         'connectorId', connectorId || '*',
         'topic',       '*',
         'status',      '*']);
-      res.locals.cacheDB.getByPattern(cachePattern, function(err, cacheRes) {
+      res.locals.cacheDB.getPattern(cachePattern, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         if (cacheRes) {

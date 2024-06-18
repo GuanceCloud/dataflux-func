@@ -174,6 +174,20 @@ RedisHelper.prototype.initSubClient = function() {
   });
 };
 
+RedisHelper.prototype.end = function() {
+  this.logger.info(`[REDIS] End`);
+
+  if (this.client) {
+    this.client.end(true);
+  }
+  this.client = null;
+
+  if (this.subClient) {
+    this.subClient.end(true);
+  }
+  this.subClient = null;
+};
+
 /**
  * Run a Redis command.
  *
@@ -199,19 +213,183 @@ RedisHelper.prototype.run = function() {
   return this.client[command].apply(this.client, args);
 };
 
-RedisHelper.prototype.keys = function(pattern, limitKeys, callback) {
-  var self = this;
-  if ('function' === typeof limitKeys && !callback) {
-    callback  = limitKeys;
-    limitKeys = null;
+// DB
+RedisHelper.prototype.dbsize = function(callback) {
+  return this.run('dbsize', callback);
+};
+
+RedisHelper.prototype.info = function(callback) {
+  return this.run('info', callback);
+};
+
+// Generic
+RedisHelper.prototype.type = function(key, callback) {
+  this.run('type', key, function(err, cacheRes) {
+    if (err) return callback(err);
+
+    var dataType = cacheRes;
+    if (dataType === 'none') return callback(null, null);
+
+    return callback(null, dataType);
+  });
+};
+
+RedisHelper.prototype.keys = function(pattern, limit, callback) {
+  if ('function' === typeof limit && !callback) {
+    callback  = limit;
+    limit = null;
   }
 
-  var COUNT_LIMIT = 1000;
+  var self = this;
 
-  var foundKeys  = [];
+  var ITER_LIMIT = 1000;
+
+  var foundKeys  = {};
   var nextCursor = 0;
   async.doUntil(function(untilCallback) {
-    self.run('scan', nextCursor, 'MATCH', pattern, 'COUNT', COUNT_LIMIT, function(err, dbRes) {
+    self.run('scan', nextCursor, 'MATCH', pattern, 'COUNT', ITER_LIMIT, function(err, dbRes) {
+      if (err) return untilCallback(err);
+
+      nextCursor = dbRes[0];
+
+      var keys = dbRes[1];
+      if (Array.isArray(keys) && keys.length > 0) {
+        keys.forEach(function(k) {
+          foundKeys[k] = true;
+        });
+      }
+
+      return untilCallback();
+    });
+
+  }, function() {
+    return parseInt(nextCursor) === 0 || (limit && Object.keys(foundKeys).length >= limit);
+
+  }, function(err) {
+    if (err) return callback(err);
+
+    foundKeys = Object.keys(foundKeys);
+    if (limit) foundKeys = foundKeys.slice(0, limit);
+
+    return callback(null, foundKeys);
+  });
+};
+
+RedisHelper.prototype.exists = function(key, callback) {
+  this.run('exists', key, function(err, cacheRes) {
+    if (err) return callback(err);
+    return callback(err, toolkit.toBoolean(cacheRes));
+  });
+};
+
+RedisHelper.prototype.expire = function(key, expires, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  if (expires <= 0) expires = 1;
+  return this.run('expire', key, expires, callback);
+};
+
+RedisHelper.prototype.expireat = function(key, timestamp, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  return this.run('expireat', key, timestamp, callback);
+};
+
+RedisHelper.prototype.ttl = function(key, callback) {
+  return this.run('ttl', key, callback);
+};
+
+RedisHelper.prototype.pttl = function(key, callback) {
+  return this.run('pttl', key, callback);
+};
+
+RedisHelper.prototype.del =
+RedisHelper.prototype.delete = function(keys, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  keys = toolkit.asArray(keys);
+  if (toolkit.isNothing(keys)) return callback(null, 0);
+
+  return this.run('del', keys, callback);
+};
+
+// String
+RedisHelper.prototype.set = function(key, value, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  return this.run('set', key, value, callback);
+};
+
+RedisHelper.prototype.setex = function(key, maxAge, value, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  if (maxAge <= 0) maxAge = 1;
+  return this.run('setex', key, maxAge, value, callback);
+};
+
+RedisHelper.prototype.setnx = function(key, value, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  return this.run('setnx', key, value, callback);
+};
+
+RedisHelper.prototype.mset = function(keyValues, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  if (toolkit.isNothing(keyValues)) return callback(null, 0);
+
+  if (!Array.isArray(keyValues)) {
+    var tmp = []
+    for (var k in keyValues) {
+      tmp.push(k, keyValues[k]);
+    }
+    keyValues = tmp;
+  }
+  return this.run('mset', keyValues, callback);
+};
+
+RedisHelper.prototype.get = function(key, callback) {
+  return this.run('get', key, callback);
+};
+
+RedisHelper.prototype.mget = function(keys, callback) {
+  keys = toolkit.asArray(keys);
+  if (toolkit.isNothing(keys)) return callback(null, {});
+
+  return this.run('mget', keys, callback);
+};
+
+RedisHelper.prototype.getset = function(key, value, callback) {
+  if (this.isDryRun) {
+    return this.run('get', key, callback);
+  } else {
+    return this.run('getset', key, value, callback);
+  }
+};
+
+RedisHelper.prototype.incr = function(key, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  return this.run('incr', key, callback);
+};
+
+RedisHelper.prototype.incrby = function(key, step, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  if ('undefined' === typeof step) step = 1;
+  return this.run('incrby', key, step, callback);
+};
+
+// Hash
+RedisHelper.prototype.hkeys = function(key, pattern, callback) {
+  var self = this;
+
+  var foundKeys = [];
+
+  var ITER_LIMIT = 1000;
+  var nextCursor  = 0;
+  async.doUntil(function(untilCallback) {
+    self.run('hscan', key, nextCursor, 'MATCH', pattern, 'COUNT', ITER_LIMIT, function(err, dbRes) {
       if (err) return untilCallback(err);
 
       nextCursor = dbRes[0];
@@ -225,27 +403,229 @@ RedisHelper.prototype.keys = function(pattern, limitKeys, callback) {
     });
 
   }, function() {
-    return parseInt(nextCursor) === 0 || (limitKeys && foundKeys.length >= limitKeys);
+    return parseInt(nextCursor) === 0;
 
   }, function(err) {
     if (err) return callback(err);
 
     foundKeys = toolkit.noDuplication(foundKeys);
 
-    if (limitKeys) {
-      foundKeys = foundKeys.slice(0, limitKeys);
-    }
-
     return callback(null, foundKeys);
   });
 };
 
-RedisHelper.prototype.exists = function(key, callback) {
-  return this.run('exists', key, callback);
+RedisHelper.prototype.hset = function(key, field, value, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  return this.run('hset', key, field, value, callback);
 };
 
-RedisHelper.prototype.get = function(key, callback) {
-  return this.run('get', key, callback);
+RedisHelper.prototype.hmset = function(key, fieldValues, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  if (toolkit.isNothing(fieldValues)) return callback(null, 0);
+  return this.run('hmset', key, obj, callback);
+};
+
+RedisHelper.prototype.hsetnx = function(key, field, value, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  return this.run('hsetnx', key, field, value, callback);
+};
+
+RedisHelper.prototype.hget = function(key, field, callback) {
+  return this.run('hget', key, field, callback);
+};
+
+RedisHelper.prototype.hmget = function(key, fields, callback) {
+  fields = toolkit.asArray(fields);
+  if (toolkit.isNothing(fields)) return callback(null, {});
+
+  return this.run('hmget', key, fields, function(err, cacheRes) {
+    if (err) return callback(err);
+
+    var res = {};
+    for (var i = 0; i < fields.length; i++) {
+      var k = fields[i];
+      var v = cacheRes[i];
+      res[k] = v;
+    }
+
+    return callback(null, res);
+  });
+};
+
+RedisHelper.prototype.hgetall = function(key, callback) {
+  return this.run('hgetall', key, callback);
+};
+
+RedisHelper.prototype.hincr = function(key, field, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  return this.run('hincrby', key, field, 1, callback);
+};
+
+RedisHelper.prototype.hincrby = function(key, field, step, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  if ('undefined' === typeof step) step = 1;
+  return this.run('hincrby', key, field, step, callback);
+};
+
+RedisHelper.prototype.hdel = function(key, field, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  var fields = toolkit.asArray(field);
+  if (toolkit.isNothing(fields)) return callback(null, 0);
+  return this.run('hdel', key, fields, callback);
+};
+
+// List
+RedisHelper.prototype.lpush =
+RedisHelper.prototype.push = function(key, value, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  var values = toolkit.asArray(value);
+  if (toolkit.isNothing(values)) return callback(null, 0);
+
+  return this.run('lpush', key, value, callback);
+};
+
+RedisHelper.prototype.rpush = function(key, value, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  var values = toolkit.asArray(value);
+  if (toolkit.isNothing(values)) return callback(null, 0);
+
+  return this.run('rpush', key, value, callback);
+};
+
+RedisHelper.prototype.lpop = function(key, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  return this.run('lpop', key, callback);
+};
+
+RedisHelper.prototype.rpop =
+RedisHelper.prototype.pop = function(key, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  return this.run('rpop', key, callback);
+};
+
+RedisHelper.prototype.rpoplpush = function(key, destKey, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  return this.run('rpoplpush', key, destKey, callback);
+};
+
+RedisHelper.prototype.llen = function(key, callback) {
+  return this.run('llen', key, callback);
+};
+
+RedisHelper.prototype.lrange = function(key, start, stop, callback) {
+  return this.run('lrange', key, start, stop, callback);
+};
+
+RedisHelper.prototype.ltrim = function(key, start, stop, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  return this.run('ltrim', key, start, stop, callback);
+};
+
+// Set
+RedisHelper.prototype.sadd = function(key, value, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  var values = toolkit.asArray(value);
+  if (toolkit.isNothing(values)) return callback(null, 0);
+
+  return this.run('sadd', key, value, callback);
+};
+
+RedisHelper.prototype.scard = function(key, callback) {
+  return this.run('scard', key, callback);
+};
+
+RedisHelper.prototype.smembers = function(key, callback) {
+  return this.run('smembers', key, callback);
+};
+
+RedisHelper.prototype.sismember = function(key, value, callback) {
+  return this.run('sismember', key, value, callback);
+};
+
+// ZSet
+RedisHelper.prototype.zadd = function(key, memberScores, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  if (!Array.isArray(memberScores)) {
+    var tmp = []
+    for (var k in memberScores) {
+      tmp.push(memberScores[k], k);
+    }
+    memberScores = tmp;
+  }
+  return this.run('zadd', key, memberScores, callback);
+};
+
+RedisHelper.prototype.zrem = function(key, member, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  var members = toolkit.asArray(member);
+  if (toolkit.isNothing(members)) return callback(null, 0);
+
+  return this.run('zrem', key, members, callback);
+};
+
+RedisHelper.prototype.zcard = function(key, callback) {
+  return this.run('zcard', key, callback);
+};
+
+RedisHelper.prototype.zrange = function(key, start, stop, withScores, callback) {
+  if ('function' === typeof withScores && !callback) {
+    callback   = withScores;
+    withScores = false;
+  }
+
+  if (toolkit.isNothing(start)) start = 0;
+  if (toolkit.isNothing(stop))  stop  = -1;
+
+  var args = [ start, stop ];
+  if (withScores) args.push('WITHSCORES');
+
+  return this.run('zrange', key, args, callback);
+};
+
+// Pub / Sub
+/**
+ * Publish to topic
+ *
+ * @param  {String}        topic
+ * @param  {String|buffer} message
+ * @param  {Object}        options *No options for Redis.pub*
+ * @param  {Function}      callback
+ * @return {undefined}
+ */
+RedisHelper.prototype.publish
+RedisHelper.prototype.pub = function(topic, message, options, callback) {
+  var self = this;
+
+  options = options || {};
+
+  if (!this.skipLog) {
+    this.logger.debug('[REDIS] Pub -> `{0}`', topic);
+  }
+
+  return this.client.publish(topic, message, callback);
+};
+
+// Extend
+RedisHelper.prototype.setexnx = function(key, maxAge, value, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  if (maxAge <= 0) maxAge = 1;
+  return this.run('set', key, value, 'EX', maxAge, 'NX', callback);
 };
 
 RedisHelper.prototype.getWithTTL = function(key, callback) {
@@ -288,234 +668,6 @@ RedisHelper.prototype.getWithTTL = function(key, callback) {
   });
 };
 
-RedisHelper.prototype.getset = function(key, value, callback) {
-  if (this.isDryRun) {
-    return this.run('get', key, callback);
-  } else {
-    return this.run('getset', key, value, callback);
-  }
-};
-
-RedisHelper.prototype.set = function(key, value, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('set', key, value, callback);
-};
-
-RedisHelper.prototype.setnx = function(key, value, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('setnx', key, value, callback);
-};
-
-RedisHelper.prototype.setex = function(key, maxAge, value, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  if (maxAge <= 0) maxAge = 1;
-  return this.run('setex', key, maxAge, value, callback);
-};
-
-RedisHelper.prototype.setexnx = function(key, maxAge, value, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  if (maxAge <= 0) maxAge = 1;
-  return this.run('set', key, value, 'EX', maxAge, 'NX', callback);
-};
-
-RedisHelper.prototype.mget = function(keys, callback) {
-  return this.run('mget', keys, callback);
-};
-
-RedisHelper.prototype.mset = function(keyValues, callback) {
-  if (!Array.isArray(keyValues)) {
-    var tmp = []
-    for (var k in keyValues) {
-      tmp.push(k, keyValues[k]);
-    }
-    keyValues = tmp;
-  }
-  return this.run('mset', keyValues, callback);
-};
-
-RedisHelper.prototype.incr = function(key, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('incr', key, callback);
-};
-
-RedisHelper.prototype.incrby = function(key, increment, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('incrby', key, increment, callback);
-};
-
-RedisHelper.prototype.delete = RedisHelper.prototype.del = function(keys, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('del', keys, callback);
-};
-
-RedisHelper.prototype.expire = function(key, expires, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  if (expires <= 0) expires = 1;
-  return this.run('expire', key, expires, callback);
-};
-
-RedisHelper.prototype.expireat = function(key, timestamp, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('expireat', key, timestamp, callback);
-};
-
-RedisHelper.prototype.hkeys = function(key, pattern, callback) {
-  var self = this;
-
-  var foundKeys = [];
-
-  var COUNT_LIMIT = 1000;
-  var nextCursor  = 0;
-  async.doUntil(function(untilCallback) {
-    self.run('hscan', key, nextCursor, 'MATCH', pattern, 'COUNT', COUNT_LIMIT, function(err, dbRes) {
-      if (err) return untilCallback(err);
-
-      nextCursor = dbRes[0];
-
-      var keys = dbRes[1];
-      if (Array.isArray(keys) && keys.length > 0) {
-        foundKeys = foundKeys.concat(keys);
-      }
-
-      return untilCallback();
-    });
-
-  }, function() {
-    return parseInt(nextCursor) === 0;
-
-  }, function(err) {
-    if (err) return callback(err);
-
-    foundKeys = toolkit.noDuplication(foundKeys);
-
-    return callback(null, foundKeys);
-  });
-};
-
-RedisHelper.prototype.hget = function(key, field, callback) {
-  return this.run('hget', key, field, callback);
-};
-
-RedisHelper.prototype.hmget = function(key, fields, callback) {
-  fields = toolkit.asArray(fields);
-
-  if (toolkit.isNothing(fields)) return callback(null, {});
-
-  return this.run('hmget', key, fields, function(err, cacheRes) {
-    if (err) return callback(err);
-
-    var res = {};
-    for (var i = 0; i < fields.length; i++) {
-      var k = fields[i];
-      var v = cacheRes[i];
-      res[k] = v;
-    }
-
-    return callback(null, res);
-  });
-};
-
-RedisHelper.prototype.hgetall = function(key, callback) {
-  return this.run('hgetall', key, callback);
-};
-
-RedisHelper.prototype.hset = function(key, field, value, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('hset', key, field, value, callback);
-};
-
-RedisHelper.prototype.hsetnx = function(key, field, value, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('hsetnx', key, field, value, callback);
-};
-
-RedisHelper.prototype.hmset = function(key, obj, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('hmset', key, obj, callback);
-};
-
-RedisHelper.prototype.hincr = function(key, field, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('hincrby', key, field, 1, callback);
-};
-
-RedisHelper.prototype.hincrby = function(key, field, increment, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('hincrby', key, field, increment, callback);
-};
-
-RedisHelper.prototype.hdel = function(key, fields, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('hdel', key, fields, callback);
-};
-
-RedisHelper.prototype.lpush = function(key, value, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('lpush', key, value, callback);
-};
-
-RedisHelper.prototype.rpush = function(key, value, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('rpush', key, value, callback);
-};
-
-RedisHelper.prototype.lpop = function(key, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('lpop', key, callback);
-};
-
-RedisHelper.prototype.rpop = function(key, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('rpop', key, callback);
-};
-
-/* lpush 别名 */
-RedisHelper.prototype.push = function(key, value, callback) {
-  return this.lpush(key, value, callback);
-};
-/* rpop 别名 */
-RedisHelper.prototype.pop = function(key, callback) {
-  return this.rpop(key, callback);
-};
-
-RedisHelper.prototype.llen = function(key, callback) {
-  return this.run('llen', key, callback);
-};
-
-RedisHelper.prototype.lrange = function(key, start, stop, callback) {
-  return this.run('lrange', key, start, stop, callback);
-};
-
-RedisHelper.prototype.lset = function(key, index, value, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('lset', key, index, value, callback);
-};
-
-RedisHelper.prototype.ltrim = function(key, start, stop, callback) {
-  if (this.isDryRun) return callback(null, 'OK');
-  return this.run('ltrim', key, start, stop, callback);
-};
-
-RedisHelper.prototype.ttl = function(key, callback) {
-  return this.run('ttl', key, callback);
-};
-
-RedisHelper.prototype.pttl = function(key, callback) {
-  return this.run('pttl', key, callback);
-};
-
-RedisHelper.prototype.type = function(key, callback) {
-  return this.run('type', key, callback);
-};
-
-RedisHelper.prototype.dbsize = function(callback) {
-  return this.run('dbsize', callback);
-};
-
-RedisHelper.prototype.info = function(callback) {
-  return this.run('info', callback);
-};
-
 /**
  * Get keys by pattern.
  *
@@ -523,7 +675,7 @@ RedisHelper.prototype.info = function(callback) {
  * @param  {Function} callback
  * @return {undefined}
  */
-RedisHelper.prototype.getByPattern = function(pattern, callback) {
+RedisHelper.prototype.getPattern = function(pattern, callback) {
   var self = this;
 
   if (self.isDryRun) return callback();
@@ -562,7 +714,7 @@ RedisHelper.prototype.getByPattern = function(pattern, callback) {
  * @param  {Function} callback
  * @return {undefined}
  */
-RedisHelper.prototype.delByPattern = function(pattern, callback) {
+RedisHelper.prototype.deletePattern = function(pattern, callback) {
   var self = this;
 
   if (self.isDryRun) return callback();
@@ -592,7 +744,7 @@ RedisHelper.prototype.delByPattern = function(pattern, callback) {
  * @param  {Function} callback
  * @return {undefined}
  */
-RedisHelper.prototype.hgetByPattern = function(key, pattern, callback) {
+RedisHelper.prototype.hgetPattern = function(key, pattern, callback) {
   var self = this;
 
   if (self.isDryRun) return callback();
@@ -619,7 +771,7 @@ RedisHelper.prototype.hgetByPattern = function(key, pattern, callback) {
  * @param  {Function} callback
  * @return {undefined}
  */
-RedisHelper.prototype.hdelByPattern = function(key, pattern, callback) {
+RedisHelper.prototype.hdelPattern = function(key, pattern, callback) {
   var self = this;
 
   if (self.isDryRun) return callback();
@@ -641,25 +793,56 @@ RedisHelper.prototype.hdelByPattern = function(key, pattern, callback) {
   });
 };
 
-/**
- * Publish to topic
- *
- * @param  {String}        topic
- * @param  {String|buffer} message
- * @param  {Object}        options *No options for Redis.pub*
- * @param  {Function}      callback
- * @return {undefined}
- */
-RedisHelper.prototype.pub = function(topic, message, options, callback) {
+RedisHelper.prototype.pagedList = function(key, paging, callback) {
   var self = this;
 
-  options = options || {};
+  paging = paging || { pageSize: 20, pageNumber: 1 };
 
-  if (!this.skipLog) {
-    this.logger.debug('[REDIS] Pub -> `{0}`', topic);
+  var data = null;
+  var pageInfo = {
+    pagingStyle: 'normal',
+    pageSize   : paging.pageSize,
+    count      : null,
+    totalCount : null,
+    pageNumber : paging.pageNumber,
+    pageCount  : null,
+    isFirstPage: paging.pageNumber <= 1,
   }
 
-  return this.client.publish(topic, message, callback);
+  async.series([
+    // 获取总长度
+    function(asyncCallback) {
+      self.llen(key, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        var listLength = parseInt(cacheRes);
+        pageInfo.totalCount = listLength;
+        pageInfo.pageCount  = Math.ceil(listLength / paging.pageSize);
+
+        return asyncCallback();
+      });
+    },
+    // 获取数据
+    function(asyncCallback) {
+      var start = (paging.pageNumber - 1) * paging.pageSize;
+      var stop  = start + paging.pageSize - 1;
+      self.lrange(key, start, stop, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        data = cacheRes;
+        for (let i = 0; i < data.length; i++) {
+          try { data[i] = JSON.parse(data[i]); } catch(_) {}
+        }
+
+        pageInfo.count = data.length;
+
+        return asyncCallback();
+      });
+    },
+  ], function(err) {
+    if (err) return callback(err);
+    return callback(null, data, pageInfo);
+  });
 };
 
 /**
@@ -1061,7 +1244,7 @@ RedisHelper.prototype.tsGet = function(key, options, callback) {
   });
 };
 
-RedisHelper.prototype.tsGetByPattern = function(pattern, options, callback) {
+RedisHelper.prototype.tsGetPattern = function(pattern, options, callback) {
   var self = this;
 
   var tsDataMap = {};
@@ -1089,72 +1272,6 @@ RedisHelper.prototype.tsGetByPattern = function(pattern, options, callback) {
   ], function(err) {
     if (err) return asyncCallback(err);
     return callback(err, tsDataMap);
-  });
-};
-
-RedisHelper.prototype.end = function() {
-  this.logger.info(`[REDIS] End`);
-
-  if (this.client) {
-    this.client.end(true);
-  }
-  this.client = null;
-
-  if (this.subClient) {
-    this.subClient.end(true);
-  }
-  this.subClient = null;
-};
-
-RedisHelper.prototype.pagedList = function(key, paging, callback) {
-  var self = this;
-
-  paging = paging || { pageSize: 20, pageNumber: 1 };
-
-  var data = null;
-  var pageInfo = {
-    pagingStyle: 'normal',
-    pageSize   : paging.pageSize,
-    count      : null,
-    totalCount : null,
-    pageNumber : paging.pageNumber,
-    pageCount  : null,
-    isFirstPage: paging.pageNumber <= 1,
-  }
-
-  async.series([
-    // 获取总长度
-    function(asyncCallback) {
-      self.llen(key, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        var listLength = parseInt(cacheRes);
-        pageInfo.totalCount = listLength;
-        pageInfo.pageCount  = Math.ceil(listLength / paging.pageSize);
-
-        return asyncCallback();
-      });
-    },
-    // 获取数据
-    function(asyncCallback) {
-      var start = (paging.pageNumber - 1) * paging.pageSize;
-      var stop  = start + paging.pageSize - 1;
-      self.lrange(key, start, stop, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        data = cacheRes;
-        for (let i = 0; i < data.length; i++) {
-          try { data[i] = JSON.parse(data[i]); } catch(_) {}
-        }
-
-        pageInfo.count = data.length;
-
-        return asyncCallback();
-      });
-    },
-  ], function(err) {
-    if (err) return callback(err);
-    return callback(null, data, pageInfo);
   });
 };
 

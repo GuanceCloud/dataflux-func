@@ -734,7 +734,7 @@ class AutoClean(BaseInternalTask):
         self.cache_db.delete(cache_key)
 
     def clear_cache_key_pattern(self, pattern):
-        self.cache_db.del_by_pattern(pattern)
+        self.cache_db.delete_pattern(pattern)
 
     def clear_temp_file(self, folder):
         limit_timestamp = f"{arrow.get().format('YYYYMMDDHHmmss')}_"
@@ -748,47 +748,6 @@ class AutoClean(BaseInternalTask):
                 if file_name < limit_timestamp:
                     file_path = os.path.join(folder_path, file_name)
                     os.remove(file_path)
-
-    def clear_outdated_task_record_func(self):
-        # TODO 清理过时的任务记录
-        # 搜集实际存活的 Origin ID 列表
-        sql = '''
-            SELECT id FROM biz_main_connector
-            UNION
-            SELECT id FROM biz_main_sync_api
-            UNION
-            SELECT id FROM biz_main_async_api
-            UNION
-            SELECT id FROM biz_main_cron_job
-            UNION
-            SELECT 'direct' AS id
-            UNION
-            SELECT 'integration' AS id
-            '''
-        db_res = self.db.query(sql)
-        current_origin_ids = set()
-        for d in db_res:
-            current_origin_ids.add(d['id'])
-
-
-
-        # 搜集任务记录里的 Origin ID 列表
-        sql = '''
-            SELECT DISTINCT originId FROM biz_main_task_record_func
-            '''
-        db_res = self.db.query(sql)
-        task_info_origin_ids = set()
-        for d in db_res:
-            task_info_origin_ids.add(d['originId'])
-
-        # 无效的 Origin ID
-        outdated_origin_ids = task_info_origin_ids - current_origin_ids
-        if outdated_origin_ids:
-            sql = '''
-                DELETE FROM biz_main_task_record_func WHERE originId IN (?)
-                '''
-            sql_params = [ outdated_origin_ids ]
-            self.db.non_query(sql, sql_params)
 
     def clear_deprecated_data(self):
         for table in CONFIG['_DEPRECATED_TABLE_LIST']:
@@ -849,6 +808,63 @@ class AutoClean(BaseInternalTask):
                 if outdated_ids:
                     self.cache_db.hdel(cache_key, outdated_ids)
 
+    def clear_outdated_task_record_func(self):
+        # 搜集实际存活的 Origin ID
+        current_origin_ids = set()
+
+        # 直接调用
+        current_origin_ids.add('direct')
+
+        # 业务实体 ID
+        sql = '''
+            SELECT id FROM biz_main_connector
+            UNION SELECT id FROM biz_main_sync_api
+            UNION SELECT id FROM biz_main_async_api
+            UNION SELECT id FROM biz_main_cron_job
+            '''
+        db_res = self.db.query(sql)
+        for d in db_res:
+            current_origin_ids.add(d['id'])
+
+        # 集成运行
+        sql = '''
+            SELECT CONCAT('autoRun.cronJob-', id) AS originId FROM biz_main_func
+            WHERE
+                extraConfigJSON->'$.integrationConfig.cronExpr' IS NOT NULL
+
+            UNION SELECT CONCAT('autoRun.onSystemLaunch-', id) AS originId FROM biz_main_func
+            WHERE
+                extraConfigJSON->'$.integrationConfig.onSystemLaunch' = TRUE
+
+            UNION SELECT CONCAT('autoRun.onScriptPublish-', id) AS originId FROM biz_main_func
+            WHERE
+                extraConfigJSON->'$.integrationConfig.onScriptPublish' = TRUE
+            '''
+        db_res = self.db.query(sql)
+        for d in db_res:
+            current_origin_ids.add(d['id'])
+
+        # 搜集任务记录里的 Origin ID 列表
+        sql = '''
+            SELECT DISTINCT originId FROM biz_main_task_record_func
+            '''
+        db_res = self.db.query(sql)
+        task_info_origin_ids = set()
+        for d in db_res:
+            task_info_origin_ids.add(d['originId'])
+
+        print('current_origin_ids', current_origin_ids)
+        print('task_info_origin_ids', task_info_origin_ids)
+        # 无效的 Origin ID
+        outdated_origin_ids = task_info_origin_ids - current_origin_ids
+        print('outdated_origin_ids', outdated_origin_ids)
+        if outdated_origin_ids:
+            sql = '''
+                DELETE FROM biz_main_task_record_func WHERE originId IN (?)
+                '''
+            sql_params = [ outdated_origin_ids ]
+            self.db.non_query(sql, sql_params)
+
     def run(self, **kwargs):
         # 上锁
         self.lock()
@@ -879,6 +895,9 @@ class AutoClean(BaseInternalTask):
 
         # 清理已过时的最近触发记录
         self.safe_call(self.clear_outdated_recent_triggered_data)
+
+        # 清理已过时的函数任务记录
+        self.safe_call(self.clear_outdated_task_record_func)
 
 class AutoBackupDB(BaseInternalTask):
     name = 'Internal.AutoBackupDB'

@@ -141,6 +141,24 @@ class RedisHelper(object):
         finally:
             self.client = None
 
+    def _convert_result(self, result):
+        if isinstance(result, bytes):
+            return six.ensure_str(result)
+
+        elif isinstance(result, (list, tuple, set)):
+            return list(map(lambda x: self._convert_result(x), result))
+
+        elif isinstance(result, dict):
+            return dict([ (self._convert_result(k), self._convert_result(v)) for k, v in result.items() ])
+        else:
+            return result
+
+    def _parse_ts_point(self, point):
+        timestamp, value = six.ensure_str(point).split(',', 1)
+        timestamp = int(timestamp.split('.')[0])
+        value     = toolkit.json_loads(value)
+        return [timestamp, value]
+
     def check(self):
         try:
             dt = toolkit.DiffTimer()
@@ -155,49 +173,20 @@ class RedisHelper(object):
 
             raise
 
-    def query(self, *args, **options):
-        command      = args[0]
-        command_args = args[1:]
-
-        key = ''
-        if len(command_args) > 1:
-            key = command_args[0] + ' ...'
-        elif len(command_args) > 0:
-            key = command_args[0]
-
-
-        options_dump = ''
-        if options:
-            options_dump = 'options=' + toolkit.json_dumps(options)
-
-        # Ensure one-line
-        key_dump      = key.replace('\n', ' ').strip()
-        ooptions_dump = ooptions_dump.replace('\n', ' ').strip()
-
-        try:
-            dt = toolkit.DiffTimer()
-            result = self.client.execute_command(*args, **options)
-
-            if not self.skip_log:
-                self.logger.debug(f"[REDIS] Query `{command.upper()} {key_dump} {ooptions_dump}` (Cost: {dt.tick()} ms)")
-
-            return result
-
-        except Exception as e:
-            self.logger.error(f"[REDIS] Query `{command.upper()} {key_dump} {ooptions_dump}` (Cost: {dt.tick()} ms)")
-            raise
+    def query(self, *args, **kwargs):
+        return self.run(*args, **kwargs)
 
     def run(self, *args, **kwargs):
         command      = args[0]
         command_args = args[1:]
 
-        key = ''
+        key_dump = ''
         if len(command_args) > 0:
-            key = command_args[0]
-            if isinstance(key, (list, tuple)):
-                key = ', '.join([str(k) for k in key])
-            elif isinstance(key, dict):
-                key = ', '.join(key.keys())
+            key_dump = command_args[0]
+            if isinstance(key_dump, (list, tuple)):
+                key_dump = ', '.join([str(k) for k in key_dump])
+            elif isinstance(key_dump, dict):
+                key_dump = ', '.join(key_dump.keys())
 
         args_kwargs_dump = ' '.join([
             ' '.join([ str(x) for x in command_args[1:]]),
@@ -207,7 +196,7 @@ class RedisHelper(object):
         args_kwargs_dump = toolkit.limit_text(args_kwargs_dump, max_length=100)
 
         # Ensure one-line
-        key_dump         = key.replace('\n', ' ').strip()
+        key_dump         = key_dump.replace('\n', ' ').strip()
         args_kwargs_dump = args_kwargs_dump.replace('\n', ' ').strip()
 
         try:
@@ -223,86 +212,43 @@ class RedisHelper(object):
             self.logger.error(f"[REDIS] Run `{command.upper()} {key_dump} {args_kwargs_dump}` (Cost: {dt.tick()} ms)")
             raise
 
-    def publish(self, topic, message):
-        return self.run('publish', topic, message)
+    # DB
+    def dbsize(self):
+        return self.run('dbsize')
 
-    def keys(self, pattern='*'):
-        found_keys = []
+    def info(self):
+        return self.run('info')
 
-        COUNT_LIMIT = 1000
+    # Generic
+    def type(self, key):
+        data_type = self._convert_result(self.run('type', key))
+        if data_type == 'none':
+            data_type = None
+
+        return data_type
+
+    def keys(self, pattern='*', limit=None):
+        found_keys = set()
+
+        ITER_LIMIT = 1000
         next_cursor = 0
         while True:
-            next_cursor, keys = self.run('scan', cursor=next_cursor, match=pattern, count=COUNT_LIMIT)
+            next_cursor, keys = self.run('scan', cursor=next_cursor, match=pattern, count=ITER_LIMIT)
             if isinstance(keys, list) and len(keys) > 0:
                 for k in keys:
-                    found_keys.append(six.ensure_str(k))
+                    found_keys.add(self._convert_result(k))
+
+            if limit and len(found_keys) > limit:
+                return list(found_keys)[0:limit]
 
             if next_cursor == 0:
                 break
 
-        found_keys = list(set(found_keys))
+        found_keys = list(found_keys)
         return found_keys
 
     def exists(self, key):
-        return self.run('exists', key)
-
-    def get(self, key):
-        return self.run('get', key)
-
-    def get_with_ttl(self, key):
-        result = {
-            'value': None,
-            'ttl'  : None,
-        }
-
-        value = self.run('get', key)
-        if not value:
-            return result
-
-        try:
-            result['value'] = toolkit.json_loads(value)
-        except Exception as e:
-            pass
-
-        result['ttl'] = self.run('ttl', key)
-        return result
-
-    def getset(self, key, value):
-        return self.run('getset', key, value)
-
-    def set(self, key, value):
-        return self.run('set', key, value)
-
-    def setnx(self, key, value):
-        return self.run('setnx', key, value)
-
-    def setex(self, key, max_age, value):
-        if max_age <= 0:
-            max_age = 1;
-        return self.run('setex', key, max_age, value)
-
-    def setexnx(self, key, max_age, value):
-        if max_age <= 0:
-            max_age = 1;
-        return self.run('set', key, value, ex=max_age, nx=True)
-
-    def mget(self, keys, *args):
-        return self.run('mget', keys, *args)
-
-    def mset(self, key_values, **kwargs):
-        return self.run('mset', key_values, **kwargs)
-
-    def incr(self, key):
-        return self.run('incr', key)
-
-    def incrby(self, key, increment):
-        return self.run('incrby', key, amount=increment)
-
-    def delete(self, keys):
-        keys = toolkit.as_array(keys)
-        if not keys:
-            return 0
-        return self.run('delete', *keys)
+        return bool(self.run('exists', key))
 
     def expire(self, key, expires):
         if expires <= 0:
@@ -312,181 +258,261 @@ class RedisHelper(object):
     def expireat(self, key, timestamp):
         return self.run('expireat', key, timestamp)
 
-    def hkeys(self, key, pattern='*'):
-        found_keys = []
+    def ttl(self, key):
+        return self.run('ttl', key)
 
-        COUNT_LIMIT = 1000
+    def pttl(self, key):
+        return self.run('pttl', key)
+
+    def delete(self, keys):
+        keys = toolkit.as_array(keys)
+        if not keys:
+            return 0
+        return self.run('delete', *keys)
+
+    # String
+    def set(self, key, value, expires=None, not_exists=False, exists=False, get_old_value=False):
+        return self.run('set', key, value, ex=expires, nx=not_exists, xx=exists, get=get_old_value)
+
+    def mset(self, key_values):
+        if not key_values:
+            return False
+        return self.run('mset', key_values)
+
+    def get(self, key):
+        return self._convert_result(self.run('get', key))
+
+    def mget(self, keys):
+        keys = toolkit.as_array(keys)
+        if not keys:
+            return {}
+
+        res = self._convert_result(self.run('mget', keys))
+        res = dict(zip(keys, res))
+        return res
+
+    def getset(self, key, value):
+        return self._convert_result(self.run('getset', key, value))
+
+    def incr(self, key):
+        return self.run('incr', key)
+
+    def incrby(self, key, step=1):
+        return self.run('incrby', key, step)
+
+    # Hash
+    def hkeys(self, key, pattern='*', with_values=False):
+        result = {}
+
+        ITER_LIMIT = 1000
         next_cursor = 0
         while True:
-            next_cursor, keys = self.run('hscan', key, cursor=next_cursor, match=pattern, count=COUNT_LIMIT)
-            if len(keys) > 0:
-                if isinstance(keys, dict):
-                    keys = list(keys.keys())
-
-                if isinstance(keys, list):
-                    for k in keys:
-                        found_keys.append(six.ensure_str(k))
+            next_cursor, res = self.run('hscan', key, cursor=next_cursor, match=pattern, count=ITER_LIMIT)
+            res = self._convert_result(res)
+            result.update(res)
 
             if next_cursor == 0:
                 break
 
-        found_keys = list(set(found_keys))
-        return found_keys
+        if with_values:
+            return result
+        else:
+            return list(result.keys())
+
+    def hset(self, key, field=None, value=None, field_values=None):
+        return self.run('hset', key, field, value, field_values)
+
+    def hmset(self, key, field_values):
+        if not field_values:
+            return False
+        return self.run('hmset', key, field_values)
+
+    def hsetnx(self, key, field, value):
+        return self.run('hsetnx', key, field, value)
 
     def hget(self, key, field):
-        return self.run('hget', key, field)
-
-    def hgetall(self, key):
-        res = self.run('hgetall', key)
-        res = dict([(six.ensure_str(k), six.ensure_str(v)) for k, v in res.items()])
-        return res
+        return self._convert_result(self.run('hget', key, field))
 
     def hmget(self, key, fields):
         fields = toolkit.as_array(fields)
         if not fields:
             return {}
 
-        res = self.run('hmget', key, fields)
-        res = dict(zip(fields, [None if not x else six.ensure_str(x) for x in res]))
+        res = self._convert_result(self.run('hmget', key, fields))
+        res = dict(zip(fields, res))
         return res
 
-    def hset(self, key, field, value):
-        return self.run('hset', key, field, value)
-
-    def hsetnx(self, key, field, value):
-        return self.run('hsetnx', key, field, value)
-
-    def hmset(self, key, obj):
-        return self.run('hmset', key, obj)
+    def hgetall(self, key):
+        return self._convert_result(self.run('hgetall', key))
 
     def hincr(self, key, field):
         return self.run('hincrby', key, field, amount=1)
 
-    def hincrby(self, key, field, increment):
-        return self.run('hincrby', key, field, amount=increment)
+    def hincrby(self, key, field, step=1):
+        return self.run('hincrby', key, field, step)
 
     def hdel(self, key, field):
-        field = toolkit.as_array(field)
-        if not field:
+        fields = toolkit.as_array(field)
+        if not fields:
             return 0
-        return self.run('hdel', key, *field)
+        return self.run('hdel', key, *fields)
 
-    def lpush(self, key, *value):
-        return self.run('lpush', key, *value)
+    # List
+    def lpush(self, key, value):
+        values = toolkit.as_array(value)
+        if not values:
+            return 0
+        return self.run('lpush', key, *values)
 
-    def rpush(self, key, *value):
-        return self.run('rpush', key, *value)
+    def rpush(self, key, value):
+        values = toolkit.as_array(value)
+        if not values:
+            return 0
+        return self.run('rpush', key, *values)
 
-    def lpop(self, key):
-        return self.run('lpop', key)
+    def lpop(self, key, count=None):
+        if count is None:
+            return self._convert_result(self.run('lpop', key))
+        else:
+            return self._convert_result(self.run('lpop', key, count))
+
+    def rpop(self, key, count=None):
+        if count is None:
+            return self._convert_result(self.run('rpop', key))
+        else:
+            return self._convert_result(self.run('rpop', key, count))
 
     def blpop(self, key, timeout=0):
-        return self.run('blpop', key, timeout=timeout)
-
-    def rpop(self, key):
-        return self.run('rpop', key)
+        keys = toolkit.as_array(keys)
+        if not keys:
+            return None
+        return self._convert_result(self.run('blpop', keys, timeout=timeout))
 
     def brpop(self, key, timeout=0):
-        return self.run('brpop', key, timeout=timeout)
-
-    def push(self, key, *value):
-        '''
-        lpush 别名
-        '''
-        return self.lpush(key, *value)
-
-    def pop(self, key):
-        '''
-        rpop 别名
-        '''
-        return self.rpop(key)
-
-    def bpop(self, key, timeout=0):
-        '''
-        brpop 别名
-        '''
-        return self.brpop(key, timeout)
-
-    def llen(self, key):
-        return self.run('llen', key)
-
-    def lrange(self, key, start, stop):
-        return self.run('lrange', key, start, stop)
-
-    def ltrim(self, key, start, stop):
-        return self.run('ltrim', key, start, stop)
+        keys = toolkit.as_array(key)
+        if not keys:
+            return None
+        return self._convert_result(self.run('brpop', keys, timeout=timeout))
 
     def rpoplpush(self, key, dest_key=None):
         if dest_key is None:
             dest_key = key
+        return self._convert_result(self.run('rpoplpush', key, dest_key))
 
-        return self.run('rpoplpush', key, dest_key)
+    def llen(self, key):
+        return self.run('llen', key)
 
-    def ttl(self, key):
-        return self.run('ttl', key)
+    def lrange(self, key, start=0, stop=-1):
+        return self._convert_result(self.run('lrange', key, start, stop))
 
-    def type(self, key):
-        return self.run('type', key)
+    def ltrim(self, key, start, stop):
+        return self.run('ltrim', key, start, stop)
 
-    def dbsize(self):
-        return self.run('dbsize')
+    # List 别名
+    def push(self, *args, **kwargs):
+        return self.lpush(*args, **kwargs)
 
-    def info(self):
-        return self.run('info')
+    def pop(self, *args, **kwargs):
+        return self.rpop(*args, **kwargs)
 
-    def get_by_pattern(self, pattern):
+    def bpop(self, *args, **kwargs):
+        return self.brpop(*args, **kwargs)
+
+    # Set
+    def sadd(self, key, value):
+        values = toolkit.as_array(value)
+        if not values:
+            return 0
+        return self._task.cache_db.run('sadd', key, *values)
+
+    def scard(self, key):
+        return self._task.cache_db.run('scard', key)
+
+    def smembers(self, key):
+        return self._convert_result(self._task.cache_db.run('smembers', key))
+
+    def sismember(self, key, value):
+        return self._task.cache_db.run('sismember', key, value)
+
+    # ZSet
+    def zadd(self, key, member_scores):
+        return self.run('zadd', key, member_scores)
+
+    def zrem(self, key, member):
+        members = toolkit.as_array(member)
+        if not members:
+            return 0
+        return self.run('zrem', key, *members)
+
+    def zcard(self, key):
+        return self.run('zcard', key)
+
+    def zrange(self, key, start=0, stop=-1, by_score=False, by_lex=False, reverse=False, with_scores=False):
+        return self.run('zrange', key, start, stop, byscore=by_score, bylex=by_lex, desc=reverse, withscores=with_scores)
+
+    # Pub
+    def publish(self, topic, message):
+        return self.run('publish', topic, message)
+
+    # Pub 别名
+    def pub(self, *args, **kwargs):
+        return self.publish(*args, **kwargs)
+
+    # Extend
+    def get_pattern(self, pattern):
         if not self.skip_log:
-            self.logger.debug('[REDIS] GET by pattern `{}`'.format(pattern))
+            self.logger.debug('[REDIS EXT] GET pattern `{}`'.format(pattern))
 
         keys = self.keys(pattern)
         if len(keys) <= 0:
             return None
         else:
-            result = zip(keys, self.mget(keys))
-            result = filter(lambda x: x[1] is not None, result)
-            result = dict(result)
-            return result
+            res = self._convert_result(self.client.mget(keys))
+            res = dict(zip(keys, res))
+            return res
 
-    def del_by_pattern(self, pattern):
+    def delete_pattern(self, pattern):
         if not self.skip_log:
-            self.logger.debug('[REDIS] DEL by pattern `{}`'.format(pattern))
+            self.logger.debug('[REDIS EXT] DEL pattern `{}`'.format(pattern))
 
         keys = self.keys(pattern)
         if len(keys) <= 0:
             return None
         else:
-            return self.delete(keys)
+            return self.client.delete(*keys)
 
     def lock(self, lock_key, lock_value, max_lock_time):
+        if not self.skip_log:
+            self.logger.debug('[REDIS EXT] LOCK `{}`'.format(lock_key))
+
         if max_lock_time <= 0:
             max_lock_time = 1
-        return self.run('set', lock_key, lock_value, ex=max_lock_time, nx=True)
+        return self.client.set(lock_key, lock_value, ex=max_lock_time, nx=True)
 
     def extend_lock_time(self, lock_key, lock_value, max_lock_time):
+        if not self.skip_log:
+            self.logger.debug('[REDIS EXT] LOCK extend `{}`'.format(lock_key))
+
         if max_lock_time <= 0:
             max_lock_time = 1
 
-        expected_lock_value = self.run('get', lock_key)
-        expected_lock_value = six.ensure_str(expected_lock_value)
+        expected_lock_value = self._convert_result(self.client.get(lock_key))
         if expected_lock_value != lock_value:
-            raise Exception('Not lock owner')
+            raise Exception('Not Lock owner')
 
-        self.run('expire', lock_key, max_lock_time)
+        self.client.expire(lock_key, max_lock_time)
 
     def unlock(self, lock_key, lock_value):
-        return self.run('eval', LUA_UNLOCK_SCRIPT, LUA_UNLOCK_SCRIPT_KEY_COUNT, lock_key, lock_value)
+        if not self.skip_log:
+            self.logger.debug('[REDIS EXT] UNLOCK `{}`'.format(lock_key))
 
-    def ts_parse_point(self, point):
-        timestamp, value = six.ensure_str(point).split(',', 1)
-        timestamp = int(timestamp.split('.')[0])
-        value     = toolkit.json_loads(value)
-        return [timestamp, value]
+        return self.client.eval(LUA_UNLOCK_SCRIPT, LUA_UNLOCK_SCRIPT_KEY_COUNT, lock_key, lock_value)
 
     def ts_add(self, key, value, timestamp=None, mode=None):
         mode = mode or 'update'
 
         if not self.skip_log:
-            self.logger.debug('[REDIS] TS Add `{}`'.format(key))
+            self.logger.debug('[REDIS EXT] TS Add `{}`'.format(key))
 
         if key not in self.checked_keys:
             cache_res = self.client.type(key)
@@ -503,14 +529,14 @@ class RedisHelper(object):
         if mode.lower() == 'addup':
             prev_points = self.client.zrangebyscore(key, timestamp, timestamp)
             if prev_points:
-                _, prev_value = self.ts_parse_point(prev_points[0])
+                _, prev_value = self._parse_ts_point(prev_points[0])
                 value += float(prev_value)
 
         self.client.zremrangebyscore(key, timestamp, timestamp)
 
         value = toolkit.json_dumps(value)
-        data = ','.join([str(timestamp), value])
-        self.client.zadd(key, {data: timestamp})
+        data = ','.join([ str(timestamp), value ])
+        self.client.zadd(key, { data: timestamp })
 
         self.client.expire(key, self.config['tsMaxAge'])
 
@@ -520,7 +546,7 @@ class RedisHelper(object):
 
     def ts_get(self, key, start='-inf', stop='+inf', group_time=1, agg='avg', scale=1, ndigits=2, time_unit='s', dict_output=False, limit=None, fill_zero=False):
         if not self.skip_log:
-            self.logger.debug('[REDIS] TS Get `{}`'.format(key))
+            self.logger.debug('[REDIS EXT] TS Get `{}`'.format(key))
 
         if key not in self.checked_keys:
             cache_res = self.client.type(key)
@@ -530,7 +556,7 @@ class RedisHelper(object):
             self.checked_keys.add(key)
 
         ts_data = self.client.zrangebyscore(key, start, stop)
-        ts_data = list(map(self.ts_parse_point, ts_data))
+        ts_data = list(map(self._parse_ts_point, ts_data))
 
         if ts_data and group_time and group_time >= 1:
             temp = []
@@ -594,17 +620,23 @@ class RedisHelper(object):
 
         return ts_data
 
-    def zadd(self, key, data):
-        return self.run('zadd', key, data)
-
     def zpop_below_lpush(self, key, dest_key, score):
-        return self.run('eval', LUA_ZPOP_BELOW_LPUSH_SCRIPT, LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT, key, dest_key, score)
+        if not self.skip_log:
+            self.logger.debug('[REDIS EXT] ZPOP BELOW LPUSH `{}`'.format(key))
+
+        return self._convert_result(self.client.eval(LUA_ZPOP_BELOW_LPUSH_SCRIPT, LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT, key, dest_key, score))
 
     def zpop_above_lpush(self, key, dest_key, score):
-        return self.run('eval', LUA_ZPOP_ABOVE_LPUSH_SCRIPT, LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT, key, dest_key, score)
+        if not self.skip_log:
+            self.logger.debug('[REDIS EXT] ZPOP ABOVE LPUSH `{}`'.format(key))
+
+        return self._convert_result(self.client.eval(LUA_ZPOP_ABOVE_LPUSH_SCRIPT, LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT, key, dest_key, score))
 
     def zpop_below_lpush_all(self, key, dest_key, score):
-        return self.run('eval', LUA_ZPOP_BELOW_LPUSH_ALL_SCRIPT, LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT, key, dest_key, score)
+        if not self.skip_log:
+            self.logger.debug('[REDIS EXT] ZPOP BELOW LPUSH ALL `{}`'.format(key))
+
+        return self._convert_result(self.client.eval(LUA_ZPOP_BELOW_LPUSH_ALL_SCRIPT, LUA_ZPOP_LPUSH_SCRIPT_KEY_COUNT, key, dest_key, score))
 
     def put_tasks(self, task_reqs):
         task_reqs = toolkit.as_array(task_reqs)
@@ -655,13 +687,13 @@ class RedisHelper(object):
 
         for worker_queue, elements in worker_queue_element_map.items():
             if not self.skip_log:
-                self.logger.debug(f'[REDIS] Put Task {worker_queue} <= {len(elements)} Tasks')
+                self.logger.debug(f'[REDIS EXT] PUT TASK {worker_queue} <= {len(elements)} Tasks')
 
             pipe.lpush(worker_queue, *elements)
 
         for delay_queue, elements in delay_queue_element_map.items():
             if not self.skip_log:
-                self.logger.debug(f'[REDIS] Put Task {delay_queue} <= {len(elements)} Tasks')
+                self.logger.debug(f'[REDIS EXT] PUT TASK {delay_queue} <= {len(elements)} Tasks')
 
             pipe.zadd(delay_queue, elements)
 

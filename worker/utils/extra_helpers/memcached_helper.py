@@ -54,17 +54,8 @@ class MemcachedHelper(object):
 
             raise
 
-    def query(self, *args):
-        command      = args[0]
-        command_args = args[1:]
-
-        args_dumps = ', '.join([toolkit.json_dumps(x) for x in command_args])
-        if len(args_dumps) > LIMIT_ARGS_DUMP:
-            args_dumps = args_dumps[0:LIMIT_ARGS_DUMP-3] + '...'
-
-        self.logger.debug('[MEMCACHED] Query `{}` <- `{}`'.format(command.upper(), args_dumps))
-
-        return getattr(self.client, command.lower())(*command_args)
+    def query(self, *args, **kwargs):
+        return self.run(*args, **kwargs)
 
     def run(self, *args, **kwargs):
         command      = args[0]

@@ -170,7 +170,7 @@ exports.modify = function(req, res, next) {
     // If disabled, delete xAuthToken
     if (toolkit.toBoolean(data.isDisabled)) {
       var cachePattern = auth.getCachePattern({userId: id});
-      res.locals.cacheDB.delByPattern(cachePattern);
+      res.locals.cacheDB.deletePattern(cachePattern);
     }
 
     // Call the built-in handler

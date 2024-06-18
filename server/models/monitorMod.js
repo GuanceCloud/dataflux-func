@@ -53,7 +53,7 @@ EntityModel.prototype.getSystemMetrics = function(callback) {
         var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'hostname', '*']);
         var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, scale: scale, fillZero: true };
 
-        self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
+        self.locals.cacheDB.tsGetPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
           if (err) return eachCallback(err);
 
           for (var k in tsDataMap) {
@@ -78,7 +78,7 @@ EntityModel.prototype.getSystemMetrics = function(callback) {
         var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'table', '*']);
         var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, scale: 1024 * 1024, fillZero: true };
 
-        self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
+        self.locals.cacheDB.tsGetPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
           if (err) return eachCallback(err);
 
           for (var k in tsDataMap) {
@@ -118,7 +118,7 @@ EntityModel.prototype.getSystemMetrics = function(callback) {
       var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'funcId', '*']);
       var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, agg: 'sum', fillZero: true };
 
-      self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
+      self.locals.cacheDB.tsGetPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
         if (err) return asyncCallback(err);
 
         for (var k in tsDataMap) {
@@ -138,7 +138,7 @@ EntityModel.prototype.getSystemMetrics = function(callback) {
       var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'queue', '*']);
       var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, fillZero: true };
 
-      self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
+      self.locals.cacheDB.tsGetPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
         if (err) return asyncCallback(err);
 
         for (var k in tsDataMap) {
@@ -158,7 +158,7 @@ EntityModel.prototype.getSystemMetrics = function(callback) {
       var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'queue', '*']);
       var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, fillZero: true };
 
-      self.locals.cacheDB.tsGetByPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
+      self.locals.cacheDB.tsGetPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
         if (err) return asyncCallback(err);
 
         for (var k in tsDataMap) {

@@ -216,6 +216,7 @@ export default {
           routeInfo : this.$route,
           isConflict: isConflict,
           conflictId: resData.data.conflictId,
+          user      : resData.data.user,
         });
 
         // 展示提示信息

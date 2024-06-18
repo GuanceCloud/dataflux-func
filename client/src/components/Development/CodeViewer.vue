@@ -8,8 +8,10 @@ Fold Level 2: 折叠层级 2
 Fold Level 3: 折叠层级 3
 Unfold All  : 全部展开
 
-'Script is under editing in other tab, please wait...'                : '其他标签页或窗口正在编辑此脚本，请稍后...'
-'Script is under editing in other client, please wait...'             : '其他客户端正在编辑此脚本，请稍后...'
+'Script is under editing by other user ({user}), please wait...'            : '其他用户（{user}）正在编辑此脚本，请等待...'
+'Script is under editing in your other tab, please close it and continue'   : '您的其他标签页或窗口正在编辑此脚本，请关闭后继续'
+'Script is under editing in you other browser, please close it and continue': '您的其他浏览器正在编辑此脚本，请关闭后继续'
+
 Shortcut                                                              : 快捷键
 Select Target                                                         : 选择跳转目标
 Download {type}                                                       : 下载{type}
@@ -33,8 +35,9 @@ Fold Level 2: 摺疊層級 2
 Fold Level 3: 摺疊層級 3
 Published Code: 已發佈的代碼
 Saved Draft Code: 已保存的草稿代碼
-Script is under editing in other client, please wait...: 其他客户端正在編輯此腳本，請稍後...
-Script is under editing in other tab, please wait...: 其他標籤頁或窗口正在編輯此腳本，請稍後...
+Script is under editing by other user ({user}), please wait...: 其他用户（{user}）正在編輯此腳本，請等待...
+Script is under editing in you other browser, please close it and continue: 您的其他瀏覽器正在編輯此腳本，請關閉後繼續
+Script is under editing in your other tab, please close it and continue: 您的其他標籤頁或窗口正在編輯此腳本，請關閉後繼續
 Select Target: 選擇跳轉目標
 Shortcut: 快捷鍵
 This Script is locked by other user ({user}): 當前腳本被其他用户（{user}）鎖定
@@ -51,8 +54,9 @@ Fold Level 2: 摺疊層級 2
 Fold Level 3: 摺疊層級 3
 Published Code: 已釋出的程式碼
 Saved Draft Code: 已儲存的草稿程式碼
-Script is under editing in other client, please wait...: 其他客戶端正在編輯此指令碼，請稍後...
-Script is under editing in other tab, please wait...: 其他標籤頁或視窗正在編輯此指令碼，請稍後...
+Script is under editing by other user ({user}), please wait...: 其他使用者（{user}）正在編輯此指令碼，請等待...
+Script is under editing in you other browser, please close it and continue: 您的其他瀏覽器正在編輯此指令碼，請關閉後繼續
+Script is under editing in your other tab, please close it and continue: 您的其他標籤頁或視窗正在編輯此指令碼，請關閉後繼續
 Select Target: 選擇跳轉目標
 Shortcut: 快捷鍵
 This Script is locked by other user ({user}): 當前指令碼被其他使用者（{user}）鎖定
@@ -75,10 +79,11 @@ View Mode: 檢視模式
         </div>
         <div class="code-viewer-action-breaker hidden-lg-and-up"></div>
         <div class="code-viewer-action-right">
-          <div v-show="conflictStatus" class="conflict-info">
+          <div v-if="conflictInfo" class="conflict-info">
             <i class="fa fa-fw fa-exclamation-triangle"></i>
-            <span v-if="conflictStatus === 'otherTab'">{{ $t('Script is under editing in other tab, please wait...') }}</span>
-            <span v-else-if="conflictStatus === 'otherClient'">{{ $t('Script is under editing in other client, please wait...') }}</span>
+            <span v-if="conflictInfo.user.username !== userInfo.username">{{ $t('Script is under editing by other user ({user}), please wait...', { user: conflictUser }) }}</span>
+            <span v-else-if="conflictInfo.scope === 'sameClientOtherTab'">{{ $t('Script is under editing in your other tab, please close it and continue') }}</span>
+            <span v-else-if="conflictInfo.scope === 'otherClient'">{{ $t('Script is under editing in you other browser, please close it and continue') }}</span>
           </div>
 
           <div>
@@ -113,7 +118,7 @@ View Mode: 檢視模式
             </el-select>
           </div>
 
-          <div v-if="!conflictStatus">
+          <div v-if="!conflictInfo">
             <el-tooltip placement="bottom" :enterable="false">
               <div slot="content">
                 {{ $t('Shortcut') }}{{ $t(':') }}<kbd>{{ T.getSuperKeyName() }}</kbd> + <kbd>E</kbd>
@@ -218,7 +223,7 @@ export default {
           break;
 
         case 'codeViewer.enterEditor':
-          if (!this.conflictStatus) {
+          if (!this.conflictInfo) {
             this.startEdit();
           }
           break;
@@ -436,6 +441,14 @@ export default {
     },
   },
   computed: {
+    userInfo() {
+      if (!this.$store.getters.isSignedIn) return {};
+      return {
+        username: this.$store.state.userProfile.username,
+        name    : this.$store.state.userProfile.name,
+      };
+    },
+
     codeMirrorTheme() {
       return this.T.getCodeMirrorThemeName();
     },
@@ -445,8 +458,12 @@ export default {
     scriptSetId() {
       return this.scriptId.split('__')[0];
     },
-    conflictStatus() {
-      return this.$store.getters.getConflictStatus(this.$route);
+    conflictInfo() {
+      return this.$store.getters.getConflictInfo(this.$route);
+    },
+    conflictUser() {
+      if (!this.conflictInfo) return null;
+      return this.conflictInfo.user.name || this.conflictInfo.user.username || 'Unknown';
     },
 
     lockedByUserId() {
@@ -454,9 +471,9 @@ export default {
     },
     lockedByUser() {
       if (this.data.sset_lockedByUserId) {
-        return `${this.data.sset_lockedByUserName || this.data.sset_lockedByUsername}`
+        return `${this.data.sset_lockedByUserName || this.data.sset_lockedByUsername}`;
       } else if (this.data.lockedByUserId) {
-        return `${this.data.lockedByUserName || this.data.lockedByUsername}`
+        return `${this.data.lockedByUserName || this.data.lockedByUsername}`;
       }
     },
     isLockedByMe() {

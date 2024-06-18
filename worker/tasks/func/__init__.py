@@ -525,7 +525,9 @@ class FuncStoreHelper(object):
         store_id = 'fnst-' + toolkit.get_md5(str_to_md5)
         return store_id
 
-    def set(self, key, value, scope=None, expire=None, not_exists=False):
+    def set(self, key, value, scope=None, expires=None, not_exists=False, expire=None):
+        expires = expires or expire
+
         if scope is None:
             scope = self.default_scope
 
@@ -563,7 +565,7 @@ class FuncStoreHelper(object):
                 WHERE
                     `id` = ?
                 '''
-            sql_params = [value_json, expire, store_id]
+            sql_params = [value_json, expires, store_id]
             self._task.db.query(sql, sql_params)
 
         else:
@@ -577,7 +579,7 @@ class FuncStoreHelper(object):
                     ,`scope`     = ?
                     ,`expireAt`  = UNIX_TIMESTAMP() + ?
                 '''
-            sql_params = [store_id, key, value_json, scope, expire]
+            sql_params = [store_id, key, value_json, scope, expires]
             self._task.db.query(sql, sql_params)
 
     def keys(self, pattern='*', scope=None):
@@ -663,208 +665,261 @@ class FuncStoreHelper(object):
 
 class FuncCacheHelper(object):
     def __init__(self, task, default_scope):
-        self._task = task
+        self.cache_db = task.cache_db
 
         self.default_scope = default_scope
 
     def __call__(self, *args, **kwargs):
         return self.get(*args, **kwargs)
 
-    def _get_cache_key(self, key, scope):
+    def _get_scoped_key(self, key, scope):
         if scope is None:
             scope = self.default_scope
 
-        key = toolkit.get_cache_key('funcCache', scope, tags=['key', key])
+        if isinstance(key, (list, tuple)):
+            key = list(map(lambda k: toolkit.get_cache_key('funcCache', scope, tags=['key', k]), key))
+        else:
+            key = toolkit.get_cache_key('funcCache', scope, tags=['key', key])
+
         return key
 
-    def _get_user_cache_key(self, key, scope):
+    def _get_origin_key(self, key, scope):
         if scope is None:
             scope = self.default_scope
 
-        key_template = self._get_cache_key('\n', scope)
+        key_template = self._get_scoped_key('\n', scope)
         a, b = map(len, key_template.splitlines())
         return key[a:-b]
 
-    def _convert_result(self, result):
-        if result is None:
-            return None
-        elif isinstance(result, (bool, int, float)):
-            return result
-        else:
-            return six.ensure_str(result)
-
     def run(self, cmd, key, *args, **kwargs):
         scope = kwargs.pop('scope', None)
-        key = self._get_cache_key(key, scope)
+        key = self._get_scoped_key(key, scope)
         return self._task.cache_db.run(cmd, key, *args, **kwargs)
 
+    def publish(self, topic, message, scope=None):
+        topic = self._get_scoped_key(topic, scope)
+        return self._task.cache_db.run(topic, message)
+
+    # Generic
     def type(self, key, scope=None):
-        key = self._get_cache_key(key, scope)
-        data_type = self._convert_result(self._task.cache_db.run('type', key))
-        if data_type == 'none':
-            data_type = None
-
-        return data_type
-
-    def set(self, key, value, scope=None, expire=None, not_exists=False):
-        key = self._get_cache_key(key, scope)
-        return self._task.cache_db.run('set', key, value, ex=expire, nx=not_exists)
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.type(key)
 
     def keys(self, pattern='*', scope=None):
-        pattern = self._get_cache_key(pattern, scope)
+        pattern = self._get_scoped_key(pattern, scope)
         res = self._task.cache_db.keys(pattern)
-        res = list(map(lambda x: self._get_user_cache_key(x, scope), res))
+        res = list(map(lambda x: self._get_origin_key(x, scope), res))
         return res
 
-    def get(self, key, scope=None):
-        key = self._get_cache_key(key, scope)
-        res = self._task.cache_db.run('get', key)
-        return self._convert_result(res)
+    def exists(self, key, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.exists(key)
 
-    def getset(self, key, value, scope=None):
-        key = self._get_cache_key(key, scope)
-        res = self._task.cache_db.run('getset', key, value)
-        return self._convert_result(res)
+    def expire(self, key, expires, scope=None, expire=None):
+        expires = expires or expire
 
-    def expire(self, key, expires, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self._task.cache_db.run('expire', key, expires)
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.expire(key, expires)
+
+    def expireat(self, key, timestamp, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.expire(key, timestamp)
+
+    def ttl(self, key, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.ttl(key)
+
+    def pttl(self, key, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.pttl(key)
 
     def delete(self, key, scope=None):
         keys = toolkit.as_array(key)
-        keys = list(map(lambda k: self._get_cache_key(k, scope), keys))
-        if not keys:
-            return 0
-        return self._task.cache_db.run('delete', *keys)
+        keys = self._get_scoped_key(keys, scope)
+        return self._task.cache_db.delete(keys)
+
+    # String
+    def set(self, key, value, scope=None, expires=None, not_exists=False, exists=False, expire=None):
+        expires = expires or expire
+
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.set(key, value, expires=expires, not_exists=not_exists, exists=exists)
+
+    def mset(self, key_values, scope=None):
+        key_values = dict([ (self._get_scoped_key(k), v) for k, v in key_values.items() ])
+        return self._task.cache_db.mset(key_values)
+
+    def get(self, key, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.get(key)
+
+    def mget(self, keys, scope=None):
+        keys = self._get_scoped_key(keys)
+        res = self._task.cache_db.mget(keys)
+        res = dict([ (self._get_origin_key(k), v) for k, v in res.items() ])
+        return res
+
+    def getset(self, key, value, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.getset(key, value)
 
     def incr(self, key, step=1, scope=None):
-        key = self._get_cache_key(key, scope)
-        res = self._task.cache_db.run('incr', key, amount=step)
-        return self._convert_result(res)
-
-    def hkeys(self, key, pattern='*', scope=None):
-        key = self._get_cache_key(key, scope)
-        res = self._task.cache_db.hkeys(key, pattern)
-        return res
-
-    def hget(self, key, field=None, scope=None):
-        key = self._get_cache_key(key, scope)
-        if field is None:
-            res = self._task.cache_db.run('hgetall', key)
-            res = dict([(six.ensure_str(k), six.ensure_str(v)) for k, v in res.items()])
-            return res
-
-        elif isinstance(field, (list, tuple)):
-            if not field:
-                return {}
-
-            res = self._task.cache_db.run('hmget', key, field)
-            res = dict(zip(field, [None if not x else six.ensure_str(x) for x in res]))
-            return res
-
+        key = self._get_scoped_key(key, scope)
+        if incr == 1:
+            return self._task.cache_db.incr(key)
         else:
-            res = self._task.cache_db.run('hget', key, field)
-            return self._convert_result(res)
+            return self._task.cache_db.incrby(key, step)
 
-    def hmget(self, key, fields, scope=None):
-        return self.hget(key, fields, scope)
+    def incrby(self, key, step, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.incrby(key, step)
 
-    def hgetall(self, key, scope=None):
-        return self.hget(key, scope=scope)
+    # Hash
+    def hkeys(self, key, pattern='*', scope=None, with_values=False):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.hkeys(key, pattern, with_values)
 
     def hset(self, key, field, value, scope=None, not_exists=False):
-        key = self._get_cache_key(key, scope)
-        if not_exists:
-            return self._task.cache_db.run('hsetnx', key, field, value)
+        key = self._get_scoped_key(key, scope)
+        if not not_exists:
+            return self._task.cache_db.hset(key, field, value)
         else:
-            return self._task.cache_db.run('hset', key, field, value)
+            return self._task.cache_db.hsetnx(key, field, value)
 
-    def hmset(self, key, obj, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self._task.cache_db.run('hmset', key, obj)
+    def hmset(self, key, field_values, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.hmset(key, field_values)
 
-    def hincr(self, key, field, step=1, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self._task.cache_db.run('hincrby', key, field, amount=step)
+    def hsetnx(self, key, field, value, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.hsetnx(key, field, value)
+
+    def hget(self, key, field=None, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.hget(key, field)
+
+    def hmget(self, key, fields, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.hmget(key, fields)
+
+    def hgetall(self, key, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.hgetall(key)
+
+    def hincr(self, key, field, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.hincr(key, field)
+
+    def hincrby(self, key, field, amount, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.hincrby(key, field, amount)
 
     def hdel(self, key, field, scope=None):
-        key = self._get_cache_key(key, scope)
-        field = toolkit.as_array(field)
-        if not field:
-            return 0
-        return self._task.cache_db.run('hdel', key, *field)
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.hdel(key, field)
 
+    # List
     def lpush(self, key, value, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self._task.cache_db.run('lpush', key, value)
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.lpush(key, value)
 
     def rpush(self, key, value, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self._task.cache_db.run('rpush', key, value)
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.rpush(key, value)
 
     def lpop(self, key, scope=None):
-        key = self._get_cache_key(key, scope)
-        res = self._task.cache_db.run('lpop', key)
-        return self._convert_result(res)
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.lpop(key)
 
     def rpop(self, key, scope=None):
-        key = self._get_cache_key(key, scope)
-        res = self._task.cache_db.run('rpop', key)
-        return self._convert_result(res)
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.rpop(key)
 
-    def push(self, key, value, scope=None):
-        '''
-        lpush 别名
-        '''
-        return self.lpush(key, value, scope)
+    def blpop(self, key, timeout=0, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.blpop(key, timeout)
 
-    def pop(self, key, scope=None):
-        '''
-        rpop 别名
-        '''
-        return self.rpop(key, scope)
-
-    def llen(self, key, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self._task.cache_db.run('llen', key)
-
-    def lrange(self, key, start=0, stop=-1, scope=None):
-        key = self._get_cache_key(key, scope)
-        res = self._task.cache_db.run('lrange', key, start, stop);
-        return [self._convert_result(x) for x in res]
-
-    def ltrim(self, key, start, stop, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self._task.cache_db.run('ltrim', key, start, stop);
+    def brpop(self, key, timeout=0, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.brpop(key, timeout)
 
     def rpoplpush(self, key, dest_key=None, scope=None, dest_scope=None):
-        if dest_key is None:
-            dest_key = key
-        if dest_scope is None:
-            dest_scope = scope
+        dest_key   = dest_key   or key
+        dest_scope = dest_scope or scope
 
-        key      = self._get_cache_key(key, scope)
-        dest_key = self._get_cache_key(dest_key, dest_scope)
-        res = self._task.cache_db.run('rpoplpush', key, dest_key)
-        return self._convert_result(res)
+        key      = self._get_scoped_key(key, scope)
+        dest_key = self._get_scoped_key(dest_key, dest_scope)
+        return self._task.cache_db.rpoplpush(key, dest_key)
 
+    def llen(self, key, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.llen(key)
+
+    def lrange(self, key, start=0, stop=-1, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.lrange(key, start, stop)
+
+    def ltrim(self, key, start, stop, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.ltrim(key, start, stop)
+
+    # List 别名
+    def push(self, *args, **kwargs):
+        return self.lpush(*args, **kwargs)
+
+    def pop(self, *args, **kwargs):
+        return self.rpop(*args, **kwargs)
+
+    def bpop(self, *args, **kwargs):
+        return self.brpop(*args, **kwargs)
+
+    # Set
     def sadd(self, key, value, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self._task.cache_db.run('sadd', key, value)
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.sadd(key, value)
 
     def scard(self, key, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self._task.cache_db.run('scard', key)
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.scard(key)
 
     def smembers(self, key, scope=None):
-        key = self._get_cache_key(key, scope)
-        res = self._task.cache_db.run('smembers', key)
-        res = list(map(self._convert_result, res))
-        return res
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.smembers(key)
 
     def sismember(self, key, value, scope=None):
-        key = self._get_cache_key(key, scope)
-        return self._task.cache_db.run('sismember', key, value)
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.sismember(key, value)
+
+    # ZSet
+    def zadd(self, key, member_scores, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.zadd(key, member_scores)
+
+    def zrem(self, key, member, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.zrem(key, member)
+
+    def zcard(self, key, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.zcard(key)
+
+    def zrange(self, key, start=0, stop=-1, reverse=False, with_scores=False):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.zrange(key, start, stop, reverse=reverse, with_scores=with_scores)
+
+    # Pub
+    def publish(self, topic, message, scope=None):
+        topic = self._get_scoped_key(topic, scope)
+        return self._task.cache_db.publish('publish', topic, message)
+
+    # Extend
+    def get_pattern(self, pattern, scope=None):
+        pattern = self._get_scoped_key(pattern, scope)
+        return self._task.cache_db.get_pattern(pattern)
+
+    def delete_pattern(self, pattern, scope=None):
+        pattern = self._get_scoped_key(pattern, scope)
+        return self._task.cache_db.delete_pattern(pattern)
 
 class FuncConfigHelper(object):
     MASKED_CONFIG = toolkit.json_mask(CONFIG)

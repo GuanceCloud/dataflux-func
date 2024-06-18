@@ -53,14 +53,21 @@ exports.getCachePattern = function(options) {
 /**
  * Generate an x-auth-token Object.
  *
- * @param  {String} userId
+ * @param  {Object} user
  * @return {Object}                - x-auth-token object
  */
-exports.genXAuthTokenObj = function(userId) {
-  return {
+exports.genXAuthTokenObj = function(user, isIntegratedUser) {
+  var xAuthTokenObj = {
     xatid: genId(),
-    uid  : userId,
+    uid  : user.id,
+    un   : user.username,
+    nm   : user.name,
+    em   : user.email,
   };
+
+  if (isIntegratedUser) xAuthTokenObj.ig = true;
+
+  return xAuthTokenObj;
 };
 
 /**

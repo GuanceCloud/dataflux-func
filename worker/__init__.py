@@ -81,29 +81,29 @@ def heartbeat():
             service_info['queues'] = sorted(sys.argv[1:])
 
         cache_key = toolkit.get_monitor_cache_key('heartbeat', 'serviceInfo', tags=[ 'hostname', hostname, 'pid', os.getpid() ])
-        REDIS.setex(cache_key, monitor_report_expires, toolkit.json_dumps(service_info))
+        REDIS.set(cache_key, toolkit.json_dumps(service_info), expires=monitor_report_expires)
 
         # 记录每个队列 Worker / 进程数量
         if LISTINGING_QUEUES and WORKER_ID:
             for q in LISTINGING_QUEUES:
                 cache_key = toolkit.get_monitor_cache_key('heartbeat', 'workerOnQueue', tags=[ 'workerQueue', q, 'workerId', WORKER_ID ])
-                REDIS.setex(cache_key, monitor_report_expires, CONFIG['_WORKER_CONCURRENCY'])
+                REDIS.set(cache_key, CONFIG['_WORKER_CONCURRENCY'], expires=monitor_report_expires)
 
                 # TODO 优化 Key 搜索
                 cache_pattern = toolkit.get_monitor_cache_key('heartbeat', 'workerOnQueue', tags=[ 'workerQueue', q, 'workerId', '*' ])
-                worker_process_count_map = REDIS.get_by_pattern(cache_pattern)
+                worker_process_count_map = REDIS.get_pattern(cache_pattern)
                 if not worker_process_count_map:
                     continue
 
                 cache_key = toolkit.get_monitor_cache_key('heartbeat', 'workerCountOnQueue', tags=[ 'workerQueue', q ])
                 worker_count = len(worker_process_count_map)
-                REDIS.setex(cache_key, monitor_report_expires, worker_count)
+                REDIS.set(cache_key, worker_count, expires=monitor_report_expires)
 
                 cache_key = toolkit.get_monitor_cache_key('heartbeat', 'processCountOnQueue', tags=[ 'workerQueue', q ])
                 process_count = 0
                 for count in worker_process_count_map.values():
                     process_count += int(count or 0)
-                REDIS.setex(cache_key, monitor_report_expires, process_count)
+                REDIS.set(cache_key, process_count, expires=monitor_report_expires)
 
         # 记录 CPU / 使用
         total_cpu_percent = MAIN_PROCESS.cpu_percent()

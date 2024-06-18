@@ -73,7 +73,7 @@ def consume(context):
     if not cache_res:
         return
 
-    worker_queue, task_req_dumps = map(lambda s: s.decode(), cache_res)
+    worker_queue, task_req_dumps = cache_res
     task_req = toolkit.json_loads(task_req_dumps)
 
     # 生成任务对象
