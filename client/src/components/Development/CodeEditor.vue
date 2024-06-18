@@ -4,6 +4,7 @@ Fold Level 2: 折叠层级 2
 Fold Level 3: 折叠层级 3
 Unfold All  : 全部展开
 
+'Script is under editing in other client, please wait...'                   : '其他客户端正在编辑此脚本，请等待...'
 'Script is under editing by other user ({user}), please wait...'            : '其他用户（{user}）正在编辑此脚本，请等待...'
 'Script is under editing in your other tab, please close it and continue'   : '您的其他标签页或窗口正在编辑此脚本，请关闭后继续'
 'Script is under editing in you other browser, please close it and continue': '您的其他浏览器正在编辑此脚本，请关闭后继续'
@@ -158,6 +159,7 @@ Script has been reset to previous version: 腳本已經復位到上一個版本
 Script is modified but NOT published yet: 腳本已修改但尚未發佈
 Script is published: 腳本已發佈
 Script is under editing by other user ({user}), please wait...: 其他用户（{user}）正在編輯此腳本，請等待...
+Script is under editing in other client, please wait...: 其他客户端正在編輯此腳本，請等待...
 Script is under editing in you other browser, please close it and continue: 您的其他瀏覽器正在編輯此腳本，請關閉後繼續
 Script is under editing in your other tab, please close it and continue: 您的其他標籤頁或窗口正在編輯此腳本，請關閉後繼續
 Script not published: 腳本未發佈
@@ -251,6 +253,7 @@ Script has been reset to previous version: 指令碼已經復位到上一個版�
 Script is modified but NOT published yet: 指令碼已修改但尚未釋出
 Script is published: 指令碼已釋出
 Script is under editing by other user ({user}), please wait...: 其他使用者（{user}）正在編輯此指令碼，請等待...
+Script is under editing in other client, please wait...: 其他客戶端正在編輯此指令碼，請等待...
 Script is under editing in you other browser, please close it and continue: 您的其他瀏覽器正在編輯此指令碼，請關閉後繼續
 Script is under editing in your other tab, please close it and continue: 您的其他標籤頁或視窗正在編輯此指令碼，請關閉後繼續
 Script not published: 指令碼未釋出
@@ -303,7 +306,14 @@ You can continue with other operations: 你可以繼續進行其他操作
             <div class="code-editor-action-right">
               <div v-if="conflictInfo" class="conflict-info">
                 <i class="fa fa-fw fa-exclamation-triangle"></i>
-            <span v-if="conflictInfo.user.username !== userInfo.username">{{ $t('Script is under editing by other user ({user}), please wait...', { user: conflictUser }) }}</span>
+            <span v-if="conflictInfo.user.username !== userInfo.username">
+              <template v-if="!conflictUser">
+                {{ $t('Script is under editing in other client, please wait...') }}
+              </template>
+              <template v-else>
+                {{ $t('Script is under editing by other user ({user}), please wait...', { user: conflictUser }) }}
+              </template>
+            </span>
             <span v-else-if="conflictInfo.scope === 'sameClientOtherTab'">{{ $t('Script is under editing in your other tab, please close it and continue') }}</span>
             <span v-else-if="conflictInfo.scope === 'otherClient'">{{ $t('Script is under editing in you other browser, please close it and continue') }}</span>
               </div>
