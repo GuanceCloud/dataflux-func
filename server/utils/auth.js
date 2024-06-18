@@ -9,6 +9,9 @@ var CONFIG    = require('./yamlResources').get('CONFIG');
 var PRIVILEGE = require('./yamlResources').get('PRIVILEGE');
 var toolkit   = require('./toolkit');
 
+// XAuthToken Version
+const X_AUTH_TOEKN_VERSION = 2;
+
 /**
  * Generate a new x-auth-token ID.
  *
@@ -58,6 +61,8 @@ exports.getCachePattern = function(options) {
  */
 exports.genXAuthTokenObj = function(user, isIntegratedUser) {
   var xAuthTokenObj = {
+    v: X_AUTH_TOEKN_VERSION,
+
     xatid: genId(),
     uid  : user.id,
     un   : user.username,
@@ -90,7 +95,15 @@ exports.signXAuthTokenObj = function(xAuthTokenObj) {
  * @return {Object}   obj      - x-auth-token Object
  */
 exports.verifyXAuthToken = function(xAuthToken, callback) {
-  jwt.verify(xAuthToken, CONFIG.SECRET, callback);
+  jwt.verify(xAuthToken, CONFIG.SECRET, function(err, obj) {
+    if (err) return callback(err);
+
+    if (obj.v !== X_AUTH_TOEKN_VERSION) {
+      return callback(new E('EUserAuth', 'AuthToken version upgraded, please sign in again'))
+    }
+
+    return callback(null, obj);
+  });
 };
 
 /**
