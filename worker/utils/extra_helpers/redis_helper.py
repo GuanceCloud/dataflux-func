@@ -459,11 +459,28 @@ class RedisHelper(object):
         return self.publish(*args, **kwargs)
 
     # Extend
+    def _keys(self, pattern='*'):
+        found_keys = set()
+
+        ITER_LIMIT = 1000
+        next_cursor = 0
+        while True:
+            next_cursor, keys = self.client.scan(cursor=next_cursor, match=pattern, count=ITER_LIMIT)
+            if isinstance(keys, list) and len(keys) > 0:
+                for k in keys:
+                    found_keys.add(self._convert_result(k))
+
+            if next_cursor == 0:
+                break
+
+        found_keys = list(found_keys)
+        return found_keys
+
     def get_pattern(self, pattern):
         if not self.skip_log:
             self.logger.debug('[REDIS EXT] GET pattern `{}`'.format(pattern))
 
-        keys = self.keys(pattern)
+        keys = self._keys(pattern)
         if len(keys) <= 0:
             return None
         else:
@@ -475,11 +492,29 @@ class RedisHelper(object):
         if not self.skip_log:
             self.logger.debug('[REDIS EXT] DEL pattern `{}`'.format(pattern))
 
-        keys = self.keys(pattern)
+        keys = self._keys(pattern)
         if len(keys) <= 0:
             return None
         else:
             return self.client.delete(*keys)
+
+    def hget_pattern(self, key, pattern):
+        if not self.skip_log:
+            self.logger.debug('[REDIS EXT] HGET pattern `{}` `{}`'.format(key, pattern))
+
+        result = {}
+
+        ITER_LIMIT = 1000
+        next_cursor = 0
+        while True:
+            next_cursor, res = self.client.hscan(key, cursor=next_cursor, match=pattern, count=ITER_LIMIT)
+            res = self._convert_result(res)
+            result.update(res)
+
+            if next_cursor == 0:
+                break
+
+        return result
 
     def lock(self, lock_key, lock_value, max_lock_time):
         if not self.skip_log:

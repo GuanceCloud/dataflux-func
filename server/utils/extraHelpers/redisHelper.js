@@ -384,7 +384,7 @@ RedisHelper.prototype.incrby = function(key, step, callback) {
 RedisHelper.prototype.hkeys = function(key, pattern, callback) {
   var self = this;
 
-  var foundKeys = [];
+  var result = {};
 
   var ITER_LIMIT = 1000;
   var nextCursor  = 0;
@@ -394,9 +394,13 @@ RedisHelper.prototype.hkeys = function(key, pattern, callback) {
 
       nextCursor = dbRes[0];
 
-      var keys = dbRes[1];
-      if (Array.isArray(keys) && keys.length > 0) {
-        foundKeys = foundKeys.concat(keys);
+      var keyValues = dbRes[1];
+      if (Array.isArray(keyValues) && keyValues.length > 0) {
+        for (var i = 0; i < keyValues.length; i += 2) {
+          var key   = keyValues[i];
+          var value = keyValues[i + 1];
+          result[key] = value;
+        }
       }
 
       return untilCallback();
@@ -407,10 +411,7 @@ RedisHelper.prototype.hkeys = function(key, pattern, callback) {
 
   }, function(err) {
     if (err) return callback(err);
-
-    foundKeys = toolkit.noDuplication(foundKeys);
-
-    return callback(null, foundKeys);
+    return callback(null, Object.keys(result));
   });
 };
 
@@ -621,15 +622,57 @@ RedisHelper.prototype.pub = function(topic, message, options, callback) {
 };
 
 // Extend
+RedisHelper.prototype._keys = function(pattern, callback) {
+  var self = this;
+
+  var ITER_LIMIT = 1000;
+
+  var foundKeys  = {};
+  var nextCursor = 0;
+  async.doUntil(function(untilCallback) {
+    self.client.scan(nextCursor, 'MATCH', pattern, 'COUNT', ITER_LIMIT, function(err, dbRes) {
+      if (err) return untilCallback(err);
+
+      nextCursor = dbRes[0];
+
+      var keys = dbRes[1];
+      if (Array.isArray(keys) && keys.length > 0) {
+        keys.forEach(function(k) {
+          foundKeys[k] = true;
+        });
+      }
+
+      return untilCallback();
+    });
+
+  }, function() {
+    return parseInt(nextCursor) === 0;
+
+  }, function(err) {
+    if (err) return callback(err);
+
+    foundKeys = Object.keys(foundKeys);
+    return callback(null, foundKeys);
+  });
+};
+
 RedisHelper.prototype.setexnx = function(key, maxAge, value, callback) {
   if (this.isDryRun) return callback(null, 'OK');
 
+  if (!this.skipLog) {
+    this.logger.debug('[REDIS EXT] SETEXNX `{0}`', key);
+  }
+
   if (maxAge <= 0) maxAge = 1;
-  return this.run('set', key, value, 'EX', maxAge, 'NX', callback);
+  return this.client.set(key, value, 'EX', maxAge, 'NX', callback);
 };
 
 RedisHelper.prototype.getWithTTL = function(key, callback) {
   var self = this;
+
+  if (!this.skipLog) {
+    this.logger.debug('[REDIS EXT] GET with TTL `{0}`', key);
+  }
 
   var result = {
     value: null,
@@ -637,7 +680,7 @@ RedisHelper.prototype.getWithTTL = function(key, callback) {
   }
   async.series([
     function(asyncCallback) {
-      self.run('get', key, function(err, cacheRes) {
+      self.client.get(key, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         if (!cacheRes) return callback(null, result);
@@ -654,7 +697,7 @@ RedisHelper.prototype.getWithTTL = function(key, callback) {
       });
     },
     function(asyncCallback) {
-      self.run('ttl', key, function(err, cacheRes) {
+      self.client.ttl(key, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         result.ttl = cacheRes;
@@ -681,16 +724,16 @@ RedisHelper.prototype.getPattern = function(pattern, callback) {
   if (self.isDryRun) return callback();
 
   if (!this.skipLog) {
-    this.logger.debug('[REDIS] GET by pattern `{0}`', pattern);
+    this.logger.debug('[REDIS EXT] GET by pattern `{0}`', pattern);
   }
 
-  self.keys(pattern, function(err, keys) {
+  self._keys(pattern, function(err, keys) {
     if (err) return callback && callback(err);
 
     if (keys.length <= 0) {
       return callback && callback();
     } else {
-      return self.run('MGET', keys, function(err, cacheRes) {
+      return self.client.mget(keys, function(err, cacheRes) {
         if (Array.isArray(cacheRes)) {
           var ret = {};
           for (var i = 0; i < keys.length; i++) {
@@ -720,19 +763,54 @@ RedisHelper.prototype.deletePattern = function(pattern, callback) {
   if (self.isDryRun) return callback();
 
   if (!this.skipLog) {
-    this.logger.debug('[REDIS] DEL by pattern `{0}`', pattern);
+    this.logger.debug('[REDIS EXT] DEL by pattern `{0}`', pattern);
   }
 
-  self.keys(pattern, function(err, keys) {
+  self._keys(pattern, function(err, keys) {
     if (err) return callback && callback(err);
 
     if (keys.length <= 0) {
       return callback && callback();
     } else {
-      self.del(keys, function(err, count) {
+      self.client.del(keys, function(err, count) {
         return callback && callback(err, count, keys);
       });
     }
+  });
+};
+
+RedisHelper.prototype._hkeys = function(key, pattern, callback) {
+  var self = this;
+
+  var result = {};
+
+  var ITER_LIMIT = 1000;
+  var nextCursor  = 0;
+  async.doUntil(function(untilCallback) {
+    self.client.hscan(key, nextCursor, 'MATCH', pattern, 'COUNT', ITER_LIMIT, function(err, dbRes) {
+      if (err) return untilCallback(err);
+
+      nextCursor = dbRes[0];
+
+      var keyValues = dbRes[1];
+      if (Array.isArray(keyValues) && keyValues.length > 0) {
+        for (var i = 0; i < keyValues.length; i += 2) {
+          var key   = keyValues[i];
+          var value = keyValues[i + 1];
+          result[key] = value;
+        }
+      }
+
+      return untilCallback();
+    });
+
+  }, function() {
+    return parseInt(nextCursor) === 0;
+
+  }, function(err) {
+    if (err) return callback(err);
+
+    return callback(null, Object.keys(result));
   });
 };
 
@@ -750,16 +828,27 @@ RedisHelper.prototype.hgetPattern = function(key, pattern, callback) {
   if (self.isDryRun) return callback();
 
   if (!this.skipLog) {
-    this.logger.debug('[REDIS] HGET by pattern `{0}`.`{1}`', key, pattern);
+    this.logger.debug('[REDIS EXT] HGET by pattern `{0}` `{1}`', key, pattern);
   }
 
-  self.hkeys(key, pattern, function(err, fields) {
+  self._hkeys(key, pattern, function(err, fields) {
     if (err) return callback && callback(err);
 
     if (fields.length <= 0) {
       return callback && callback();
     } else {
-      return self.run('HMGET', key, fields, callback);
+      return self.client.hmget(key, fields, function(err, cacheRes) {
+        if (err) return callback(err);
+
+        var res = {};
+        for (var i = 0; i < fields.length; i++) {
+          var k = fields[i];
+          var v = cacheRes[i];
+          res[k] = v;
+        }
+
+        return callback(null, res);
+      });
     }
   });
 };
@@ -777,16 +866,16 @@ RedisHelper.prototype.hdelPattern = function(key, pattern, callback) {
   if (self.isDryRun) return callback();
 
   if (!this.skipLog) {
-    this.logger.debug('[REDIS] HDEL by pattern `{0}`.`{1}`', key, pattern);
+    this.logger.debug('[REDIS EXT] HDEL by pattern `{0}` `{1}`', key, pattern);
   }
 
-  self.hkeys(key, pattern, function(err, fields) {
+  self._hkeys(key, pattern, function(err, fields) {
     if (err) return callback && callback(err);
 
     if (fields.length <= 0) {
       return callback && callback();
     } else {
-      self.hdel(key, fields, function(err, count) {
+      self.client.hdel(key, fields, function(err, count) {
         return callback && callback(err, count, fields);
       });
     }
@@ -797,6 +886,10 @@ RedisHelper.prototype.pagedList = function(key, paging, callback) {
   var self = this;
 
   paging = paging || { pageSize: 20, pageNumber: 1 };
+
+  if (!this.skipLog) {
+    this.logger.debug('[REDIS EXT] PAGED LIST `{0}` PageNumber={1}, pageSize={2}', key, paging.pageNumber, paging.pageSize);
+  }
 
   var data = null;
   var pageInfo = {
@@ -812,7 +905,7 @@ RedisHelper.prototype.pagedList = function(key, paging, callback) {
   async.series([
     // 获取总长度
     function(asyncCallback) {
-      self.llen(key, function(err, cacheRes) {
+      self.client.llen(key, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         var listLength = parseInt(cacheRes);
@@ -826,7 +919,7 @@ RedisHelper.prototype.pagedList = function(key, paging, callback) {
     function(asyncCallback) {
       var start = (paging.pageNumber - 1) * paging.pageSize;
       var stop  = start + paging.pageSize - 1;
-      self.lrange(key, start, stop, function(err, cacheRes) {
+      self.client.lrange(key, start, stop, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         data = cacheRes;
@@ -855,7 +948,7 @@ RedisHelper.prototype.pagedList = function(key, paging, callback) {
  */
 RedisHelper.prototype.sub = function(topic, handler, callback) {
   if (!this.skipLog) {
-    this.logger.debug('[REDIS] Sub `{0}`', topic);
+    this.logger.debug('[REDIS EXT] SUB `{0}`', topic);
   }
 
   this.initSubClient();
@@ -873,7 +966,7 @@ RedisHelper.prototype.sub = function(topic, handler, callback) {
  */
 RedisHelper.prototype.unsub = function(topic, callback) {
   if (!this.skipLog) {
-    this.logger && this.logger.debug('[REDIS] Unsub `{0}`', topic);
+    this.logger && this.logger.debug('[REDIS EXT] UNSUB `{0}`', topic);
   }
 
   this.initSubClient();
@@ -891,6 +984,15 @@ RedisHelper.prototype.unsub = function(topic, callback) {
 RedisHelper.prototype.consume = function(callback) {
   for (var i = 0; i < this.subBuffer.length; i++) {
     var task = this.subBuffer.get();
+
+    if (!this.skipLog) {
+      if (task) {
+        this.logger && this.logger.debug('[REDIS EXT] CONSUME `{0}`', task.topic);
+      } else {
+        this.logger && this.logger.debug('[REDIS EXT] CONSUME nothing');
+      }
+    }
+
     if (!task) return callback();
 
     var handler = this.topicHandlerMap[task.handlerKey];
@@ -919,8 +1021,12 @@ RedisHelper.prototype.consume = function(callback) {
  * @return {undefined}
  */
 RedisHelper.prototype.lock = function(lockKey, lockValue, maxLockTime, callback) {
+  if (!this.skipLog) {
+    this.logger && this.logger.debug('[REDIS EXT] LOCK `{0}`', lockKey);
+  }
+
   if (maxLockTime <= 0) maxLockTime = 1;
-  return this.run('SET', lockKey, lockValue, 'EX', maxLockTime, 'NX', callback);
+  return this.client.set(lockKey, lockValue, 'EX', maxLockTime, 'NX', callback);
 };
 
 /**
@@ -935,6 +1041,10 @@ RedisHelper.prototype.lock = function(lockKey, lockValue, maxLockTime, callback)
 RedisHelper.prototype.lockWait = function(lockKey, lockValue, maxLockTime, maxWaitTime, callback) {
   var self = this;
 
+  if (!this.skipLog) {
+    this.logger && this.logger.debug('[REDIS EXT] LOCK wait `{0}`', lockKey);
+  }
+
   if (maxLockTime <= 0) maxLockTime = 1;
   if (maxWaitTime <= 0) maxWaitTime = 1;
 
@@ -942,7 +1052,7 @@ RedisHelper.prototype.lockWait = function(lockKey, lockValue, maxLockTime, maxWa
   var times    = Math.ceil(maxWaitTime * 1000 / interval);
 
   async.retry({ times: times, interval: interval }, function(asyncCallback) {
-    self.run('SET', lockKey, lockValue, 'EX', maxLockTime, 'NX', function(err, cacheRes) {
+    self.client.set(lockKey, lockValue, 'EX', maxLockTime, 'NX', function(err, cacheRes) {
       if (err) return asyncCallback(err);
 
       if (!cacheRes) {
@@ -969,15 +1079,19 @@ RedisHelper.prototype.lockWait = function(lockKey, lockValue, maxLockTime, maxWa
 RedisHelper.prototype.extendLockTime = function(lockKey, lockValue, maxLockTime, callback) {
   var self = this;
 
+  if (!this.skipLog) {
+    this.logger && this.logger.debug('[REDIS EXT] LOCK extend `{0}`', lockKey);
+  }
+
   if (maxLockTime <= 0) maxLockTime = 1;
-  self.run('GET', lockKey, function(err, cacheRes) {
+  self.client.get(lockKey, function(err, cacheRes) {
     if (err) return callback && callback(err);
 
     if (cacheRes !== lockValue) {
       return callback && callback(new Error('Not lock owner'));
     }
 
-    return self.run('EXPIRE', lockKey, maxLockTime, callback);
+    return self.client.expire(lockKey, maxLockTime, callback);
   });
 };
 
@@ -990,6 +1104,10 @@ RedisHelper.prototype.extendLockTime = function(lockKey, lockValue, maxLockTime,
  * @return {undefined}
  */
 RedisHelper.prototype.unlock = function(lockKey, lockValue, callback) {
+  if (!this.skipLog) {
+    this.logger && this.logger.debug('[REDIS EXT] UNLOCK `{0}`', lockKey);
+  }
+
   return this.run('EVAL', LUA_UNLOCK_SCRIPT, LUA_UNLOCK_SCRIPT_KEY_COUNT, lockKey, lockValue, callback);
 };
 
@@ -1006,7 +1124,7 @@ RedisHelper.prototype.unlock = function(lockKey, lockValue, callback) {
  */
 RedisHelper.prototype.tsAdd = function(key, options, callback) {
   if (!this.skipLog) {
-    this.logger.debug('[REDIS] TS Add `{0}`', key);
+    this.logger.debug('[REDIS EXT] TS Add `{0}`', key);
   }
 
   var self = this;
@@ -1101,7 +1219,7 @@ RedisHelper.prototype.tsAdd = function(key, options, callback) {
  */
 RedisHelper.prototype.tsGet = function(key, options, callback) {
   if (!this.skipLog) {
-    this.logger.debug('[REDIS] TS Get `{0}`', key);
+    this.logger.debug('[REDIS EXT] TS Get `{0}`', key);
   }
 
   var self = this;
@@ -1251,7 +1369,7 @@ RedisHelper.prototype.tsGetPattern = function(pattern, options, callback) {
   var keys = null;
   async.series([
     function(asyncCallback) {
-      self.keys(pattern, function(err, cacheRes) {
+      self._keys(pattern, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         keys = cacheRes;

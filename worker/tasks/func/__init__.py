@@ -1339,7 +1339,7 @@ class BaseFuncEntityHelper(object):
         }
 
         # 进一步配置
-        # NOTE: 此处参考 mainAPICtrl.js#createFuncRunnerTaskReq(...)
+        # NOTE 此处参考 mainAPICtrl.js#createFuncRunnerTaskReq(...)
 
         # 队列 taskReq.queue
         #    优先级：直接指定 > 函数配置 > 默认值
@@ -1413,7 +1413,7 @@ class BaseFuncEntityHelper(object):
                 task_req['expires'] = self._entity_expires_default
 
         # 返回类型 taskReq.returnType
-        # NOTE: 函数内调用业务实体都是异步，不存在返回值问题
+        # NOTE 函数内调用业务实体都是异步，不存在返回值问题
 
         self._task.cache_db.put_tasks(task_req)
 

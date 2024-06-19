@@ -71,7 +71,7 @@ exports.list = function(req, res, next) {
       res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
-        var now = parseInt(Date.now() / 1000);
+        var now = toolkit.getTimestamp();
         listData.forEach(function(d) {
           d.dynamicCronExpr           = null;
           d.dynamicCronExprExpireTime = null;
@@ -98,7 +98,7 @@ exports.list = function(req, res, next) {
       res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
-        var now = parseInt(Date.now() / 1000);
+        var now = toolkit.getTimestamp();
         listData.forEach(function(d) {
           d.isPaused        = false;
           d.pauseExpireTime = null;

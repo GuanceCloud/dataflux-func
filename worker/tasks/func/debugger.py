@@ -70,7 +70,7 @@ class FuncDebugger(FuncBaseTask):
             response_control = None
 
             if self.func_name and func_resp:
-                # NOTE: `func_debugger`对应前端只使用 repr 结果
+                # NOTE func_debugger 对应前端只使用 repr 结果
                 return_value = pprint.saferepr(func_resp.data)
 
                 # 响应控制

@@ -58,15 +58,22 @@ module.exports = function(app, server) {
         function(asyncCallback) {
           if (!xAuthTokenObj) return asyncCallback();
 
-          var cacheKey = auth.getCacheKey(xAuthTokenObj);
-          app.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+          var cacheKey   = auth.getCacheKey();
+          var cacheField = auth.getCacheField(xAuthTokenObj);
+          app.locals.cacheDB.hget(cacheKey, cacheField, function(err, cacheRes) {
             if (err) {
               return asyncCallback(new E('ESysCache', 'Read cache error').forSocketIO());
             }
 
             if (!cacheRes) {
-              // 本Auth Token 已经失效
-              return asyncCallback(new E('EAuthToken', 'Auth Token expired').forSocketIO());
+              // X Auth Token 已经失效
+              return asyncCallback(new E('EAuthToken', 'Auth Token expired (1)').forSocketIO());
+
+            } else {
+              var timestamp = parseInt(cacheRes);
+              if (timestamp + CONFIG._WEB_AUTH_EXPIRES < toolkit.getTimestamp()) {
+                return asyncCallback(new E('EAuthToken', 'Auth Token expired (2)').forSocketIO());
+              }
             }
 
             // 使用 Socket.IO 认证令牌不会触发刷新
@@ -126,24 +133,30 @@ module.exports = function(app, server) {
         function(asyncCallback) {
           if (!xAuthTokenObj) return asyncCallback();
 
-          var cacheKey = null;
           switch(xAuthTokenObj.authType) {
             case 'builtin.byXAuthToken':
-              cacheKey = auth.getCacheKey(xAuthTokenObj);
               break;
 
             default:
-              return asyncCallback(new E('EAuthToken', 'Unknown auth type', { authType: xAuthTokenObj.authType }).forSocketIO());
+              return asyncCallback(new E('EAuthToken', 'Unsupported auth type', { authType: xAuthTokenObj.authType }).forSocketIO());
           }
 
-          app.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
+          var cacheKey   = auth.getCacheKey();
+          var cacheField = auth.getCacheField(xAuthTokenObj)
+          app.locals.cacheDB.hget(cacheKey, cacheField, function(err, cacheRes) {
             if (err) {
               return asyncCallback(new E('ESysCache', 'Read cache error').forSocketIO());
             }
 
             if (!cacheRes) {
-              // 本Auth Token 已经失效
-              return asyncCallback(new E('EAuthToken', 'Auth Token expired').forSocketIO());
+              // X Auth Token 已经失效
+              return asyncCallback(new E('EAuthToken', 'Auth Token expired (1)').forSocketIO());
+
+            } else {
+              var timestamp = parseInt(cacheRes);
+              if (timestamp + CONFIG._WEB_AUTH_EXPIRES < toolkit.getTimestamp()) {
+                return asyncCallback(new E('EAuthToken', 'Auth Token expired (2)').forSocketIO());
+              }
             }
 
             return asyncCallback();
@@ -151,7 +164,6 @@ module.exports = function(app, server) {
         },
       ], function(err) {
         if (err) return next(err);
-
         return next();
       });
     });

@@ -41,7 +41,7 @@ function createMessageHandler(locals, connectorId, handlerFuncId) {
           funcCallKwargs: {
             topic  : topic.toString(),
             message: message.toString(),
-            // NOTE: 一般而言 topic 和 message 参数足矣。为减少数据传输量，暂不提供本参数
+            // NOTE 一般而言 topic 和 message 参数足矣。为减少数据传输量，暂不提供本参数
             // packet : packet,
           },
           origin  : 'connector',
@@ -239,18 +239,22 @@ exports.runListener = function runListener(app) {
 
   // 消费触发
   async.forever(function(foreverCallback) {
-    var subWorkerCount = 0;
+    var now = toolkit.getTimestamp();
 
+    var subWorkerCount = 0;
     async.series([
       // 查询当前订阅处理工作单元数量
       function(asyncCallback) {
-        var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'processCountOnQueue', [
-            'workerQueue', CONFIG._FUNC_TASK_QUEUE_SUB_HANDLER]);
+        var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'processCountOnQueue');
+        app.locals.cacheDB.hget(cacheKey, CONFIG._FUNC_TASK_QUEUE_SUB_HANDLER, function(err, cacheRes) {
+          if (err) return asyncCallback(err);
+          if (!cacheRes) return asyncCallback();
 
-        app.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
-          if (err) return timesCallback(err);
+          var cacheData = JSON.parse(cacheRes);
+          if (cacheData.timestamp + CONFIG._MONITOR_REPORT_EXPIRES > now) {
+            subWorkerCount = parseInt(cacheData.processCount || 0) || 0;
+          }
 
-          subWorkerCount = parseInt(cacheRes || 0) || 0;
           return asyncCallback();
         });
       },
@@ -260,10 +264,10 @@ exports.runListener = function runListener(app) {
 
         // 无可用工作队列 / 无订阅对象时，跳过本轮处理
         if (subWorkerCount <= 0) {
-          // app.locals.logger.debug('[SUB] No worker available, skip');
+          app.locals.logger.debug('[SUB] No worker available, skip');
           skip = true;
         } else if (toolkit.isNothing(CONNECTOR_TOPIC_FUNC_MAP)) {
-          // app.locals.logger.debug('[SUB] No topic func, skip');
+          app.locals.logger.debug('[SUB] No topic func, skip');
           skip = true;
         }
 
@@ -285,27 +289,34 @@ exports.runListener = function runListener(app) {
                 var ctfKeyObj = JSON.parse(ctfKey);
 
                 // 记录最近消费时间
-                var cacheKey = toolkit.getCacheKey('cache', 'recentSubConsumeInfo', [
+                var cacheKey = toolkit.getCacheKey('cache', 'recentSubConsumeInfo')
+                var field = toolkit.getColonTags([
                   'connectorId', ctfKeyObj.id,
                   'topic',       ctfKeyObj.topic,
-                  'status',      handleInfo.taskResp.status]);
-                var consumeInfo = JSON.stringify({
+                  'status',      handleInfo.taskResp.status,
+                ]);
+                var consumeInfo = {
                   funcId     : ctfKeyObj.funcId,
                   timestampMs: Date.now(),
                   message    : handleInfo.message,
                   taskResp   : handleInfo.taskResp,
                   error      : handleInfo.error,
-                });
-                app.locals.cacheDB.setex(cacheKey, CONFIG._SUB_RECENT_CONSUME_EXPIRE, consumeInfo);
+                };
+                app.locals.cacheDB.hset(cacheKey, field, JSON.stringify(consumeInfo));
 
-                // 记录消费速度
-                var timestamp  = parseInt(Date.now() / 1000);
-                var cacheKey   = toolkit.getCacheKey('cache', 'recentSubConsumeRate', [ 'timestamp', timestamp ]);
-                var cacheField = `${ctfKeyObj.id}/${ctfKeyObj.topic}`;
+                // 记录消费速度（10 秒聚合）
+                var timestamp = parseInt(Date.now() / 1000);
+                var alignedTimestamp = parseInt(timestamp / 10) * 10;
+
+                var cacheKey   = toolkit.getCacheKey('cache', 'recentSubConsumeRate', [ 'timestamp', alignedTimestamp ]);
+                var cacheField = toolkit.getColonTags([
+                  'connectorId', ctfKeyObj.id,
+                  'topic'      , ctfKeyObj.topic,
+                ]);
                 app.locals.cacheDB.hincr(cacheKey, cacheField, function(err) {
                   if (err) return;
 
-                  app.locals.cacheDB.expire(cacheKey, 60 + 5);
+                  app.locals.cacheDB.expire(cacheKey, 60 + 20);
                 });
               }
 

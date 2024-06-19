@@ -853,11 +853,8 @@ class AutoClean(BaseInternalTask):
         for d in db_res:
             task_info_origin_ids.add(d['originId'])
 
-        print('current_origin_ids', current_origin_ids)
-        print('task_info_origin_ids', task_info_origin_ids)
         # 无效的 Origin ID
         outdated_origin_ids = task_info_origin_ids - current_origin_ids
-        print('outdated_origin_ids', outdated_origin_ids)
         if outdated_origin_ids:
             sql = '''
                 DELETE FROM biz_main_task_record_func WHERE originId IN (?)

@@ -36,6 +36,8 @@ exports.delete = crudHandler.createDeleteHandler();
 function appendOnlineStatus(req, res, ret, hookExtra, callback) {
   if (!ret.data) return callback(null, ret);
 
+  var now = toolkit.getTimestamp();
+
   // 初始化
   ret.data.forEach(function(d) {
     d.sessions = [];
@@ -43,62 +45,57 @@ function appendOnlineStatus(req, res, ret, hookExtra, callback) {
 
   var userMap = toolkit.arrayElementMap(ret.data, 'id');
 
-  // 获取所有 Key
-  var cachePattern = auth.getCachePattern();
-  res.locals.cacheDB.keys(cachePattern, function(err, keys) {
+  // 获取所有认证令牌
+  var cacheKey          = auth.getCacheKey();
+  var cacheFieldPattern = auth.getCacheFieldPattern();
+  res.locals.cacheDB.hgetPattern(cacheKey, cacheFieldPattern, function(err, cacheRes) {
     if (err) return asyncCallback();
 
-    // 获取所有 TTL
-    async.each(keys, function(key, eachCallback) {
-      var parsedKey = toolkit.parseCacheKey(key);
+    for (var field in cacheRes) {
+      var timestamp  = parseInt(cacheRes[field]);
+      var parsedTags = toolkit.parseColonTags(field);
 
-      var user = userMap[parsedKey.tags.userId];
-      if (!user) return eachCallback();
+      var user = userMap[parsedTags.userId];
+      if (!user) continue;
 
-      res.locals.cacheDB.pttl(key, function(err, ttlMs) {
-        if (!err) {
-          var idleMs = CONFIG._WEB_AUTH_EXPIRES * 1000 - ttlMs;
-          user.sessions.push({
-            ttlMs           : ttlMs,
-            idleMs          : idleMs,
-            lastAccessTime: new Date(Date.now() - idleMs),
-          });
-        }
-        return eachCallback();
+      var idle = Math.max(0, now - timestamp);
+      user.sessions.push({
+        idle          : idle,
+        ttl           : Math.max(0, CONFIG._WEB_AUTH_EXPIRES - idle),
+        lastAccessTime: timestamp,
+      });
+    }
+
+    // Session 排序
+    ret.data.forEach(function(d, index) {
+      d.sessions.sort(function(a, b) {
+        if (a.lastAccessTime > b.lastAccessTime) return -1;
+        else if (a.lastAccessTime < b.lastAccessTime) return 1;
+        else return 0;
       });
 
-    }, function() {
-      // Session 排序
-      ret.data.forEach(function(d, index) {
-        d.sessions.sort(function(a, b) {
-          if (a.ttlMs > b.ttlMs) return -1;
-          else if (a.ttlMs < b.ttlMs) return 1;
-          else return 0;
-        });
-
-        // 原始排序标记
-        d._index = index;
-      });
-
-      // 用户排序
-      ret.data.sort(function(a, b) {
-        if (a.sessions.length > 0 && b.sessions.length <= 0) return -1;
-        else if (a.sessions.length <= 0 && b.sessions.length > 0) return 1;
-        else if (a.sessions.length <= 0 && b.sessions.length <= 0) return a._index - b._index;
-        else {
-          if (a.sessions[0].ttlMs > b.sessions[0].ttlMs) return -1;
-          else if (a.sessions[0].ttlMs < b.sessions[0].ttlMs) return 1;
-          else return a._index - b._index;
-        }
-      });
-
-      // 清理原始排序标记
-      ret.data.forEach(function(d) {
-        delete d._index;
-      });
-
-      return callback(null, ret);
+      // 原始排序标记
+      d._index = index;
     });
+
+    // 用户排序
+    ret.data.sort(function(a, b) {
+      if (a.sessions.length > 0 && b.sessions.length <= 0) return -1;
+      else if (a.sessions.length <= 0 && b.sessions.length > 0) return 1;
+      else if (a.sessions.length <= 0 && b.sessions.length <= 0) return a._index - b._index;
+      else {
+        if (a.sessions[0].lastAccessTime > b.sessions[0].lastAccessTime) return -1;
+        else if (a.sessions[0].lastAccessTime < b.sessions[0].lastAccessTime) return 1;
+        else return a._index - b._index;
+      }
+    });
+
+    // 清理原始排序标记
+    ret.data.forEach(function(d) {
+      delete d._index;
+    });
+
+    return callback(null, ret);
   });
 };
 
@@ -169,8 +166,9 @@ exports.modify = function(req, res, next) {
 
     // If disabled, delete xAuthToken
     if (toolkit.toBoolean(data.isDisabled)) {
-      var cachePattern = auth.getCachePattern({userId: id});
-      res.locals.cacheDB.deletePattern(cachePattern);
+      var cacheKey   = auth.getCacheKey();
+      var cacheField = auth.getCacheFieldPattern({ userId: id });
+      res.locals.cacheDB.hdelPattern(cacheKey, cacheField);
     }
 
     // Call the built-in handler

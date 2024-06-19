@@ -3239,12 +3239,12 @@ connectorAPI:
     name         : List subscription info
     name_zhCN    : 列出订阅信息
     method       : get
-    url          : /api/v1/connector-sub-info/do/list
+    url          : /api/v1/connectors/:id/sub-info/do/list
     response     : json
     requireSignIn: true
     privilege    : general_r
-    query:
-      connectorId:
+    params:
+      id:
         $desc: 连接器 ID
         $type: string
 

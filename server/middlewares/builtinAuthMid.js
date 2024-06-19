@@ -26,6 +26,8 @@ var DataFluxFunc = require('../../sdk/dataflux_func_sdk').DataFluxFunc;
 exports.byXAuthToken = function byXAuthToken(req, res, next) {
   if (res.locals.user && res.locals.user.isSignedIn) return next();
 
+  var now = toolkit.getTimestamp();
+
   // Get x-auth-token
   var xAuthToken = null;
 
@@ -58,8 +60,10 @@ exports.byXAuthToken = function byXAuthToken(req, res, next) {
   res.locals.user = auth.createUserHandler();
 
   // Check x-auth-token
-  var xAuthTokenObj      = null;
-  var xAuthTokenCacheKey = null;
+  var xAuthTokenObj = null;
+
+  var cacheKey   = auth.getCacheKey();
+  var cacheField = null;
 
   var dbUser = null;
 
@@ -73,19 +77,26 @@ exports.byXAuthToken = function byXAuthToken(req, res, next) {
         }
 
         xAuthTokenObj = obj;
+        cacheField = auth.getCacheField(xAuthTokenObj);
 
         return asyncCallback();
       });
     },
     // Check Redis
     function(asyncCallback) {
-      xAuthTokenCacheKey = auth.getCacheKey(xAuthTokenObj);
-      res.locals.cacheDB.get(xAuthTokenCacheKey, function(err, cacheRes) {
+      res.locals.cacheDB.hget(cacheKey, cacheField, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         if (!cacheRes) {
-          res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired');
+          res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired (1)');
           return asyncCallback(res.locals.reqAuthError);
+
+        } else {
+          var timestamp = parseInt(cacheRes);
+          if (timestamp + CONFIG._WEB_AUTH_EXPIRES < now) {
+            res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired (2)');
+            return asyncCallback(res.locals.reqAuthError);
+          }
         }
 
         res.locals.xAuthToken    = xAuthToken;
@@ -118,11 +129,11 @@ exports.byXAuthToken = function byXAuthToken(req, res, next) {
       if (req.signedCookies[cookieField]) {
         res.cookie(cookieField, xAuthToken, {
           signed : true,
-          expires: new Date(Date.now() + CONFIG._WEB_AUTH_EXPIRES * 1000),
+          expires: new Date((now + CONFIG._WEB_AUTH_EXPIRES) * 1000),
         });
       }
 
-      res.locals.cacheDB.expire(xAuthTokenCacheKey, CONFIG._WEB_AUTH_EXPIRES, asyncCallback);
+      res.locals.cacheDB.hset(cacheKey, cacheField, now, asyncCallback);
     },
   ], function(err) {
     if (err && res.locals.reqAuthError === err) {

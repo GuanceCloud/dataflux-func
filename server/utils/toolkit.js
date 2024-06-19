@@ -1221,6 +1221,22 @@ var genRandString = toolkit.genRandString = function genRandString(len, chars) {
   return randString;
 };
 
+var getColonTags = toolkit.getColonTags = function getColonTags(tags) {
+  return tags.join(':');
+};
+
+var parseColonTags = toolkit.parseColonTags = function parseColonTags(s) {
+  var parts = s.split(':');
+
+  var tags = {};
+  for (var i = 0; i < parts.length; i += 2) {
+    tags[parts[i]] = parts[i + 1] || null;
+  }
+
+  return tags;
+};
+
+
 /**
  * Get cache key as pattern `<topic>@<name>:<tagName1>:<tagValue1>:<tagName2>:<tagValue2>:...:`
  *
@@ -1243,7 +1259,7 @@ var _getCacheKey = toolkit._getCacheKey = function _getCacheKey(topic, name, tag
     return cacheKey;
 
   } else {
-    var cacheKey = strf('{0}@{1}:{2}:', topic, name, tags.join(':'));
+    var cacheKey = strf('{0}@{1}:{2}:', topic, name, getColonTags(tags));
     return cacheKey;
   }
 };
@@ -1261,17 +1277,13 @@ var _parseCacheKey = toolkit._parseCacheKey = function _parseCacheKey(cacheKey) 
 
   var nameRestParts = rest.replace(/:$/, '').split(':');
   var name   = nameRestParts[0];
-  var tagKVs = nameRestParts.slice(1);
+  var tagKVs = nameRestParts.slice(1).join(':');
 
   var cacheKeyInfo = {
     topic: topic,
     name : name,
-    tags : {},
+    tags : parseColonTags(tagKVs),
   };
-  for (var i = 0; i < tagKVs.length; i += 2) {
-    cacheKeyInfo.tags[tagKVs[i]] = tagKVs[i + 1] || null;
-  }
-
   return cacheKeyInfo;
 };
 

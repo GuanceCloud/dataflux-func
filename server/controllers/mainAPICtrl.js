@@ -34,6 +34,7 @@ var fileServiceMod     = require('../models/fileServiceMod');
 var userMod            = require('../models/userMod');
 
 var funcAPICtrl = require('./funcAPICtrl');
+const { cachedDataVersionTag } = require('v8');
 
 var THROTTLING_RULE_EXPIRES_MAP = {
   bySecond: 1,
@@ -953,6 +954,8 @@ function _doAPIAuth(locals, req, res, apiAuthId, realm, callback) {
 
 /* Handlers */
 exports.overview = function(req, res, next) {
+  var now = toolkit.getTimestamp();
+
   var sections = toolkit.asArray(req.query.sections);
   var sectionMap = null;
   if (toolkit.notNothing(sections)) {
@@ -993,6 +996,19 @@ exports.overview = function(req, res, next) {
     bizEntities     : [],
     latestOperations: [],
   };
+
+  if (!sectionMap || sectionMap.queues) {
+    for (var i = 0; i < CONFIG._WORKER_QUEUE_COUNT; i++) {
+      overview.queues[i] = {
+        workerCount      : 0,
+        processCount     : 0,
+        delayQueueLength : 0,
+        workerQueueLength: 0,
+        workerQueueLimit : 0,
+        workerQueueLoad  : 0,
+      }
+    }
+  }
 
   var SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET = CONST.systemSettings.SCRIPT_SET_HIDDEN_OFFICIAL_SCRIPT_MARKET;
   var SCRIPT_SET_HIDDEN_BUILTIN                = CONST.systemSettings.SCRIPT_SET_HIDDEN_BUILTIN;
@@ -1081,63 +1097,72 @@ exports.overview = function(req, res, next) {
         });
       });
     },
-    // 各队列工作单元数量、工作进程数量、队列长度
+    // 各队列工作单元数量
     function(asyncCallback) {
       if (sectionMap && !sectionMap.queues) return asyncCallback();
 
-      async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(i, timesCallback) {
-        overview.queues[i] = {
-          workerCount      : 0,
-          processCount     : 0,
-          delayQueueLength : 0,
-          workerQueueLength: 0,
-          workerQueueLimit : 0,
-          workerQueueLoad  : 0,
+      var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'workerCountOnQueue');
+      res.locals.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+        if (!cacheRes) return asyncCallback();
+
+        for (var q in cacheRes) {
+          var cacheData = JSON.parse(cacheRes[q]);
+          if (cacheData.timestamp + CONFIG._MONITOR_REPORT_EXPIRES > now) {
+            overview.queues[q].workerCount = parseInt(cacheData.workerCount || 0) || 0;
+          }
         }
 
+        return asyncCallback();
+
+      });
+    },
+    // 各队列工作进程数量
+    function(asyncCallback) {
+      if (sectionMap && !sectionMap.queues) return asyncCallback();
+
+      var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'processCountOnQueue');
+      res.locals.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+        if (!cacheRes) return asyncCallback();
+
+        for (var q in cacheRes) {
+          var cacheData = JSON.parse(cacheRes[q]);
+          if (cacheData.timestamp + CONFIG._MONITOR_REPORT_EXPIRES > now) {
+            overview.queues[q].processCount = parseInt(cacheData.processCount || 0) || 0;
+          }
+        }
+
+        return asyncCallback();
+
+      });
+    },
+    // 队列长度、延迟队列长度
+    function(asyncCallback) {
+      if (sectionMap && !sectionMap.queues) return asyncCallback();
+
+      async.timesSeries(CONFIG._WORKER_QUEUE_COUNT, function(q, timesCallback) {
         async.series([
           function(innerCallback) {
-            var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'workerCountOnQueue', [ 'workerQueue', i ]);
-            res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
-              if (err) return innerCallback(err);
-
-              overview.queues[i].workerCount = parseInt(cacheRes || 0) || 0;
-
-              return innerCallback();
-
-            }, innerCallback);
-          },
-          function(innerCallback) {
-            var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'processCountOnQueue', [ 'workerQueue', i ]);
-            res.locals.cacheDB.get(cacheKey, function(err, cacheRes) {
-              if (err) return innerCallback(err);
-
-              overview.queues[i].processCount = parseInt(cacheRes || 0) || 0;
-
-              return innerCallback();
-
-            }, innerCallback);
-          },
-          function(innerCallback) {
-            var workerQueue = toolkit.getWorkerQueue(i);
+            var workerQueue = toolkit.getWorkerQueue(q);
             res.locals.cacheDB.run('llen', workerQueue, function(err, cacheRes) {
               if (err) return innerCallback(err);
 
               var length = parseInt(cacheRes || 0) || 0;
-              overview.queues[i].workerQueueLength = length;
+              overview.queues[q].workerQueueLength = length;
 
               // 计算负载（每个进程需要处理的任务数量）
-              overview.queues[i].workerQueueLoad = parseInt(length / (overview.queues[i].processCount || 1));
+              overview.queues[q].workerQueueLoad = parseInt(length / (overview.queues[q].processCount || 1));
 
               return innerCallback();
             });
           },
           function(innerCallback) {
-            var delayQueue = toolkit.getDelayQueue(i);
+            var delayQueue = toolkit.getDelayQueue(q);
             res.locals.cacheDB.run('zcard', delayQueue, function(err, cacheRes) {
               if (err) return innerCallback(err);
 
-              overview.queues[i].delayQueueLength = parseInt(cacheRes || 0) || 0;
+              overview.queues[q].delayQueueLength = parseInt(cacheRes || 0) || 0;
 
               return innerCallback();
             });
@@ -1199,7 +1224,7 @@ exports.overview = function(req, res, next) {
           res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
             if (err) return innerCallback(err);
 
-            var now = parseInt(Date.now() / 1000);
+            var now = toolkit.getTimestamp();
             cronJobs.forEach(function(d) {
               d.dynamicCronExpr = null;
 
@@ -1224,7 +1249,7 @@ exports.overview = function(req, res, next) {
           res.locals.cacheDB.hmget(cacheKey, dataIds, function(err, cacheRes) {
             if (err) return innerCallback(err);
 
-            var now = parseInt(Date.now() / 1000);
+            var now = toolkit.getTimestamp();
             cronJobs.forEach(function(d) {
               d.isPaused = false;
 
@@ -2019,11 +2044,11 @@ exports.integratedSignIn = function(req, res, next) {
         }
         // 发行登录令牌
         var xAuthTokenObj = auth.genXAuthTokenObj(user, true);
-        xAuthToken = auth.signXAuthTokenObj(xAuthTokenObj)
+        xAuthToken = auth.signXAuthTokenObj(xAuthTokenObj);
 
-        var cacheKey     = auth.getCacheKey(xAuthTokenObj);
-        var xAuthExpires = CONFIG._WEB_AUTH_EXPIRES;
-        res.locals.cacheDB.setex(cacheKey, xAuthExpires, 'x', asyncCallback);
+        var cacheKey   = auth.getCacheKey();
+        var cacheField = auth.getCacheField(xAuthTokenObj);
+        res.locals.cacheDB.hset(cacheKey, cacheField, toolkit.getTimestamp(), asyncCallback);
       });
     }
   ], function(err) {
@@ -2039,6 +2064,8 @@ exports.integratedSignIn = function(req, res, next) {
 
 exports.integratedAuthMid = function(req, res, next) {
   if (res.locals.user && res.locals.user.isSignedIn) return next();
+
+  var now = toolkit.getTimestamp();
 
   // Get x-auth-token
   var xAuthToken = null;
@@ -2072,8 +2099,10 @@ exports.integratedAuthMid = function(req, res, next) {
   res.locals.user = auth.createUserHandler();
 
   // Check x-auth-token
-  var xAuthTokenObj      = null;
-  var xAuthTokenCacheKey = null;
+  var xAuthTokenObj = null;
+
+  var cacheKey   = auth.getCacheKey();
+  var cacheField = null;
 
   async.series([
     // Verify JWT
@@ -2089,6 +2118,8 @@ exports.integratedAuthMid = function(req, res, next) {
         /*** 非集成登录则跳过 ***/
         if (!xAuthTokenObj.ig) return next();
 
+        cacheField = auth.getCacheField(xAuthTokenObj);
+
         return asyncCallback();
       });
     },
@@ -2103,13 +2134,19 @@ exports.integratedAuthMid = function(req, res, next) {
     },
     // Check Redis
     function(asyncCallback) {
-      xAuthTokenCacheKey = auth.getCacheKey(xAuthTokenObj);
-      res.locals.cacheDB.get(xAuthTokenCacheKey, function(err, cacheRes) {
+      res.locals.cacheDB.hget(cacheKey, cacheField, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         if (!cacheRes) {
-          res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired');
+          res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired (1)');
           return asyncCallback(res.locals.reqAuthError);
+
+        } else {
+          var timestamp = parseInt(cacheRes);
+          if (timestamp + CONFIG._WEB_AUTH_EXPIRES < now) {
+            res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired (2)');
+            return asyncCallback(res.locals.reqAuthError);
+          }
         }
 
         res.locals.xAuthToken    = xAuthToken;
@@ -2120,7 +2157,7 @@ exports.integratedAuthMid = function(req, res, next) {
     },
     // Refresh x-auth-token
     function(asyncCallback) {
-      res.locals.cacheDB.expire(xAuthTokenCacheKey, CONFIG._WEB_AUTH_EXPIRES, asyncCallback);
+      res.locals.cacheDB.hset(cacheKey, cacheField, now, asyncCallback);
     },
   ], function(err) {
     if (err && res.locals.reqAuthError === err) {

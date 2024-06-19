@@ -24,15 +24,23 @@ var genId = exports.genId = function() {
 /**
  * Get the Redis key for the x-auth-token.
  *
- * @param  {Object} xAuthTokenObj - x-auth-token Object
- * @return {String}               - Cache key
+ * @return {String} - Cache key
  */
-exports.getCacheKey = function(xAuthTokenObj) {
-  var tags = [
-    'xAuthTokenId', xAuthTokenObj.xatid,
+exports.getCacheKey = function() {
+  return toolkit.getCacheKey('token', 'xAuthToken');
+};
+
+/**
+ * Get the Redis Hash field for the x-auth-token.
+ *
+ * @param  {Object} xAuthTokenObj - x-auth-token Object
+ * @return {String}               - Field
+ */
+exports.getCacheField = function(xAuthTokenObj) {
+  return toolkit.getColonTags([
     'userId'      , xAuthTokenObj.uid,
-  ];
-  return toolkit.getCacheKey('token', 'xAuthToken', tags);
+    'xAuthTokenId', xAuthTokenObj.xatid,
+  ])
 };
 
 /**
@@ -43,14 +51,12 @@ exports.getCacheKey = function(xAuthTokenObj) {
  * @param  {String} [userId='*']
  * @return {String} - Cache key pattern
  */
-exports.getCachePattern = function(options) {
-  // TODO 优化 Key 搜索
+exports.getCacheFieldPattern = function(options) {
   options = options || {};
-  var tags = [
-    'xAuthTokenId', options.xAuthTokenId || '*',
+  return toolkit.getColonTags([
     'userId'      , options.userId       || '*',
-  ];
-  return toolkit.getCacheKey('token', 'xAuthToken', tags);
+    'xAuthTokenId', options.xAuthTokenId || '*',
+  ])
 };
 
 /**

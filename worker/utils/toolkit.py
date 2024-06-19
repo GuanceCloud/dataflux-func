@@ -568,6 +568,22 @@ def gen_rand_string(length=None, chars=None):
 
     return rand_string
 
+def get_colon_tags(tags):
+    parts = [ str(tag) for tag in tags ]
+    return ':'.join(parts)
+
+def parse_colon_tags(s):
+    parts = s.split(':')
+
+    tags = {}
+    for i in range(0, len(parts), 2):
+        if i + 1 >= len(parts):
+            tags[parts[i]] = None
+        else:
+            tags[parts[i]] = parts[i + 1]
+
+    return tags
+
 def _get_cache_key(topic, name, tags=None):
     if not topic:
         e = Exception(f'Can not use a topic with `{topic}`')
@@ -582,8 +598,7 @@ def _get_cache_key(topic, name, tags=None):
         return cache_key
 
     else:
-        parts = [str(tag) for tag in tags]
-        cache_key = f"{topic}@{name}:{':'.join(parts)}:"
+        cache_key = f"{topic}@{name}:{get_colon_tags(tags)}:"
         return cache_key
 
 def _parse_cache_key(cache_key):
@@ -593,19 +608,13 @@ def _parse_cache_key(cache_key):
 
     name_rest_parts = rest.rstrip(':').split(':')
     name    = name_rest_parts[0]
-    tag_kvs = name_rest_parts[1:]
+    tag_kvs = ':'.join(name_rest_parts[1:])
 
     cache_key_info = {
         'topic': topic,
         'name' : name,
-        'tags' : {},
+        'tags' : parse_colon_tags(tag_kvs),
     }
-    for i in range(0, len(tag_kvs), 2):
-        if i + 1 >= len(tag_kvs):
-            cache_key_info['tags'][tag_kvs[i]] = None
-        else:
-            cache_key_info['tags'][tag_kvs[i]] = tag_kvs[i + 1]
-
     return cache_key_info
 
 def _get_worker_queue(name):

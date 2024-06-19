@@ -101,13 +101,13 @@ sessionCount: '{n} 個會話'
           <el-table-column :label="$t('Session')" width="350">
             <template slot-scope="scope">
               <template v-if="scope.row.sessions.length > 0">
-                <span v-if="scope.row.sessions[0].idleMs < 15 * 60 * 1000" class="text-good"><i class="fa fa-fw fa-circle"></i> {{ $t('Online') }}</span>
+                <span v-if="scope.row.sessions[0].idle < 15 * 60" class="text-good"><i class="fa fa-fw fa-circle"></i> {{ $t('Online') }}</span>
                 <span v-else class="text-watch"><i class="fa fa-fw fa-circle"></i> {{ $t('Idle') }}</span>
                 <el-tooltip v-if="scope.row.sessions.length > 1" effect="dark" placement="right">
                   <div slot="content">
                     <div v-for="s, i in scope.row.sessions">
                       {{ $t('Session') }} <code class="code-font">#{{ i + 1 }}</code>{{ $t(':')}}
-                      {{ $t('lastAccess', { t: T.fromNow(s.lastAccessTime) }) }}
+                      {{ $t('lastAccess', { t: T.fromNow(s.lastAccessTime * 1000) }) }}
                     </div>
                   </div>
                   <span class="text-info">
@@ -117,7 +117,7 @@ sessionCount: '{n} 個會話'
 
                 <br>
                 <i class="fa fa-fw fa-mouse-pointer"></i>
-                {{ $t('lastAccess', { t: T.fromNow(scope.row.sessions[0].lastAccessTime) }) }}
+                {{ $t('lastAccess', { t: T.fromNow(scope.row.sessions[0].lastAccessTime * 1000) }) }}
               </template>
               <template v-else>
                 <span class="text-info">

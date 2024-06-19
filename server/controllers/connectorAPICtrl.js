@@ -497,16 +497,18 @@ exports.test = function(req, res, next) {
 };
 
 exports.listSubInfo = function(req, res, next) {
-  var connectorId = req.query.connectorId;
+  var connectorId = req.params.id;
 
   var recentSubInfoMap = {};
 
   async.series([
-    // 查询消费速率
+    // 查询消费速率（10 秒聚合）
     function(asyncCallback) {
-      var now = parseInt(Date.now() / 1000);
-      async.times(60, function(n, timesCallback) {
-        var cacheKey = toolkit.getCacheKey('cache', 'recentSubConsumeRate', [ 'timestamp', now - (60 - n)]);
+      var now              = toolkit.getTimestamp();
+      var alignedTimestamp = parseInt(now / 10) * 10;
+      async.times(6, function(n, timesCallback) {
+        var fatchTimestamp = alignedTimestamp - (6 - n) * 10
+        var cacheKey = toolkit.getCacheKey('cache', 'recentSubConsumeRate', [ 'timestamp', fatchTimestamp]);
         res.locals.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
           if (err) return timesCallback(err);
 
@@ -522,20 +524,24 @@ exports.listSubInfo = function(req, res, next) {
     },
     // 查询最近消费信息
     function(asyncCallback) {
-      // TODO 优化 Key 搜索
-      var cachePattern = toolkit.getCacheKey('cache', 'recentSubConsumeInfo', [
-        'connectorId', connectorId || '*',
+      var cacheKey = toolkit.getCacheKey('cache', 'recentSubConsumeInfo');
+      var fieldPattern = toolkit.getColonTags([
+        'connectorId', connectorId,
         'topic',       '*',
-        'status',      '*']);
-      res.locals.cacheDB.getPattern(cachePattern, function(err, cacheRes) {
+        'status',      '*',
+      ]);
+      res.locals.cacheDB.hgetPattern(cacheKey, fieldPattern, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         if (cacheRes) {
-          for (var key in cacheRes) {
-            var consumeInfo = JSON.parse(cacheRes[key]);
+          for (var field in cacheRes) {
+            var consumeInfo = JSON.parse(cacheRes[field]);
 
-            var parsedKey = toolkit.parseCacheKey(key);
-            var ctKey     = `${parsedKey.tags.connectorId}/${parsedKey.tags.topic}`;
+            var parsedTags = toolkit.parseColonTags(field);
+            var ctKey = toolkit.getColonTags([
+              'connectorId', parsedTags.connectorId,
+              'topic',       parsedTags.topic,
+            ]);
 
             recentSubInfoMap[ctKey] = recentSubInfoMap[ctKey] || {};
             recentSubInfoMap[ctKey].lastConsumed = recentSubInfoMap[ctKey].lastConsumed || {};
@@ -554,9 +560,9 @@ exports.listSubInfo = function(req, res, next) {
     for (var ctKey in recentSubInfoMap) {
       var recentSubInfo = recentSubInfoMap[ctKey];
 
-      var ctKeyParts = ctKey.split('/');
-      recentSubInfo.connectorId = ctKeyParts.shift();
-      recentSubInfo.topic       = ctKeyParts.join('/');
+      var ctKeyTags = toolkit.parseColonTags(ctKey);
+      recentSubInfo.connectorId = ctKeyTags.connectorId;
+      recentSubInfo.topic       = ctKeyTags.topic;
 
       recentSubInfoList.push(recentSubInfo);
     }

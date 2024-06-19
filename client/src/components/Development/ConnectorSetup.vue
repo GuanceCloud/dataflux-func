@@ -567,6 +567,7 @@ messageRate: '{n} 條/分鐘'
                       <template v-for="status in C.TASK_STATUS">
                         <el-link v-if="subInfoMap[topicHandler.topic].lastConsumed[status.key]"
                           :type="status.tagType"
+                          :underline="false"
                           @click="showDetail(topicHandler.topic, subInfoMap[topicHandler.topic].lastConsumed[status.key])">
                           <i :class="status.icon"></i>
                           {{ $t('Last Consumed') }} {{ $t('(') }}{{ status.name }}{{ $t(')') }}{{ $t(':') }}
@@ -837,7 +838,9 @@ export default {
       }
       if (!hasTopicHandler) return;
 
-      let apiRes = await this.T.callAPI_get('/api/v1/connector-sub-info/do/list', { query: { connectorId: this.data.id }});
+      let apiRes = await this.T.callAPI_get('/api/v1/connectors/:id/sub-info/do/list', {
+        params: { id: this.data.id }
+      });
       if (!apiRes || !apiRes.ok) return;
 
       let subInfoMap = apiRes.data.reduce((acc, x) => {
