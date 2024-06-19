@@ -1119,7 +1119,10 @@ function _createAxiosOpt(method, pathPattern, options) {
 };
 
 async function _prepareAxiosRes(axiosRes) {
-  let respContentType = axiosRes.headers['content-type'];
+  let respContentType = null;
+  if (axiosRes && axiosRes.headers) {
+    respContentType = axiosRes.headers['content-type'];
+  }
 
   if ('string' === typeof respContentType && respContentType.indexOf('application/json') >= 0) {
     let apiRespData = axiosRes.data;

@@ -57,6 +57,7 @@ Vue.prototype.i18n = i18n;
 import moment, { locale } from 'moment'
 Vue.prototype.moment = moment;
 Vue.prototype.M = moment;
+
 Vue.filter('datetime', function(d, f) {
   return T.getDateTimeString(d, f);
 });
