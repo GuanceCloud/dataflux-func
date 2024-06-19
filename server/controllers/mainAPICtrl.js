@@ -954,8 +954,6 @@ function _doAPIAuth(locals, req, res, apiAuthId, realm, callback) {
 
 /* Handlers */
 exports.overview = function(req, res, next) {
-  var now = toolkit.getTimestamp();
-
   var sections = toolkit.asArray(req.query.sections);
   var sectionMap = null;
   if (toolkit.notNothing(sections)) {
@@ -1102,15 +1100,12 @@ exports.overview = function(req, res, next) {
       if (sectionMap && !sectionMap.queues) return asyncCallback();
 
       var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'workerCountOnQueue');
-      res.locals.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
+      res.locals.cacheDB.hgetPatternExpires(cacheKey, '*', CONFIG._MONITOR_REPORT_EXPIRES, function(err, cacheRes) {
         if (err) return asyncCallback(err);
         if (!cacheRes) return asyncCallback();
 
         for (var q in cacheRes) {
-          var cacheData = JSON.parse(cacheRes[q]);
-          if (cacheData.timestamp + CONFIG._MONITOR_REPORT_EXPIRES > now) {
-            overview.queues[q].workerCount = parseInt(cacheData.workerCount || 0) || 0;
-          }
+          overview.queues[q].workerCount = parseInt(cacheRes[q].workerCount || 0) || 0;
         }
 
         return asyncCallback();
@@ -1122,15 +1117,12 @@ exports.overview = function(req, res, next) {
       if (sectionMap && !sectionMap.queues) return asyncCallback();
 
       var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'processCountOnQueue');
-      res.locals.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
+      res.locals.cacheDB.hgetPatternExpires(cacheKey, '*', CONFIG._MONITOR_REPORT_EXPIRES, function(err, cacheRes) {
         if (err) return asyncCallback(err);
         if (!cacheRes) return asyncCallback();
 
         for (var q in cacheRes) {
-          var cacheData = JSON.parse(cacheRes[q]);
-          if (cacheData.timestamp + CONFIG._MONITOR_REPORT_EXPIRES > now) {
-            overview.queues[q].processCount = parseInt(cacheData.processCount || 0) || 0;
-          }
+          overview.queues[q].processCount = parseInt(cacheRes[q].processCount || 0) || 0;
         }
 
         return asyncCallback();
@@ -2048,7 +2040,8 @@ exports.integratedSignIn = function(req, res, next) {
 
         var cacheKey   = auth.getCacheKey();
         var cacheField = auth.getCacheField(xAuthTokenObj);
-        res.locals.cacheDB.hset(cacheKey, cacheField, toolkit.getTimestamp(), asyncCallback);
+        var cacheData  = { ts: toolkit.getTimestamp() };
+        res.locals.cacheDB.hset(cacheKey, cacheField, JSON.stringify(cacheData), asyncCallback);
       });
     }
   ], function(err) {
@@ -2134,19 +2127,12 @@ exports.integratedAuthMid = function(req, res, next) {
     },
     // Check Redis
     function(asyncCallback) {
-      res.locals.cacheDB.hget(cacheKey, cacheField, function(err, cacheRes) {
+      res.locals.cacheDB.hgetExpires(cacheKey, cacheField, CONFIG._WEB_AUTH_EXPIRES, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         if (!cacheRes) {
-          res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired (1)');
+          res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired');
           return asyncCallback(res.locals.reqAuthError);
-
-        } else {
-          var timestamp = parseInt(cacheRes);
-          if (timestamp + CONFIG._WEB_AUTH_EXPIRES < now) {
-            res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired (2)');
-            return asyncCallback(res.locals.reqAuthError);
-          }
         }
 
         res.locals.xAuthToken    = xAuthToken;
@@ -2157,7 +2143,8 @@ exports.integratedAuthMid = function(req, res, next) {
     },
     // Refresh x-auth-token
     function(asyncCallback) {
-      res.locals.cacheDB.hset(cacheKey, cacheField, now, asyncCallback);
+      var cacheData = { ts: now };
+      res.locals.cacheDB.hset(cacheKey, cacheField, JSON.stringify(cacheData), asyncCallback);
     },
   ], function(err) {
     if (err && res.locals.reqAuthError === err) {

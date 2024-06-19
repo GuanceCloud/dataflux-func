@@ -516,6 +516,57 @@ class RedisHelper(object):
 
         return result
 
+    def hget_expires(self, key, field, expires=None):
+        if not self.skip_log:
+            self.logger.debug('[REDIS EXT] HGET expires `{}` `{}` `{}`'.format(key, field, expires))
+
+        now = toolkit.get_timestamp()
+
+        cache_res = self.client.hget(key, field)
+        if not cache_res:
+            return None
+
+        cache_res = toolkit.json_loads(cache_res)
+
+        if not expires:
+            return cache_res
+        else:
+            ts = cache_res.get('ts') or cache_res.get('timestamp')
+            if ts and ts + expires > now:
+                return cache_res
+
+        return None
+
+    def hget_pattern_expires(self, key, pattern='*', expires=None):
+        if not self.skip_log:
+            self.logger.debug('[REDIS EXT] HGET pattern expires `{}` `{}` `{}`'.format(key, pattern, expires))
+
+        now = toolkit.get_timestamp()
+
+        result = {}
+
+        ITER_LIMIT = 1000
+        next_cursor = 0
+        while True:
+            next_cursor, res = self.client.hscan(key, cursor=next_cursor, match=pattern, count=ITER_LIMIT)
+            res = self._convert_result(res)
+
+            for k, v in res.items():
+                v = toolkit.json_loads(v)
+
+                if not expires:
+                    result[k] = v
+
+                else:
+                    ts = v.get('ts') or v.get('timestamp')
+                    if ts and ts + expires > now:
+                        result[k] = v
+
+            if next_cursor == 0:
+                break
+
+        return result
+
     def lock(self, lock_key, lock_value, max_lock_time):
         if not self.skip_log:
             self.logger.debug('[REDIS EXT] LOCK `{}`'.format(lock_key))
@@ -700,14 +751,14 @@ class RedisHelper(object):
             if task_req.get('eta') or task_req.get('delay'):
                 if task_req.get('eta'):
                     # 优先使用 eta
-                    run_time = arrow.get(task_req['eta']).timestamp
+                    run_time = arrow.get(task_req['eta']).int_timestamp
                     task_req.pop('delay', None)
 
                 elif task_req.get('delay'):
                     run_time = task_req['triggerTime'] + task_req['delay']
                     task_req.pop('eta', None)
 
-            if run_time <= arrow.get().timestamp:
+            if run_time <= arrow.get().int_timestamp:
                 worker_queue = toolkit.get_worker_queue(task_req['queue'])
                 worker_queue_element_map[worker_queue] = worker_queue_element_map.get(worker_queue) or []
                 worker_queue_element_map[worker_queue].append(task_req_dumps)

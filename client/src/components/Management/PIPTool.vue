@@ -50,7 +50,7 @@ Show Error: 顯示錯誤信息
 User-installed Version: 用户安裝的版本
 Version: 版本
 You can also install the package by following command: 您也可以使用以下命令來安裝
-installCost: （耗時 {n} 秒）
+installCost: （耗時 {s} 秒）
 package or package==1.2.3: package 或 package==1.2.3
 '{Func Container ID}': Func 容器 ID
 </i18n>
@@ -74,7 +74,7 @@ Show Error: 顯示錯誤資訊
 User-installed Version: 使用者安裝的版本
 Version: 版本
 You can also install the package by following command: 您也可以使用以下命令來安裝
-installCost: （耗時 {n} 秒）
+installCost: （耗時 {s} 秒）
 package or package==1.2.3: package 或 package==1.2.3
 '{Func Container ID}': Func 容器 ID
 </i18n>

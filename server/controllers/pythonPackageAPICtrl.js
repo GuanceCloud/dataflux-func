@@ -73,6 +73,11 @@ exports.getInstallStatus = function(req, res, next) {
         return JSON.parse(x);
       });
 
+      var nowMs = toolkit.getTimestampMs();
+      installStatus.forEach(function(x) {
+        x.nowMs = nowMs;
+      });
+
       // 排序
       installStatus = installStatus.sort(function(a, b) {
         if (a.order < b.order) return -1;

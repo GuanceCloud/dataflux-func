@@ -107,7 +107,7 @@ sessionCount: '{n} 個會話'
                   <div slot="content">
                     <div v-for="s, i in scope.row.sessions">
                       {{ $t('Session') }} <code class="code-font">#{{ i + 1 }}</code>{{ $t(':')}}
-                      {{ $t('lastAccess', { t: T.fromNow(s.lastAccessTime * 1000) }) }}
+                      {{ $t('lastAccess', { t: T.fromNow((T.getTimestamp() - s.idle) * 1000) }) }}
                     </div>
                   </div>
                   <span class="text-info">
@@ -117,7 +117,7 @@ sessionCount: '{n} 個會話'
 
                 <br>
                 <i class="fa fa-fw fa-mouse-pointer"></i>
-                {{ $t('lastAccess', { t: T.fromNow(scope.row.sessions[0].lastAccessTime * 1000) }) }}
+                {{ $t('lastAccess', { t: T.fromNow((T.getTimestamp() - scope.row.sessions[0].idle) * 1000) }) }}
               </template>
               <template v-else>
                 <span class="text-info">

@@ -862,6 +862,31 @@ class AutoClean(BaseInternalTask):
             sql_params = [ outdated_origin_ids ]
             self.db.non_query(sql, sql_params)
 
+    def clear_outdated_hset_cache(self):
+        options = [
+            # 过期 XAuthToken
+            ( toolkit.get_server_cache_key('token', 'xAuthToken'), CONFIG['_WEB_AUTH_EXPIRES']),
+
+            # 工作单元 / 工作进程计数
+            ( toolkit.get_monitor_cache_key('heartbeat', 'workerOnQueue'),       CONFIG['_MONITOR_REPORT_EXPIRES'] ),
+            ( toolkit.get_monitor_cache_key('heartbeat', 'workerCountOnQueue'),  CONFIG['_MONITOR_REPORT_EXPIRES'] ),
+            ( toolkit.get_monitor_cache_key('heartbeat', 'processCountOnQueue'), CONFIG['_MONITOR_REPORT_EXPIRES'] ),
+        ]
+
+        for opt in options:
+            cache_key, expires = opt
+            cache_res = self.cache_db.hgetall(cache_key)
+
+            expired_fields = []
+            for field, cache_data in cache_res.items():
+                cache_data = toolkit.json_loads(cache_data)
+                ts = cache_data.get('ts') or cache_data.get('timestamp')
+                if not ts or ts + expires < self.trigger_time:
+                    expired_fields.append(field)
+
+            if expired_fields:
+                self.cache_db.hdel(cache_key, expired_fields)
+
     def run(self, **kwargs):
         # 上锁
         self.lock()
@@ -895,6 +920,9 @@ class AutoClean(BaseInternalTask):
 
         # 清理已过时的函数任务记录
         self.safe_call(self.clear_outdated_task_record_func)
+
+        # 清理已过时的缓存
+        self.safe_call(self.clear_outdated_hset_cache)
 
 class AutoBackupDB(BaseInternalTask):
     name = 'Internal.AutoBackupDB'

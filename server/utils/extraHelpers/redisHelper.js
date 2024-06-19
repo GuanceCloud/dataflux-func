@@ -425,7 +425,7 @@ RedisHelper.prototype.hmset = function(key, fieldValues, callback) {
   if (this.isDryRun) return callback(null, 'OK');
 
   if (toolkit.isNothing(fieldValues)) return callback(null, 0);
-  return this.run('hmset', key, obj, callback);
+  return this.run('hmset', key, fieldValues, callback);
 };
 
 RedisHelper.prototype.hsetnx = function(key, field, value, callback) {
@@ -724,7 +724,7 @@ RedisHelper.prototype.getPattern = function(pattern, callback) {
   if (self.isDryRun) return callback();
 
   if (!this.skipLog) {
-    this.logger.debug('[REDIS EXT] GET by pattern `{0}`', pattern);
+    this.logger.debug('[REDIS EXT] GET pattern `{0}`', pattern);
   }
 
   self._keys(pattern, function(err, keys) {
@@ -763,7 +763,7 @@ RedisHelper.prototype.deletePattern = function(pattern, callback) {
   if (self.isDryRun) return callback();
 
   if (!this.skipLog) {
-    this.logger.debug('[REDIS EXT] DEL by pattern `{0}`', pattern);
+    this.logger.debug('[REDIS EXT] DEL pattern `{0}`', pattern);
   }
 
   self._keys(pattern, function(err, keys) {
@@ -810,7 +810,7 @@ RedisHelper.prototype._hkeys = function(key, pattern, callback) {
   }, function(err) {
     if (err) return callback(err);
 
-    return callback(null, Object.keys(result));
+    return callback(null, result);
   });
 };
 
@@ -828,28 +828,70 @@ RedisHelper.prototype.hgetPattern = function(key, pattern, callback) {
   if (self.isDryRun) return callback();
 
   if (!this.skipLog) {
-    this.logger.debug('[REDIS EXT] HGET by pattern `{0}` `{1}`', key, pattern);
+    this.logger.debug('[REDIS EXT] HGET pattern `{0}` `{1}`', key, pattern);
   }
 
-  self._hkeys(key, pattern, function(err, fields) {
+  self._hkeys(key, pattern, function(err, fieldValues) {
+    if (err) return callback && callback(err);
+    return callback(null, fieldValues);
+  });
+};
+
+RedisHelper.prototype.hgetExpires = function(key, field, expires, callback) {
+  var self = this;
+
+  if (self.isDryRun) return callback();
+
+  if (!this.skipLog) {
+    this.logger.debug('[REDIS EXT] HGET expires `{0}` `{1}` `{2}`', key, field, expires);
+  }
+
+  var now = toolkit.getTimestamp();
+
+  self.client.hget(key, field, function(err, cacheRes) {
+    if (err) return callback(err);
+    if (!cacheRes) return callback();
+
+    cacheRes = JSON.parse(cacheRes);
+
+    if (!expires) {
+      return callback(null, cacheRes);
+    } else {
+      var ts = cacheRes.ts || cacheRes.timestamp;
+      if (ts && ts + expires > now) return callback(null, cacheRes);
+    }
+
+    return callback();
+  })
+};
+
+RedisHelper.prototype.hgetPatternExpires = function(key, pattern, expires, callback) {
+  var self = this;
+
+  if (self.isDryRun) return callback();
+
+  if (!this.skipLog) {
+    this.logger.debug('[REDIS EXT] HGET pattern expires `{0}` `{1}` `{2}`', key, pattern, expires);
+  }
+
+  var now = toolkit.getTimestamp();
+
+  self._hkeys(key, pattern, function(err, fieldValues) {
     if (err) return callback && callback(err);
 
-    if (fields.length <= 0) {
-      return callback && callback();
-    } else {
-      return self.client.hmget(key, fields, function(err, cacheRes) {
-        if (err) return callback(err);
+    var res = {};
+    for (var k in fieldValues) {
+      var v = JSON.parse(fieldValues[k]);
 
-        var res = {};
-        for (var i = 0; i < fields.length; i++) {
-          var k = fields[i];
-          var v = cacheRes[i];
-          res[k] = v;
-        }
-
-        return callback(null, res);
-      });
+      if (!expires) {
+        res[k] = v;
+      } else {
+        var ts = v.ts || v.timestamp;
+        if (ts && ts + expires > now) res[k] = v;
+      }
     }
+
+    return callback(null, res);
   });
 };
 
@@ -866,11 +908,13 @@ RedisHelper.prototype.hdelPattern = function(key, pattern, callback) {
   if (self.isDryRun) return callback();
 
   if (!this.skipLog) {
-    this.logger.debug('[REDIS EXT] HDEL by pattern `{0}` `{1}`', key, pattern);
+    this.logger.debug('[REDIS EXT] HDEL pattern `{0}` `{1}`', key, pattern);
   }
 
-  self._hkeys(key, pattern, function(err, fields) {
+  self._hkeys(key, pattern, function(err, fieldValues) {
     if (err) return callback && callback(err);
+
+    var fields = Object.keys(fieldValues);
 
     if (fields.length <= 0) {
       return callback && callback();

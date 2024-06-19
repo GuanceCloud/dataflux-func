@@ -48,11 +48,11 @@ function appendOnlineStatus(req, res, ret, hookExtra, callback) {
   // 获取所有认证令牌
   var cacheKey          = auth.getCacheKey();
   var cacheFieldPattern = auth.getCacheFieldPattern();
-  res.locals.cacheDB.hgetPattern(cacheKey, cacheFieldPattern, function(err, cacheRes) {
+  res.locals.cacheDB.hgetPatternExpires(cacheKey, cacheFieldPattern, null, function(err, cacheRes) {
     if (err) return asyncCallback();
 
     for (var field in cacheRes) {
-      var timestamp  = parseInt(cacheRes[field]);
+      var timestamp  = cacheRes[field].ts;
       var parsedTags = toolkit.parseColonTags(field);
 
       var user = userMap[parsedTags.userId];

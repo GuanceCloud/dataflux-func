@@ -84,7 +84,8 @@ exports.signIn = function(req, res, next) {
 
       var cacheKey   = auth.getCacheKey();
       var cacheField = auth.getCacheField(xAuthTokenObj);
-      res.locals.cacheDB.hset(cacheKey, cacheField, now, function(err) {
+      var cacheData = { ts: now };
+      res.locals.cacheDB.hset(cacheKey, cacheField, JSON.stringify(cacheData), function(err) {
         if (err) return asyncCallback(err);
 
         ret = toolkit.initRet({
@@ -93,7 +94,6 @@ exports.signIn = function(req, res, next) {
         });
 
         // If cookie-auth is allowed, send cookies in response
-        console.log(toolkit.getTimestampMs() + CONFIG._WEB_AUTH_EXPIRES * 1000)
         if (CONFIG._WEB_AUTH_COOKIE) {
           res.cookie(CONFIG._WEB_AUTH_COOKIE, xAuthToken, {
             signed : true,
@@ -107,25 +107,6 @@ exports.signIn = function(req, res, next) {
     // 清空用户密码错误次数
     function(asyncCallback) {
       res.locals.cacheDB.del(cacheKey_badSignInCount, asyncCallback);
-    },
-    // 清理过期的 Session
-    function(asyncCallback) {
-      var cacheKey          = auth.getCacheKey();
-      var cacheFieldPattern = auth.getCacheFieldPattern();
-      res.locals.cacheDB.hgetPattern(cacheKey, cacheFieldPattern, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-        if (toolkit.isNothing(cacheRes)) return asyncCallback();
-
-        var expiredCacheFields = [];
-        for (var cacheField in cacheRes) {
-          var timestamp = parseInt(cacheRes[cacheField]);
-          if (timestamp + CONFIG._WEB_AUTH_EXPIRES < now) {
-            expiredCacheFields.push(cacheField);
-          }
-        }
-
-        res.locals.cacheDB.hdel(cacheKey, expiredCacheFields, asyncCallback);
-      });
     },
   ], function(err) {
     if (err) {

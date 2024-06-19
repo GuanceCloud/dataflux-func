@@ -295,7 +295,7 @@ _TASK_RECORD_PRINT_LOG_TOTAL_LIMIT_TAIL: 30000
 _CRON_EXPR_CRON_JOB_STARTER         : '* * * * *'
 _CRON_EXPR_SYSTEM_METRIC            : '*/5 * * * *'
 _CRON_EXPR_FLUSH_DATA_BUFFER        : '*/20 * * * * *'
-_CRON_EXPR_AUTO_CLEAN               : '0 * * * *'
+_CRON_EXPR_AUTO_CLEAN               : '*/5 * * * *'
 _CRON_EXPR_AUTO_BACKUP_DB           : '0 * * * *'
 _CRON_EXPR_RELOAD_DATA_MD5_CACHE    : '* * * * *'
 _CRON_EXPR_UPDATE_WORKER_QUEUE_LIMIT: '*/5 * * * *'

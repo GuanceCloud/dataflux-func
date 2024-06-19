@@ -60,20 +60,14 @@ module.exports = function(app, server) {
 
           var cacheKey   = auth.getCacheKey();
           var cacheField = auth.getCacheField(xAuthTokenObj);
-          app.locals.cacheDB.hget(cacheKey, cacheField, function(err, cacheRes) {
+          app.locals.cacheDB.hgetExpires(cacheKey, cacheField, CONFIG._WEB_AUTH_EXPIRES, function(err, cacheRes) {
             if (err) {
               return asyncCallback(new E('ESysCache', 'Read cache error').forSocketIO());
             }
 
             if (!cacheRes) {
               // X Auth Token 已经失效
-              return asyncCallback(new E('EAuthToken', 'Auth Token expired (1)').forSocketIO());
-
-            } else {
-              var timestamp = parseInt(cacheRes);
-              if (timestamp + CONFIG._WEB_AUTH_EXPIRES < toolkit.getTimestamp()) {
-                return asyncCallback(new E('EAuthToken', 'Auth Token expired (2)').forSocketIO());
-              }
+              return asyncCallback(new E('EAuthToken', 'Auth Token expired').forSocketIO());
             }
 
             // 使用 Socket.IO 认证令牌不会触发刷新
@@ -143,20 +137,14 @@ module.exports = function(app, server) {
 
           var cacheKey   = auth.getCacheKey();
           var cacheField = auth.getCacheField(xAuthTokenObj)
-          app.locals.cacheDB.hget(cacheKey, cacheField, function(err, cacheRes) {
+          app.locals.cacheDB.hgetExpires(cacheKey, cacheField, CONFIG._WEB_AUTH_EXPIRES, function(err, cacheRes) {
             if (err) {
               return asyncCallback(new E('ESysCache', 'Read cache error').forSocketIO());
             }
 
             if (!cacheRes) {
               // X Auth Token 已经失效
-              return asyncCallback(new E('EAuthToken', 'Auth Token expired (1)').forSocketIO());
-
-            } else {
-              var timestamp = parseInt(cacheRes);
-              if (timestamp + CONFIG._WEB_AUTH_EXPIRES < toolkit.getTimestamp()) {
-                return asyncCallback(new E('EAuthToken', 'Auth Token expired (2)').forSocketIO());
-              }
+              return asyncCallback(new E('EAuthToken', 'Auth Token expired').forSocketIO());
             }
 
             return asyncCallback();

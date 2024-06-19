@@ -86,53 +86,33 @@ def heartbeat():
                 # 记录此队列工作单元进程数
                 cache_key = toolkit.get_monitor_cache_key('heartbeat', 'workerOnQueue')
                 queue_worker_id = toolkit.get_colon_tags(['workerQueue', q, 'workerId', WORKER_ID])
-                cache_data = {
-                    'processCount': CONFIG['_WORKER_CONCURRENCY'],
-                    'timestamp'   : now,
-                }
+                cache_data = { 'ts': now, 'processCount': CONFIG['_WORKER_CONCURRENCY'] }
                 REDIS.hset(cache_key, queue_worker_id, toolkit.json_dumps(cache_data))
 
                 # 重新读取此队列所有工作单元进程数
                 queue_worker_id_pattern = toolkit.get_colon_tags(['workerQueue', q, 'workerId', '*'])
-                worker_process_count_map = REDIS.hget_pattern(cache_key, queue_worker_id_pattern)
+                worker_process_count_map = REDIS.hget_pattern_expires(cache_key, queue_worker_id_pattern, CONFIG['_MONITOR_REPORT_EXPIRES'])
                 if not worker_process_count_map:
                     continue
 
-                # 清理过期数据
-                expired_queue_worker_ids = set()
-
+                # 计算当前队列工作单元 / 工作进程数量
+                worker_count  = 0
                 process_count = 0
-                for queue_worker_id, cache_data in list(worker_process_count_map.items()):
-                    cache_data = toolkit.json_loads(cache_data)
+                for queue_worker_id, cache_data in worker_process_count_map.items():
+                    worker_count  += 1
+                    process_count += cache_data.get('processCount') or 0
 
-                    if cache_data['timestamp'] + CONFIG['_MONITOR_REPORT_EXPIRES'] < now:
-                        # 删除 / 记录过期项目
-                        worker_process_count_map.pop(queue_worker_id, None)
-                        expired_queue_worker_ids.add(queue_worker_id)
-
-                    else:
-                        worker_process_count_map[queue_worker_id] = cache_data
-                        process_count += cache_data.get('processCount') or 0
-
-                REDIS.hdel(cache_key, expired_queue_worker_ids)
 
                 # 计算并缓存 每个队列工作单元数量
-                # NOTE 固定成员数量，可在时获取时过滤
+                # NOTE 固定成员数量，可在时获取时过滤，无需清理过期数据
                 cache_key = toolkit.get_monitor_cache_key('heartbeat', 'workerCountOnQueue')
-                worker_count = len(worker_process_count_map)
-                cache_data = {
-                    'workerCount': worker_count,
-                    'timestamp'  : now,
-                }
+                cache_data = { 'ts': now, 'workerCount': worker_count }
                 REDIS.hset(cache_key, q, toolkit.json_dumps(cache_data))
 
                 # 计算并缓存 每个队列工作进程数量
-                # NOTE 固定成员数量，可在时获取时过滤
+                # NOTE 固定成员数量，可在时获取时过滤，无需清理过期数据
                 cache_key = toolkit.get_monitor_cache_key('heartbeat', 'processCountOnQueue')
-                cache_data = {
-                    'processCount': process_count,
-                    'timestamp'   : now,
-                }
+                cache_data = { 'ts': now, 'processCount': process_count }
                 REDIS.hset(cache_key, q, toolkit.json_dumps(cache_data))
 
         # 记录 CPU / 使用

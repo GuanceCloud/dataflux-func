@@ -38,9 +38,9 @@ SYS_START_TIME = int(time.time())
 
 SHORT_UNIX_TIMESTAMP_OFFSET = 1503982020
 
-MIN_UNIX_TIMESTAMP    = arrow.get('1970-01-01T00:00:00Z').timestamp
+MIN_UNIX_TIMESTAMP    = arrow.get('1970-01-01T00:00:00Z').int_timestamp
 MIN_UNIX_TIMESTAMP_MS = MIN_UNIX_TIMESTAMP * 1000
-MAX_UNIX_TIMESTAMP    = arrow.get('2099-12-31T23:59:59Z').timestamp
+MAX_UNIX_TIMESTAMP    = arrow.get('2099-12-31T23:59:59Z').int_timestamp
 MAX_UNIX_TIMESTAMP_MS = MAX_UNIX_TIMESTAMP * 1000
 
 RE_HTTP_BASIC_AUTH_MASK         = re.compile('://.+:.+@')
@@ -385,7 +385,7 @@ def to_datetime(d=None):
     return get_arrow(d).datetime
 
 def to_unix_timestamp(d=None):
-    return get_arrow(d).timestamp
+    return get_arrow(d).int_timestamp
 
 def to_unix_timestamp_ms(d=None):
     return int(get_arrow(d).float_timestamp * 1000)

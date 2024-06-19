@@ -239,21 +239,16 @@ exports.runListener = function runListener(app) {
 
   // 消费触发
   async.forever(function(foreverCallback) {
-    var now = toolkit.getTimestamp();
-
     var subWorkerCount = 0;
     async.series([
       // 查询当前订阅处理工作单元数量
       function(asyncCallback) {
         var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'processCountOnQueue');
-        app.locals.cacheDB.hget(cacheKey, CONFIG._FUNC_TASK_QUEUE_SUB_HANDLER, function(err, cacheRes) {
+        app.locals.cacheDB.hgetExpires(cacheKey, CONFIG._FUNC_TASK_QUEUE_SUB_HANDLER, CONFIG._MONITOR_REPORT_EXPIRES, function(err, cacheRes) {
           if (err) return asyncCallback(err);
           if (!cacheRes) return asyncCallback();
 
-          var cacheData = JSON.parse(cacheRes);
-          if (cacheData.timestamp + CONFIG._MONITOR_REPORT_EXPIRES > now) {
-            subWorkerCount = parseInt(cacheData.processCount || 0) || 0;
-          }
+          subWorkerCount = parseInt(cacheRes.processCount || 0) || 0;
 
           return asyncCallback();
         });

@@ -84,19 +84,12 @@ exports.byXAuthToken = function byXAuthToken(req, res, next) {
     },
     // Check Redis
     function(asyncCallback) {
-      res.locals.cacheDB.hget(cacheKey, cacheField, function(err, cacheRes) {
+      res.locals.cacheDB.hgetExpires(cacheKey, cacheField, CONFIG._WEB_AUTH_EXPIRES, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
         if (!cacheRes) {
-          res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired (1)');
+          res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired');
           return asyncCallback(res.locals.reqAuthError);
-
-        } else {
-          var timestamp = parseInt(cacheRes);
-          if (timestamp + CONFIG._WEB_AUTH_EXPIRES < now) {
-            res.locals.reqAuthError = new E('EUserAuth', 'x-auth-token is expired (2)');
-            return asyncCallback(res.locals.reqAuthError);
-          }
         }
 
         res.locals.xAuthToken    = xAuthToken;
@@ -133,7 +126,8 @@ exports.byXAuthToken = function byXAuthToken(req, res, next) {
         });
       }
 
-      res.locals.cacheDB.hset(cacheKey, cacheField, now, asyncCallback);
+      var cacheData = { ts: now };
+      res.locals.cacheDB.hset(cacheKey, cacheField, JSON.stringify(cacheData), asyncCallback);
     },
   ], function(err) {
     if (err && res.locals.reqAuthError === err) {
