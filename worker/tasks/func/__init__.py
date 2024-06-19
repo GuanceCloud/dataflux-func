@@ -665,7 +665,7 @@ class FuncStoreHelper(object):
 
 class FuncCacheHelper(object):
     def __init__(self, task, default_scope):
-        self.cache_db = task.cache_db
+        self._task = task
 
         self.default_scope = default_scope
 
