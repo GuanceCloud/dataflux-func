@@ -68,6 +68,7 @@ def heartbeat():
             service_name = 'worker'
 
         service_info = {
+            'ts'     : now,
             'name'   : service_name,
             'version': IMAGE_INFO['VERSION'],
             'edition': IMAGE_INFO['EDITION'],
@@ -77,8 +78,9 @@ def heartbeat():
         if service_name == 'worker':
             service_info['queues'] = sorted(sys.argv[1:])
 
-        cache_key = toolkit.get_monitor_cache_key('heartbeat', 'serviceInfo', tags=[ 'hostname', hostname, 'pid', os.getpid() ])
-        REDIS.set(cache_key, toolkit.json_dumps(service_info), expires=CONFIG['_MONITOR_REPORT_EXPIRES'])
+        cache_key   = toolkit.get_monitor_cache_key('heartbeat', 'serviceInfo')
+        cache_field = toolkit.get_colon_tags([ 'hostname', hostname, 'pid', os.getpid() ])
+        REDIS.hset(cache_key, cache_field, toolkit.json_dumps(service_info))
 
         # 记录每个队列 Worker / 进程数量
         if LISTINGING_QUEUES and WORKER_ID:

@@ -954,6 +954,8 @@ function _doAPIAuth(locals, req, res, apiAuthId, realm, callback) {
 
 /* Handlers */
 exports.overview = function(req, res, next) {
+  var now = toolkit.getTimestamp();
+
   var sections = toolkit.asArray(req.query.sections);
   var sectionMap = null;
   if (toolkit.notNothing(sections)) {
@@ -1046,53 +1048,48 @@ exports.overview = function(req, res, next) {
     function(asyncCallback) {
       if (sectionMap && !sectionMap.services) return asyncCallback();
 
-      // TODO 优化 Key 搜索
-      var cacheKeyPattern = toolkit.getMonitorCacheKey('heartbeat', 'serviceInfo', [ 'hostname', '*', 'pid', '*' ]);
-      res.locals.cacheDB.keys(cacheKeyPattern, function(err, keys) {
+      var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'serviceInfo');
+      res.locals.cacheDB.hgetallExpires(cacheKey, CONFIG._MONITOR_REPORT_EXPIRES, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
-        async.each(keys, function(key, eachCallback) {
-          res.locals.cacheDB.getWithTTL(key, function(err, cacheRes) {
-            if (err) return eachCallback(err);
+        // 获取服务列表
+        for (var field in cacheRes) {
+          var parsedTags = toolkit.parseColonTags(field);
+          var cacheData  = cacheRes[field];
 
-            var parsedKey = toolkit.parseCacheKey(key);
-            overview.services.push({
-              hostname: parsedKey.tags.hostname,
-              pid     : parsedKey.tags.pid,
-              name    : cacheRes.value.name,
-              uptime  : cacheRes.value.uptime,
-              version : cacheRes.value.version,
-              edition : cacheRes.value.edition,
-              queues  : cacheRes.value.queues,
-              ttl     : cacheRes.ttl,
-            });
-
-            return eachCallback();
+          overview.services.push({
+            hostname: parsedTags.hostname,
+            pid     : parsedTags.pid,
+            name    : cacheData.name,
+            uptime  : cacheData.uptime,
+            version : cacheData.version,
+            edition : cacheData.edition,
+            queues  : cacheData.queues,
+            ttl     : Math.max(0, cacheData.ts + CONFIG._MONITOR_REPORT_EXPIRES - now),
           });
-        }, function(err) {
-          if (err) return asyncCallback(err);
+        }
 
-          var serviceOrder = [ 'server', 'worker', 'beat' ];
-          overview.services.sort(function(a, b) {
-            var serviceOrder_a = serviceOrder.indexOf(a.name);
-            var serviceOrder_b = serviceOrder.indexOf(b.name);
+        // 服务排序
+        var serviceOrder = [ 'server', 'worker', 'beat' ];
+        overview.services.sort(function(a, b) {
+          var serviceOrder_a = serviceOrder.indexOf(a.name);
+          var serviceOrder_b = serviceOrder.indexOf(b.name);
 
-            var queueDumps_a = toolkit.jsonDumps(a.queues || []);
-            var queueDumps_b = toolkit.jsonDumps(b.queues || []);
+          var queueDumps_a = toolkit.jsonDumps(a.queues || []);
+          var queueDumps_b = toolkit.jsonDumps(b.queues || []);
 
-            if (serviceOrder_a < serviceOrder_b) return -1;
-            else if (serviceOrder_a > serviceOrder_b) return 1;
+          if (serviceOrder_a < serviceOrder_b) return -1;
+          else if (serviceOrder_a > serviceOrder_b) return 1;
+          else
+            if (queueDumps_a < queueDumps_b) return -1;
+            else if (queueDumps_a > queueDumps_b) return 1;
             else
-              if (queueDumps_a < queueDumps_b) return -1;
-              else if (queueDumps_a > queueDumps_b) return 1;
-              else
-                if (a.ttl > b.ttl) return -1;
-                else if (a.ttl < b.ttl) return 1;
-                else return 0
-          });
-
-          return asyncCallback();
+              if (a.ttl > b.ttl) return -1;
+              else if (a.ttl < b.ttl) return 1;
+              else return 0
         });
+
+        return asyncCallback();
       });
     },
     // 各队列工作单元数量
@@ -1100,7 +1097,7 @@ exports.overview = function(req, res, next) {
       if (sectionMap && !sectionMap.queues) return asyncCallback();
 
       var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'workerCountOnQueue');
-      res.locals.cacheDB.hgetPatternExpires(cacheKey, '*', CONFIG._MONITOR_REPORT_EXPIRES, function(err, cacheRes) {
+      res.locals.cacheDB.hgetallExpires(cacheKey, CONFIG._MONITOR_REPORT_EXPIRES, function(err, cacheRes) {
         if (err) return asyncCallback(err);
         if (!cacheRes) return asyncCallback();
 
@@ -1117,7 +1114,7 @@ exports.overview = function(req, res, next) {
       if (sectionMap && !sectionMap.queues) return asyncCallback();
 
       var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'processCountOnQueue');
-      res.locals.cacheDB.hgetPatternExpires(cacheKey, '*', CONFIG._MONITOR_REPORT_EXPIRES, function(err, cacheRes) {
+      res.locals.cacheDB.hgetallExpires(cacheKey, CONFIG._MONITOR_REPORT_EXPIRES, function(err, cacheRes) {
         if (err) return asyncCallback(err);
         if (!cacheRes) return asyncCallback();
 

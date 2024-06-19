@@ -871,6 +871,9 @@ class AutoClean(BaseInternalTask):
             ( toolkit.get_monitor_cache_key('heartbeat', 'workerOnQueue'),       CONFIG['_MONITOR_REPORT_EXPIRES'] ),
             ( toolkit.get_monitor_cache_key('heartbeat', 'workerCountOnQueue'),  CONFIG['_MONITOR_REPORT_EXPIRES'] ),
             ( toolkit.get_monitor_cache_key('heartbeat', 'processCountOnQueue'), CONFIG['_MONITOR_REPORT_EXPIRES'] ),
+
+            # 服务（Pod）列表
+            ( toolkit.get_monitor_cache_key('heartbeat', 'serviceInfo'), CONFIG['_MONITOR_REPORT_EXPIRES'] ),
         ]
 
         for opt in options:

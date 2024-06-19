@@ -190,20 +190,23 @@ exports.afterServe = function(app, server) {
 
   // 记录主机，PID，所启动服务
   function recordServiceInfo() {
+    var now = toolkit.getTimestamp();
+
     var serviceName = process.argv[1].split('/').pop();
     if ('app.js' === serviceName) {
       serviceName = 'server';
     }
 
     var serviceInfo = {
-        name   : serviceName,
-        version: IMAGE_INFO.VERSION,
-        edition: IMAGE_INFO.EDITION,
-        uptime : toolkit.sysUpTime(),
+      ts     : now,
+      name   : serviceName,
+      version: IMAGE_INFO.VERSION,
+      edition: IMAGE_INFO.EDITION,
+      uptime : toolkit.sysUpTime(),
     }
-    var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'serviceInfo', [ 'hostname', hostname, 'pid', process.pid ]);
-    var expires  = parseInt(CONFIG._MONITOR_REPORT_INTERVAL * 3);
-    return app.locals.cacheDB.setex(cacheKey, expires, toolkit.jsonDumps(serviceInfo));
+    var cacheKey   = toolkit.getMonitorCacheKey('heartbeat', 'serviceInfo')
+    var cacheField = toolkit.getColonTags([ 'hostname', hostname, 'pid', process.pid ]);
+    return app.locals.cacheDB.hset(cacheKey, cacheField, JSON.stringify(serviceInfo));
   }
   setInterval(recordServiceInfo, CONFIG._MONITOR_REPORT_INTERVAL * 1000);
   recordServiceInfo();
@@ -211,7 +214,7 @@ exports.afterServe = function(app, server) {
   // System Metrics
   var startCPUUsage = process.cpuUsage();
   function recordSystemMetrics() {
-    var currentTimestamp = toolkit.getTimestamp();
+    var now = toolkit.getTimestamp();
 
     var currentCPUUsage    = process.cpuUsage(startCPUUsage);
     var currentMemoryUsage = process.memoryUsage();
@@ -225,27 +228,27 @@ exports.afterServe = function(app, server) {
     async.series([
       function(asyncCallback) {
         var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', [ 'metric', 'serverCPUPercent', 'hostname', hostname ]);
-        var opt = { timestamp: currentTimestamp, value: cpuPercent };
+        var opt = { timestamp: now, value: cpuPercent };
         return app.locals.cacheDB.tsAdd(cacheKey, opt, asyncCallback);
       },
       function(asyncCallback) {
         var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', [ 'metric', 'serverMemoryRSS', 'hostname', hostname ]);
-        var opt = { timestamp: currentTimestamp, value: currentMemoryUsage.rss };
+        var opt = { timestamp: now, value: currentMemoryUsage.rss };
         return app.locals.cacheDB.tsAdd(cacheKey, opt, asyncCallback);
       },
       function(asyncCallback) {
         var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', [ 'metric', 'serverMemoryHeapTotal', 'hostname', hostname ]);
-        var opt = { timestamp: currentTimestamp, value: currentMemoryUsage.heapTotal };
+        var opt = { timestamp: now, value: currentMemoryUsage.heapTotal };
         return app.locals.cacheDB.tsAdd(cacheKey, opt, asyncCallback);
       },
       function(asyncCallback) {
         var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', [ 'metric', 'serverMemoryHeapUsed', 'hostname', hostname ]);
-        var opt = { timestamp: currentTimestamp, value: currentMemoryUsage.heapUsed };
+        var opt = { timestamp: now, value: currentMemoryUsage.heapUsed };
         return app.locals.cacheDB.tsAdd(cacheKey, opt, asyncCallback);
       },
       function(asyncCallback) {
         var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', [ 'metric', 'serverMemoryHeapExternal', 'hostname', hostname ]);
-        var opt = { timestamp: currentTimestamp, value: currentMemoryUsage.external };
+        var opt = { timestamp: now, value: currentMemoryUsage.external };
         return app.locals.cacheDB.tsAdd(cacheKey, opt, asyncCallback);
       },
     ], function(err) {

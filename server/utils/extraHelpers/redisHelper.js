@@ -865,6 +865,36 @@ RedisHelper.prototype.hgetExpires = function(key, field, expires, callback) {
   })
 };
 
+RedisHelper.prototype.hgetallExpires = function(key, expires, callback) {
+  var self = this;
+
+  if (self.isDryRun) return callback();
+
+  if (!this.skipLog) {
+    this.logger.debug('[REDIS EXT] HGETALL expires `{0}` `{1}` `{2}`', key, expires);
+  }
+
+  var now = toolkit.getTimestamp();
+
+  self.client.hgetall(key, function(err, fieldValues) {
+    if (err) return callback && callback(err);
+
+    var res = {};
+    for (var k in fieldValues) {
+      var v = JSON.parse(fieldValues[k]);
+
+      if (!expires) {
+        res[k] = v;
+      } else {
+        var ts = v.ts || v.timestamp;
+        if (ts && ts + expires > now) res[k] = v;
+      }
+    }
+
+    return callback(null, res);
+  });
+};
+
 RedisHelper.prototype.hgetPatternExpires = function(key, pattern, expires, callback) {
   var self = this;
 
