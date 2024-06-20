@@ -20,7 +20,7 @@ def get_config(c):
         'token'     : c.get('token'),
         'access_key': c.get('accessKey'),
         'secret_key': c.get('secretKey'),
-        'timeout'   : c.get('timeout') or 3,
+        'timeout'   : c.get('timeout') or 5,
         'debug'     : c.get('debug')   or False,
     })
 
