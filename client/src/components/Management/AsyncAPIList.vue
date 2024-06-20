@@ -162,15 +162,15 @@ lastSucceeded: '{t}執行成功'
                 </div>
                 <span v-if="scope.row.lastTaskStatus.status === 'started'" class="text-main">
                   <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
-                  {{ $t('lastStarted', { t: T.fromNow(scope.row.lastTaskStatus.timestamp * 1000) }) }}
+                  {{ $t('lastStarted', { t: T.toNow(scope.row.lastTaskStatus.timestamp * 1000) }) }}
                 </span>
                 <span v-else-if="scope.row.lastTaskStatus.status === 'success'" class="text-good">
                   <i class="fa fa-fw fa-check"></i>
-                  {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastTaskStatus.timestamp * 1000) }) }}
+                  {{ $t('lastSucceeded', { t: T.toNow(scope.row.lastTaskStatus.timestamp * 1000) }) }}
                 </span>
                 <span v-else-if="scope.row.lastTaskStatus.status === 'failure'" class="text-bad">
                   <i class="fa fa-fw fa-times"></i>
-                  {{ $t('lastFailed', { t: T.fromNow(scope.row.lastTaskStatus.timestamp * 1000) }) }}
+                  {{ $t('lastFailed', { t: T.toNow(scope.row.lastTaskStatus.timestamp * 1000) }) }}
                 </span>
               </el-tooltip>
               <span v-else class="text-info">

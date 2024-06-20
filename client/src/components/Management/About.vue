@@ -391,9 +391,9 @@ export default {
     releaseDateTEXT() {
       let releaseTimestamp = this.imageInfo.releaseTimestamp * 1000 ||  Date.now();
       let releaseDate      = this.M.utc(releaseTimestamp).locale(this.$store.getters.uiLocale).format('YYYY-MM-DD HH:mm:ss Z');
-      let releaseFromNow   = this.M.utc(releaseTimestamp).locale(this.$store.getters.uiLocale).fromNow();
+      let releaseToNow     = this.T.toNow(releaseTimestamp);
 
-      return `${releaseDate} ${this.$t('(')}${releaseFromNow}${this.$t(')')}`
+      return `${releaseDate} ${this.$t('(')}${releaseToNow}${this.$t(')')}`
     },
   },
   props: {

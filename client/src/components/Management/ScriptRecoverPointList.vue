@@ -69,7 +69,7 @@ System automatically creates Script Lib Recover Points before importing, install
             v-for="d in data"
             :key="d.id"
             type="primary"
-            :timestamp="`${T.getDateTimeString(d.createTime)} (${T.fromNow(d.createTime)})`">
+            :timestamp="`${T.getDateTimeString(d.createTime)} (${T.toNow(d.createTime)})`">
             <el-card shadow="hover" class="recover-point-card">
               <span class="text-info">#</span>
               <span class="text-main text-large">{{ d.seq }}</span>

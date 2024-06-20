@@ -64,6 +64,12 @@ Vue.filter('datetime', function(d, f) {
 Vue.filter('fromNow', function(d) {
   return T.fromNow(d);
 });
+Vue.filter('toNow', function(d) {
+  return T.toNow(d);
+});
+Vue.filter('toFuture', function(d) {
+  return T.toFuture(d);
+});
 
 // 验证
 import validator from 'validator';

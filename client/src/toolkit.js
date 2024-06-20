@@ -780,9 +780,29 @@ export function getDateTimeString(d, f) {
   return getMoment(d).locale(uiLocale).utcOffset(utcOffset).format(f || 'YYYY-MM-DD HH:mm:ss');
 };
 
-export function fromNow(d) {
+export function fromNow(d, limit) {
+  let now = getTimestampMs();
+  let dm  = getMoment(d);
+  if (limit) {
+    limit = limit.toLowerCase();
+
+    let dmTimestamp = dm.valueOf();
+    if (limit === 'before' && dmTimestamp > now) {
+      dm = getMoment();
+    } else if (limit == 'after' && dmTimestamp < now) {
+      dm = getMoment();
+    }
+  }
   let uiLocale = getUILocale();
-  return getMoment(d).locale(uiLocale).fromNow();
+  return dm.locale(uiLocale).fromNow();
+};
+
+export function toNow(d) {
+  return fromNow(d, 'before');
+};
+
+export function toFuture(d) {
+  return fromNow(d, 'after');
 };
 
 export function duration(d, humanized) {

@@ -48,7 +48,7 @@ No Script Set has ever been exported: 從未匯出過任何指令碼集
               v-for="d in data"
               :key="d.id"
               type="primary"
-              :timestamp="`${T.getDateTimeString(d.createTime)} (${T.fromNow(d.createTime)})`">
+              :timestamp="`${T.getDateTimeString(d.createTime)} (${T.toNow(d.createTime)})`">
               <el-card shadow="hover" class="history-card">
                 <template v-for="t in C.IMPORT_DATA_TYPE">
                   <div class="history-summary" v-if="T.notNothing(d.summaryJSON[t.key])">

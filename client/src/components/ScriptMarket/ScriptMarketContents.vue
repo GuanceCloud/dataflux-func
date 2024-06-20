@@ -409,7 +409,7 @@ Upgrade Script Set: 升級指令碼集
               <div v-if="scope.row.remote" class="publish-time">
                 <span>{{ scope.row.remote._extra.exportTime | datetime }}</span>
                 <br>
-                <span class="text-info">{{ scope.row.remote._extra.exportTime | fromNow }}</span>
+                <span class="text-info">{{ scope.row.remote._extra.exportTime | toNow }}</span>
               </div>
             </template>
           </el-table-column>

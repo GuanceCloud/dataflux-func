@@ -281,7 +281,7 @@ timeout: 執行超時
             <template slot-scope="scope">
               <span>{{ scope.row.triggerTimeMs | datetime }}</span>
               <br>
-              <span class="text-info">{{ scope.row.triggerTimeMs | fromNow }}</span>
+              <span class="text-info">{{ scope.row.triggerTimeMs | toNow }}</span>
             </template>
           </el-table-column>
 
@@ -498,9 +498,9 @@ export default {
       lines.push(`${this.$t('Task Expires: ')}${d.expires} ${this.$t('s')}`);
 
       // 时间
-      lines.push(`${this.$t('Trigger Time: ')}${this.T.getDateTimeString(d.triggerTimeMs)} ${this.$t('(')}${this.T.fromNow(d.triggerTimeMs)}${this.$t(')')}`);
-      lines.push(`${this.$t('Start Time: ')}${this.T.getDateTimeString(d.startTimeMs)} ${this.$t('(')}${this.T.fromNow(d.startTimeMs)}${this.$t(')')}`);
-      lines.push(`${this.$t('End Time: ')}${this.T.getDateTimeString(d.endTimeMs)} ${this.$t('(')}${this.T.fromNow(d.endTimeMs)}${this.$t(')')}`);
+      lines.push(`${this.$t('Trigger Time: ')}${this.T.getDateTimeString(d.triggerTimeMs)} ${this.$t('(')}${this.T.toNow(d.triggerTimeMs)}${this.$t(')')}`);
+      lines.push(`${this.$t('Start Time: ')}${this.T.getDateTimeString(d.startTimeMs)} ${this.$t('(')}${this.T.toNow(d.startTimeMs)}${this.$t(')')}`);
+      lines.push(`${this.$t('End Time: ')}${this.T.getDateTimeString(d.endTimeMs)} ${this.$t('(')}${this.T.toNow(d.endTimeMs)}${this.$t(')')}`);
 
       // 延迟
       if (d.delay > 0) {

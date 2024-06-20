@@ -101,7 +101,7 @@ Using {0} and {1} to setting and getting store data in Script: 可以使用 {0} 
               <span v-if="!scope.row.expireAt" class="text-bad">{{ $t('Never') }}</span>
               <template v-else>
                 <code :class="T.isExpired(scope.row.expireAt * 1000) ? 'text-bad' : 'text-good'">{{ scope.row.expireAt - parseInt(Date.now() / 1000) }}</code>
-                <small class="text-info">{{ $t('(') }}{{ scope.row.expireAt * 1000 | fromNow }}{{ $t(')') }}</small>
+                <small class="text-info">{{ $t('(') }}{{ scope.row.expireAt * 1000 | toFuture }}{{ $t(')') }}</small>
               </template>
             </template>
           </el-table-column>

@@ -572,7 +572,7 @@ messageRate: '{n} 條/分鐘'
                           <i :class="status.icon"></i>
                           {{ $t('Last Consumed') }} {{ $t('(') }}{{ status.name }}{{ $t(')') }}{{ $t(':') }}
                           {{ T.getDateTimeString(subInfoMap[topicHandler.topic].lastConsumed[status.key].timestampMs, 'MM-DD HH:mm:ss') }}
-                          {{ $t('(') }}{{ T.fromNow(subInfoMap[topicHandler.topic].lastConsumed[status.key].timestampMs) }}{{ $t(')') }}
+                          {{ $t('(') }}{{ T.toNow(subInfoMap[topicHandler.topic].lastConsumed[status.key].timestampMs) }}{{ $t(')') }}
                         </el-link>
                       </template>
 

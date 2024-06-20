@@ -85,7 +85,7 @@ No Access Key has ever been added: 從未新增過任何 Access Key
             <template slot-scope="scope">
               <span>{{ scope.row.createTime | datetime }}</span>
               <br>
-              <span class="text-info">{{ scope.row.createTime | fromNow }}</span>
+              <span class="text-info">{{ scope.row.createTime | toNow }}</span>
             </template>
           </el-table-column>
 

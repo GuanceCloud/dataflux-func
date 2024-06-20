@@ -280,7 +280,7 @@ lastSucceeded: '{t}執行成功'
 
               <br>
               <span class="text-info">{{ $t('Created') }}{{ $t(':') }}</span>
-              <RelativeDateTime :datetime="scope.row.createTime" />
+              <RelativeDateTime :datetime="scope.row.createTime" from-now-limit="before" />
 
               <br>
               <span class="text-info">{{ $t('Expires') }}{{ $t(':') }}</span>
@@ -310,15 +310,15 @@ lastSucceeded: '{t}執行成功'
                 </div>
                 <span v-if="scope.row.lastTaskStatus.status === 'started'" class="text-main">
                   <i class="fa fa-fw fa-circle-o-notch fa-spin"></i>
-                  {{ $t('lastStarted', { t: T.fromNow(scope.row.lastTaskStatus.timestamp * 1000) }) }}
+                  {{ $t('lastStarted', { t: T.toNow(scope.row.lastTaskStatus.timestamp * 1000) }) }}
                 </span>
                 <span v-else-if="scope.row.lastTaskStatus.status === 'success'" class="text-good">
                   <i class="fa fa-fw fa-check"></i>
-                  {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastTaskStatus.timestamp * 1000) }) }}
+                  {{ $t('lastSucceeded', { t: T.toNow(scope.row.lastTaskStatus.timestamp * 1000) }) }}
                 </span>
                 <span v-else-if="scope.row.lastTaskStatus.status === 'failure'" class="text-bad">
                   <i class="fa fa-fw fa-times"></i>
-                  {{ $t('lastFailed', { t: T.fromNow(scope.row.lastTaskStatus.timestamp * 1000) }) }}
+                  {{ $t('lastFailed', { t: T.toNow(scope.row.lastTaskStatus.timestamp * 1000) }) }}
                 </span>
               </el-tooltip>
               <span v-else class="text-info">
@@ -581,7 +581,7 @@ export default {
         nextRecentTriggeredData.forEach((d, index) => {
           let line = '';
           line += makeField(nextRecentTriggeredData.length - index, SEQ_FIELD_WIDTH);
-          line += makeField(this.T.getDateTimeString(d[0] * 1000) + this.$t('(') + this.T.fromNow(d[0] * 1000) + this.$t(')'), TIME_FIELD_WIDTH);
+          line += makeField(this.T.getDateTimeString(d[0] * 1000) + this.$t('(') + this.T.toNow(d[0] * 1000) + this.$t(')'), TIME_FIELD_WIDTH);
 
           if (d[1] === 'manual') {
             line += makeField(this.$t('Triggered Manually'));

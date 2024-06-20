@@ -556,13 +556,13 @@ successCount: 成功 {n}
                 <template v-if="scope.row.lastStartTime">
                   <br>
                   <span v-if="scope.row.lastStatus === 'success'" class="text-good">
-                    <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                    <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.toNow(scope.row.lastStartTime) }) }}
                   </span>
                   <span v-else-if="scope.row.lastStatus === 'failure'" class="text-bad">
-                    <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                    <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.toNow(scope.row.lastStartTime) }) }}
                   </span>
                   <span v-else class="text-main">
-                    <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                    <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.toNow(scope.row.lastStartTime) }) }}
                   </span>
 
                   <br>
@@ -626,13 +626,13 @@ successCount: 成功 {n}
                 <template v-if="scope.row.lastStartTime">
                   <br>
                   <span v-if="scope.row.lastStatus === 'success'" class="text-good">
-                    <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                    <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.toNow(scope.row.lastStartTime) }) }}
                   </span>
                   <span v-else-if="scope.row.lastStatus === 'failure'" class="text-bad">
-                    <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                    <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.toNow(scope.row.lastStartTime) }) }}
                   </span>
                   <span v-else class="text-main">
-                    <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                    <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.toNow(scope.row.lastStartTime) }) }}
                   </span>
 
                   <br>
@@ -691,7 +691,7 @@ successCount: 成功 {n}
 
                 <br>
                 <span class="text-info">{{ $t('Created') }}{{ $t(':') }}</span>
-                <RelativeDateTime :datetime="scope.row.createTime" />
+                <RelativeDateTime :datetime="scope.row.createTime" from-now-limit="before" />
 
                 <br>
                 <span class="text-info">{{ $t('Expires') }}{{ $t(':') }}</span>
@@ -711,13 +711,13 @@ successCount: 成功 {n}
                 <template v-if="scope.row.lastStartTime">
                   <br>
                   <span v-if="scope.row.lastStatus === 'success'" class="text-good">
-                    <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                    <i class="fa fa-fw fa-check"></i> {{ $t('lastSucceeded', { t: T.toNow(scope.row.lastStartTime) }) }}
                   </span>
                   <span v-else-if="scope.row.lastStatus === 'failure'" class="text-bad">
-                    <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                    <i class="fa fa-fw fa-times"></i> {{ $t('lastFailed', { t: T.toNow(scope.row.lastStartTime) }) }}
                   </span>
                   <span v-else class="text-main">
-                    <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.fromNow(scope.row.lastStartTime) }) }}
+                    <i class="fa fa-fw fa-clock-o"></i> {{ $t('lastRan', { t: T.toNow(scope.row.lastStartTime) }) }}
                   </span>
 
                   <br>

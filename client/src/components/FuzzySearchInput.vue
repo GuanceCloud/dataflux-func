@@ -32,7 +32,7 @@ Input search content: 輸入搜尋內容
 
       <template slot-scope="{ item }">
         <span class="text-main">{{ item.value }}</span>
-        <span class="text-info search-time">{{ $t('(') }}{{ item.timestamp | fromNow }}{{ $t(')') }}</span>
+        <span class="text-info search-time">{{ $t('(') }}{{ item.timestamp | toNow }}{{ $t(')') }}</span>
       </template>
     </el-autocomplete>
   </div>

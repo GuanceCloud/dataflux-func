@@ -71,7 +71,7 @@ omitted.: 略
             <template slot-scope="scope">
               <span>{{ scope.row.reqTime | datetime }}</span>
               <br>
-              <span class="text-info">{{ scope.row.reqTime | fromNow }}</span>
+              <span class="text-info">{{ scope.row.reqTime | toNow }}</span>
             </template>
           </el-table-column>
 

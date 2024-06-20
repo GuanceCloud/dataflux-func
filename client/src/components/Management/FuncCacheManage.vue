@@ -106,7 +106,7 @@ Using {0} and {1} to setting and getting cache data in Script: 可以使用 {0} 
               <span v-if="scope.row.ttl === -1" class="text-bad">{{ $t('Never') }}</span>
               <template v-else>
                 <code class="text-good">{{ scope.row.ttl }}</code>
-                <small class="text-info">{{ $t('(') }}{{ scope.row.ttl * 1000 + Date.now()  | fromNow }}{{ $t(')') }}</small>
+                <small class="text-info">{{ $t('(') }}{{ scope.row.ttl * 1000 + Date.now() | toFuture }}{{ $t(')') }}</small>
               </template>
             </template>
           </el-table-column>

@@ -4,7 +4,9 @@
       <span class="datetime-tip">{{ datetime | datetime }}</span>
     </div>
     <span>
-      <span>{{ datetime | fromNow }}</span>
+      <span v-if="fromNowLimit === 'before'">{{ datetime | toNow }}</span>
+      <span v-else-if="fromNowLimit === 'after'">{{ datetime | toFuture }}</span>
+      <span v-else>{{ datetime | fromNow }}</span>
     </span>
   </el-tooltip>
 
@@ -22,7 +24,8 @@ export default {
   computed: {
   },
   props: {
-    datetime: String,
+    datetime    : String,
+    fromNowLimit: String
   },
   computed: {
   },
