@@ -28,176 +28,240 @@ var GROUP_TIME = 10 * 60;
  * System stats data in Redis
  */
 EntityModel.prototype.getSystemMetrics = function(callback) {
-  // TODO 优化 Key 搜索
   var self = this;
 
   var data = {};
 
   self.locals.cacheDB.skipLog = true;
-  async.parallel([
-    // Get CPU/Memory usage
+
+  // 所有 queue 列表
+  var queues = toolkit.range(10);
+
+  // 所有 hostname 列表
+  var hostnames = [];
+
+  // 所有数据库表
+  var tables = [];
+
+  // 所有最近被调用函数 ID
+  var recentCalledFuncIds = [];
+
+  async.series([
+    // 获取所有 hostname 列表
     function(asyncCallback) {
-      var metricScaleMap = {
-        serverCPUPercent        : 1,
-        serverMemoryRSS         : 1024 * 1024,
-        serverMemoryHeapTotal   : 1024 * 1024,
-        serverMemoryHeapUsed    : 1024 * 1024,
-        serverMemoryHeapExternal: 1024 * 1024,
-        workerCPUPercent        : 1,
-        workerMemoryPSS         : 1024 * 1024,
-      };
-
-      async.eachOfSeries(metricScaleMap, function(scale, metric, eachCallback) {
-        data[metric] = {};
-
-        var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'hostname', '*']);
-        var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, scale: scale, fillZero: true };
-
-        self.locals.cacheDB.tsGetPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
-          if (err) return eachCallback(err);
-
-          for (var k in tsDataMap) {
-            var hostname = toolkit.parseCacheKey(k).tags.hostname;
-            data[metric][hostname] = tsDataMap[k];
-          }
-
-          return eachCallback();
-        });
-      }, asyncCallback);
-    },
-    // Get DB Disk usage
-    function(asyncCallback) {
-      var dbMetrics = [
-        'dbTableTotalUsed',
-        'dbTableDataUsed',
-        'dbTableIndexUsed',
-      ];
-      async.eachSeries(dbMetrics, function(metric, eachCallback) {
-        data[metric] = {};
-
-        var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'table', '*']);
-        var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, scale: 1024 * 1024, fillZero: true };
-
-        self.locals.cacheDB.tsGetPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
-          if (err) return eachCallback(err);
-
-          for (var k in tsDataMap) {
-            var table = toolkit.parseCacheKey(k).tags.table;
-            data[metric][table] = tsDataMap[k];
-          }
-
-          return eachCallback();
-        });
-      }, asyncCallback);
-    },
-    // Get Cache DB usage
-    function(asyncCallback) {
-      var metricScaleMap = {
-        cacheDBKeyUsed   : 1,
-        cacheDBMemoryUsed: 1024 * 1024,
-      };
-
-      async.eachOfSeries(metricScaleMap, function(scale, metric, eachCallback) {
-        var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric]);
-        var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, scale: scale, fillZero: true };
-
-        self.locals.cacheDB.tsGet(cacheKey, opt, function(err, tsData) {
-          if (err) return eachCallback(err);
-
-          data[metric] = tsData;
-          return eachCallback();
-        });
-      }, asyncCallback);
-    },
-    // Get Func call count
-    function(asyncCallback) {
-      var metric = 'funcCallCount';
-
-      data[metric] = {};
-
-      var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'funcId', '*']);
-      var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, agg: 'sum', fillZero: true };
-
-      self.locals.cacheDB.tsGetPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
+      var cacheKey = toolkit.getMonitorCacheKey('heartbeat', 'serviceInfo');
+      self.locals.cacheDB.hkeysExpires(cacheKey, CONFIG._MONITOR_REPORT_EXPIRES, function(err, cacheRes) {
         if (err) return asyncCallback(err);
 
-        for (var k in tsDataMap) {
-          var funcId = toolkit.parseCacheKey(k).tags.funcId;
-          data[metric][funcId] = tsDataMap[k];
-        }
+        hostnames = toolkit.noDuplication(cacheRes.map(function(field) {
+          return toolkit.parseColonTags(field).hostname;
+        }));
 
         return asyncCallback();
       });
     },
-    // Get Delay queue length
+    // 获取所有数据库表名
     function(asyncCallback) {
-      var metric = 'delayQueueLength';
-
-      data[metric] = {};
-
-      var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'queue', '*']);
-      var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, fillZero: true };
-
-      self.locals.cacheDB.tsGetPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
+      var sql = 'SHOW TABLES';
+      self.locals.db.query(sql, null, function(err, dbRes) {
         if (err) return asyncCallback(err);
 
-        for (var k in tsDataMap) {
-          var queue = toolkit.parseCacheKey(k).tags.queue;
-          data[metric][queue] = tsDataMap[k];
-        }
-
-        return asyncCallback();
-      });
-    },
-    // Get Worker queue length
-    function(asyncCallback) {
-      var metric = 'workerQueueLength';
-
-      data[metric] = {};
-
-      var cacheKeyPattern = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'queue', '*']);
-      var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, fillZero: true };
-
-      self.locals.cacheDB.tsGetPattern(cacheKeyPattern, opt, function(err, tsDataMap) {
-        if (err) return asyncCallback(err);
-
-        for (var k in tsDataMap) {
-          var queue = toolkit.parseCacheKey(k).tags.queue;
-          data[metric][queue] = tsDataMap[k];
-        }
-
-        return asyncCallback();
-      });
-    },
-    // Get Matched route count
-    function(asyncCallback) {
-      var metric = 'matchedRouteCount';
-
-      var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'date', toolkit.getDateString()]);
-
-      self.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
-        if (err) return asyncCallback(err);
-
-        var parsedData = [];
-        for (var route in cacheRes) {
-          var count = parseInt(cacheRes[route]) || 0;
-          parsedData.push([route, count]);
-        }
-        parsedData.sort(function(a, b) {
-          return b[1] - a[1];
+        dbRes.forEach(function(d) {
+          tables.push(Object.values(d).pop());
         });
 
-        data[metric] = parsedData;
-
         return asyncCallback();
       });
+    },
+    // 获取最近被调用函数 ID
+    function(asyncCallback) {
+      var cacheKey = toolkit.getMonitorCacheKey('monitor', 'recentCalledFuncIds')
+      self.locals.cacheDB.hgetallExpires(cacheKey, CONFIG.REDIS_TS_MAX_AGE, function(err, cacheRes) {
+        if (err) return asyncCallback(err);
+
+        recentCalledFuncIds = Object.keys(cacheRes);
+
+        return asyncCallback();
+      })
+    },
+    // 查询指标数据
+    function(asyncCallback) {
+      async.parallel([
+        // Get CPU/Memory usage
+        function(parallelCallback) {
+          var metricScaleMap = {
+            serverCPUPercent        : 1,
+            serverMemoryRSS         : 1024 * 1024,
+            serverMemoryHeapTotal   : 1024 * 1024,
+            serverMemoryHeapUsed    : 1024 * 1024,
+            serverMemoryHeapExternal: 1024 * 1024,
+            workerCPUPercent        : 1,
+            workerMemoryPSS         : 1024 * 1024,
+          };
+
+          async.eachOfSeries(metricScaleMap, function(scale, metric, eachCallback) {
+            data[metric] = {};
+
+            var cacheKeys = hostnames.map(function(hostname) {
+              return toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'hostname', hostname]);
+            });
+
+            var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, scale: scale, fillZero: true };
+            self.locals.cacheDB.tsMget(cacheKeys, opt, function(err, tsDataMap) {
+              if (err) return eachCallback(err);
+
+              for (var k in tsDataMap) {
+                var hostname = toolkit.parseCacheKey(k).tags.hostname;
+                data[metric][hostname] = tsDataMap[k];
+              }
+
+              return eachCallback();
+            });
+          }, parallelCallback);
+        },
+        // Get DB Disk usage
+        function(parallelCallback) {
+          var dbMetrics = [
+            'dbTableTotalUsed',
+            'dbTableDataUsed',
+            'dbTableIndexUsed',
+          ];
+          async.eachSeries(dbMetrics, function(metric, eachCallback) {
+            data[metric] = {};
+
+            var cacheKeys = tables.map(function(table) {
+              return toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'table', table]);
+            });
+
+            var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, scale: 1024 * 1024, fillZero: true };
+            self.locals.cacheDB.tsMget(cacheKeys, opt, function(err, tsDataMap) {
+              if (err) return eachCallback(err);
+
+              for (var k in tsDataMap) {
+                var table = toolkit.parseCacheKey(k).tags.table;
+                data[metric][table] = tsDataMap[k];
+              }
+
+              return eachCallback();
+            });
+          }, parallelCallback);
+        },
+        // Get Cache DB usage
+        function(parallelCallback) {
+          var metricScaleMap = {
+            cacheDBKeyUsed   : 1,
+            cacheDBMemoryUsed: 1024 * 1024,
+          };
+
+          async.eachOfSeries(metricScaleMap, function(scale, metric, eachCallback) {
+            var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric]);
+            var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, scale: scale, fillZero: true };
+
+            self.locals.cacheDB.tsGet(cacheKey, opt, function(err, tsData) {
+              if (err) return eachCallback(err);
+
+              data[metric] = tsData;
+              return eachCallback();
+            });
+          }, parallelCallback);
+        },
+        // Get Func call count
+        function(parallelCallback) {
+          var metric = 'funcCallCount';
+
+          data[metric] = {};
+
+          var cacheKeys = recentCalledFuncIds.map(function(funcId) {
+            return toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'funcId', funcId]);
+          });
+
+          var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, agg: 'sum', fillZero: true };
+          self.locals.cacheDB.tsMget(cacheKeys, opt, function(err, tsDataMap) {
+            if (err) return parallelCallback(err);
+
+            for (var k in tsDataMap) {
+              var funcId = toolkit.parseCacheKey(k).tags.funcId;
+              data[metric][funcId] = tsDataMap[k];
+            }
+
+            return parallelCallback();
+          });
+        },
+        // Get Delay queue length
+        function(parallelCallback) {
+          var metric = 'delayQueueLength';
+
+          data[metric] = {};
+
+          var cacheKeys = queues.map(function(queue) {
+            return toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'queue', queue]);
+          });
+
+          var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, fillZero: true };
+          self.locals.cacheDB.tsMget(cacheKeys, opt, function(err, tsDataMap) {
+            if (err) return parallelCallback(err);
+
+            for (var k in tsDataMap) {
+              var queue = toolkit.parseCacheKey(k).tags.queue;
+              data[metric][queue] = tsDataMap[k];
+            }
+
+            return parallelCallback();
+          });
+        },
+        // Get Worker queue length
+        function(parallelCallback) {
+          var metric = 'workerQueueLength';
+
+          data[metric] = {};
+
+          var cacheKeys = queues.map(function(queue) {
+            return toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'queue', queue]);
+          });
+
+          var opt = { timeUnit: 'ms', groupTime: GROUP_TIME, fillZero: true };
+          self.locals.cacheDB.tsMget(cacheKeys, opt, function(err, tsDataMap) {
+            if (err) return parallelCallback(err);
+
+            for (var k in tsDataMap) {
+              var queue = toolkit.parseCacheKey(k).tags.queue;
+              data[metric][queue] = tsDataMap[k];
+            }
+
+            return parallelCallback();
+          });
+        },
+        // Get Matched route count
+        function(parallelCallback) {
+          var metric = 'matchedRouteCount';
+
+          var cacheKey = toolkit.getMonitorCacheKey('monitor', 'systemMetrics', ['metric', metric, 'date', toolkit.getDateString()]);
+
+          self.cacheDB.hgetall(cacheKey, function(err, cacheRes) {
+            if (err) return parallelCallback(err);
+
+            var parsedData = [];
+            for (var route in cacheRes) {
+              var count = parseInt(cacheRes[route]) || 0;
+              parsedData.push([route, count]);
+            }
+            parsedData.sort(function(a, b) {
+              return b[1] - a[1];
+            });
+
+            data[metric] = parsedData;
+
+            return parallelCallback();
+          });
+        },
+      ], asyncCallback)
     },
   ], function(err) {
     self.locals.cacheDB.skipLog = false;
 
     if (err) return callback(err);
     return callback(null, data);
-  })
+  });
 };
 
 EntityModel.prototype.listAbnormalRequests = function(type, callback) {

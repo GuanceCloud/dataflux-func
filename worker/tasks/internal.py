@@ -551,6 +551,9 @@ class FlushDataBuffer(BaseInternalTask):
         # 写入内置时序数据
         if count_map:
             for pk, c in count_map.items():
+                cache_key = toolkit.get_monitor_cache_key('monitor', 'recentCalledFuncIds')
+                self.cache_db.hset(cache_key, c['funcId'], toolkit.json_dumps({ 'ts': c['timestamp'] }))
+
                 cache_key = toolkit.get_monitor_cache_key('monitor', 'systemMetrics', ['metric', 'funcCallCount', 'funcId', c['funcId']])
                 self.cache_db.ts_add(cache_key, c['count'], timestamp=c['timestamp'], mode='addUp')
 
@@ -874,6 +877,9 @@ class AutoClean(BaseInternalTask):
 
             # 服务（Pod）列表
             ( toolkit.get_monitor_cache_key('heartbeat', 'serviceInfo'), CONFIG['_MONITOR_REPORT_EXPIRES'] ),
+
+            # 近期被调用函数
+            ( toolkit.get_monitor_cache_key('monitor', 'recentCalledFuncIds'), CONFIG['REDIS_TS_MAX_AGE'] ),
         ]
 
         for opt in options:

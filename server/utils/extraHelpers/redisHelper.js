@@ -837,6 +837,36 @@ RedisHelper.prototype.hgetPattern = function(key, pattern, callback) {
   });
 };
 
+RedisHelper.prototype.hkeysExpires = function(key, expires, callback) {
+  var self = this;
+
+  if (self.isDryRun) return callback();
+
+  if (!this.skipLog) {
+    this.logger.debug('[REDIS EXT] HKEYS expires `{0}` `{1}` `{2}`', key, expires);
+  }
+
+  var now = toolkit.getTimestamp();
+
+  self.client.hgetall(key, function(err, fieldValues) {
+    if (err) return callback && callback(err);
+
+    var res = {};
+    for (var k in fieldValues) {
+      var v = JSON.parse(fieldValues[k]);
+
+      if (!expires) {
+        res[k] = v;
+      } else {
+        var ts = v.ts || v.timestamp;
+        if (ts && ts + expires > now) res[k] = v;
+      }
+    }
+
+    return callback(null, Object.keys(res));
+  });
+};
+
 RedisHelper.prototype.hgetExpires = function(key, field, expires, callback) {
   var self = this;
 
@@ -871,7 +901,7 @@ RedisHelper.prototype.hgetallExpires = function(key, expires, callback) {
   if (self.isDryRun) return callback();
 
   if (!this.skipLog) {
-    this.logger.debug('[REDIS EXT] HGETALL expires `{0}` `{1}` `{2}`', key, expires);
+    this.logger.debug('[REDIS EXT] HGETALL expires `{0}` `{1}`', key, expires);
   }
 
   var now = toolkit.getTimestamp();
@@ -1436,6 +1466,27 @@ RedisHelper.prototype.tsGet = function(key, options, callback) {
   });
 };
 
+RedisHelper.prototype.tsMget = function(keys, options, callback) {
+  var self = this;
+
+  var tsDataMap = {};
+
+  if (toolkit.isNothing(keys)) return callback(null, tsDataMap);
+
+  async.eachLimit(keys, 5, function(key, eachCallback) {
+    self.tsGet(key, options, function(err, tsData) {
+      if (err) return eachCallback(err);
+
+      tsDataMap[key] = tsData;
+
+      return eachCallback();
+    });
+  }, function(err) {
+    if (err) return callback(err);
+    return callback(err, tsDataMap);
+  });
+};
+
 RedisHelper.prototype.tsGetPattern = function(pattern, options, callback) {
   var self = this;
 
@@ -1451,15 +1502,13 @@ RedisHelper.prototype.tsGetPattern = function(pattern, options, callback) {
       });
     },
     function(asyncCallback) {
-      async.eachSeries(keys, function(key, eachCallback) {
-        self.tsGet(key, options, function(err, tsData) {
-          if (err) return eachCallback(err);
+      self.tsMget(keys, options, function(err, _tsDataMap) {
+        if (err) return asyncCallback(err);
 
-          tsDataMap[key] = tsData;
+        tsDataMap = _tsDataMap;
 
-          return eachCallback();
-        });
-      }, asyncCallback);
+        return asyncCallback();
+      });
     },
   ], function(err) {
     if (err) return asyncCallback(err);

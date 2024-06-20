@@ -2627,3 +2627,25 @@ var sortJSONKeys = toolkit.sortJSONKeys = function sortJSONKeys(j, order) {
 var byteSizeHuman = toolkit.byteSizeHuman = function byteSizeHuman(s) {
   return byteSize(s, { units: 'iec' });
 };
+
+var range = toolkit.range = function range() {
+  var start = 0;
+  var stop  = 0;
+  var step  = 1;
+
+  var args = Array.prototype.slice.call(arguments);
+  if (args.length === 1) {
+    stop = args[0];
+  } else if (args.length === 2) {
+    start = args[0];
+    stop  = args[1];
+  } else if (args.length > 2) {
+    start = args[0];
+    stop  = args[1];
+    step  = args[2];
+  }
+
+  var l = [];
+  for (var i = start; i < stop; i += step)  l.push(i);
+  return l;
+};
