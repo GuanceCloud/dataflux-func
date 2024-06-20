@@ -1531,26 +1531,24 @@ RedisHelper.prototype.putTask = function(taskReq, callback) {
     SUB_CLIENT = self.client.duplicate();
     TASK_ON_RESPONSE_MAP = {};
 
-    // TODO 优化 Key 搜索
-    var taskRespCacheKey = toolkit.getWorkerCacheKey('task', 'response', [ 'name', '*', 'id', '*' ]);
-    SUB_CLIENT.psubscribe(taskRespCacheKey);
+    var taskRespTopic = toolkit.getGlobalCacheKey('task', 'response');
+    SUB_CLIENT.subscribe(taskRespTopic);
 
-    SUB_CLIENT.on('pmessage', function(pattern, channel, message) {
-      var taskId = toolkit.parseCacheKey(channel).tags.id;
-
-      var onResponse = TASK_ON_RESPONSE_MAP[taskId];
-      delete TASK_ON_RESPONSE_MAP[taskId];
-
-      if ('function' !== typeof onResponse) return;
-
+    SUB_CLIENT.on('message', function(channel, message) {
       var taskResp = message;
+
       if (taskResp) {
         try {
           taskResp = JSON.parse(taskResp);
         } catch(ex) {
-          // Nope
+          return;
         }
       }
+
+      var onResponse = TASK_ON_RESPONSE_MAP[taskResp.id];
+      delete TASK_ON_RESPONSE_MAP[taskResp.id];
+
+      if ('function' !== typeof onResponse) return;
 
       onResponse(taskResp);
     });

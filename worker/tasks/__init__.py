@@ -492,12 +492,12 @@ class BaseTask(object):
             self.guance_data_upload_errors.append(e)
 
     def response(self, task_resp):
-        cache_key = toolkit.get_cache_key('task', 'response', [ 'name', self.name, 'id', self.task_id ])
+        task_resp_topic = toolkit.get_global_cache_key('task', 'response')
         task_resp_dumps = toolkit.json_dumps(task_resp, ignore_nothing=True, indent=None)
 
-        self.cache_db.publish(cache_key, task_resp_dumps)
+        self.cache_db.publish(task_resp_topic, task_resp_dumps)
 
-        self.logger.debug(f'[TASK RESP] Published to: `{cache_key}`')
+        self.logger.debug(f'[TASK RESP] Published to: `{task_resp_topic}`')
 
     def create_task_request(self):
         task_req = {
