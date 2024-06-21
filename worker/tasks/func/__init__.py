@@ -642,6 +642,130 @@ class FuncStoreHelper(object):
         finally:
             return value
 
+    def mget(self, keys, scope=None):
+        if scope is None:
+            scope = self.default_scope
+
+        if not keys:
+            return {}
+
+        keys = toolkit.as_array(keys)
+        for key in keys:
+            if len(key) > 256:
+                e = Exception('`key` is too long. Length of `key` should be less then 256')
+                raise e
+
+        if len(scope) > 256:
+            e = Exception('`scope` is too long. Length of `scope` should be less then 256')
+            raise e
+
+        store_ids = list(map(lambda k: self._get_id(k, scope), keys))
+
+        sql = '''
+            SELECT
+                `key`
+                ,`valueJSON`
+            FROM biz_main_func_store
+            WHERE
+                    `id` IN ( ? )
+                AND (
+                           `expireAt` IS NULL
+                        OR `expireAt` >= UNIX_TIMESTAMP()
+                    )
+            '''
+        sql_params = [ store_ids ]
+        db_res = self._task.db.query(sql, sql_params)
+
+        result = dict([ (k, None) for k in keys ])
+        for d in db_res:
+            k = d['key']
+            v = d['valueJSON']
+            try:
+                v = toolkit.json_loads(v)
+            except Exception as e:
+                pass
+            finally:
+                result[k] = v
+
+        return result
+
+    def getall(self, scope=None):
+        if scope is None:
+            scope = self.default_scope
+
+        if len(scope) > 256:
+            e = Exception('`scope` is too long. Length of `scope` should be less then 256')
+            raise e
+
+        sql = '''
+            SELECT
+                `key`
+                ,`valueJSON`
+            FROM biz_main_func_store
+            WHERE
+                    `scope` = ?
+                AND (
+                           `expireAt` IS NULL
+                        OR `expireAt` >= UNIX_TIMESTAMP()
+                    )
+            '''
+        sql_params = [ scope ]
+        db_res = self._task.db.query(sql, sql_params)
+
+        result = {}
+        for d in db_res:
+            k = d['key']
+            v = d['valueJSON']
+            try:
+                v = toolkit.json_loads(v)
+            except Exception as e:
+                pass
+            finally:
+                result[k] = v
+
+        return result
+
+    def get_pattern(self, pattern='*', scope=None):
+        if pattern == '*':
+            return self.getall(scope=scope)
+
+        if scope is None:
+            scope = self.default_scope
+
+        if len(scope) > 256:
+            e = Exception('`scope` is too long. Length of `scope` should be less then 256')
+            raise e
+
+        sql = '''
+            SELECT
+                `key`
+                ,`valueJSON`
+            FROM biz_main_func_store
+            WHERE
+                    `scope` =    ?
+                AND `key`   LIKE ?
+                AND (
+                           `expireAt` IS NULL
+                        OR `expireAt` >= UNIX_TIMESTAMP()
+                    )
+            '''
+        sql_pattern = pattern.replace('*', '%')
+        sql_params = [ scope, sql_pattern ]
+        db_res = self._task.db.query(sql, sql_params)
+
+        result = {}
+        for d in db_res:
+            k = d['key']
+            v = d['valueJSON']
+            try:
+                v = toolkit.json_loads(v)
+            except Exception as e:
+                pass
+            finally:
+                result[k] = v
+
+        return result
+
     def delete(self, key, scope=None):
         if scope is None:
             scope = self.default_scope
