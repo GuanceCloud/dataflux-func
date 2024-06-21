@@ -163,23 +163,33 @@ package or package==1.2.3: package 或 package==1.2.3
         <template v-if="installedPackages.length > 0">
           <br>
           <el-table class="common-table" :data="installedPackages">
-            <el-table-column :label="$t('Package')" sortable sort-by="name" width="420">
+            <el-table-column :label="$t('Package')" sortable sort-by="name">
               <template slot-scope="scope">
                 <code>{{ scope.row.name }}</code>
               </template>
             </el-table-column>
 
-            <el-table-column :label="$t('Built-in Version')" width="200">
+            <el-table-column :label="$t('Built-in Version')" width="220">
               <template slot-scope="scope">
-                <code>{{ scope.row.builtinVersion }}</code>
+                <template v-if="scope.row.builtinVersion">
+                  <el-link :href="`https://pypi.org/project/${scope.row.name}/${scope.row.builtinVersion}/`" target="_blank">
+                    <i class="fa fa-fw fa-external-link"></i>
+                    <code>{{ scope.row.builtinVersion }}</code>
+                  </el-link>
+                </template>
               </template>
             </el-table-column>
 
-            <el-table-column :label="$t('User-installed Version')" width="200">
+            <el-table-column :label="$t('User-installed Version')" width="220">
               <template slot-scope="scope">
-                <el-tooltip effect="dark" :content="$t('Built-in versions have a higher priority than user-installed versions')" placement="top" :disabled="!scope.row.isOverrided">
-                  <code :class="{'deleted': scope.row.isOverrided}">{{ scope.row.userInstalledVersion }}</code>
-                </el-tooltip>
+                <template v-if="scope.row.userInstalledVersion">
+                  <el-tooltip effect="dark" :content="$t('Built-in versions have a higher priority than user-installed versions')" placement="top" :disabled="!scope.row.isOverrided">
+                    <el-link :href="`https://pypi.org/project/${scope.row.name}/${scope.row.userInstalledVersion}/`" target="_blank">
+                      <i class="fa fa-fw fa-external-link"></i>
+                      <code :class="{ deleted: scope.row.isOverrided }">{{ scope.row.userInstalledVersion }}</code>
+                    </el-link>
+                  </el-tooltip>
+                </template>
               </template>
             </el-table-column>
           </el-table>
