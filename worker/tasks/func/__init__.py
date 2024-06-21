@@ -525,6 +525,9 @@ class FuncStoreHelper(object):
         store_id = 'fnst-' + toolkit.get_md5(str_to_md5)
         return store_id
 
+    def _convert_pattern(self, pattern):
+        return pattern.replace('%', '\%').replace('_', '\_').replace('*', '%').replace('?', '_')
+
     def set(self, key, value, scope=None, expires=None, not_exists=False, expire=None):
         expires = expires or expire
 
@@ -582,11 +585,74 @@ class FuncStoreHelper(object):
             sql_params = [store_id, key, value_json, scope, expires]
             self._task.db.query(sql, sql_params)
 
+    def mset(self, key_values, scope=None, expires=None, not_exists=False, expire=None):
+        expires = expires or expire
+
+        if scope is None:
+            scope = self.default_scope
+
+        for key in key_values.keys():
+            if len(key) > 256:
+                e = Exception('`key` is too long. Length of `key` should be less then 256')
+                raise e
+
+        if len(scope) > 256:
+            e = Exception('`scope` is too long. Length of `scope` should be less then 256')
+            raise e
+
+        # 获取当前 ID
+        sql = '''
+            SELECT
+                `id`
+            FROM biz_main_func_store
+            WHERE
+                `scope` = ?
+            '''
+        sql_params = [scope]
+        db_res = self._task.db.query(sql, sql_params)
+
+        current_store_ids = set(map(lambda x: x['id'], db_res))
+
+        # 数据入库
+        for key, value in key_values.items():
+            store_id   = self._get_id(key, scope)
+            value_json = toolkit.json_dumps(value)
+
+            if store_id in current_store_ids and not_exists:
+                continue
+
+            if store_id in current_store_ids:
+                # 已存在，更新
+                sql = '''
+                    UPDATE biz_main_func_store
+                    SET
+                        `valueJSON` = ?
+                        ,`expireAt`  = UNIX_TIMESTAMP() + ?
+                    WHERE
+                        `id` = ?
+                    '''
+                sql_params = [value_json, expires, store_id]
+                self._task.db.query(sql, sql_params)
+
+            else:
+                # 不存在，插入
+                sql = '''
+                    INSERT IGNORE INTO biz_main_func_store
+                    SET
+                        `id`        = ?
+                        ,`key`       = ?
+                        ,`valueJSON` = ?
+                        ,`scope`     = ?
+                        ,`expireAt`  = UNIX_TIMESTAMP() + ?
+                    '''
+                sql_params = [store_id, key, value_json, scope, expires]
+                self._task.db.query(sql, sql_params)
+
     def keys(self, pattern='*', scope=None):
         if scope is None:
             scope = self.default_scope
 
-        pattern = pattern.replace('%', '\%').replace('_', '\_').replace('*', '%').replace('?', '_')
+        pattern = self._convert_pattern(pattern)
 
         sql = '''
             SELECT
@@ -749,8 +815,8 @@ class FuncStoreHelper(object):
                         OR `expireAt` >= UNIX_TIMESTAMP()
                     )
             '''
-        sql_pattern = pattern.replace('*', '%')
-        sql_params = [ scope, sql_pattern ]
+        pattern = self._convert_pattern(pattern)
+        sql_params = [ scope, pattern ]
         db_res = self._task.db.query(sql, sql_params)
 
         result = {}
