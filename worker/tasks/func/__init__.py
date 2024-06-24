@@ -1913,7 +1913,8 @@ class FuncBaseTask(BaseTask):
 
     def _get_func_defination(self, F):
         f_co   = six.get_function_code(F)
-        f_name = f_co.co_name
+        # f_name = f_co.co_name
+        f_name = F.__name__
         if f_name:
             f_name = f_name.strip()
 
