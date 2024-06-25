@@ -1064,9 +1064,13 @@ class FuncCacheHelper(object):
         return self.brpop(*args, **kwargs)
 
     # Set
-    def sadd(self, key, value, scope=None):
+    def sadd(self, key, member, scope=None):
         key = self._get_scoped_key(key, scope)
-        return self._task.cache_db.sadd(key, value)
+        return self._task.cache_db.sadd(key, member)
+
+    def srem(self, key, member, scope=None):
+        key = self._get_scoped_key(key, scope)
+        return self._task.cache_db.srem(key, member)
 
     def scard(self, key, scope=None):
         key = self._get_scoped_key(key, scope)
@@ -1076,9 +1080,9 @@ class FuncCacheHelper(object):
         key = self._get_scoped_key(key, scope)
         return self._task.cache_db.smembers(key)
 
-    def sismember(self, key, value, scope=None):
+    def sismember(self, key, member, scope=None):
         key = self._get_scoped_key(key, scope)
-        return self._task.cache_db.sismember(key, value)
+        return self._task.cache_db.sismember(key, member)
 
     # ZSet
     def zadd(self, key, member_scores, scope=None):

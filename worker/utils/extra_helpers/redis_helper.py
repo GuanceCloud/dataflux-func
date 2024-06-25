@@ -419,11 +419,17 @@ class RedisHelper(object):
         return self.brpop(*args, **kwargs)
 
     # Set
-    def sadd(self, key, value):
-        values = toolkit.as_array(value)
-        if not values:
+    def sadd(self, key, member):
+        members = toolkit.as_array(member)
+        if not members:
             return 0
-        return self._task.cache_db.run('sadd', key, *values)
+        return self._task.cache_db.run('sadd', key, *members)
+
+    def srem(self, key, member):
+        members = toolkit.as_array(member)
+        if not members:
+            return 0
+        return self._task.cache_db.run('srem', key, *members)
 
     def scard(self, key):
         return self._task.cache_db.run('scard', key)
@@ -431,8 +437,8 @@ class RedisHelper(object):
     def smembers(self, key):
         return self._convert_result(self._task.cache_db.run('smembers', key))
 
-    def sismember(self, key, value):
-        return self._task.cache_db.run('sismember', key, value)
+    def sismember(self, key, member):
+        return self._task.cache_db.run('sismember', key, member)
 
     # ZSet
     def zadd(self, key, member_scores):

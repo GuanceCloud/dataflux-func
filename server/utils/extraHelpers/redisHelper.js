@@ -489,7 +489,7 @@ RedisHelper.prototype.push = function(key, value, callback) {
   var values = toolkit.asArray(value);
   if (toolkit.isNothing(values)) return callback(null, 0);
 
-  return this.run('lpush', key, value, callback);
+  return this.run('lpush', key, values, callback);
 };
 
 RedisHelper.prototype.rpush = function(key, value, callback) {
@@ -498,7 +498,7 @@ RedisHelper.prototype.rpush = function(key, value, callback) {
   var values = toolkit.asArray(value);
   if (toolkit.isNothing(values)) return callback(null, 0);
 
-  return this.run('rpush', key, value, callback);
+  return this.run('rpush', key, values, callback);
 };
 
 RedisHelper.prototype.lpop = function(key, callback) {
@@ -535,13 +535,22 @@ RedisHelper.prototype.ltrim = function(key, start, stop, callback) {
 };
 
 // Set
-RedisHelper.prototype.sadd = function(key, value, callback) {
+RedisHelper.prototype.sadd = function(key, member, callback) {
   if (this.isDryRun) return callback(null, 'OK');
 
-  var values = toolkit.asArray(value);
-  if (toolkit.isNothing(values)) return callback(null, 0);
+  var members = toolkit.asArray(member);
+  if (toolkit.isNothing(members)) return callback(null, 0);
 
-  return this.run('sadd', key, value, callback);
+  return this.run('sadd', key, members, callback);
+};
+
+RedisHelper.prototype.srem = function(key, member, callback) {
+  if (this.isDryRun) return callback(null, 'OK');
+
+  var members = toolkit.asArray(member);
+  if (toolkit.isNothing(members)) return callback(null, 0);
+
+  return this.run('srem', key, members, callback);
 };
 
 RedisHelper.prototype.scard = function(key, callback) {
@@ -552,8 +561,8 @@ RedisHelper.prototype.smembers = function(key, callback) {
   return this.run('smembers', key, callback);
 };
 
-RedisHelper.prototype.sismember = function(key, value, callback) {
-  return this.run('sismember', key, value, callback);
+RedisHelper.prototype.sismember = function(key, member, callback) {
+  return this.run('sismember', key, member, callback);
 };
 
 // ZSet
