@@ -703,6 +703,12 @@ exports.detailedRedisReport = function(req, res, next) {
 
                 var type = cacheRes;
 
+                if (type === 'none') {
+                  // 不记录无类型的 Key（已过期）
+                  delete REDIS_KEYS[key];
+                  return innerCallback();
+                }
+
                 REDIS_KEYS[key].type = type;
 
                 if (REDIS_KEY_PATTERNS[keyPattern].type.indexOf(type) < 0) {
@@ -761,6 +767,7 @@ exports.detailedRedisReport = function(req, res, next) {
           for (var key in REDIS_KEYS) {
             var keyDetail = REDIS_KEYS[key];
 
+            // 记录 Key 类型数量
             keyTypeCount[keyDetail.type] = keyTypeCount[keyDetail.type] || 0;
             keyTypeCount[keyDetail.type] += 1;
 
@@ -769,8 +776,18 @@ exports.detailedRedisReport = function(req, res, next) {
           }
 
           for (var keyPattern in REDIS_KEY_PATTERNS) {
-            if (REDIS_KEY_PATTERNS[keyPattern].type.length === 1) {
+            if (REDIS_KEY_PATTERNS[keyPattern].type.length === 0) {
+              // 删除无类型的 Key（已过期的 Key）
+              delete REDIS_KEY_PATTERNS[keyPattern];
+              continue;
+
+            } else if (REDIS_KEY_PATTERNS[keyPattern].type.length === 1) {
+              // 单一类型单独展示
               REDIS_KEY_PATTERNS[keyPattern].type = REDIS_KEY_PATTERNS[keyPattern].type[0];
+
+            } else {
+              // 同类型合并展示
+              REDIS_KEY_PATTERNS[keyPattern].type = toolkit.noDuplication(REDIS_KEY_PATTERNS[keyPattern].type);
             }
 
             // 多个 Key 做统计
