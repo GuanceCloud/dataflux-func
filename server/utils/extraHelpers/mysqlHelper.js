@@ -13,7 +13,7 @@ var CONFIG    = require('../yamlResources').get('CONFIG');
 var toolkit   = require('../toolkit');
 var logHelper = require('../logHelper');
 
-var jsonFieldCompatible = function(field) {
+var jsonExtractCompatible = function(field) {
   if (field.indexOf('->') < 0) return field;
 
   var arrowExpr = '->';
@@ -21,19 +21,21 @@ var jsonFieldCompatible = function(field) {
     arrowExpr = '->>';
   }
 
-  var _fieldJSONPath = field.split(arrowExpr);
+  var _fieldAs = field.split(' AS ');
+  var _fieldJSONPath = _fieldAs[0].split(arrowExpr);
   var _field = _fieldJSONPath[0];
   var _path  = _fieldJSONPath[1];
 
-  var jsonField = '';
+  var jsonExtractField = '';
   if (arrowExpr === '->') {
-    jsonField = toolkit.strf('JSON_EXTRACT({0}, {1})', _field, sqlstring.escape(_path));
+    jsonExtractField = toolkit.strf('JSON_EXTRACT({0}, {1})', _field, sqlstring.escape(_path));
 
   } else if (arrowExpr === '->>') {
-    jsonField = toolkit.strf('JSON_UNQUOTE(JSON_EXTRACT({0}, {1}))', _field, sqlstring.escape(_path));
+    jsonExtractField = toolkit.strf('JSON_UNQUOTE(JSON_EXTRACT({0}, {1}))', _field, sqlstring.escape(_path));
   }
 
-  return jsonField;
+  _fieldAs[0] = jsonExtractField
+  return _fieldAs.join(' AS ');
 };
 
 function getConfig(c) {
@@ -102,7 +104,6 @@ var MySQLHelper = function(logger, config, debug) {
       return sql;
     },
     isnull: function(f, v) {
-      f = jsonFieldCompatible(f);
       if (toolkit.toBoolean(v)) {
         return toolkit.strf('{0} IS NULL', f);
       } else {
@@ -110,7 +111,6 @@ var MySQLHelper = function(logger, config, debug) {
       }
     },
     isnotnull: function(f, v) {
-      f = jsonFieldCompatible(f);
       if (toolkit.toBoolean(v)) {
         return toolkit.strf('{0} IS NOT NULL', f);
       } else {
@@ -118,7 +118,6 @@ var MySQLHelper = function(logger, config, debug) {
       }
     },
     isempty: function(f, v) {
-      f = jsonFieldCompatible(f);
       if (toolkit.toBoolean(v)) {
         return toolkit.strf("{0} IS NULL OR TRIM({0}) = ''", f);
       } else {
@@ -126,7 +125,6 @@ var MySQLHelper = function(logger, config, debug) {
       }
     },
     isnotempty: function(f, v) {
-      f = jsonFieldCompatible(f);
       if (toolkit.toBoolean(v)) {
         return toolkit.strf("{0} IS NOT NULL AND TRIM({0}) != ''", f);
       } else {
@@ -134,15 +132,12 @@ var MySQLHelper = function(logger, config, debug) {
       }
     },
     boolean: function(f, v) {
-      f = jsonFieldCompatible(f);
       return toolkit.strf('{0} = {1}', f, toolkit.toBoolean(v));
     },
     eq: function(f, v) {
-      f = jsonFieldCompatible(f);
       return toolkit.strf('{0} = {1}', f, self.escape(v));
     },
     eqwithnull: function(f, v) {
-      f = jsonFieldCompatible(f);
       if (v === '_NULL') {
         return toolkit.strf('{0} IS NULL', f);
       } else {
@@ -150,63 +145,48 @@ var MySQLHelper = function(logger, config, debug) {
       }
     },
     eqornull: function(f, v) {
-      f = jsonFieldCompatible(f);
       return toolkit.strf('{0} = {1} OR {0} IS NULL', f, self.escape(v));
     },
     ne: function(f, v) {
-      f = jsonFieldCompatible(f);
       return toolkit.strf('{0} != {1}', f, self.escape(v));
     },
     neornull: function(f, v) {
-      f = jsonFieldCompatible(f);
       return toolkit.strf('{0} != {1} OR {0} IS NULL', f, self.escape(v));
     },
     gt: function(f, v) {
-      f = jsonFieldCompatible(f);
       return toolkit.strf('{0} > {1}', f, self.escape(v));
     },
     lt: function(f, v) {
-      f = jsonFieldCompatible(f);
       return toolkit.strf('{0} < {1}', f, self.escape(v));
     },
     ge: function(f, v) {
-      f = jsonFieldCompatible(f);
       return toolkit.strf('{0} >= {1}', f, self.escape(v));
     },
     le: function(f, v) {
-      f = jsonFieldCompatible(f);
       return toolkit.strf('{0} <= {1}', f, self.escape(v));
     },
     like: function(f, v) {
-      f = jsonFieldCompatible(f);
       return toolkit.strf("{0} LIKE {1}", f, self.escape('%' + v + '%'));
     },
     like_ci: function(f, v) {
-      f = jsonFieldCompatible(f);
       return toolkit.strf("LOWER({0}) LIKE LOWER({1})", f, self.escape('%' + v + '%'));
     },
     notlike: function(f, v) {
-      f = jsonFieldCompatible(f);
       return toolkit.strf("{0} NOT LIKE {1}", f, self.escape('%' + v + '%'));
     },
     notlike_ci: function(f, v) {
-      f = jsonFieldCompatible(f);
       return toolkit.strf("LOWER({0}) NOT LIKE LOWER({1})", f, self.escape('%' + v + '%'));
     },
     prelike: function(f, v) {
-      f = jsonFieldCompatible(f);
       return toolkit.strf("{0} LIKE {1}", f, self.escape(v + '%'));
     },
     prelike_ci: function(f, v) {
-      f = jsonFieldCompatible(f);
       return toolkit.strf("LOWER({0}) LIKE LOWER({1})", f, self.escape(v + '%'));
     },
     suflike: function(f, v) {
-      f = jsonFieldCompatible(f);
       return toolkit.strf("{0} LIKE {1}", f, self.escape('%' + v));
     },
     suflike_ci: function(f, v) {
-      f = jsonFieldCompatible(f);
       return toolkit.strf("LOWER({0}) LIKE LOWER({1})", f, self.escape('%' + v));
     },
     pattern: function(f, v) {
@@ -217,7 +197,6 @@ var MySQLHelper = function(logger, config, debug) {
       }
     },
     notpattern: function(f, v) {
-      f = jsonFieldCompatible(f);
       if (v.indexOf('*') > -1) {
         return toolkit.strf("{0} NOT REGEXP {1}", f, self.escape(toolkit.genRegExpByWildcard(v)));
       } else {
@@ -225,7 +204,6 @@ var MySQLHelper = function(logger, config, debug) {
       }
     },
     in: function(f, v) {
-      f = jsonFieldCompatible(f);
       v = toolkit.asArray(v);
 
       var values = [];
@@ -236,7 +214,6 @@ var MySQLHelper = function(logger, config, debug) {
       return toolkit.strf('{0} IN ({1})', f, values.join(', '));
     },
     notin: function(f, v) {
-      f = jsonFieldCompatible(f);
       v = toolkit.asArray(v);
 
       var values = [];

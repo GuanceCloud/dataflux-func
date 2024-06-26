@@ -1189,7 +1189,7 @@ exports.overview = function(req, res, next) {
             fields : [
               'cron.id',
               'cron.cronExpr',
-              "func.extraConfigJSON->>'$.fixedCronExpr' AS fixedCronExpr",
+              "JSON_UNQUOTE(JSON_EXTRACT(func.extraConfigJSON, '$.fixedCronExpr')) AS fixedCronExpr",
             ],
             filters: {
               'cron.isDisabled': { eq: false },

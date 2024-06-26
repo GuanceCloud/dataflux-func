@@ -228,7 +228,7 @@ class SystemMetric(BaseInternalTask):
             SELECT
                  cron.id
                 ,cron.cronExpr
-                ,func.extraConfigJSON->>'$.fixedCronExpr' AS fixedCronExpr
+                ,JSON_UNQUOTE(JSON_EXTRACT(func.extraConfigJSON, '$.fixedCronExpr')) AS fixedCronExpr
             FROM biz_main_cron_job AS cron
 
             JOIN biz_main_func AS func
@@ -833,19 +833,19 @@ class AutoClean(BaseInternalTask):
         sql = '''
             SELECT CONCAT('autoRun.cronJob-', id) AS originId FROM biz_main_func
             WHERE
-                extraConfigJSON->'$.integrationConfig.cronExpr' IS NOT NULL
+                JSON_EXTRACT(extraConfigJSON, '$.integrationConfig.cronExpr') IS NOT NULL
 
             UNION SELECT CONCAT('autoRun.onSystemLaunch-', id) AS originId FROM biz_main_func
             WHERE
-                extraConfigJSON->'$.integrationConfig.onSystemLaunch' = TRUE
+                JSON_EXTRACT(extraConfigJSON, '$.integrationConfig.onSystemLaunch') = TRUE
 
             UNION SELECT CONCAT('autoRun.onScriptPublish-', id) AS originId FROM biz_main_func
             WHERE
-                extraConfigJSON->'$.integrationConfig.onScriptPublish' = TRUE
+                JSON_EXTRACT(extraConfigJSON, '$.integrationConfig.onScriptPublish') = TRUE
             '''
         db_res = self.db.query(sql)
         for d in db_res:
-            current_origin_ids.add(d['id'])
+            current_origin_ids.add(d['originId'])
 
         # 搜集任务记录里的 Origin ID 列表
         sql = '''

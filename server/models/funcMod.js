@@ -51,7 +51,7 @@ EntityModel.prototype.list = function(options, callback) {
 
   if (options.extra.asFuncDoc) {
     options.filters = options.filters;
-    options.filters['func.extraConfigJSON->>$.isHidden'] = { isnull: true };
+    options.filters["JSON_UNQUOTE(JSON_EXTRACT(func.extraConfigJSON, '$.isHidden'))"] = { isnull: true };
   }
 
   var sql = toolkit.createStringBuilder();

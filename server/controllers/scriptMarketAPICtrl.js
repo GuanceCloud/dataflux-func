@@ -2035,8 +2035,8 @@ exports.install = function(req, res, next) {
           'func.extraConfigJSON',
         ],
         filters: {
-          'func.extraConfigJSON->>$.fixedCronExpr': { isnotnull: true },
-          'scpt.id'                               : { in : startupScriptIds },
+          "JSON_UNQUOTE(JSON_EXTRACT(func.extraConfigJSON, '$.fixedCronExpr'))": { isnotnull: true },
+          'scpt.id'                                                            : { in : startupScriptIds },
         }
       }
       funcModel.list(opt, function(err, dbRes) {
