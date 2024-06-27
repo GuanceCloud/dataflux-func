@@ -111,7 +111,7 @@ EntityModel.prototype.getSystemMetrics = function(callback) {
               if (err) return eachCallback(err);
 
               for (var k in tsDataMap) {
-                if (toolkit.isNothing(tsDataMap)) continue;
+                if (toolkit.isNothing(tsDataMap[k])) continue;
 
                 var hostname = toolkit.parseCacheKey(k).tags.hostname;
                 data[metric][hostname] = tsDataMap[k];
