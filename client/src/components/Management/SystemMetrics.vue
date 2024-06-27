@@ -204,6 +204,11 @@ export default {
       series.sort((a, b) => {
         let a_dp = a.data.slice(-1)[0];
         let b_dp = b.data.slice(-1)[0];
+
+        if (a_dp && !b_dp) return -1;
+        else if (!a_dp && b_dp) return 1;
+        else if (!a_dp && !b_dp) return 0;
+
         if (opt.dataConvert === 'xyTranspose') {
           return b_dp[0] - a_dp[0];
         } else {
