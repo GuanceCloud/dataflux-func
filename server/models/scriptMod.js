@@ -148,10 +148,10 @@ EntityModel.prototype.add = function(data, callback) {
   data.code = data.code || '';
 
   // 处理 Base64 方式传递代码
-  if (data.codeDraftBase64) {
+  if ('string' === typeof data.codeDraftBase64) {
     data.codeDraft = toolkit.fromBase64(data.codeDraftBase64);
-    delete data.codeDraftBase64;
   }
+  delete data.codeDraftBase64;
 
   // 自动填入示例代码
   data.codeDraft = toolkit.isNullOrUndefined(data.codeDraft)
@@ -176,10 +176,10 @@ EntityModel.prototype.add = function(data, callback) {
 
 EntityModel.prototype.modify = function(id, data, callback) {
   // 处理 Base64 方式传递代码
-  if (data.codeDraftBase64) {
+  if ('string' === typeof data.codeDraftBase64) {
     data.codeDraft = toolkit.fromBase64(data.codeDraftBase64);
-    delete data.codeDraftBase64;
   }
+  delete data.codeDraftBase64;
 
   try {
     data = _prepareData(data);
