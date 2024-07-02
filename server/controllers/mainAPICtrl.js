@@ -1471,7 +1471,8 @@ exports.describeFunc = function(req, res, next) {
 };
 
 exports.callFunc = function(req, res, next) {
-  var funcId = req.params.funcId;
+  var funcId  = req.params.funcId;
+  var options = req.body.options || {};
 
   var taskReq = null;
   async.series([
@@ -1493,10 +1494,23 @@ exports.callFunc = function(req, res, next) {
   ], function(err) {
     if (err) return next(err);
 
-    callFuncRunner(res.locals, taskReq, function(err, taskResp) {
-      if (err) return next(err);
-      return _doAPIResponse(res, taskReq, taskResp, next);
-    });
+    if (options.async) {
+      // 异步方式调用
+      taskReq.ignoreResult = true;
+      callFuncRunner(res.locals, taskReq, function(err, taskId) {
+        if (err) return next(err);
+
+        var ret = toolkit.initRet({ id: taskId });
+        return res.locals.sendJSON(ret);
+      });
+
+    } else {
+      // 同步方式调用
+      callFuncRunner(res.locals, taskReq, function(err, taskResp) {
+        if (err) return next(err);
+        return _doAPIResponse(res, taskReq, taskResp, next);
+      });
+    }
   });
 };
 

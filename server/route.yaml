@@ -113,6 +113,9 @@ mainAPI:
         $example: {'msg': 'Tom'}
       options:
         $desc: 选项
+        async:
+          $desc: Async call
+          $type: boolean
         returnType:
           $desc: Return type (default "raw")
           $type: enum
