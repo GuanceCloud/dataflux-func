@@ -2304,7 +2304,7 @@ class FuncBaseTask(BaseTask):
             for line in traceback.format_exc().splitlines():
                 self.logger.error(line)
 
-    def _call_func(self, safe_scope, func_id, kwargs=None, save_result=False):
+    def _call_func(self, safe_scope, func_id, kwargs=None, queue=None, timeout=None, expires=None):
         call_chain = safe_scope.get('_DFF_FUNC_CHAIN') or []
         call_chain_info = ' -> '.join(map(lambda x: f'`{x}`', call_chain))
 
@@ -2351,13 +2351,26 @@ class FuncBaseTask(BaseTask):
         if isinstance(func_extra_config, str):
             func_extra_config = toolkit.json_loads(func_extra_config) or {}
 
-        timeout = CONFIG['_FUNC_TASK_TIMEOUT_DEFAULT']
-        if func_extra_config.get('timeout'):
-            timeout = func_extra_config['timeout']
+        # 子任务 - 执行队列
+        if not queue:
+            if func_extra_config.get('queue'):
+                queue = func_extra_config['queue']
+            else:
+                queue = safe_scope.get('_DFF_QUEUE')
 
-        expires = CONFIG['_FUNC_TASK_EXPIRES_DEFAULT']
-        if func_extra_config.get('expires'):
-            expires = func_extra_config['expires']
+        # 子任务 - 超时时间
+        if not timeout:
+            if func_extra_config.get('timeout'):
+                timeout = func_extra_config['timeout']
+            else:
+                timeout = CONFIG['_FUNC_TASK_TIMEOUT_DEFAULT']
+
+        # 子任务 - 过期时间
+        if not expires:
+            if func_extra_config.get('expires'):
+                expires = func_extra_config['expires']
+            else:
+                expires = CONFIG['_FUNC_TASK_EXPIRES_DEFAULT']
 
         # 任务请求
         task_req = {
@@ -2376,7 +2389,7 @@ class FuncBaseTask(BaseTask):
                 'funcTitle'     : func.get('funcTitle'),
             },
             'triggerTime'    : safe_scope.get('_DFF_TRIGGER_TIME'),
-            'queue'          : safe_scope.get('_DFF_QUEUE'),
+            'queue'          : queue,
             'timeout'        : timeout,
             'expires'        : expires,
             'taskRecordLimit': self.task_record_limit,
@@ -2572,11 +2585,11 @@ class FuncBaseTask(BaseTask):
         def __export_as_api(title=None, **extra_config):
             return self._export_as_api(safe_scope, title, **extra_config)
 
-        def __call_func(func_id, kwargs=None):
-            return self._call_func(safe_scope, func_id, kwargs)
+        def __call_func(func_id, kwargs=None, queue=None):
+            return self._call_func(safe_scope, func_id, kwargs, queue)
 
-        def __call_blueprint(blueprint_id, kwargs=None):
-            return self._call_func(safe_scope, f'_bp_{blueprint_id}__main.run', kwargs)
+        def __call_blueprint(blueprint_id, kwargs=None, queue=None):
+            return self._call_func(safe_scope, f'_bp_{blueprint_id}__main.run', kwargs, queue)
 
         def __custom_import(name, globals=None, locals=None, fromlist=None, level=0):
             return self._custom_import(name, globals, locals, fromlist, level, safe_scope)
