@@ -59,7 +59,7 @@ __DOCKER_STACK_EXAMPLE_FILE=docker-stack.example.yaml
 
 __PROJECT_NAME=dataflux-func
 
-__DOCKER_VERSION=23.0.6
+__DOCKER_VERSION=24.0.9
 __DOCKER_BIN_FILE=docker-${__DOCKER_VERSION}.tgz
 __SYSTEMD_FILE=docker.service
 

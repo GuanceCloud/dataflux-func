@@ -30,7 +30,7 @@ __PREV_DIR=${PWD}
 __PORTABLE_BASE_URL=https://static.guance.com/dataflux-func/portable
 __PORTABLE_COMMON_BASE_URL=https://static.guance.com/dataflux-func/portable-common
 
-__DOCKER_VERSION=23.0.6
+__DOCKER_VERSION=24.0.9
 __DOCKER_BIN_FILE=docker-${__DOCKER_VERSION}.tgz
 __DATAFLUX_FUNC_IMAGE_GZIP_FILE=dataflux-func.tar.gz
 __MYSQL_IMAGE_GZIP_FILE=mysql.tar.gz
