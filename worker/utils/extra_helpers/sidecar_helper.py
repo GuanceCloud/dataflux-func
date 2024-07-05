@@ -19,7 +19,7 @@ def get_config(c):
         'host'     : c.get('host')     or '172.17.0.1',
         'port'     : c.get('port')     or 8099,
         'protocol' : c.get('protocol') or 'http',
-        'timeout'  : c.get('timeout')  or 3,
+        'timeout'  : c.get('timeout')  or 10,
         'secretKey': c.get('secretKey'),
     })
 
@@ -62,12 +62,11 @@ class SidecarHelper(object):
 
             raise
 
-    def call(self, method, path=None, query=None, body=None, timeout=None):
+    def call(self, method, path=None, query=None, body=None):
         if path is None:
             method, path = method.split(' ', 1)
 
         url = '{protocol}://{host}:{port}'.format(**self.config) + path
-        timeout = timeout or self.config['timeout']
 
         if not isinstance(body, str):
             body = toolkit.json_dumps(body)
@@ -91,7 +90,7 @@ class SidecarHelper(object):
         print('sign', sign)
         headers['X-Auth-Signature'] = sign
 
-        r = self.client.request(method=method, url=url, params=query, data=body, headers=headers, timeout=timeout)
+        r = self.client.request(method=method, url=url, params=query, data=body, headers=headers, timeout=self.config['timeout'])
         parsed_resp = parse_response(r)
 
         if r.status_code >= 400:
@@ -100,7 +99,7 @@ class SidecarHelper(object):
 
         return r.status_code, parsed_resp
 
-    def shell(self, cmd, wait=True, workdir=None, envs=None, callback_url=None, timeout=None):
+    def shell(self, cmd, wait=True, workdir=None, envs=None, callback_url=None):
         if envs and isinstance(envs, dict):
             envs = [f"{k}={v}" for k, v in envs.item()]
 
@@ -121,4 +120,4 @@ class SidecarHelper(object):
 
             body['callbackURL'] = callback_url
 
-        return self.call('POST', '/shell', body=body, timeout=timeout)
+        return self.call('POST', '/shell', body=body, timeout=self.config['timeout'])

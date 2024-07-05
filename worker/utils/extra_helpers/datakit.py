@@ -216,7 +216,7 @@ class BaseDataKit(object):
         self.host       = host       or 'localhost'
         self.port       = port       or None
         self.protocol   = protocol   or 'http'
-        self.timeout    = timeout    or 3
+        self.timeout    = timeout    or 10
         self.debug      = debug      or False
         self.dry_run    = dry_run    or False
         self.write_size = write_size or 100

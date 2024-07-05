@@ -22,7 +22,7 @@ def get_config_dataway(c):
     return toolkit.no_none_or_whitespace({
         'url'    : c.get('guanceOpenWayURL'),
         'token'  : c.get('token'),
-        'timeout': c.get('timeout') or 5,
+        'timeout': c.get('timeout') or 10,
         'debug'  : c.get('debug')   or False,
     })
 

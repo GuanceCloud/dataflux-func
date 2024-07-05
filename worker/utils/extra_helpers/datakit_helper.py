@@ -17,7 +17,7 @@ def get_config(c):
         'port'    : c.get('port'),
         'protocol': c.get('protocol'),
         'source'  : c.get('source'),
-        'timeout' : c.get('timeout') or 5,
+        'timeout' : c.get('timeout') or 10,
         'debug'   : c.get('debug')   or False,
     })
 

@@ -9,13 +9,11 @@ import requests
 from . import parse_response
 
 class HTTPHelper(object):
-    REQUESTS_OPT = { 'verify': False }
+    def __init__(self, timeout=10):
+        self.timeout = timeout
 
-    def __init__(self):
-        pass
-
-    def get(self, url, timeout=3):
-        r = requests.get(url, timeout=timeout, **REQUESTS_OPT)
+    def get(self, url):
+        r = requests.get(url, timeout=self.timeout, verify=False)
         parsed_resp = parse_response(r)
 
         if r.status_code >= 400:
@@ -24,8 +22,8 @@ class HTTPHelper(object):
 
         return parsed_resp
 
-    def post(self, url, data, timeout=3):
-        r = requests.post(url, data=data, timeout=timeout, **REQUESTS_OPT)
+    def post(self, url, data):
+        r = requests.post(url, data=data, timeout=self.timeout, verify=False)
         parsed_resp = parse_response(r)
 
         if r.status_code >= 400:

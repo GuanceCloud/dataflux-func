@@ -11,13 +11,13 @@ from worker.utils import toolkit
 from . import parse_response
 
 class GuanceOpenAPI(object):
-    REQUESTS_TIMEOUT  = (3, 12)
     OPENAPI_FUNC_PATH = '/api/v1/outer_function/execute'
 
-    def __init__(self, url, api_key_id, api_key):
+    def __init__(self, url, api_key_id, api_key, timeout=10):
         self.url        = url
         self.api_key_id = api_key_id
         self.api_key    = api_key
+        self.timeout    = timeout
 
         self._workspace = None
 
@@ -79,7 +79,7 @@ class GuanceOpenAPI(object):
         发送 GET 请求
         '''
         url = self.url + path
-        resp = requests.get(url=url, params=query, headers=self.auth_header, timeout=self.REQUESTS_TIMEOUT)
+        resp = requests.get(url=url, params=query, headers=self.auth_header, timeout=self.timeout)
         if resp.status_code >= 400:
             e = Exception(resp.status_code, resp.text)
             raise e
@@ -121,7 +121,7 @@ class GuanceOpenAPI(object):
         发送POST请求
         '''
         url = self.url + path
-        resp = requests.post(url=url, params=query, json=body, headers=self.auth_header, timeout=self.REQUESTS_TIMEOUT)
+        resp = requests.post(url=url, params=query, json=body, headers=self.auth_header, timeout=self.timeout)
         if resp.status_code >= 400:
             e = Exception(resp.status_code, resp.text)
             raise e
@@ -138,7 +138,7 @@ class GuanceOpenAPI(object):
             'funcId'  : f'guance__openapi.{name}',
             'funcBody': { 'kwargs': kwargs or {} }
         }
-        resp = requests.post(url=url, json=body, headers=self.auth_header, timeout=self.REQUESTS_TIMEOUT)
+        resp = requests.post(url=url, json=body, headers=self.auth_header, timeout=self.timeout)
         if resp.status_code >= 400:
             e = Exception(resp.status_code, resp.text)
             raise e

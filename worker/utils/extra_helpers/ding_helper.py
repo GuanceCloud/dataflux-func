@@ -12,12 +12,14 @@ from . import parse_response
 from worker.utils import toolkit
 
 class DingHelper(object):
-    def __init__(self, webhook):
+    def __init__(self, webhook, timeout=10):
         self.webhook = webhook
+        self.timeout = timeout
+
         self.times = 0
         self.start_time = time.time()
 
-    def client(self, data, timeout=3):
+    def client(self, data):
         self.times += 1
         if self.times % 20 == 0:
             if time.time() - self.start_time < 60:
@@ -27,7 +29,7 @@ class DingHelper(object):
         headers={'Content-Type': 'application/json; charset=utf-8'}
         data = toolkit.json_dumps(data)
 
-        resp = requests.post(self.webhook, headers=headers, data=data, timeout=timeout)
+        resp = requests.post(self.webhook, headers=headers, data=data, timeout=self.timeout)
         parsed_resp = parse_response(resp)
 
         if not isinstance(parsed_resp, dict) or parsed_resp.get('errcode') != 0:

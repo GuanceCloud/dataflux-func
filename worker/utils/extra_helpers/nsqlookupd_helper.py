@@ -27,7 +27,7 @@ def get_config(c):
         'host'         : c.get('host')     or '127.0.0.1',
         'port'         : c.get('port')     or 4161,
         'protocol'     : c.get('protocol') or 'http',
-        'timeout'      : c.get('timeout')  or 3,
+        'timeout'      : c.get('timeout')  or 10,
         'fixedNSQNodes': fixed_nsq_nodes,
     }
     return config
@@ -116,15 +116,13 @@ class NSQLookupHelper(object):
         finally:
             self.producers_update_timestamp = time.time()
 
-    def query(self, method, path=None, query=None, body=None, timeout=None):
+    def query(self, method, path=None, query=None, body=None):
         if path is None:
             method, path = method.split(' ', 1)
 
         url = '{protocol}://{host}:{port}'.format(**self.config) + path
 
-        timeout = timeout or self.config['timeout']
-
-        r = self.client.request(method=method, url=url, params=query, data=body, timeout=timeout)
+        r = self.client.request(method=method, url=url, params=query, data=body, timeout=self.config['timeout'])
         parsed_resp = parse_response(r)
 
         if r.status_code >= 400:
@@ -133,7 +131,7 @@ class NSQLookupHelper(object):
 
         return r.status_code, parsed_resp
 
-    def publish(self, topic, message, timeout=None):
+    def publish(self, topic, message):
         if time.time() - self.producers_update_timestamp > self.PRODUCERS_UPDATE_INTERVAL:
             self.update_producers()
 
@@ -148,11 +146,10 @@ class NSQLookupHelper(object):
             message = toolkit.json_dumps(message)
 
         message = six.ensure_binary(message)
-        timeout = timeout or self.config['timeout']
 
         self.logger.debug('[NSQLOOKUP] Pub -> `{}`'.format(topic))
 
-        r = requests.post(url, params=query, data=message, timeout=timeout)
+        r = requests.post(url, params=query, data=message, timeout=self.config['timeout'])
         if r.status_code >= 400:
             e = Exception(r.status_code, r.text)
             raise e
