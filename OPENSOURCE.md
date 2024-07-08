@@ -5,7 +5,8 @@ DataFlux Func uses the following open source projects.
 ## Client
 
 | Project                  | Version | License           | Homepage                                                                                                                                                                   |
-| :------------------------| :-------| :-----------------| :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|:-------------------------|:--------|:------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| @breejs/later            | 4.2.0   | MIT               | [https://github.com/breejs/later](https://github.com/breejs/later)                                                                                                         |
 | @intlify/vue-i18n-loader | 1.1.0   | MIT               | [https://github.com/intlify/vue-i18n-loader#readme](https://github.com/intlify/vue-i18n-loader#readme)                                                                     |
 | @logicflow/core          | 1.2.10  | Apache-2.0        | [https://docs.logic-flow.cn](https://docs.logic-flow.cn)                                                                                                                   |
 | @logicflow/extension     | 1.2.10  | Apache-2.0        | [https://docs.logic-flow.cn](https://docs.logic-flow.cn)                                                                                                                   |
@@ -43,7 +44,8 @@ DataFlux Func uses the following open source projects.
 ## Server
 
 | Project                  | Version     | License      | Homepage                                                                                                                 |
-| :------------------------| :-----------| :------------| :------------------------------------------------------------------------------------------------------------------------|
+|:-------------------------|:------------|:-------------|:-------------------------------------------------------------------------------------------------------------------------|
+| @breejs/later            | 4.2.0       | MIT          | [https://github.com/breejs/later](https://github.com/breejs/later)                                                       |
 | @socket.io/redis-adapter | 7.2.0       | MIT          | [https://github.com/socketio/socket.io-redis-adapter#readme](https://github.com/socketio/socket.io-redis-adapter#readme) |
 | adm-zip                  | 0.5.9       | MIT          | [https://github.com/cthackers/adm-zip](https://github.com/cthackers/adm-zip)                                             |
 | async                    | 2.6.4       | MIT          | [https://caolan.github.io/async/](https://caolan.github.io/async/)                                                       |
@@ -99,7 +101,7 @@ DataFlux Func uses the following open source projects.
 ## Worker
 
 | Project           | Version  | License                                                         | Homepage                                                                                           |
-| :-----------------| :--------| :---------------------------------------------------------------| :--------------------------------------------------------------------------------------------------|
+|:------------------|:---------|:----------------------------------------------------------------|:---------------------------------------------------------------------------------------------------|
 | arrow             | 0.17.0   | Apache 2.0                                                      | [https://arrow.readthedocs.io](https://arrow.readthedocs.io)                                       |
 | clickhouse-driver | 0.1.5    | MIT                                                             | [https://github.com/mymarilyn/clickhouse-driver](https://github.com/mymarilyn/clickhouse-driver)   |
 | croniter          | 1.4.1    | MIT License                                                     | [http://github.com/kiorky/croniter](http://github.com/kiorky/croniter)                             |
