@@ -442,6 +442,7 @@ en:
   # Timeout: 超时
   Skip   : 跳过
   Pending: 执行中
+  Waiting: 等待中
 
   # const.js - SCRIPT_RECOVER_POINT
   Before package import    : 脚本集导入前

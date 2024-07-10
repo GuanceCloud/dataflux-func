@@ -798,6 +798,12 @@ kafka.publish(topic='some_topic', message='some_message')`,
         name   : i18n.t('Pending'),
         tagType: 'info',
         icon   : 'el-icon-loading',
+      },
+      {
+        key    : 'waiting',
+        name   : i18n.t('Waiting'),
+        tagType: 'info',
+        icon   : 'el-icon-loading',
       }
     ];
   },

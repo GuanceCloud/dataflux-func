@@ -347,6 +347,7 @@ zh-HK:
   Value: 值
   Version: 版本
   Very good: 非常好
+  Waiting: 等待中
   Will be converted by float() automatically: 將自動使用 float() 進行轉換
   Will be converted by int() automatically: 將自動使用 int() 進行轉換
   Will be converted by json.loads() automatically: 將自動使用 json.loads() 進行轉換
@@ -798,6 +799,7 @@ zh-TW:
   Value: 值
   Version: 版本
   Very good: 非常好
+  Waiting: 等待中
   Will be converted by float() automatically: 將自動使用 float() 進行轉換
   Will be converted by int() automatically: 將自動使用 int() 進行轉換
   Will be converted by json.loads() automatically: 將自動使用 json.loads() 進行轉換

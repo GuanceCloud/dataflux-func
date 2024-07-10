@@ -22,12 +22,13 @@ SYSTEM_SETTING_LOCAL_CACHE = toolkit.LocalCache(expires=15)
 
 GUANCE_DATA_STATUS_DEFAULT = 'info'
 GUANCE_DATA_STATUS_MAP = {
+    'success': 'ok',
     'failure': 'critical',
     'timeout': 'error',
+    'expire' : 'warning',
     'skip'   : 'warning',
-    'waiting': 'info',
     'pending': 'info',
-    'success': 'ok',
+    'waiting': 'info',
 }
 
 class PreviousTaskNotFinished(Exception):
