@@ -229,15 +229,12 @@ class FuncRunner(FuncBaseTask):
 
                 _data['measurement'] = d['measurement']
 
+                # 额外数据的 Tags / Fields 允许覆盖
                 if d['tags']:
-                    for k, v in d['tags'].items():
-                        if k not in _data['tags']:
-                            _data['tags'][k] = v
+                    _data['tags'].update(d['tags'])
 
                 if d['fields']:
-                    for k, v in d['fields'].items():
-                        if k not in _data['fields']:
-                            _data['fields'][k] = v
+                    _data['fields'].update(d['fields'])
 
                 data.append(_data)
 
