@@ -2654,7 +2654,6 @@ class FuncBaseTask(BaseTask):
 
             # 额外观测云上报数据
             'EXTRA_GUANCE_DATA': self.extra_guance_data,
-            'EXTRA_FOR_GUANCE': self.extra_guance_data,
 
             # 兼容处理
             'AUTH_LINK'     : __sync_api_helper,  # 授权链接处理模块
