@@ -1731,12 +1731,14 @@ class FuncCronJobHelper(BaseFuncEntityHelper):
     def clear_temp_crontab(self, *args, **kwargs):
         return self.clear_cron_expr(*args, **kwargs)
 
-class FuncExtraForGuanceHelper(object):
+class FuncExtraGuanceDataHelper(object):
     def __init__(self, task):
         self._task = task
 
         self._tags   = {}
         self._fields = {}
+
+        self._more_data = []
 
     @property
     def tags(self):
@@ -1745,6 +1747,10 @@ class FuncExtraForGuanceHelper(object):
     @property
     def fields(self):
         return toolkit.json_copy(self._fields) or {}
+
+    @property
+    def more_data(self):
+        return toolkit.json_copy(self._more_data) or []
 
     def set_tags(self, **data):
         for k, v in data.items():
@@ -1767,6 +1773,13 @@ class FuncExtraForGuanceHelper(object):
     def delete_fields(self, *keys):
         for k in keys:
             self._fields.pop(k, None)
+
+    def add_more_data(self, measurement, tags=None, fields=None):
+        self._more_data.append({
+            'measurement': measurement,
+            'tags'       : tags,
+            'fields'     : fields,
+        })
 
 class ToolkitWrap(object):
     gen_uuid               = toolkit.gen_uuid
@@ -1859,8 +1872,8 @@ class FuncBaseTask(BaseTask):
         # print 日志行
         self.__print_log_lines = None
 
-        # 用于观测云的额外信息
-        self.extra_for_guance = FuncExtraForGuanceHelper(self)
+        # 观测云数据操作
+        self.extra_guance_data = FuncExtraGuanceDataHelper(self)
 
         log_attrs = [
             'func_id',
@@ -2639,8 +2652,9 @@ class FuncBaseTask(BaseTask):
             # 方便函数
             'TOOLKIT': ToolkitWrap,
 
-            # 用于观测云的额外信息
-            'EXTRA_FOR_GUANCE': self.extra_for_guance,
+            # 额外观测云上报数据
+            'EXTRA_GUANCE_DATA': self.extra_guance_data,
+            'EXTRA_FOR_GUANCE': self.extra_guance_data,
 
             # 兼容处理
             'AUTH_LINK'     : __sync_api_helper,  # 授权链接处理模块

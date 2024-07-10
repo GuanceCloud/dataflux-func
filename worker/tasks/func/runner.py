@@ -164,8 +164,9 @@ class FuncRunner(FuncBaseTask):
         if not self.guance_data_upload_url:
             return None
 
-        data = {
-            'measurement': CONFIG['_SELF_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD_FUNC'],
+        data = []
+
+        data_template = {
             'tags': {
                 'id'           : self.task_id,
                 'name'         : self.name,
@@ -184,8 +185,6 @@ class FuncRunner(FuncBaseTask):
                 'func_title'      : self.func_title       or 'UNTITLED',
             },
             'fields': {
-                'message': self.full_print_log_lines,
-
                 'func_call_kwargs': toolkit.json_dumps(self.func_call_kwargs),
                 'cron_expr'       : self.kwargs.get('cronExpr'),
                 'call_chain'      : toolkit.json_dumps(self.call_chain, keep_none=True),
@@ -206,9 +205,41 @@ class FuncRunner(FuncBaseTask):
             'timestamp': int(self.trigger_time),
         }
 
-        # 用于观测云的额外信息
-        data['tags'].update(self.extra_for_guance.tags)
-        data['fields'].update(self.extra_for_guance.fields)
+        # 额外观测云 Tags / Fields
+        for k, v in self.extra_guance_data.tags.items():
+            if k not in data_template['tags']:
+                data_template['tags'][k] = v
+
+        for k, v in self.extra_guance_data.fields.items():
+            if k not in data_template['fields']:
+                data_template['fields'][k] = v
+
+        # 函数日志
+        _data = toolkit.json_copy(data_template)
+
+        _data['measurement'] = CONFIG['_SELF_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD_FUNC']
+        _data['fields']['message'] = self.full_print_log_lines,
+
+        data.append(_data)
+
+        # 更多数据
+        if self.extra_guance_data.more_data:
+            for d in self.extra_guance_data.more_data
+                _data = toolkit.json_copy(data_template)
+
+                _data['measurement'] = d['measurement']
+
+                if d['tags']:
+                    for k, v in d['tags'].items():
+                        if k not in _data['tags']:
+                            _data['tags'][k] = v
+
+                if d['fields']:
+                    for k, v in d['fields'].items():
+                        if k not in _data['fields']:
+                            _data['fields'][k] = v
+
+                data.append(_data)
 
         return data
 
