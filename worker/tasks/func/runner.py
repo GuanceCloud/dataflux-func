@@ -218,13 +218,13 @@ class FuncRunner(FuncBaseTask):
         _data = toolkit.json_copy(data_template)
 
         _data['measurement'] = CONFIG['_SELF_MONITOR_GUANCE_MEASUREMENT_TASK_RECORD_FUNC']
-        _data['fields']['message'] = self.full_print_log_lines,
+        _data['fields']['message'] = self.full_print_log_lines
 
         data.append(_data)
 
         # 更多数据
         if self.extra_guance_data.more_data:
-            for d in self.extra_guance_data.more_data
+            for d in self.extra_guance_data.more_data:
                 _data = toolkit.json_copy(data_template)
 
                 _data['measurement'] = d['measurement']
