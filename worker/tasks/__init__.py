@@ -413,7 +413,7 @@ class BaseTask(object):
                     p['tags']['site_name'] = site_name
 
                 # 根据 task_status 增补适用于观测云的 status 值
-                if 'task_status' in p['tags']:
+                if 'status' not in p['tags'] and 'task_status' in p['tags']:
                     try:
                         p['tags']['status'] = GUANCE_DATA_STATUS_MAP[p['tags']['task_status']]
                     except Exception as e:
