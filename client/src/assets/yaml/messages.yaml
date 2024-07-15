@@ -122,6 +122,8 @@ en: {}
   No such branch in the git repo                                                                          : git 仓库中不存在此分支
   Startup Script deploying failed, Please contact the author                                              : 启动脚本部署失败，请联系作者
   Local Func task record is disabled                                                                      : 本地函数任务记录已禁用
-  Number of recent task records to be kept is not specified                                               : 未指定近期任务记录保留数量
+  Local Func task record is disabled, while uploading to Guance is enabled                                : 本地函数任务记录已禁用，但已启用函数任务记录上报至观测云
+  Func task record uploading to Guance has also been enabled                                              : 同时已启用函数任务记录上报至观测云
+  Number of recent task records to be kept is not specified                                               : 未指定近期函数任务记录保留数量
 
   'Exception: Guance API Key NOT match to API Key ID!': '错误：观测云 API Key ID 与 API Key 不匹配'

@@ -1278,6 +1278,7 @@ export default {
   border: none;
 }
 .simple-debug-window > .el-tabs > .el-tabs__content {
+  width: 100%;
   height: 295px;
   padding: 0;
 }

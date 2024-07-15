@@ -43,6 +43,7 @@ zh-HK:
   Func Auth failed: 函數認證失敗
   Func ID not specified: 函數 ID 未指定
   Func result is not standard JSON: 函數結果無法解析為標準JSON
+  Func task record uploading to Guance has also been enabled: 同時已啓用函數任務記錄上報至觀測雲
   ID of Connector already exists: 連接器 ID 已存在
   ID of ENV Variable already exists: 環境變量 ID 已存在
   ID of cloned Script will be too long: 腳本 ID 將在克隆後會變得過長
@@ -75,6 +76,7 @@ zh-HK:
   Invalid request query: 請求參數無效
   Invalid username or password: 用户名或密碼無效
   Local Func task record is disabled: 本地函數任務記錄已禁用
+  Local Func task record is disabled, while uploading to Guance is enabled: 本地函數任務記錄已禁用，但已啓用函數任務記錄上報至觀測雲
   Maximum calling rate exceeded: 達到最大調用頻率
   Modifying built-in Connector is not allowed, please edit the config instead: 不允許修改內置連接器，請修改系統配置
   No such Async API: 不存在此異步 API
@@ -84,7 +86,7 @@ zh-HK:
   No such branch in the git repo: git 倉庫中不存在此分支
   No such data: 不存在數據
   No such router. Please make sure that the METHOD is correct and no spelling missing in the URL: 不存在此路由，請檢查 HTTP 請求方法以及 URL 拼寫是否正確
-  Number of recent task records to be kept is not specified: 未指定近期任務記錄保留數量
+  Number of recent task records to be kept is not specified: 未指定近期函數任務記錄保留數量
   Operation Record cannot be deleted: 操作記錄無法刪除
   Operation Record cannot be modified: 操作記錄無法修改
   Parent directory symbol (..) is not allowed in path: 禁止在根路徑中使用上層目錄符（..）
@@ -165,6 +167,7 @@ zh-TW:
   Func Auth failed: 函式認證失敗
   Func ID not specified: 函式 ID 未指定
   Func result is not standard JSON: 函式結果無法解析為標準JSON
+  Func task record uploading to Guance has also been enabled: 同時已啟用函式任務記錄上報至觀測雲
   ID of Connector already exists: 聯結器 ID 已存在
   ID of ENV Variable already exists: 環境變數 ID 已存在
   ID of cloned Script will be too long: 指令碼 ID 將在克隆後會變得過長
@@ -197,6 +200,7 @@ zh-TW:
   Invalid request query: 請求引數無效
   Invalid username or password: 使用者名稱或密碼無效
   Local Func task record is disabled: 本地函式任務記錄已禁用
+  Local Func task record is disabled, while uploading to Guance is enabled: 本地函式任務記錄已禁用，但已啟用函式任務記錄上報至觀測雲
   Maximum calling rate exceeded: 達到最大呼叫頻率
   Modifying built-in Connector is not allowed, please edit the config instead: 不允許修改內建聯結器，請修改系統配置
   No such Async API: 不存在此非同步 API
@@ -206,7 +210,7 @@ zh-TW:
   No such branch in the git repo: git 倉庫中不存在此分支
   No such data: 不存在資料
   No such router. Please make sure that the METHOD is correct and no spelling missing in the URL: 不存在此路由，請檢查 HTTP 請求方法以及 URL 拼寫是否正確
-  Number of recent task records to be kept is not specified: 未指定近期任務記錄保留數量
+  Number of recent task records to be kept is not specified: 未指定近期函式任務記錄保留數量
   Operation Record cannot be deleted: 操作記錄無法刪除
   Operation Record cannot be modified: 操作記錄無法修改
   Parent directory symbol (..) is not allowed in path: 禁止在根路徑中使用上層目錄符（..）

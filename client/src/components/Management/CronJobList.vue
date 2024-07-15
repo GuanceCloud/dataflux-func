@@ -212,6 +212,12 @@ lastSucceeded: '{t}執行成功'
 
       <!-- 列表区 -->
       <el-main class="common-table-container">
+        <div class="task-record-tip">
+          <InfoBlock type="success" v-if="isLocalFuncTaskRecordEnabled && isGuanceDataUploadEnabled" :title="$t('Func task record uploading to Guance has also been enabled')" />
+          <InfoBlock type="warning" v-else-if="!isLocalFuncTaskRecordEnabled && isGuanceDataUploadEnabled" :title="$t('Local Func task record is disabled, while uploading to Guance is enabled')" />
+          <InfoBlock type="error" v-else-if="!isLocalFuncTaskRecordEnabled && !isGuanceDataUploadEnabled" :title="$t('Local Func task record is disabled')" />
+        </div>
+
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: '_ALL' } })"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Cron Job has ever been added') }}</h1>
@@ -337,7 +343,7 @@ lastSucceeded: '{t}執行成功'
 
           <el-table-column align="right" width="400">
             <template slot-scope="scope">
-              <el-tooltip effect="dark" :content="scope.row.localFuncTaskRecordUnavailableReason" placement="left" :disabled="scope.row.isLocalFuncTaskRecordAvailable">
+              <el-tooltip effect="dark" :content="scope.row.localFuncTaskRecordTip" placement="left" :disabled="!scope.row.localFuncTaskRecordTip">
                 <el-badge class="task-record-button" type="primary" :max="99" :hidden="!funcTaskRecordCountMap[scope.row.id] || !scope.row.isLocalFuncTaskRecordAvailable" :value="funcTaskRecordCountMap[scope.row.id] && funcTaskRecordCountMap[scope.row.id].count || 0">
                   <el-link
                     @click="common.goToTaskRecord({ origin: 'cronJob', originId: scope.row.id }, { hlDataId: scope.row.id })"
@@ -420,12 +426,11 @@ export default {
         d.isLocalFuncTaskRecordAvailable = true;
 
         if (!this.isLocalFuncTaskRecordEnabled) {
-          d.isLocalFuncTaskRecordAvailable       = false;
-          d.localFuncTaskRecordUnavailableReason = this.$t('Local Func task record is disabled');
+          d.isLocalFuncTaskRecordAvailable = false;
 
         } else if (!d.taskRecordLimit) {
-          d.isLocalFuncTaskRecordAvailable       = false;
-          d.localFuncTaskRecordUnavailableReason = this.$t('Number of recent task records to be kept is not specified');
+          d.isLocalFuncTaskRecordAvailable = false;
+          d.localFuncTaskRecordTip = this.$t('Number of recent task records to be kept is not specified');
         }
       });
 
@@ -665,6 +670,9 @@ export default {
     isLocalFuncTaskRecordEnabled() {
       return !!this.$store.getters.SYSTEM_SETTINGS('LOCAL_FUNC_TASK_RECORD_ENABLED');
     },
+    isGuanceDataUploadEnabled() {
+      return !!this.$store.getters.SYSTEM_SETTINGS('GUANCE_DATA_UPLOAD_ENABLED');
+    },
   },
   props: {
   },
@@ -711,6 +719,9 @@ export default {
 </script>
 
 <style scoped>
+.task-record-tip {
+  padding: 0 18px;
+}
 .task-record-button {
   margin-right: 15px;
 }
