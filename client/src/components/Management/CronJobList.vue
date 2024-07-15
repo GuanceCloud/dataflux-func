@@ -212,12 +212,6 @@ lastSucceeded: '{t}執行成功'
 
       <!-- 列表区 -->
       <el-main class="common-table-container">
-        <div class="task-record-tip">
-          <InfoBlock type="success" v-if="isLocalFuncTaskRecordEnabled && isGuanceDataUploadEnabled" :title="$t('Func task record uploading to Guance has also been enabled')" />
-          <InfoBlock type="warning" v-else-if="!isLocalFuncTaskRecordEnabled && isGuanceDataUploadEnabled" :title="$t('Local Func task record is disabled, while uploading to Guance is enabled')" />
-          <InfoBlock type="error" v-else-if="!isLocalFuncTaskRecordEnabled && !isGuanceDataUploadEnabled" :title="$t('Local Func task record is disabled')" />
-        </div>
-
         <div class="no-data-area" v-if="T.isNothing(data)">
           <h1 class="no-data-title" v-if="T.isPageFiltered({ ignore: { origin: '_ALL' } })"><i class="fa fa-fw fa-search"></i>{{ $t('No matched data found') }}</h1>
           <h1 class="no-data-title" v-else><i class="fa fa-fw fa-info-circle"></i>{{ $t('No Cron Job has ever been added') }}</h1>
@@ -423,16 +417,26 @@ export default {
       if (!apiRes || !apiRes.ok) return;
 
       apiRes.data.forEach(d => {
-        d.isLocalFuncTaskRecordAvailable = true;
+        d.isLocalFuncTaskRecordAvailable = false;
 
         if (!this.isLocalFuncTaskRecordEnabled) {
-          d.isLocalFuncTaskRecordAvailable = false;
+          if (this.isGuanceDataUploadEnabled) {
+            d.localFuncTaskRecordTip = this.$t('Local Func task record is disabled, while uploading to Guance is enabled');
+          } else {
+            d.localFuncTaskRecordTip = this.$t('Local Func task record is disabled');
+          }
 
         } else if (!d.taskRecordLimit) {
-          d.isLocalFuncTaskRecordAvailable = false;
           d.localFuncTaskRecordTip = this.$t('Number of recent task records to be kept is not specified');
+
+        } else {
+          d.isLocalFuncTaskRecordAvailable = true;
+          if (this.isGuanceDataUploadEnabled) {
+            d.localFuncTaskRecordTip = this.$t('Func task record uploading to Guance has also been enabled');
+          }
         }
       });
+
 
       this.data = apiRes.data;
       this.pageInfo = apiRes.pageInfo;
@@ -719,9 +723,6 @@ export default {
 </script>
 
 <style scoped>
-.task-record-tip {
-  padding: 0 18px;
-}
 .task-record-button {
   margin-right: 15px;
 }
