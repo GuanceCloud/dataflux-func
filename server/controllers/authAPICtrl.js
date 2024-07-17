@@ -145,9 +145,10 @@ exports.signIn = function(req, res, next) {
         signInErr.setDetail({ signInWaitTimeout: nextSignInWaitTimeout });
         return next(signInErr);
       });
-    }
 
-    return res.locals.sendJSON(ret);
+    } else {
+      return res.locals.sendJSON(ret);
+    }
   });
 };
 
