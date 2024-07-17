@@ -57,10 +57,12 @@ class FuncDebugger(FuncBaseTask):
                 self.logger.warning(line)
 
             # 搜集错误
+            only_in_script = CONFIG['MODE'] != 'dev'
+
             _exception      = e
             _exception_type = e.__class__.__name__
             _exception_text = f'{_exception_type}: {str(e)}'
-            _traceback      = self.get_traceback()
+            _traceback      = self.get_traceback(only_in_script)
 
         else:
             _status = 'success'
