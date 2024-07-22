@@ -28,13 +28,13 @@ User Info: 使用者資訊
             :router="true"
             :unique-opened="true"
             :default-active="$route.path">
-            <el-menu-item index="/setting/profile-setup" v-if="!$store.getters.isIntegratedUser">
+            <el-menu-item index="/setting/profile-setup" v-if="!$store.getters.integratedSignInFuncId">
               <span>
                 <i class="fa fa-fw fa-user-circle"></i>
                 {{ $t('User Info') }}
               </span>
             </el-menu-item>
-            <el-menu-item index="/setting/password-setup" v-if="!$store.getters.isIntegratedUser">
+            <el-menu-item index="/setting/password-setup" v-if="!$store.getters.integratedSignInFuncId">
               <span>
                 <i class="fa fa-fw fa-lock"></i>
                 {{ $t('Password') }}

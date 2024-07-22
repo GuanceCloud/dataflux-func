@@ -10,7 +10,7 @@ var PRIVILEGE = require('./yamlResources').get('PRIVILEGE');
 var toolkit   = require('./toolkit');
 
 // XAuthToken Version
-const X_AUTH_TOEKN_VERSION = 2;
+const X_AUTH_TOEKN_VERSION = 3;
 
 /**
  * Generate a new x-auth-token ID.
@@ -63,9 +63,9 @@ exports.getCacheFieldPattern = function(options) {
  * Generate an x-auth-token Object.
  *
  * @param  {Object} user
- * @return {Object}                - x-auth-token object
+ * @return {Object} - x-auth-token object
  */
-exports.genXAuthTokenObj = function(user, isIntegratedUser) {
+exports.genXAuthTokenObj = function(user, integratedSignInFuncId) {
   var xAuthTokenObj = {
     v: X_AUTH_TOEKN_VERSION,
 
@@ -76,7 +76,7 @@ exports.genXAuthTokenObj = function(user, isIntegratedUser) {
     em   : user.email,
   };
 
-  if (isIntegratedUser) xAuthTokenObj.ig = true;
+  if (integratedSignInFuncId) xAuthTokenObj.isfid = integratedSignInFuncId;
 
   return xAuthTokenObj;
 };

@@ -433,8 +433,8 @@ exports.systemInfo = function(req, res, next) {
         var integratedSignInFuncs = [];
         dbRes.forEach(function(d) {
           integratedSignInFuncs.push({
-            id  : d.id,
-            name: d.title,
+            id   : d.id,
+            title: d.title,
           });
         });
 

@@ -256,12 +256,19 @@ export default new Vuex.Store({
 
       return true;
     },
-    isIntegratedUser: state => {
+    integratedSignInFuncId: state => {
       if (!state.userProfile || !state.userProfile.roles) {
-        return false;
+        return null;
       }
 
-      return !!state.userProfile.isIntegratedUser;
+      return state.userProfile.integratedSignInFuncId;
+    },
+    integratedSignInFuncTitle: state => {
+      if (!state.userProfile || !state.userProfile.roles) {
+        return null;
+      }
+
+      return state.userProfile.integratedSignInFuncTitle;
     },
     isAdmin: (state, getters) => {
       return !!(state.userProfile

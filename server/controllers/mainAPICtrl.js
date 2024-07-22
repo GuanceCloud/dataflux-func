@@ -990,11 +990,10 @@ exports.overview = function(req, res, next) {
   ];
 
   var overview = {
-    services        : [],
-    queues          : [],
-    bizMetrics      : [],
-    bizEntities     : [],
-    latestOperations: [],
+    services   : [],
+    queues     : [],
+    bizMetrics : [],
+    bizEntities: [],
   };
 
   if (!sectionMap || sectionMap.queues) {
@@ -1411,23 +1410,6 @@ exports.overview = function(req, res, next) {
           return eachCallback();
         });
       }, asyncCallback);
-    },
-    // 最近若干次操作记录
-    function(asyncCallback) {
-      if (sectionMap && !sectionMap.latestOperations) return asyncCallback();
-
-      var operationRecordModel = operationRecordMod.createModel(res.locals);
-
-      var opt = {
-        limit: 10,
-      };
-      operationRecordModel.list(opt, function(err, dbRes) {
-        if (err) return asyncCallback(err);
-
-        overview.latestOperations = dbRes;
-
-        return asyncCallback();
-      });
     },
   ], function(err) {
     if (err) return next(err);
@@ -1990,6 +1972,11 @@ exports.integratedSignIn = function(req, res, next) {
         var userDisplayName = username;
         var userEmail       = null;
         switch(typeof returnValue) {
+          // 集成登录函数仅返回true时，用户名作为用户 ID
+          case 'boolean':
+            userId = username;
+            break;
+
           // 集成登录函数仅返回字符串/数字时，此字符串作为用户 ID
           case 'string':
           case 'number':
@@ -2046,7 +2033,7 @@ exports.integratedSignIn = function(req, res, next) {
           email   : userEmail
         }
         // 发行登录令牌
-        var xAuthTokenObj = auth.genXAuthTokenObj(user, true);
+        var xAuthTokenObj = auth.genXAuthTokenObj(user, funcId);
         xAuthToken = auth.signXAuthTokenObj(xAuthTokenObj);
 
         var cacheKey   = auth.getCacheKey();
@@ -2120,7 +2107,7 @@ exports.integratedAuthMid = function(req, res, next) {
         xAuthTokenObj = obj;
 
         /*** 非集成登录则跳过 ***/
-        if (!xAuthTokenObj.ig) return next();
+        if (!xAuthTokenObj.isfid) return next();
 
         cacheField = auth.getCacheField(xAuthTokenObj);
 
@@ -2173,12 +2160,13 @@ exports.integratedAuthMid = function(req, res, next) {
       email           : xAuthTokenObj.em,
       roles           : ['user'].join(','),
       customPrivileges: ['systemSetting_r'].join(','),
-      isIntegratedUser: xAuthTokenObj.ig,
+      integratedSignInFuncId: xAuthTokenObj.isfid,
     });
 
-    res.locals.logger.info('Auth by [Integrated Sign-in Func]: id=`{0}`; username=`{1}`',
+    res.locals.logger.info('Auth by [Integrated Sign-in Func]: id=`{0}`; username=`{1}`, integratedSignInFuncId=`{2}`',
       res.locals.user.id,
-      res.locals.user.username);
+      res.locals.user.username,
+      res.locals.user.integratedSignInFuncId);
 
     // client detect
     res.locals.authType = 'builtin.byXAuthToken';

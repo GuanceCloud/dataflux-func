@@ -1,7 +1,6 @@
 <i18n locale="en" lang="yaml">
 generalCount        : '{n}'
 taskCount           : '{n} Task | {n} Tasks'
-recentOperationCount: 'Latest {n} Operation | Latest {n} Operations'
 </i18n>
 
 <i18n locale="zh-CN" lang="yaml">
@@ -14,34 +13,23 @@ recentOperationCount: 最近 {n} 条
 Expand All             : 展开所有服务
 Collapse And Categorize: 折叠并归类
 
-Overview         : 总览
-Services         : 服务
-Hostname         : 主机名
-Process ID       : 进程 ID
-Up Time          : 已运行
-Up Time AVG      : 平均已运行
-Up Time MAX      : 最长已运行
-Up Time MIN      : 最短已运行
-Queues           : 队列
-Worker           : 工作单元
-Process          : 工作进程
-Delayed          : 延迟执行
-Worker Queue     : 工作队列
-Queue Limit      : 队列限制
-Load             : 负载
-Biz Metrics      : 业务指标
-Biz Entities     : 业务实体
-Recent operations: 最近操作记录
-Client           : 客户端
-Client ID        : 客户端 ID
-IP Address       : IP 地址
-Operation        : 操作
-Data ID          : 数据 ID
-MODIFY           : 修改操作
-DELETE           : 删除操作
-Cost             : 耗时
-Request          : 请求
-Response         : 响应
+Overview    : 总览
+Services    : 服务
+Hostname    : 主机名
+Process ID  : 进程 ID
+Up Time     : 已运行
+Up Time AVG : 平均已运行
+Up Time MAX : 最长已运行
+Up Time MIN : 最短已运行
+Queues      : 队列
+Worker      : 工作单元
+Process     : 工作进程
+Delayed     : 延迟执行
+Worker Queue: 工作队列
+Queue Limit : 队列限制
+Load        : 负载
+Biz Metrics : 业务指标
+Biz Entities: 业务实体
 
 When the Work Queue length reaches the limit, Cron Jobs will stop generating new tasks: 当工作队列长度达到限制时，定时任务将停止产生新任务
 
@@ -58,30 +46,19 @@ Triggers Per Day   : 每天触发次数
 <i18n locale="zh-HK" lang="yaml">
 Biz Entities: 業務實體
 Biz Metrics: 業務指標
-Client: 客户端
-Client ID: 客户端 ID
 Collapse And Categorize: 摺疊並歸類
-Cost: 耗時
 Cron Job: 定時任務
 'Current browser-server time difference:': 當前瀏覽器與服務器時差：
-DELETE: 刪除操作
-Data ID: 數據 ID
 Delayed: 延遲執行
 Exclude Disabled Items: 不包括已禁用的項
 Expand All: 展開所有服務
 Hostname: 主機名
-IP Address: IP 地址
 Load: 負載
-MODIFY: 修改操作
-Operation: 操作
 Overview: 總覽
 Process: 工作進程
 Process ID: 進程 ID
 Queue Limit: 隊列限制
 Queues: 隊列
-Recent operations: 最近操作記錄
-Request: 請求
-Response: 響應
 Services: 服務
 Triggers Per Day: 每天觸發次數
 Triggers Per Hour: 每小時觸發次數
@@ -101,30 +78,19 @@ taskCount: '{n} 個任務'
 <i18n locale="zh-TW" lang="yaml">
 Biz Entities: 業務實體
 Biz Metrics: 業務指標
-Client: 客戶端
-Client ID: 客戶端 ID
 Collapse And Categorize: 摺疊並歸類
-Cost: 耗時
 Cron Job: 定時任務
 'Current browser-server time difference:': 當前瀏覽器與伺服器時差：
-DELETE: 刪除操作
-Data ID: 資料 ID
 Delayed: 延遲執行
 Exclude Disabled Items: 不包括已禁用的項
 Expand All: 展開所有服務
 Hostname: 主機名
-IP Address: IP 地址
 Load: 負載
-MODIFY: 修改操作
-Operation: 操作
 Overview: 總覽
 Process: 工作程序
 Process ID: 程序 ID
 Queue Limit: 佇列限制
 Queues: 佇列
-Recent operations: 最近操作記錄
-Request: 請求
-Response: 響應
 Services: 服務
 Triggers Per Day: 每天觸發次數
 Triggers Per Hour: 每小時觸發次數
@@ -333,83 +299,7 @@ taskCount: '{n} 個任務'
               {{ d.count }}
             </span>
           </template>
-          </span>
         </el-card>
-
-        <el-divider content-position="left">
-          <h1>
-            {{ $t('Recent operations') }}
-            <small>{{ $t('(') }}{{ $tc('recentOperationCount', latestOperations.length) }}{{ $t(')') }}</small>
-          </h1>
-        </el-divider>
-        <el-table :data="latestOperations">
-          <el-table-column :label="$t('Time')" width="200">
-            <template slot-scope="scope">
-              <span>{{ scope.row.createTime | datetime }}</span>
-              <br>
-              <span class="text-info">{{ scope.row.createTime | toNow }}</span>
-            </template>
-          </el-table-column>
-
-          <el-table-column :label="$t('User')" width="350">
-            <template slot-scope="scope">
-              <strong>{{ scope.row.u_name || $t('Anonymity') }}</strong>
-
-              <template v-if="scope.row.userId">
-                <br>
-                <span class="text-info">{{ $t('User ID') }}</span>
-                &nbsp;<code class="text-main">{{ scope.row.userId }}</code>
-                <CopyButton :content="scope.row.userId" />
-              </template>
-
-              <template v-if="T.notNothing(scope.row.clientIPsJSON)">
-                <br>
-                <span class="text-info">{{ $t('IP Address') }}</span>
-                &nbsp;<code class="text-main">{{ scope.row.clientIPsJSON.join(', ') }}</code>
-                <CopyButton :content="scope.row.clientIPsJSON.join(', ')" />
-              </template>
-            </template>
-          </el-table-column>
-
-          <el-table-column :label="$t('Operation')">
-            <template slot-scope="scope">
-              <span class="text-good" v-if="scope.row.respStatusCode >= 200 && scope.row.respStatusCode < 400">
-                <i class="fa fa-fw fa-check"></i>
-              </span>
-              <span class="text-bad" v-else>
-                <i class="fa fa-fw fa-times"></i>
-              </span>
-              <span>{{ $t(scope.row.reqRouteName) }}</span>
-              <strong v-if="T.endsWith(scope.row.reqRoute, '/do/modify')" class="text-watch">
-                （{{ $t('MODIFY') }}）
-              </strong>
-              <strong v-if="T.endsWith(scope.row.reqRoute, '/do/delete')" class="text-bad">
-                （{{ $t('DELETE') }}）
-              </strong>
-
-              <template v-if="scope.row._operationEntityId">
-                <br>
-                <i class="fa fa-fw"></i>
-                <span class="text-info">{{ $t('Data ID') }}</span>
-                &nbsp;<code class="text-main">{{ scope.row._operationEntityId }}</code>
-                <CopyButton :content="scope.row._operationEntityId" />
-              </template>
-            </template>
-          </el-table-column>
-
-          <el-table-column :label="$t('Cost')" align="right" width="100">
-            <template slot-scope="scope">
-              <TimeDuration :duration="scope.row.reqCost" unit="ms" />
-            </template>
-          </el-table-column>
-
-          <el-table-column align="right" width="150">
-            <template slot-scope="scope">
-              <el-link type="primary" @click="showDetail(scope.row)">{{ $t('Show detail') }}</el-link>
-            </template>
-          </el-table-column>
-
-        </el-table>
       </el-main>
 
       <LongTextDialog :showDownload="true" ref="longTextDialog" />
@@ -468,50 +358,10 @@ export default {
               }
             });
             break;
-
-          case 'latestOperations':
-            // 提取对应语言
-            this.latestOperations.forEach(op => {
-              op.reqRouteName = op.reqRouteNames[this.$store.getters.uiLocale] || op.reqRouteNames.default;
-            });
-            break;
         }
       }
 
       this.$store.commit('updateLoadStatus', true);
-    },
-    showDetail(d) {
-      this.$store.commit('updateHighlightedTableDataId', d.id);
-
-      let lines = [];
-
-      lines.push(`===== ${this.$t('Request')} =====`)
-
-      lines.push(`${d.reqMethod.toUpperCase()} ${this.T.formatURL(d.reqRoute, {params: d.reqParamsJSON, query: d.reqQueryJSON})}`)
-
-      if (d.reqBodyJSON) {
-        lines.push(JSON.stringify(d.reqBodyJSON, null, 2));
-      }
-      if (d.reqFileInfoJSON) {
-        lines.push(`\n===== ${this.$t('Upload')} =====`)
-        d.reqFileInfoJSON.forEach(fileInfo => {
-          lines.push(`${fileInfo.name} <${this.T.byteSizeHuman(fileInfo.size)}>`);
-        })
-      }
-
-      lines.push(`\n===== ${this.$t('Response')} =====`)
-
-      lines.push(`Status Code: ${d.respStatusCode}`);
-
-      if (d.respBodyJSON) {
-        lines.push(JSON.stringify(d.respBodyJSON, null, 2));
-      }
-
-      let docTEXT = lines.join('\n');
-
-      let createTimeStr = this.M(d.createTime).format('YYYYMMDD_HHmmss');
-      let fileName = `http-dump.${createTimeStr}`;
-      this.$refs.longTextDialog.update(docTEXT, fileName);
     },
     serviceActiveFormat(percentage) {
       return percentage >= 100 ? this.$t('Online') : this.$t('Going Offline');
@@ -599,11 +449,10 @@ export default {
       browserServerTimeDiff: 0,
       serviceGroupCollapsed: true,
 
-      services        : [],
-      queues          : [],
-      bizMetrics      : [],
-      bizEntities     : [],
-      latestOperations: [],
+      services   : [],
+      queues     : [],
+      bizMetrics : [],
+      bizEntities: [],
 
       autoRefreshTimer: null,
     }

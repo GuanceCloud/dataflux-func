@@ -75,15 +75,19 @@ Response: 響應
             </template>
           </el-table-column>
 
-          <el-table-column :label="$t('User')" width="350">
+          <el-table-column :label="$t('User')">
             <template slot-scope="scope">
-              <strong>{{ scope.row.u_name || $t('Anonymity') }}</strong>
+              <template v-if="scope.row.u_integratedSignInFuncId">
+                <strong>{{ scope.row.u_username }}</strong>
+                <el-tag type="warning" size="mini">{{ scope.row.u_integratedSignInFuncTitle }}</el-tag>
+              </template>
+              <strong v-else>{{ scope.row.u_name || $t('Anonymity') }}</strong>
 
-              <template v-if="scope.row.userId">
+              <template v-if="scope.row.u_username">
                 <br>
-                <span class="text-info">{{ $t('User ID') }}</span>
-                &nbsp;<code class="text-main">{{ scope.row.userId }}</code>
-                <CopyButton :content="scope.row.userId" />
+                <span class="text-info">{{ $t('Username') }}</span>
+                &nbsp;<code class="text-main">{{ scope.row.u_username }}</code>
+                <CopyButton :content="scope.row.u_username" />
               </template>
 
               <template v-if="T.notNothing(scope.row.clientIPsJSON)">

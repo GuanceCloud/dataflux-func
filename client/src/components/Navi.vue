@@ -81,7 +81,7 @@ Latest version {0} has been released: 最新版 {0} 已經發布
         <template slot="title">
           <span>
             <el-badge :hidden="true || !common.hasNewVersion()" is-dot>
-              <i v-if="$store.getters.isIntegratedUser" class="fa fa-fw fa-user-circle"></i>
+              <i v-if="$store.getters.integratedSignInFuncId" class="fa fa-fw fa-user-circle"></i>
               <i v-else class="fa fa-fw fa-user-md"></i>
               <span>{{ userProfileName }}</span>
             </el-badge>

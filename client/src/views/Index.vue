@@ -85,7 +85,7 @@ retryMinutes: 請在 {n} 分鐘後重試
             <el-select v-model="form.funcId" :placeholder="$t('Please select sign in method')">
               <i slot="prefix" class="fth-man-icon fth-man-icon-integration"></i>
               <el-option :label="$t('System built-in sign')" :value="BUILTIN_SIGN_IN_FUNC_ID"></el-option>
-              <el-option v-for="opt in signInFuncs" :label="opt.name" :key="opt.id" :value="opt.id"></el-option>
+              <el-option v-for="opt in signInFuncs" :label="opt.title" :key="opt.id" :value="opt.id"></el-option>
             </el-select>
           </el-form-item>
 

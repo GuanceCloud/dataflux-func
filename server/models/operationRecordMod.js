@@ -57,7 +57,7 @@ EntityModel.prototype.list = function(options, callback) {
 
   sql.append('FROM biz_main_operation_record AS oprd');
 
-  sql.append('JOIN wat_main_user AS u');
+  sql.append('LEFT JOIN wat_main_user AS u');
   sql.append('  ON oprd.userId = u.id');
 
   options.baseSQL = sql.toString();
@@ -80,10 +80,6 @@ EntityModel.prototype.list = function(options, callback) {
             'en'     : route.name      || rawAPIName,
             'zh-CN'  : route.name_zhCN || rawAPIName,
             'default': route.name_zhCN || rawAPIName,
-          }
-
-          if (!d.username) {
-            d.username = route.privilege ? '系统内部调用' : '匿名用户';
           }
         }
 

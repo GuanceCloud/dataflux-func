@@ -10,6 +10,7 @@ var toolkit = require('../utils/toolkit');
 var auth    = require('../utils/auth');
 
 var userMod = require('../models/userMod');
+var funcMod = require('../models/funcMod');
 
 /* Hanlders */
 exports.signIn = function(req, res, next) {
@@ -223,8 +224,29 @@ exports.changePassword = function(req, res, next) {
 };
 
 exports.profile = function(req, res, next) {
-  var ret = toolkit.initRet(res.locals.user);
-  return res.locals.sendJSON(ret);
+  var profile = toolkit.jsonCopy(res.locals.user);
+
+  async.series([
+    // 获取集成登录函数标题
+    function(asyncCallback) {
+      if (!res.locals.user.integratedSignInFuncId) return asyncCallback();
+
+      var funcModel = funcMod.createModel(res.locals);
+
+      funcModel.get(res.locals.user.integratedSignInFuncId, 'title', function(err, dbRes) {
+        if (err) return asyncCallback(err);
+
+        profile.integratedSignInFuncTitle = dbRes.title;
+
+        return asyncCallback();
+      });
+    }
+  ], function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet(profile);
+    return res.locals.sendJSON(ret);
+  });
 };
 
 exports.modifyProfile = function(req, res, next) {
