@@ -431,21 +431,32 @@ exports.beforeReponse = function(req, res, reqCost, statusCode, respContent, res
   var key   = `${req.method.toUpperCase()} ${req.route.path}`;
   var route = routeLoader.getRoute(key);
 
-  if (!operationRecord) {
-    // 未经过操作记录中间件
+  if (!operationRecord || !route) {
+    // 未经过操作记录中间件、没有对应路由 -> 不记录
     shouldRecordOperation = false;
 
-  } else if (!route
-    || route.response === 'html'
-    || !route.privilege
-    || !toolkit.endsWith(route.privilege, '_w')) {
-    // 非写操作接口跳过
+  } else if (route.response === 'html') {
+    // 打开页面 -> 不记录
+    shouldRecordOperation = false;
+
+  } else if (route.method === 'post' && route.url === ROUTE.authAPI.signIn.url) {
+    // 登录接口 -> 需要记录
+    try { operationRecord.username = req.body.signIn.username } catch(_) {};
+    try { operationRecord.userId   = respContent.data.userId } catch(_) {};
+
+  } else if (route.method === 'post' && route.url === ROUTE.mainAPI.integratedSignIn.url) {
+    // 集成登录接口 -> 需要记录
+    try { operationRecord.username = req.body.signIn.username } catch(_) {};
+    try { operationRecord.userId = respContent.data.userId } catch(_) {};
+
+  } else if(!route.privilege || !toolkit.endsWith(route.privilege, '_w')) {
+    // 非写操作接口 -> 不记录
     shouldRecordOperation = false;
 
   } else if (req.route.path === ROUTE.scriptAPI.modify.url
       && operationRecord.reqBodyJSON.data.codeDraft
       && operationRecord.reqBodyJSON.prevCodeDraftMD5) {
-    // 【特殊处理】由于脚本自动保存可能产生大量日志，因此忽略
+    // 【特殊处理】由于脚本自动保存可能产生大量日志 -> 不记录
     shouldRecordOperation = false;
   }
 

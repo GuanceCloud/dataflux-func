@@ -65,6 +65,7 @@ DataFlux Func uses the following open source projects.
 | http-auth-utils          | 3.0.3       | MIT          | [https://github.com/nfroidure/http-auth-utils](https://github.com/nfroidure/http-auth-utils)                             |
 | iconv-lite               | 0.6.3       | MIT          | [https://github.com/ashtuchkin/iconv-lite](https://github.com/ashtuchkin/iconv-lite)                                     |
 | influx                   | 5.9.3       | MIT          | [https://github.com/node-influx/node-influx#readme](https://github.com/node-influx/node-influx#readme)                   |
+| ip2region                | 2.3.0       | MIT          | [https://github.com/yourtion/node-ip2region#readme](https://github.com/yourtion/node-ip2region#readme)                   |
 | js-base64                | 2.5.2       | BSD-3-Clause | [https://github.com/dankogai/js-base64#readme](https://github.com/dankogai/js-base64#readme)                             |
 | js-yaml                  | 3.14.1      | MIT          | [https://github.com/nodeca/js-yaml](https://github.com/nodeca/js-yaml)                                                   |
 | jsonwebtoken             | 8.5.1       | MIT          | [https://github.com/auth0/node-jsonwebtoken#readme](https://github.com/auth0/node-jsonwebtoken#readme)                   |

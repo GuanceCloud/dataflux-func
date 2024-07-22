@@ -62,18 +62,32 @@ exports.list = function(req, res, next) {
         });
 
         listData.forEach(function(d) {
-          if (!toolkit.startsWith(d.userId, 'igu_')) return;
+          // 集成登录用户
+          if (d.userId && toolkit.startsWith(d.userId, 'igu_')) {
+            d.integratedSignInFuncId = true;
 
-          d.u_integratedSignInFuncId = true;
+            var _tmp = d.userId.split('-');
+            d.username = d.username || _tmp[1];
 
-          var _tmp = d.userId.split('-');
-          d.u_username = d.u_username || _tmp[1];
+            var funcIdMD5 = _tmp[0].split('_')[1];
+            if (integratedSignInFuncMap[funcIdMD5]) {
+              d.integratedSignInFuncId    = integratedSignInFuncMap[funcIdMD5].id;
+              d.integratedSignInFuncTitle = integratedSignInFuncMap[funcIdMD5].title;
+            }
+          }
 
-          var funcIdMD5 = _tmp[0].split('_')[1];
-          if (!integratedSignInFuncMap[funcIdMD5]) return;
-
-          d.u_integratedSignInFuncId    = integratedSignInFuncMap[funcIdMD5].id;
-          d.u_integratedSignInFuncTitle = integratedSignInFuncMap[funcIdMD5].title;
+          // 解析 IP 地址
+          if (d.clientIPsJSON) {
+            d.clientIPRegionsJSON = d.clientIPsJSON.map(function(ip) {
+              var ipRegion = toolkit.ipRegion(ip);
+              var ipRegionParts = [];
+              if (ipRegion.country)  ipRegionParts.push(ipRegion.country);
+              if (ipRegion.province) ipRegionParts.push(ipRegion.province);
+              if (ipRegion.city)     ipRegionParts.push(ipRegion.city);
+              if (ipRegion.isp)      ipRegionParts.push(ipRegion.isp);
+              return toolkit.noDuplication(ipRegionParts).join(' / ');
+            });
+          }
         });
 
         return asyncCallback();

@@ -72,10 +72,11 @@ exports.prepare = function(req, res, next) {
   }
 
   res.locals.operationRecord = {
-    userId         : res.locals.user.id  || null,
-    clientId       : res.locals.clientId || null,
+    userId         : res.locals.user.id       || null,
+    username       : res.locals.user.username || null,
+    clientId       : res.locals.clientId      || null,
     clientIPsJSON  : toolkit.isNothing(req.ips) ? [req.ip] : req.ips,
-    traceId        : res.locals.traceId  || null,
+    traceId        : res.locals.traceId       || null,
     reqMethod      : req.method,
     reqRoute       : req.route.path,
     reqParamsJSON  : reqParams,

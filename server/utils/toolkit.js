@@ -21,6 +21,7 @@ var Base64     = require('js-base64').Base64;
 var byteSize   = require('byte-size');
 var simpleGit  = require('simple-git');
 var sortedJSON = require('sorted-json');
+var IP2Region  = require('ip2region').default;
 
 var toolkit = exports;
 
@@ -48,6 +49,8 @@ var RE_HTTP_BASIC_AUTH_MASK_REPLACE = '://***:***@';
 var MASK_KEYWORDS = [ 'secret', 'password' ];
 
 var AES_HEADER = 'AESv2:';
+
+const ip2region = new IP2Region();
 
 var sysStartTime = toolkit.sysStartTime = function sysStartTime() {
   return SYS_START_TIME;
@@ -2648,4 +2651,8 @@ var range = toolkit.range = function range() {
   var l = [];
   for (var i = start; i < stop; i += step)  l.push(i);
   return l;
+};
+
+var ipRegion = toolkit.ipRegion = function ipRegion(ip) {
+  return ip2region.search(ip);
 };

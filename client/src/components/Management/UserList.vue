@@ -137,7 +137,7 @@ sessionCount: '{n} 個會話'
 
           <el-table-column align="right" width="200">
             <template slot-scope="scope">
-              <span v-if="Array.isArray(scope.row.roles) && scope.row.roles.indexOf('sa') >= 0" class="text-bad">{{ $t('Administrator') }}</span>
+              <span v-if="scope.row.id === 'u-admin'" class="text-bad">{{ $t('Administrator') }}</span>
               <template v-else-if="$store.getters.isAdmin">
                 <el-link v-if="scope.row.isDisabled" @click="quickSubmitData(scope.row, 'enable')">{{ $t('Enable') }}</el-link>
                 <el-link v-else @click="quickSubmitData(scope.row, 'disable')">{{ $t('Disable') }}</el-link>

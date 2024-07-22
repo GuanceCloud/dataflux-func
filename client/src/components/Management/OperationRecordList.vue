@@ -77,24 +77,45 @@ Response: 響應
 
           <el-table-column :label="$t('User')">
             <template slot-scope="scope">
-              <template v-if="scope.row.u_integratedSignInFuncId">
-                <strong>{{ scope.row.u_username }}</strong>
-                <el-tag type="warning" size="mini">{{ scope.row.u_integratedSignInFuncTitle }}</el-tag>
-              </template>
-              <strong v-else>{{ scope.row.u_name || $t('Anonymity') }}</strong>
+              <template v-if="scope.row.integratedSignInFuncId">
+                <!-- 集成用户 -->
+                <strong>{{ scope.row.username }}</strong>
+                <el-tag type="success" size="mini">{{ scope.row.integratedSignInFuncTitle }}</el-tag>
 
-              <template v-if="scope.row.u_username">
-                <br>
-                <span class="text-info">{{ $t('Username') }}</span>
-                &nbsp;<code class="text-main">{{ scope.row.u_username }}</code>
-                <CopyButton :content="scope.row.u_username" />
+                <template v-if="scope.row.username">
+                  <br>
+                  <span class="text-info">{{ $t('Username') }}</span>
+                  &nbsp;<code class="text-main">{{ scope.row.username }}</code>
+                  <CopyButton :content="scope.row.username" />
+                </template>
               </template>
+              <template v-else>
+                <!-- 本地用户 -->
+                <strong>{{ scope.row.u_name || $t('Anonymity') }}</strong>
+                <el-tag type="danger" size="mini" v-if="scope.row.u_id === 'u-admin'">{{ $t('Administrator') }}</el-tag>
 
+                <template v-if="scope.row.u_username">
+                  <br>
+                  <span class="text-info">{{ $t('Username') }}</span>
+                  &nbsp;<code class="text-main">{{ scope.row.u_username }}</code>
+                  <CopyButton :content="scope.row.u_username" />
+                </template>
+              </template>
+            </template>
+          </el-table-column>
+
+          <el-table-column :label="$t('IP Address')">
+            <template slot-scope="scope">
               <template v-if="T.notNothing(scope.row.clientIPsJSON)">
-                <br>
-                <span class="text-info">{{ $t('IP Address') }}</span>
-                &nbsp;<code class="text-main">{{ scope.row.clientIPsJSON.join(', ') }}</code>
+                <code class="text-main">{{ scope.row.clientIPsJSON.join(', ') }}</code>
                 <CopyButton :content="scope.row.clientIPsJSON.join(', ')" />
+
+                <!-- 简体中文用户专享 -->
+                <template v-if="$store.getters.uiLocale === 'zh-CN'">
+                  <br>
+                  <span class="text-info">地域</span>
+                  &nbsp;<code class="text-main">{{ scope.row.clientIPRegionsJSON.join('，') }}</code>
+                </template>
               </template>
             </template>
           </el-table-column>
