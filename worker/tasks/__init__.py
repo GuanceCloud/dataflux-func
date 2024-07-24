@@ -25,8 +25,8 @@ GUANCE_DATA_STATUS_MAP = {
     'success': 'ok',
     'failure': 'critical',
     'timeout': 'error',
-    'expire' : 'warning',
     'skip'   : 'warning',
+    'expire' : 'warning',
     'pending': 'info',
     'waiting': 'info',
 }
@@ -568,6 +568,14 @@ class BaseTask(object):
             # 任务重复运行错误，警告即可
             self.status = 'skip'
             self.exception = e
+
+            self.logger.warning(self.exception)
+
+        except TaskExpired as e:
+            # 任务过期
+            self.status = 'expire'
+            self.exception = e
+
             self.logger.warning(self.exception)
 
         except TaskTimeout as e:
@@ -581,16 +589,12 @@ class BaseTask(object):
             for line in self.traceback.splitlines():
                 self.logger.error(line)
 
-        except TaskExpired as e:
-            # 任务过期
-            self.status = 'expire'
+        except Warning as e:
+            # 警告
+            self.status = 'skip'
+            self.exception = e
 
-            # 可替换错误信息、堆栈信息
-            self.exception = self.exception or e
-            self.traceback = self.traceback or traceback.format_exc()
-
-            for line in self.traceback.splitlines():
-                self.logger.error(line)
+            self.logger.warning(self.exception)
 
         except Exception as e:
             # 其他错误
