@@ -16,7 +16,7 @@ spec:
     spec:
       initContainers:
       - name: init-service
-        image: busybox:1.35.0
+        image: pubrepo.guance.com/googleimages/busybox:1.35.0
         command: ['sh', '-c', 'data=`grep -Ev "^#" /data/user-config.yaml | grep _IS_INSTALLED | grep true 2>/dev/null` ;if [[ -z "$data" ]] && [[ ! -e  /data/user-config.yaml ]];then cp /data/user-config-template.yaml /data/user-config.yaml && chmod 777 /data/user-config.yaml; fi']
         volumeMounts:
         - mountPath: /data
