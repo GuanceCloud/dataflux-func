@@ -7234,7 +7234,7 @@ systemSettingAPI:
     method       : get
     url          : /api/v1/system-settings/do/get
     response     : json
-    requireSignIn: true
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : systemSetting_r
     fuzzySearch:
       - ss.id
@@ -7252,7 +7252,7 @@ systemSettingAPI:
     method       : post
     url          : /api/v1/system-settings/:id/do/set
     response     : json
-    requireSignIn: true
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
     authType     : builtin.byXAuthToken
     privilege    : systemSetting_w
     params:
@@ -7273,7 +7273,7 @@ systemSettingAPI:
     method       : get
     url          : /api/v1/system-settings/:id/do/delete
     response     : json
-    requireSignIn: true
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
     authType     : builtin.byXAuthToken
     privilege    : systemSetting_w
     params:
@@ -7293,7 +7293,7 @@ tempFlagAPI:
     method       : get
     url          : /api/v1/temporary-flags/do/get
     response     : json
-    requireSignIn: true
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : user_r
     query:
       id:
@@ -7307,7 +7307,7 @@ tempFlagAPI:
     method       : post
     url          : /api/v1/temporary-flags/:id/do/set
     response     : json
-    requireSignIn: true
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : user_w
     params:
       id:
@@ -7330,7 +7330,7 @@ tempFlagAPI:
     method       : get
     url          : /api/v1/temporary-flags/:id/do/clear
     response     : json
-    requireSignIn: true
+    requireSignIn: $NOT_CONFIG._IS_STREAKING
     privilege    : user_w
     params:
       id:
