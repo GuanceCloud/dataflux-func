@@ -41,6 +41,9 @@ Some Scripts should be avoided for direct modification, if you need to review th
 
 If you don't know the meaning of these configurations, please don't make any changes!: 如果您不知道这些配置的意义，请不要作任何修改！
 
+Please input DataFlux Func ID                        : 请输入 DataFlux Func ID
+'This DataFlux Func ID should starts with "{prefix}"': 'DataFlux Func ID 必须以 "{prefix}" 开头'
+
 Save and Refresh: 保存并刷新
 </i18n>
 
@@ -67,6 +70,7 @@ Image: 圖片
 Local Func Task Record: 本地函數任務記錄
 Notice Bar: 頂部提示欄
 Official Script Market: 官方腳本市場
+Please input DataFlux Func ID: 請輸入 DataFlux Func ID
 Save Func Task Records in database of this system: 將函數任務記錄保存在本系統的數據庫中
 Save and Refresh: 保存並刷新
 Show Advanced Settings: 顯示高級設置
@@ -78,6 +82,7 @@ Site Name will be added to tags.site_name: 站點名會被添加至 tags.site_na
 Some Scripts should be avoided for direct modification, if you need to review them, please turn on the following options: 部分腳本應當避免直接修改，如果需要查看，請開啓以下選項
 System Setting Saved. Page will be refreshed soon...: 系統設置已保存，頁面即將刷新...
 Text: 文案
+This DataFlux Func ID should starts with "{prefix}": DataFlux Func ID 必須以 "{prefix}" 開頭
 URL: URL 地址
 Upload the self-monitor data to the Guance: 將自監控數據上報到觀測雲
 Use the specified image as the site icon (favicon): 使用指定的圖片作為網站圖標（favicon）
@@ -106,6 +111,7 @@ Image: 圖片
 Local Func Task Record: 本地函式任務記錄
 Notice Bar: 頂部提示欄
 Official Script Market: 官方指令碼市場
+Please input DataFlux Func ID: 請輸入 DataFlux Func ID
 Save Func Task Records in database of this system: 將函式任務記錄儲存在本系統的資料庫中
 Save and Refresh: 儲存並重新整理
 Show Advanced Settings: 顯示高階設定
@@ -117,6 +123,7 @@ Site Name will be added to tags.site_name: 站點名會被新增至 tags.site_na
 Some Scripts should be avoided for direct modification, if you need to review them, please turn on the following options: 部分指令碼應當避免直接修改，如果需要檢視，請開啟以下選項
 System Setting Saved. Page will be refreshed soon...: 系統設定已儲存，頁面即將重新整理...
 Text: 文案
+This DataFlux Func ID should starts with "{prefix}": DataFlux Func ID 必須以 "{prefix}" 開頭
 URL: URL 地址
 Upload the self-monitor data to the Guance: 將自監控資料上報到觀測雲
 Use the specified image as the site icon (favicon): 使用指定的圖片作為網站圖示（favicon）
@@ -426,6 +433,16 @@ export default {
         await this.loadData();
       },
     },
+    show(val) {
+      if (val && this.$refs.form) {
+        this.$refs.form.clearValidate();
+      }
+    },
+    'form.DATAFLUX_FUNC_ID'(val) {
+      if (!val || val.length < this.DATAFLUX_FUNC_ID_PREFIX.length || val.indexOf(this.DATAFLUX_FUNC_ID_PREFIX) < 0) {
+        this.form.DATAFLUX_FUNC_ID = this.DATAFLUX_FUNC_ID_PREFIX;
+      }
+    }
   },
   methods: {
     async loadData() {
@@ -517,6 +534,9 @@ export default {
     },
   },
   computed: {
+    DATAFLUX_FUNC_ID_PREFIX() {
+      return 'DFF';
+    },
     colorPanel() {
       return [
         '#FF0000',
@@ -536,7 +556,27 @@ export default {
   data() {
     return {
       data: {},
+
       form: {},
+      formRules: {
+        id: [
+          {
+            trigger : 'blur',
+            message : this.$t('Please input DataFlux Func ID'),
+            required: true,
+          },
+          {
+            trigger: 'change',
+            validator: (rule, value, callback) => {
+              if (value && value.indexOf(this.DATAFLUX_FUNC_ID) < 0 || value === this.DATAFLUX_FUNC_ID) {
+                let _message = this.$t('This DataFlux Func ID should starts with "{prefix}"', { prefix: this.DATAFLUX_FUNC_ID });
+                return callback(new Error(_message));
+              }
+              return callback();
+            },
+          },
+        ],
+      },
 
       showAdvancedSettings: false,
     }
