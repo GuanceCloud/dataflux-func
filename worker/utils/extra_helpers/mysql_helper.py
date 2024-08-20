@@ -31,7 +31,7 @@ def get_config(c):
 
         'cursorclass'    : DictCursor,
         'charset'        : _charset,
-        'init_command'   : 'SET NAMES "{0}"'.format(_charset),
+        'init_command'   : "SET NAMES '{0}'".format(_charset),
         'client_flag'    : CLIENT_FLAG.MULTI_STATEMENTS,
         'connect_timeout': CONFIG['_MYSQL_CONNECT_TIMEOUT'],
 
