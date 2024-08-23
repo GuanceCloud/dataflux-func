@@ -11,6 +11,7 @@ import time
 import importlib
 import functools
 import concurrent
+import urllib.parse
 
 # 3rd-party Modules
 import six
@@ -1257,8 +1258,12 @@ class FuncResponseLargeData(BaseFuncResponse):
 
 class FuncRedirect(FuncResponse):
     def __init__(self, url):
-        data    = f'<a href   = "{url}">Redirect</a>'
-        headers = { 'Location': url }
+        if not isinstance(url, str):
+            raise TypeError(f'URL should be a str, not {type(url)}')
+
+        quoted_url = ''.join(map(lambda c: c if len(c.encode('utf8')) == 1 else urllib.parse.quote(c), url))
+        data       = f'<a href="{quoted_url}">Redirect</a>'
+        headers    = { 'Location': quoted_url }
 
         super().__init__(data=data,
                          status_code=302,
@@ -1769,6 +1774,10 @@ class FuncExtraGuanceDataHelper(object):
                 continue
 
             self._fields[k] = v
+
+    def incr_field(self, field, step=1):
+        v = self._fields.get(field) or 0
+        self._fields[field] = v + step
 
     def delete_fields(self, *keys):
         for k in keys:
