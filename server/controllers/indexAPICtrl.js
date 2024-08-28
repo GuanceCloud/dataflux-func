@@ -706,7 +706,9 @@ exports.detailedRedisReport = function(req, res, next) {
                 if (type === 'none') {
                   // 不记录无类型的 Key（已过期）
                   delete REDIS_KEYS[key];
-                  return innerCallback();
+
+                  // 直接跳过关于此 key 的循环
+                  return eachCallback();
                 }
 
                 REDIS_KEYS[key].type = type;
