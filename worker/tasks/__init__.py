@@ -433,6 +433,7 @@ class BaseTask(object):
                     logging_message = single_point['fields']['message'] or ''
                     try:
                         logging_message = toolkit.str_split_by_bytes(logging_message, page_bytes=CONFIG['_SELF_MONITOR_GUANCE_LOGGING_SPLIT_BYTES'])
+
                     except Exception as e:
                         for line in traceback.format_exc().splitlines():
                             self.logger.warning(line)
@@ -443,7 +444,7 @@ class BaseTask(object):
                         # 存在 message，拆分写入
                         base_timestamp = single_point['timestamp'] * 1000 * 1000
                         for i, _message in enumerate(toolkit.as_array(logging_message)):
-                            single_point['fields']['message'] = _message
+                            single_point['fields']['message'] = toolkit.limit_text(_message, show_length='newLine', max_length=CONFIG['_SELF_MONITOR_GUANCE_LOGGING_SPLIT_BYTES'])
                             single_point['timestamp'] = base_timestamp + i # 保持有序
                             fkwargs = {
                                 'path'  : f'/v1/write/{category}',
@@ -451,6 +452,7 @@ class BaseTask(object):
                             }
                             try:
                                 retry_call(dataway.post_line_protocol, fkwargs=fkwargs, tries=3, delay=1)
+
                             except Exception as e:
                                 for line in traceback.format_exc().splitlines():
                                     self.logger.warning(line)

@@ -680,7 +680,7 @@ def gen_reg_exp_by_wildcard(pattern):
     return reg_exp
 
 def match_wildcard(value, pattern):
-    reg_exp = gen_reg_exp_by_wildcard(pattern);
+    reg_exp = gen_reg_exp_by_wildcard(pattern)
 
     if re.match(reg_exp, value):
         return True
