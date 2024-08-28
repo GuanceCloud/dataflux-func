@@ -7,6 +7,7 @@ import json
 import re
 import math
 import ssl
+import gzip
 
 try:
     from urllib import urlencode
@@ -211,7 +212,7 @@ def colored(s, name):
         raise AttributeError("Color '{}' not supported.".format(name))
 
 class BaseDataKit(object):
-    def __init__(self, url=None, host=None, port=None, protocol=None, timeout=None, debug=False, dry_run=False, write_size=None, raise_for_status=True, verify_https=True):
+    def __init__(self, url=None, host=None, port=None, protocol=None, timeout=None, debug=False, dry_run=False, write_size=None, min_gzip_bytes=None, raise_for_status=True, verify_https=True):
         self.url        = url        or None
         self.host       = host       or 'localhost'
         self.port       = port       or None
@@ -223,6 +224,13 @@ class BaseDataKit(object):
 
         self.raise_for_status = raise_for_status or False
         self.verify_https     = verify_https     or False
+
+        if min_gzip_bytes is None:
+            self.min_gzip_bytes = 20 * 1024
+        elif isinstance(min_gzip_bytes, bool):
+            self.min_gzip_bytes = min_gzip_bytes
+        else:
+            self.min_gzip_bytes = int(min_gzip_bytes)
 
         if url:
             splited_url = urlsplit(url)
@@ -399,7 +407,20 @@ class BaseDataKit(object):
 
             try:
                 headers = headers or {}
+
+                #  gzip 压缩
+                use_gzip = False
+                if isinstance(self.min_gzip_bytes, bool):
+                    use_gzip = self.min_gzip_bytes
+                elif len(body) > self.min_gzip_bytes:
+                    use_gzip = True
+
+                if use_gzip:
+                    body = gzip.compress(body)
+                    headers['Content-Encoding'] = 'gzip'
+
                 conn.request(method, path, body=body, headers=headers)
+
             except Exception as e:
                 raise Exception(f'{method} {self.protocol}://{self.host}:{self.port}{masked_path} failed. Error: {str(e)}')
 
