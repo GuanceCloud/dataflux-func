@@ -10,11 +10,6 @@ import ssl
 import gzip
 
 try:
-    from urllib import urlencode
-except ImportError:
-    from urllib.parse import urlencode
-
-try:
     from collections import OrderedDict
 except ImportError:
     OrderedDict = dict # New in 2.7
@@ -80,7 +75,7 @@ def ensure_str(s, encoding='utf-8', errors='strict'):
 
 if PY3:
     import http.client as httplib
-    from urllib.parse import urlsplit, urlencode
+    from urllib.parse import urlsplit, urlencode, quote
     long_type = int
 
 else:
@@ -474,8 +469,23 @@ class BaseDataKit(object):
         points = json_copy(points)
         if query:
             query = json_copy(query)
+
         if headers:
             headers = json_copy(headers)
+        else:
+            headers = {}
+
+        # Add data info
+        x_measurements = set()
+        for p in points:
+            _m = p.get('measurement')
+            if not _m:
+                continue
+
+            x_measurements.add(quote(_m))
+
+        headers['X-Line-Protocol-Category']     = path.rstrip('/').split('/').pop()
+        headers['X-Line-Protocol-Measurements'] = ','.join(sorted(x_measurements))
 
         # Group send
         group_count = int(math.ceil(float(len(points)) / float(self.write_size)))
