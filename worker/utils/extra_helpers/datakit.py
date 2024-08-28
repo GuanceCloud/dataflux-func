@@ -460,6 +460,51 @@ class BaseDataKit(object):
     def get(self, path, query=None, headers=None):
         return self._do_get(path=path, query=query, headers=headers)
 
+    def _get_debug_headers(self, path, points):
+        points = as_array(points)
+
+        headers = {}
+
+        x_measurement        = set()
+        x_func_id            = set()
+        x_func_id            = set()
+        x_origin_id          = set()
+        x_monitor_checker_id = set()
+        for p in points:
+            # 指标集
+            measurement = p.get('measurement')
+            if measurement:
+                x_measurement.add(quote(measurement))
+
+            # 函数 ID
+            func_id = p['tags'].get('func_id')
+            if func_id:
+                x_func_id.add(quote(func_id))
+
+            # 来源 ID
+            origin_id = p['tags'].get('origin_id')
+            if origin_id:
+                x_origin_id.add(quote(origin_id))
+
+            # 监控器 ID（观测云特别处理）
+            df_monitor_checker_id = p['tags'].get('df_monitor_checker_id')
+            if df_monitor_checker_id:
+                x_monitor_checker_id.add(quote(df_monitor_checker_id))
+
+        headers['X-DFF-Line-Protocol-Category']    = path.rstrip('/').split('/').pop()
+        headers['X-DFF-Line-Protocol-Measurement'] = ','.join(sorted(x_measurement))
+
+        if x_func_id:
+            headers['X-DFF-Func-ID'] = ','.join(sorted(x_func_id))
+
+        if x_origin_id:
+            headers['X-DFF-Origin-ID'] = ','.join(sorted(x_origin_id))
+
+        if x_monitor_checker_id:
+            headers['X-DFF-Monitor-Checker-ID'] = ','.join(sorted(x_monitor_checker_id))
+
+        return headers
+
     def post_line_protocol(self, path, points, query=None, headers=None):
         content_type = 'text/plain'
 
@@ -475,17 +520,7 @@ class BaseDataKit(object):
         else:
             headers = {}
 
-        # Add data info
-        x_measurements = set()
-        for p in points:
-            _m = p.get('measurement')
-            if not _m:
-                continue
-
-            x_measurements.add(quote(_m))
-
-        headers['X-Line-Protocol-Category']     = path.rstrip('/').split('/').pop()
-        headers['X-Line-Protocol-Measurements'] = ','.join(sorted(x_measurements))
+        headers.update(self._get_debug_headers(path, points))
 
         # Group send
         group_count = int(math.ceil(float(len(points)) / float(self.write_size)))
@@ -498,7 +533,7 @@ class BaseDataKit(object):
 
             body = self.prepare_line_protocol(group)
             resp = self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers)
-
+            print('>>>>>', json.dumps(headers), resp[0])
             if resp[0] >= 400:
                 break
 
