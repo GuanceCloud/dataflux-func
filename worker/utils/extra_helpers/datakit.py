@@ -533,7 +533,7 @@ class BaseDataKit(object):
 
             body = self.prepare_line_protocol(group)
             resp = self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers)
-            print('>>>>>', json.dumps(headers), resp[0])
+
             if resp[0] >= 400:
                 break
 
