@@ -727,6 +727,8 @@ function doDeploy(locals, scriptSetId, options, callback) {
           for (var k in options.configReplacer) {
             var v = options.configReplacer[k];
             if (v) {
+              // NOTE 以所有参数都为【字符串】，且参数占位符都为 "<xxx>" 为前提，为双引号添加转义符 \
+              v = v.replaceAll('"', '\\"');
               exampleScript.code = exampleScript.code.replace(`"<${k}>"`, `"${v}"`);
             }
           }
