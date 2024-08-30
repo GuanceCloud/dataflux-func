@@ -1,6 +1,6 @@
 stages:
   - build
-  - uploadToOSS
+  - otherPortableFiles
   - deploy
 
 variables:
@@ -329,7 +329,7 @@ guancePaaS_uos_release:
 # ========== 其他携带版文件上传到 OSS ==========
 
 otherPortableFile_dev:
-  stage: uploadToOSS
+  stage: otherPortableFiles
   retry: 2
   only:
     - dev
@@ -354,7 +354,7 @@ otherPortableFile_dev:
     - cloudcare-multiarch
 
 otherPortableFile_singleton:
-  stage: uploadToOSS
+  stage: otherPortableFiles
   retry: 2
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
@@ -383,7 +383,7 @@ otherPortableFile_singleton:
     - cloudcare-multiarch
 
 otherPortableFile_singleton_GSE:
-  stage: uploadToOSS
+  stage: otherPortableFiles
   retry: 2
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
@@ -410,7 +410,7 @@ otherPortableFile_singleton_GSE:
     - cloudcare-multiarch
 
 otherResourceFile:
-  stage: uploadToOSS
+  stage: otherPortableFiles
   retry: 2
   only:
     - /^\d+\.\d+\.\d+$/ # 如：1.2.3
