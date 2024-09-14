@@ -9,11 +9,6 @@ import math
 import ssl
 import gzip
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    OrderedDict = dict # New in 2.7
-
 # -----------------------------------------------
 # Python2 ~ Python3 Compatibility Code From `six`
 # -----------------------------------------------
@@ -87,7 +82,7 @@ else:
 MIN_ALLOWED_NS_TIMESTAMP = 1000000000000000000
 
 ESCAPE_REPLACER           = r'\\\1'
-RE_NORMALIZE_SPACE        = re.compile('\s')
+RE_NORMALIZE_KEY          = re.compile('\s')
 RE_ESCAPE_TAG_KEY         = re.compile('([,= ])')
 RE_ESCAPE_TAG_VALUE       = RE_ESCAPE_TAG_KEY
 RE_ESCAPE_FIELD_KEY       = RE_ESCAPE_TAG_KEY
@@ -99,8 +94,8 @@ RE_PATH_QUERY_TOKEN_REPLACER = r'\1*****\2'
 
 ASSERT_TYPE_MAPS = {
     'dict': {
-        'type'   : (dict, OrderedDict),
-        'message': 'should be a dict or OrderedDict',
+        'type'   : dict,
+        'message': 'should be a dict',
     },
     'list': {
         'type'   : list,
@@ -158,7 +153,7 @@ def assert_json_str(data, name):
             e = Exception('`{0}` should be a JSON or JSON string, got {1}'.format(name, data))
             raise e
 
-    elif isinstance(data, (list, tuple, dict, OrderedDict)):
+    elif isinstance(data, (list, tuple, dict)):
         try:
             data = json.dumps(data, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
         except Exception as e:
@@ -174,8 +169,10 @@ def assert_json_str(data, name):
 def json_copy(j):
     return json.loads(json.dumps(j))
 
-def normalize_space(s):
-    return re.sub(RE_NORMALIZE_SPACE, ' ', s)
+def normalize_key(key):
+    key = re.sub(RE_NORMALIZE_KEY, ' ', key)
+    key = key.rstrip('\\')
+    return key
 
 def as_array(d):
     if not isinstance(d, (list, tuple)):
@@ -268,7 +265,7 @@ class BaseDataKit(object):
             # Influx DB line protocol
             # https://docs.influxdata.com/influxdb/v1.7/write_protocols/line_protocol_tutorial/
             measurement = p.get('measurement')
-            measurement = normalize_space(measurement)
+            measurement = normalize_key(measurement)
             measurement = re.sub(RE_ESCAPE_MEASUREMENT, ESCAPE_REPLACER, measurement)
 
             tag_set_list = []
@@ -277,7 +274,7 @@ class BaseDataKit(object):
                 key_list = sorted(tags.keys())
                 for k in key_list:
                     v = tags[k]
-                    if v is None or str(v).strip() == '':
+                    if v is None:
                         continue
 
                     if isinstance(v, bool):
@@ -285,13 +282,18 @@ class BaseDataKit(object):
                     else:
                         v = '{0}'.format(v)
 
-                    k = normalize_space(k)
+                    k = normalize_key(k)
                     k = re.sub(RE_ESCAPE_TAG_KEY, ESCAPE_REPLACER, k)
 
-                    v = normalize_space(v)
+                    v = normalize_key(v)
                     v = re.sub(RE_ESCAPE_TAG_VALUE, ESCAPE_REPLACER, v)
 
-                    tag_set_list.append('{0}={1}'.format(ensure_str(k), ensure_str(v)))
+                    k = ensure_str(k)
+                    v = ensure_str(v)
+                    if k == '' or v == '':
+                        continue
+
+                    tag_set_list.append('{0}={1}'.format(k, v))
 
             tag_set = ''
             if len(tag_set_list) > 0:
@@ -306,7 +308,7 @@ class BaseDataKit(object):
                     if v is None:
                         continue
 
-                    k = normalize_space(k)
+                    k = normalize_key(k)
                     k = re.sub(RE_ESCAPE_FIELD_KEY, ESCAPE_REPLACER, k)
 
                     if isinstance(v, string_types):
@@ -359,7 +361,12 @@ class BaseDataKit(object):
                         e = TypeError('Field `{0}` got an invalid data type. type(v)=`{1}`, repr(v)=`{2}`'.format(k, type(v), repr(v)))
                         raise e
 
-                    field_set_list.append('{0}={1}'.format(ensure_str(k), ensure_str(v)))
+                    k = ensure_str(k)
+                    v = ensure_str(v)
+                    if k == '' or v == '':
+                        continue
+
+                    field_set_list.append('{0}={1}'.format(k, v))
 
             field_set = ' {0}'.format(','.join(field_set_list))
 
@@ -550,7 +557,7 @@ class BaseDataKit(object):
             headers = json_copy(headers)
 
         body = json_obj
-        if isinstance(body, (list, tuple, dict, OrderedDict)):
+        if isinstance(body, (list, tuple, dict)):
             body = json.dumps(body, ensure_ascii=False, separators=(',', ':'))
 
         return self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers)
@@ -668,7 +675,6 @@ class BaseDataKit(object):
                 # 接收到非 JSON 响应，无法翻页，直接返回
                 return status_code, _dql_res
 
-            # 兼容处理 #
             # 确保`series`为数组
             _dql_res['content'][0]['series'] = _dql_res['content'][0].get('series') or []
 
