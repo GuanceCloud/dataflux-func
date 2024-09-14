@@ -111,7 +111,7 @@ Response: 響應
                 <CopyButton :content="scope.row.clientIPsJSON.join(', ')" />
 
                 <!-- 简体中文用户专享 -->
-                <template v-if="$store.getters.uiLocale === 'zh-CN'">
+                <template v-if="$store.getters.uiLocale === 'zh-CN' && T.notNothing(scope.row.clientIPRegionsJSON)">
                   <br>
                   <span class="text-info">地域</span>
                   &nbsp;<code class="text-main">{{ scope.row.clientIPRegionsJSON.join('，') }}</code>

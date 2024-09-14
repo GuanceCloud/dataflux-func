@@ -34,18 +34,32 @@ exports.list = function(req, res, next) {
         listData     = dbRes;
         listPageInfo = pageInfo;
 
+        listData.forEach(function(d) {
+          // 解析 IP 真实地址
+          d.clientIPRegionsJSON = [];
+          if (d.clientIPsJSON) {
+            d.clientIPRegionsJSON = d.clientIPsJSON.map(function(ip) {
+              var ipRegion = toolkit.ipRegion(ip);
+              var ipRegionParts = [];
+              if (ipRegion.country)  ipRegionParts.push(ipRegion.country);
+              if (ipRegion.province) ipRegionParts.push(ipRegion.province);
+              if (ipRegion.city)     ipRegionParts.push(ipRegion.city);
+              if (ipRegion.isp)      ipRegionParts.push(ipRegion.isp);
+              return toolkit.noDuplication(ipRegionParts).join(' / ');
+            });
+          }
+        });
+
         return asyncCallback();
       });
     },
     // 补充集成登录用户信息
     function(asyncCallback) {
-      if (CONFIG.DISABLE_INTEGRATED_SIGNIN) return asyncCallback();
-
       var funcModel = funcMod.createModel(res.locals);
 
       var opt = {
         filters: {
-          integration: {eq: 'signIn'}
+          integration: { eq: 'signIn' }
         }
       };
       funcModel.list(opt, function(err, dbRes) {
@@ -74,19 +88,6 @@ exports.list = function(req, res, next) {
               d.integratedSignInFuncId    = integratedSignInFuncMap[funcIdMD5].id;
               d.integratedSignInFuncTitle = integratedSignInFuncMap[funcIdMD5].title;
             }
-          }
-
-          // 解析 IP 地址
-          if (d.clientIPsJSON) {
-            d.clientIPRegionsJSON = d.clientIPsJSON.map(function(ip) {
-              var ipRegion = toolkit.ipRegion(ip);
-              var ipRegionParts = [];
-              if (ipRegion.country)  ipRegionParts.push(ipRegion.country);
-              if (ipRegion.province) ipRegionParts.push(ipRegion.province);
-              if (ipRegion.city)     ipRegionParts.push(ipRegion.city);
-              if (ipRegion.isp)      ipRegionParts.push(ipRegion.isp);
-              return toolkit.noDuplication(ipRegionParts).join(' / ');
-            });
           }
         });
 
