@@ -22,6 +22,10 @@ routeLoader.load(ROUTE.mainAPI.callFunc, [
   mainAPICtrl.callFunc,
 ]);
 
+routeLoader.load(ROUTE.mainAPI.callFuncMany, [
+  mainAPICtrl.callFuncMany,
+]);
+
 // 通过同步 API 调用函数
 routeLoader.load(ROUTE.mainAPI.callSyncAPIByGet, [
   mainAPICtrl.callSyncAPI,

@@ -1496,6 +1496,53 @@ exports.callFunc = function(req, res, next) {
   });
 };
 
+exports.callFuncMany = function(req, res, next) {
+  var calls = req.body.calls || [];
+
+  var taskIds = [];
+  async.eachLimit(calls, 10, function(call, eachCallback) {
+    var options = call.options || {};
+    var opt = {
+      funcId        : call.funcId,
+      funcCallKwargs: call.kwargs || {},
+      origin        : 'direct',
+      originId      : 'direct',
+      httpRequest   : _getHTTPRequestInfo(req),
+      eta           : options.eta,
+      delay         : options.delay,
+      ignoreResult  : true,
+    }
+
+    var taskReq = null;
+    async.series([
+      function(asyncCallback) {
+        createFuncRunnerTaskReq(res.locals, opt, function(err, _taskReq) {
+          if (err) return asyncCallback(err);
+
+          taskReq = _taskReq;
+
+          return asyncCallback();
+        });
+      },
+      function(asyncCallback) {
+        callFuncRunner(res.locals, taskReq, function(err, taskId) {
+          if (err) return asyncCallback(err);
+
+          taskIds.push(taskId);
+
+          return asyncCallback();
+        });
+      }
+    ], eachCallback);
+  }, function(err) {
+    if (err) return next(err);
+
+    var ret = toolkit.initRet({ ids: taskIds });
+    return res.locals.sendJSON(ret);
+  });
+};
+
+
 exports.callFuncDraft = function(req, res, next) {
   // 函数，参数
   var funcId         = req.params.funcId;
