@@ -91,7 +91,7 @@ client/public/theme-light.min.css
 client/public/theme-dark.min.css
 
 # Other
-.git
+**/.git*
 portable
 test
 client/report.*.json
