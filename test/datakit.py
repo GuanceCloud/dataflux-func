@@ -28,14 +28,6 @@ def do_test(client):
             'fields'     : {'F1': 'A'},
             'timestamp'  : 1577808001,
         }, {
-            'measurement': 'M1',
-            'tags'       : None,
-            'fields'     : {'F1': 'A'},
-            'timestamp'  : 1577808002,
-        }, {
-            'measurement': 'M1',
-            'fields'     : {'F1': 'A'},
-        }, {
             'measurement': '中文指标名',
             'tags'       : {'中文标签': '中文标签值'},
             'fields'     : {'中文字段': '中文字段值'},
@@ -70,7 +62,7 @@ def do_test(client):
             for line in traceback.format_exc().splitlines():
                 print(line)
 
-    print_sep('Test Case: .post_line_protocol')
+    print_sep(f'Test Case: {client.__class__.__name__}.post_line_protocol')
     try:
         client.post_line_protocol('/v1/write/metric', points=points, headers={ 'X-Global-Key': 'Test' })
 
@@ -84,16 +76,17 @@ def do_test(client):
             'tags'       : {'T': 'X'},
             'fields'     : {'F': {}},
             'timestamp'  : 1577808000000000001,
+        }, {
+            'measurement': 'M1',
+            'tags'       : None,
+            'fields'     : {'F1': 'A'},
+            'timestamp'  : 1577808002,
+        }, {
+            'measurement': 'M1',
+            'fields'     : {'F1': 'A'},
         },
-        # {
-        #     'measurement': 'ArrayField',
-        #     'tags'       : {'T1': 'X'},
-        #     'fields'     : {
-        #         'arr': [ 1, 2.2 ],
-        #     },
-        # },
     ]
-    print_sep('Test Case: .post_line_protocol (Bad points)')
+    print_sep(f'Test Case: {client.__class__.__name__}.post_line_protocol (Bad points)')
     try:
         client.post_line_protocol('/v1/write/metric', points=bad_points, headers={ 'X-Global-Key': 'Test' })
 

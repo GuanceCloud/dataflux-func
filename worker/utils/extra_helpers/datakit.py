@@ -217,10 +217,10 @@ class BaseDataKit(object):
         self.raise_for_status = raise_for_status or False
         self.verify_https     = verify_https     or False
 
-        if isinstance(min_gzip_bytes, (int, float, str)):
-            self.min_gzip_bytes = int(min_gzip_bytes)
-        elif isinstance(min_gzip_bytes, bool):
+        if isinstance(min_gzip_bytes, bool):
             self.min_gzip_bytes = min_gzip_bytes
+        elif isinstance(min_gzip_bytes, (int, float, str)):
+            self.min_gzip_bytes = int(min_gzip_bytes)
         else:
             self.min_gzip_bytes = False
 
@@ -411,15 +411,23 @@ class BaseDataKit(object):
                 headers = headers or {}
 
                 #  gzip 压缩
-                use_gzip = False
-                if isinstance(self.min_gzip_bytes, bool):
-                    use_gzip = self.min_gzip_bytes
-                elif len(body) > self.min_gzip_bytes:
-                    use_gzip = True
+                if body:
+                    use_gzip = False
+                    if isinstance(self.min_gzip_bytes, bool):
+                        use_gzip = self.min_gzip_bytes
+                    elif len(body) > self.min_gzip_bytes:
+                        use_gzip = True
 
-                if use_gzip:
-                    body = gzip.compress(body)
-                    headers['Content-Encoding'] = 'gzip'
+                    if use_gzip:
+                        raw_length = len(body)
+
+                        body = gzip.compress(body)
+                        headers['Content-Encoding'] = 'gzip'
+
+                        gzipped_length = len(body)
+
+                        if self.debug:
+                            print(colored('[Gzipped] Length {0} -> {1} (-{2}%)'.format(raw_length, gzipped_length, int((1 - gzipped_length / raw_length) * 100)), 'yellow'))
 
                 conn.request(method, path, body=body, headers=headers)
 
@@ -515,10 +523,12 @@ class BaseDataKit(object):
     def post_line_protocol(self, path, points, query=None, headers=None):
         content_type = 'text/plain'
 
-        points = as_array(points)
-
         # break obj reference
         points = json_copy(points)
+
+        # prepare
+        points = list(map(self._prepare_point, as_array(points)))
+
         if query:
             query = json_copy(query)
 
@@ -563,15 +573,14 @@ class BaseDataKit(object):
         return self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers)
 
     # High-Level API
-    def _prepare_data(self, data):
+    def _prepare_point(self, data):
         assert_dict(data, name='data')
 
         measurement = assert_str(data.get('measurement'), name='measurement')
 
         tags = data.get('tags')
-        if tags:
-            assert_dict(tags, name='tags')
-            assert_tags(tags, name='tags')
+        assert_dict(tags, name='tags')
+        assert_tags(tags, name='tags')
 
         fields = assert_dict(data.get('fields'), name='fields')
 
@@ -595,24 +604,10 @@ class BaseDataKit(object):
             'timestamp'  : timestamp,
         }
 
-        # break obj reference
-        data = json_copy(data)
-
-        prepared_data = self._prepare_data(data)
-
-        return self.post_line_protocol(path=path, points=prepared_data, query=query, headers=headers)
+        return self.post_line_protocol(path=path, points=data, query=query, headers=headers)
 
     def _write_many(self, path, data, query=None, headers=None):
-        data = as_array(data)
-
-        # break obj reference
-        data = json_copy(data)
-
-        prepared_data = []
-        for d in data:
-            prepared_data.append(self._prepare_data(d))
-
-        return self.post_line_protocol(path=path, points=prepared_data, query=query, headers=headers)
+        return self.post_line_protocol(path=path, points=data, query=query, headers=headers)
 
     def write_by_category(self, category, measurement, tags=None, fields=None, timestamp=None, headers=None):
         path = '/v1/write/{0}'.format(category)
