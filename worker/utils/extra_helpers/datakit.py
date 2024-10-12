@@ -204,7 +204,7 @@ def colored(s, name):
         raise AttributeError("Color '{}' not supported.".format(name))
 
 class BaseDataKit(object):
-    def __init__(self, url=None, host=None, port=None, protocol=None, timeout=None, debug=False, dry_run=False, write_size=None, min_gzip_bytes=None, raise_for_status=True, verify_https=True):
+    def __init__(self, url=None, host=None, port=None, protocol=None, timeout=None, debug=False, dry_run=False, write_size=None, min_gzip_bytes=False, raise_for_status=True, verify_https=True):
         self.url        = url        or None
         self.host       = host       or 'localhost'
         self.port       = port       or None
@@ -217,12 +217,12 @@ class BaseDataKit(object):
         self.raise_for_status = raise_for_status or False
         self.verify_https     = verify_https     or False
 
-        if min_gzip_bytes is None:
-            self.min_gzip_bytes = 20 * 1024
+        if isinstance(min_gzip_bytes, (int, float, str)):
+            self.min_gzip_bytes = int(min_gzip_bytes)
         elif isinstance(min_gzip_bytes, bool):
             self.min_gzip_bytes = min_gzip_bytes
         else:
-            self.min_gzip_bytes = int(min_gzip_bytes)
+            self.min_gzip_bytes = False
 
         if url:
             splited_url = urlsplit(url)

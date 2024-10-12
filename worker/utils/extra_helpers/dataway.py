@@ -15,9 +15,11 @@ else:
     from urllib import urlencode
     from urlparse import urlsplit, parse_qs
 
+DEFAULT_MIN_GZIP_BYTES = 20 * 1024
+
 class DataWay(BaseDataKit):
-    def __init__(self, *args, token=None, access_key=None, secret_key=None, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *args, token=None, access_key=None, secret_key=None, min_gzip_bytes=DEFAULT_MIN_GZIP_BYTES, **kwargs):
+        super().__init__(*args, min_gzip_bytes=min_gzip_bytes, **kwargs)
 
         if not self.port:
             self.port = 9528
